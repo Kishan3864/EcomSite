@@ -424,6 +424,7 @@ model Customer {
   email         String       @unique
   phone         String?
   name          String
+  /// Null for accounts that only ever signed in through a provider.
   passwordHash  String?
   tier          CustomerTier @default(SILVER)
   loyaltyPoints Int          @default(0)
@@ -433,12 +434,30 @@ model Customer {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
+  /// Pre-selected at checkout so a returning customer is not asked twice.
+  preferredPayment PaymentMethod?
+  /// Their own UPI handle, offered as the default at the payment step.
+  upiId            String?
+
+  /// Federated sign-in. `providerId` is the provider's own subject id.
+  authProvider   AuthProvider @default(PASSWORD)
+  providerId     String?
+  avatarUrl      String?
+  emailVerified  Boolean      @default(false)
+
   addresses Address[]
   orders    Order[]
   reviews   Review[]
   returns   ReturnRequest[]
 
+  @@unique([authProvider, providerId])
   @@index([createdAt])
+}
+
+enum AuthProvider {
+  PASSWORD
+  GOOGLE
+  FACEBOOK
 }
 
 model Address {

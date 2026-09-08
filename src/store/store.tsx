@@ -64,6 +64,12 @@ export interface StoreCustomer {
   name: string;
   email: string;
   phone: string;
+  avatarUrl: string | null;
+  /** PASSWORD, GOOGLE or FACEBOOK — decides what the account screen offers. */
+  authProvider: "PASSWORD" | "GOOGLE" | "FACEBOOK";
+  /** Pre-selects the payment step for a returning customer. */
+  preferredPayment: PaymentMethodId | null;
+  upiId: string | null;
 }
 
 /**
