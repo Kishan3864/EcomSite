@@ -51,9 +51,9 @@ export function AdminShell({
   const title = TITLES.find(([re]) => re.test(pathname))?.[1] ?? "Admin";
 
   return (
-    <div className="min-h-dvh bg-canvas lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+    <div className="min-h-dvh bg-canvas lg:grid lg:grid-cols-[248px_minmax(0,1fr)] print:block print:min-h-0">
       {/* Desktop sidebar */}
-      <aside className="hidden border-r border-hairline bg-surface lg:sticky lg:top-0 lg:block lg:h-dvh">
+      <aside className="hidden border-r border-hairline bg-surface lg:sticky lg:top-0 lg:block lg:h-dvh print:hidden">
         <AdminSidebar counts={counts} />
       </aside>
 
@@ -89,7 +89,7 @@ export function AdminShell({
       </AnimatePresence>
 
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-hairline bg-surface/90 px-4 backdrop-blur-lg sm:px-6">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-hairline bg-surface/90 px-4 backdrop-blur-lg sm:px-6 print:hidden">
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
@@ -135,7 +135,7 @@ export function AdminShell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 print:p-0">
           <FlashMessage />
           {children}
         </main>
