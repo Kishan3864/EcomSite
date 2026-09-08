@@ -14,7 +14,7 @@ export default function ForgotPasswordPage() {
     <AuthShell
       title="Reset your password"
       subtitle="Enter the email on your account and our support team will reset the password with you."
-      imageIndex={1}
+      imageIndex={2}
       footer={
         <>
           Remembered it?{" "}

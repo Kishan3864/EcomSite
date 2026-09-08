@@ -202,6 +202,14 @@ export async function anonymiseCustomer(formData: FormData) {
         email: redactedEmail,
         phone: null,
         passwordHash: null,
+        // The provider link is a way back in: leaving it would let the same
+        // Google account sign straight back into the record we just erased.
+        authProvider: "PASSWORD",
+        providerId: null,
+        avatarUrl: null,
+        emailVerified: false,
+        preferredPayment: null,
+        upiId: null,
         isActive: false,
         loyaltyPoints: 0,
         notes: stamp,

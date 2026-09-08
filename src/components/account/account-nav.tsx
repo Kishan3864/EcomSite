@@ -8,6 +8,7 @@ import {
   MapPin,
   Package,
   RotateCcw,
+  Settings,
   Ticket,
   UserRound,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const LINKS = [
   { href: "/account/addresses", label: "Saved addresses", icon: MapPin },
   { href: "/wishlist", label: "Wishlist", icon: Heart },
   { href: "/offers", label: "Coupons", icon: Ticket },
+  { href: "/account/settings", label: "Settings", icon: Settings },
 ];
 
 export interface AccountProfile {

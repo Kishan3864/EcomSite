@@ -92,8 +92,12 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         }
       : {}),
     ...(tierFilter ? { tier: tierFilter } : {}),
-    ...(account === "account" ? { passwordHash: { not: null } } : {}),
-    ...(account === "guest" ? { passwordHash: null } : {}),
+    // A provider account has no password either, so "can sign in" is a password
+    // OR a linked provider — not the presence of a hash.
+    ...(account === "account"
+      ? { OR: [{ passwordHash: { not: null } }, { providerId: { not: null } }] }
+      : {}),
+    ...(account === "guest" ? { passwordHash: null, providerId: null } : {}),
     ...(status === "active" ? { isActive: true } : {}),
     ...(status === "inactive" ? { isActive: false } : {}),
   };
@@ -130,7 +134,9 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
 
   const [totalCustomers, registered, peacock, inactive] = await Promise.all([
     db.customer.count(),
-    db.customer.count({ where: { passwordHash: { not: null } } }),
+    db.customer.count({
+      where: { OR: [{ passwordHash: { not: null } }, { providerId: { not: null } }] },
+    }),
     db.customer.count({ where: { tier: "PEACOCK_CLUB" } }),
     db.customer.count({ where: { isActive: false } }),
   ]);
@@ -241,7 +247,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
             rows.map((c) => {
               const s = stats.get(c.id) ?? { orders: 0, spend: 0, lastOrderAt: null };
               const anon = isAnonymised(c);
-              const guest = !c.passwordHash;
+              const guest = !c.passwordHash && !c.providerId;
               return (
                 <Tr key={c.id}>
                   <Td>

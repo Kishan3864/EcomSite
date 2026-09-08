@@ -32,11 +32,13 @@ const ICONS: Record<PaymentMethodId, typeof Wallet> = {
 };
 
 export function PaymentStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, config, dispatch, hydrated } = useStore();
+  const { cart, coupon, checkout, config, customer, dispatch, hydrated } = useStore();
   const router = useRouter();
-  const [detail, setDetail] = useState(checkout.paymentDetail ?? "");
+  const [typed, setTyped] = useState<string | null>(null);
   const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
   const [error, setError] = useState<string | null>(null);
+  // What they have picked or typed here, or whatever the draft already carries.
+  const detail = typed ?? checkout.paymentDetail ?? "";
 
   useEffect(() => {
     if (hydrated && cart.length > 0 && !checkout.addressId) router.replace("/checkout/address");
@@ -57,9 +59,21 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
 
   const codAllowed = totals.total <= config.codLimit;
 
+  // How this customer usually pays, offered until they choose for themselves.
+  useEffect(() => {
+    if (!hydrated || checkout.paymentMethod || !customer?.preferredPayment) return;
+    const preferred = config.paymentMethods.find((m) => m.id === customer.preferredPayment);
+    if (!preferred || (preferred.id === "cod" && !codAllowed)) return;
+    const saved = preferred.id === "upi" ? (customer.upiId ?? "") : "";
+    dispatch({
+      type: "checkout/patch",
+      patch: { paymentMethod: preferred.id, paymentDetail: saved || null },
+    });
+  }, [hydrated, checkout.paymentMethod, customer, config.paymentMethods, codAllowed, dispatch]);
+
   function choose(id: PaymentMethodId) {
     dispatch({ type: "checkout/patch", patch: { paymentMethod: id, paymentDetail: null } });
-    setDetail("");
+    setTyped("");
     setError(null);
   }
 
@@ -156,7 +170,7 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
                           <button
                             key={app.id}
                             onClick={() => {
-                              setDetail(app.name);
+                              setTyped(app.name);
                               setError(null);
                             }}
                             className={cn(
@@ -176,12 +190,20 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
                           </button>
                         ))}
                       </div>
-                      <Field label="Or enter a UPI ID" htmlFor="upi-id">
+                      <Field
+                        label="Or enter a UPI ID"
+                        htmlFor="upi-id"
+                        hint={
+                          customer?.upiId && detail === customer.upiId
+                            ? "Saved on your account."
+                            : undefined
+                        }
+                      >
                         <Input
                           id="upi-id"
                           value={detail.includes("@") ? detail : ""}
                           onChange={(e) => {
-                            setDetail(e.target.value);
+                            setTyped(e.target.value);
                             setError(null);
                           }}
                           placeholder="yourname@okhdfcbank"
@@ -266,7 +288,7 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
                         id="bank"
                         value={detail}
                         onChange={(e) => {
-                          setDetail(e.target.value);
+                          setTyped(e.target.value);
                           setError(null);
                         }}
                       >
@@ -286,7 +308,7 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
                         <button
                           key={w}
                           onClick={() => {
-                            setDetail(w);
+                            setTyped(w);
                             setError(null);
                           }}
                           className={cn(

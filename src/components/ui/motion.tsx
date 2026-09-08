@@ -2,7 +2,6 @@
 
 import { motion, type Variants } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { cn } from "@/lib/utils";
 
 /**
  * Scroll-reveal wrapper. One shared easing curve keeps every section on the
@@ -84,24 +83,5 @@ export function StaggerItem({
     <motion.div variants={staggerChild} className={className}>
       {children}
     </motion.div>
-  );
-}
-
-/** Horizontal snap rail with edge fades — used for every product carousel. */
-export function Rail({
-  children,
-  className,
-  itemClassName,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  itemClassName?: string;
-}) {
-  return (
-    <div className={cn("relative", className)}>
-      <div className={cn("rail -mx-4 px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8", itemClassName)}>
-        {children}
-      </div>
-    </div>
   );
 }

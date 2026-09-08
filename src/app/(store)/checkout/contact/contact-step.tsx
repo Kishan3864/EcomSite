@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Info, UserRound } from "lucide-react";
+import { ArrowRight, Info, Pencil, UserRound } from "lucide-react";
 import type { Offer } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
@@ -34,6 +34,11 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
   const setForm = (patch: Partial<Contact>) => setDraft({ ...form, ...patch });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Details already on the account are shown for confirmation rather than
+  // asked for again; the fields are one press away if anything has changed.
+  const [editing, setEditing] = useState(false);
+  const confirming = Boolean(customer?.name && customer.email && customer.phone) && !editing;
+
   const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
   const applied = offers.find((o) => o.code === coupon) ?? null;
   const check = applied
@@ -56,7 +61,10 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
       next.phone = "Enter a 10-digit Indian mobile number.";
 
     setErrors(next);
-    if (Object.keys(next).length) return;
+    if (Object.keys(next).length) {
+      setEditing(true);
+      return;
+    }
 
     dispatch({ type: "checkout/patch", patch: { contact: form } });
     router.push("/checkout/address");
@@ -76,61 +84,83 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
     >
       <form onSubmit={submit} className="space-y-5">
         <div className="rounded-xl border border-hairline bg-surface p-5">
-          <h2 className="mb-4 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-900">
-            <UserRound size={15} className="text-brand-600" />
-            Contact details
-          </h2>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Full name" htmlFor="name" error={errors.name} className="sm:col-span-2">
-              <Input
-                id="name"
-                name="name"
-                autoComplete="name"
-                value={form.name}
-                invalid={Boolean(errors.name)}
-                onChange={(e) => setForm({ name: e.target.value })}
-                placeholder="Ananya Iyer"
-              />
-            </Field>
-
-            <Field
-              label="Email address"
-              htmlFor="email"
-              error={errors.email}
-              hint="Your GST invoice and order updates go here."
-            >
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                value={form.email}
-                invalid={Boolean(errors.email)}
-                onChange={(e) => setForm({ email: e.target.value })}
-                placeholder="you@example.in"
-              />
-            </Field>
-
-            <Field
-              label="Mobile number"
-              htmlFor="phone"
-              error={errors.phone}
-              hint="The courier calls this number before delivery."
-            >
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={form.phone}
-                invalid={Boolean(errors.phone)}
-                onChange={(e) => setForm({ phone: e.target.value })}
-                placeholder="+91 98450 12345"
-              />
-            </Field>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+              <UserRound size={15} className="text-brand-600" />
+              Contact details
+            </h2>
+            {confirming && (
+              <Button type="button" size="xs" variant="outline" onClick={() => setEditing(true)}>
+                <Pencil size={12} /> Edit
+              </Button>
+            )}
           </div>
+
+          {confirming ? (
+            <dl className="space-y-2.5">
+              {[
+                { label: "Name", value: form.name },
+                { label: "Email", value: form.email },
+                { label: "Mobile", value: form.phone },
+              ].map((row) => (
+                <div key={row.label} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <dt className="w-16 shrink-0 text-[12.5px] text-ink-500">{row.label}</dt>
+                  <dd className="text-[14px] font-medium text-ink-950">{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Full name" htmlFor="name" error={errors.name} className="sm:col-span-2">
+                <Input
+                  id="name"
+                  name="name"
+                  autoComplete="name"
+                  value={form.name}
+                  invalid={Boolean(errors.name)}
+                  onChange={(e) => setForm({ name: e.target.value })}
+                  placeholder="Ananya Iyer"
+                />
+              </Field>
+
+              <Field
+                label="Email address"
+                htmlFor="email"
+                error={errors.email}
+                hint="Your GST invoice and order updates go here."
+              >
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={form.email}
+                  invalid={Boolean(errors.email)}
+                  onChange={(e) => setForm({ email: e.target.value })}
+                  placeholder="you@example.in"
+                />
+              </Field>
+
+              <Field
+                label="Mobile number"
+                htmlFor="phone"
+                error={errors.phone}
+                hint="The courier calls this number before delivery."
+              >
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={form.phone}
+                  invalid={Boolean(errors.phone)}
+                  onChange={(e) => setForm({ phone: e.target.value })}
+                  placeholder="+91 98450 12345"
+                />
+              </Field>
+            </div>
+          )}
 
           <p className="mt-4 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12px] leading-relaxed text-ink-600">
             <Info size={13} className="mt-px shrink-0 text-brand-600" />
@@ -149,8 +179,8 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
                 >
                   Sign in
                 </Link>{" "}
-                to use your saved addresses and keep this order in your history. You can also carry
-                on as a guest — we will still email you the invoice.
+                to use your saved addresses. An account is needed to place the order — you can
+                create one at the last step, and everything you enter along the way is kept.
               </span>
             )}
           </p>

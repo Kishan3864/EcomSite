@@ -12,7 +12,7 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
-import type { PlaceOrderInput } from "@/services/commerce";
+import { saveAddress, type PlaceOrderInput } from "@/services/commerce";
 import type { StorefrontConfig } from "@/services/storefront-config";
 
 /* ------------------------------------------------------------------ *
@@ -89,6 +89,8 @@ export interface StoreState {
   recent: RecentItem[];
   /** Signed in: the customer's saved addresses. Guest: this browser's drafts. */
   addresses: Address[];
+  /** Addresses typed here that no account has stored yet. Never dropped. */
+  addressSync: Address[];
   customer: StoreCustomer | null;
   /** Set at the review step, consumed by the processing screen. */
   pendingCheckout: PendingCheckout | null;
@@ -106,6 +108,7 @@ const INITIAL: StoreState = {
   wishlist: [],
   recent: [],
   addresses: [],
+  addressSync: [],
   customer: null,
   pendingCheckout: null,
   coupon: null,
@@ -138,6 +141,8 @@ type Action =
   | { type: "address/add"; address: Address }
   | { type: "address/update"; address: Address }
   | { type: "address/remove"; id: string }
+  | { type: "address/sync"; address: Address }
+  | { type: "address/synced"; sent: Address; id: string | null }
   | { type: "coupon/set"; code: string | null }
   | { type: "checkout/patch"; patch: Partial<CheckoutDraft> }
   | { type: "checkout/stage"; pending: PendingCheckout }
@@ -151,12 +156,29 @@ function lineKey(productId: string, variantKey?: string) {
   return variantKey ? `${productId}::${variantKey}` : productId;
 }
 
+/** Close enough to be the same doorstep, whatever ids the two copies carry. */
+function sameAddress(a: Address, b: Address) {
+  return (
+    a.pincode === b.pincode &&
+    a.line1.trim().toLowerCase() === b.line1.trim().toLowerCase() &&
+    a.fullName.trim().toLowerCase() === b.fullName.trim().toLowerCase()
+  );
+}
+
 function reducer(state: StoreState, action: Action): StoreState {
   switch (action.type) {
     case "hydrate": {
       const payload = { ...action.payload };
-      // If the session answered first, its addresses outrank the stored ones.
-      if (state.customer) delete payload.addresses;
+      // If the session answered first, the account's addresses are already
+      // here and outrank the stored ones — but anything typed on this browser
+      // and not yet saved still belongs beside them.
+      if (state.customer && payload.addresses) {
+        const known = new Set(state.addresses.map((a) => a.id));
+        payload.addresses = [
+          ...state.addresses,
+          ...(payload.addressSync ?? []).filter((a) => !known.has(a.id)),
+        ];
+      }
       return { ...state, ...payload, hydrated: true };
     }
 
@@ -279,12 +301,46 @@ function reducer(state: StoreState, action: Action): StoreState {
       return {
         ...state,
         addresses,
+        addressSync: state.addressSync.filter((a) => a.id !== action.id),
         checkout: {
           ...state.checkout,
           addressId:
             state.checkout.addressId === action.id
               ? (addresses[0]?.id ?? null)
               : state.checkout.addressId,
+        },
+      };
+    }
+
+    // An address typed into the checkout belongs on the account as well. A
+    // guest's waits here until they have one to save it to. Only the latest
+    // version of each is worth keeping — an edit supersedes what it changed.
+    case "address/sync":
+      return {
+        ...state,
+        addressSync: [
+          ...state.addressSync.filter((a) => a.id !== action.address.id),
+          action.address,
+        ],
+      };
+
+    // The account has stored what we sent. It answers with the id the row
+    // lives under, which everything still holding the local one now follows.
+    // A save that failed keeps its place in the queue: the next session check
+    // tries again rather than quietly dropping what was typed.
+    case "address/synced": {
+      const id = action.id;
+      if (!id) return state;
+      const addressSync = state.addressSync.filter((a) => a !== action.sent);
+      const localId = action.sent.id;
+      if (id === localId) return { ...state, addressSync };
+      return {
+        ...state,
+        addresses: state.addresses.map((a) => (a.id === localId ? { ...a, id } : a)),
+        addressSync: addressSync.map((a) => (a.id === localId ? { ...a, id } : a)),
+        checkout: {
+          ...state.checkout,
+          addressId: state.checkout.addressId === localId ? id : state.checkout.addressId,
         },
       };
     }
@@ -313,18 +369,54 @@ function reducer(state: StoreState, action: Action): StoreState {
       };
 
     case "session/set": {
-      if (!action.customer) return { ...state, customer: null, sessionChecked: true };
-      // A signed-in customer's addresses come from their account, not this
-      // browser; the checkout selection follows whichever is default.
+      if (!action.customer) {
+        if (!state.customer) return { ...state, sessionChecked: true };
+        // Signing out takes the account's addresses with it — leaving them
+        // here would show them to whoever signs in next, and anything still
+        // queued would be copied onto that account.
+        return {
+          ...state,
+          customer: null,
+          addresses: [],
+          addressSync: [],
+          checkout: { ...state.checkout, addressId: null },
+          sessionChecked: true,
+        };
+      }
+      // The account's rows replace whatever this browser was holding, except
+      // for addresses typed here that it has not stored yet: those are kept,
+      // and an edit still on its way outranks the row it will overwrite.
+      const stored = new Set(action.addresses.map((a) => a.id));
+      // A queued address belongs to whoever typed it. Another account signing
+      // in on this browser does not inherit it.
+      const queued =
+        state.customer && state.customer.id !== action.customer.id ? [] : state.addressSync;
+      const pending = new Map(queued.map((a) => [a.id, a]));
+      // Typed the address they already had saved: it is the same place, so it
+      // is the account's copy they carry on with rather than a second row.
+      const already = new Map<string, string>();
+      for (const draft of queued) {
+        if (stored.has(draft.id)) continue;
+        const match = action.addresses.find((row) => sameAddress(row, draft));
+        if (match) already.set(draft.id, match.id);
+      }
+      const addressSync = queued.filter((a) => !already.has(a.id));
+      const addresses = [
+        ...action.addresses.map((a) => pending.get(a.id) ?? a),
+        ...addressSync.filter((a) => !stored.has(a.id)),
+      ];
+      const selected = state.checkout.addressId;
       const addressId =
-        action.addresses.find((a) => a.id === state.checkout.addressId)?.id ??
-        action.addresses.find((a) => a.isDefault)?.id ??
-        action.addresses[0]?.id ??
+        (selected ? already.get(selected) : null) ??
+        addresses.find((a) => a.id === selected)?.id ??
+        addresses.find((a) => a.isDefault)?.id ??
+        addresses[0]?.id ??
         null;
       return {
         ...state,
         customer: action.customer,
-        addresses: action.addresses,
+        addresses,
+        addressSync,
         checkout: { ...state.checkout, addressId },
         sessionChecked: true,
       };
@@ -360,6 +452,7 @@ const PERSISTED: (keyof StoreState)[] = [
   "wishlist",
   "recent",
   "addresses",
+  "addressSync",
   "pendingCheckout",
   "coupon",
   "checkout",
@@ -416,17 +509,52 @@ export function StoreProvider({
 
   useEffect(() => {
     const abort = new AbortController();
-    fetch("/api/me", { signal: abort.signal, cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: { customer: StoreCustomer | null; addresses: Address[] } | null) => {
-        if (!data) return;
-        dispatch({ type: "session/set", customer: data.customer, addresses: data.addresses });
-      })
-      .catch(() => {
-        /* offline or aborted — the guest experience still works */
-      });
-    return () => abort.abort();
+    let retry: ReturnType<typeof setTimeout> | undefined;
+
+    // A check that never answers leaves the checkout unable to tell a signed-in
+    // customer from a guest, so a blip is tried again rather than left to sit.
+    const check = (attempt: number) => {
+      fetch("/api/me", { signal: abort.signal, cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error("session unavailable"))))
+        .then((data: { customer: StoreCustomer | null; addresses: Address[] }) => {
+          dispatch({ type: "session/set", customer: data.customer, addresses: data.addresses });
+        })
+        .catch(() => {
+          if (abort.signal.aborted || attempt >= 2) return;
+          retry = setTimeout(() => check(attempt + 1), 1200 * (attempt + 1));
+        });
+    };
+
+    check(0);
+    return () => {
+      abort.abort();
+      clearTimeout(retry);
+    };
   }, [sessionKey]);
+
+  /**
+   * Addresses typed into the checkout, saved to the account they belong to —
+   * whether they were typed before signing in or after. One request at a time
+   * per address, so a second edit waits rather than creating a second row.
+   * A save that fails leaves the address alone; it is still usable, and the
+   * next session check queues it again.
+   */
+  const syncing = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (!state.customer) return;
+    for (const address of state.addressSync) {
+      if (syncing.current.has(address.id)) continue;
+      syncing.current.add(address.id);
+      const settle = (id: string | null) => {
+        syncing.current.delete(address.id);
+        dispatch({ type: "address/synced", sent: address, id });
+      };
+      saveAddress(address)
+        .then((result) => settle(result.ok ? result.data.id : null))
+        .catch(() => settle(null));
+    }
+  }, [state.customer, state.addressSync]);
 
   useEffect(() => {
     if (!state.hydrated || !loaded.current) return;

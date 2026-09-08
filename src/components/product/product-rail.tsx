@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
 import { ProductCard } from "./product-card";
 import { SectionHeader } from "@/components/ui/primitives";
+import { RailScroller } from "@/components/ui/rail-scroller";
 import { Reveal } from "@/components/ui/motion";
 import { cn } from "@/lib/utils";
 
@@ -29,18 +30,21 @@ export function ProductRail({
 
   return (
     <section className={cn("container-page py-10 sm:py-14", className)}>
-      <Reveal>
-        <SectionHeader
-          eyebrow={eyebrow}
-          title={title}
-          description={description}
-          href={href}
-          linkLabel={linkLabel}
-          className="mb-6"
-        />
-      </Reveal>
-
-      <div className="rail -mx-4 px-4 pb-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <RailScroller
+        label="products"
+        railClassName="-mx-4 px-4 pb-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        header={
+          <Reveal>
+            <SectionHeader
+              eyebrow={eyebrow}
+              title={title}
+              description={description}
+              href={href}
+              linkLabel={linkLabel}
+            />
+          </Reveal>
+        }
+      >
         {products.map((product, i) => (
           <ProductCard
             key={product.id}
@@ -63,7 +67,7 @@ export function ProductRail({
             </span>
           </Link>
         )}
-      </div>
+      </RailScroller>
     </section>
   );
 }

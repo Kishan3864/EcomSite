@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { AlertTriangle, Check, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Check, Loader2, Lock, ShieldCheck, UserRound } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { useStore } from "@/store/store";
 import { placeOrder } from "@/services/commerce";
 import { cn, formatINR } from "@/lib/utils";
@@ -21,7 +21,7 @@ const STAGES = [
 
 type Outcome =
   | { ok: true; orderId: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; field?: string };
 
 export function ProcessingClient() {
   const [stage, setStage] = useState(0);
@@ -32,6 +32,8 @@ export function ProcessingClient() {
 
   const amount = pendingCheckout?.amount ?? null;
   const failed = outcome && !outcome.ok ? outcome.error : null;
+  // The session can lapse between the review step and this one.
+  const needsAccount = Boolean(outcome && !outcome.ok && outcome.field === "account");
   // "Confirmed" means the order really exists, not just that the animation ran.
   const complete = Boolean(outcome?.ok) && stage >= STAGES.length;
   // While the server is still working, hold the last step on its spinner.
@@ -73,7 +75,7 @@ export function ProcessingClient() {
         setOutcome(
           result.ok
             ? { ok: true, orderId: result.data.orderId }
-            : { ok: false, error: result.error },
+            : { ok: false, error: result.error, field: result.field },
         ),
       )
       .catch(() =>
@@ -95,32 +97,56 @@ export function ProcessingClient() {
     return (
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
         <div className="w-full max-w-md rounded-2xl border border-hairline bg-surface p-7 text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sale-50 text-sale-600">
-            <AlertTriangle size={26} />
+          <span
+            className={cn(
+              "mx-auto flex h-14 w-14 items-center justify-center rounded-2xl",
+              needsAccount ? "bg-brand-50 text-brand-700" : "bg-sale-50 text-sale-600",
+            )}
+          >
+            {needsAccount ? <UserRound size={26} /> : <AlertTriangle size={26} />}
           </span>
           <h1 className="mt-5 font-display text-2xl tracking-[-0.02em] text-ink-950">
-            We could not place this order
+            {needsAccount ? "An account is needed first" : "We could not place this order"}
           </h1>
           <p className="mx-auto mt-2 max-w-sm text-[13.5px] leading-relaxed text-ink-600">{failed}</p>
           <p className="mt-3 text-[12px] text-ink-500">
             Nothing has been charged and your bag is exactly as you left it.
           </p>
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
-            <Button
-              size="md"
-              onClick={() => {
-                dispatch({ type: "checkout/abort" });
-                router.push("/cart");
-              }}
-            >
-              Back to my bag
-            </Button>
-            <Link
-              href="/contact"
-              className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-medium text-ink-600 hover:text-ink-900"
-            >
-              Contact support
-            </Link>
+            {needsAccount ? (
+              <>
+                <Link
+                  href="/register?next=/checkout/review"
+                  className={buttonClasses("primary", "md")}
+                >
+                  Create an account
+                </Link>
+                <Link
+                  href="/login?next=/checkout/review"
+                  className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-medium text-ink-600 hover:text-ink-900"
+                >
+                  Sign in instead
+                </Link>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="md"
+                  onClick={() => {
+                    dispatch({ type: "checkout/abort" });
+                    router.push("/cart");
+                  }}
+                >
+                  Back to my bag
+                </Button>
+                <Link
+                  href="/contact"
+                  className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-medium text-ink-600 hover:text-ink-900"
+                >
+                  Contact support
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useStore } from "@/store/store";
 import { Price, SectionHeader } from "@/components/ui/primitives";
+import { RailScroller } from "@/components/ui/rail-scroller";
 
 export function RecentlyViewed({
   title = "Recently viewed",
@@ -20,12 +21,11 @@ export function RecentlyViewed({
 
   return (
     <section className="container-page py-10 sm:py-14">
-      <SectionHeader
-        eyebrow="Pick up where you left off"
-        title={title}
-        className="mb-6"
-      />
-      <div className="rail -mx-4 px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <RailScroller
+        label="products"
+        railClassName="-mx-4 px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        header={<SectionHeader eyebrow="Pick up where you left off" title={title} />}
+      >
         {items.map((item) => (
           <Link
             key={item.productId}
@@ -47,7 +47,7 @@ export function RecentlyViewed({
             <Price price={item.price} mrp={item.mrp} size="sm" className="mt-1" />
           </Link>
         ))}
-      </div>
+      </RailScroller>
     </section>
   );
 }

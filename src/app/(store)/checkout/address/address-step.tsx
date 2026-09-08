@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
@@ -13,15 +13,19 @@ import { Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { useStore } from "@/store/store";
+import { removeAddress } from "@/services/commerce";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
 
 
 export function AddressStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, config, dispatch, hydrated } = useStore();
+  const { cart, coupon, checkout, addresses, customer, config, dispatch, hydrated } = useStore();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Removing one has to reach the account too, or the next session check
+  // quietly puts it back.
+  const [, startTransition] = useTransition();
 
   // A customer who deep-links into this step still needs contact details first.
   useEffect(() => {
@@ -74,6 +78,7 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
                     onCancel={() => setEditing(null)}
                     onSave={(updated) => {
                       dispatch({ type: "address/update", address: updated });
+                      dispatch({ type: "address/sync", address: updated });
                       setEditing(null);
                     }}
                   />
@@ -114,7 +119,24 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
                       <Button
                         size="xs"
                         variant="ghost"
-                        onClick={() => dispatch({ type: "address/remove", id: address.id })}
+                        onClick={() => {
+                          setError(null);
+                          if (!customer) {
+                            dispatch({ type: "address/remove", id: address.id });
+                            return;
+                          }
+                          // Only once the account agrees: dropping it here first
+                          // would move the delivery choice to another address and
+                          // then hand the customer back one that still exists.
+                          startTransition(async () => {
+                            const result = await removeAddress(address.id);
+                            if (!result.ok) {
+                              setError(result.error);
+                              return;
+                            }
+                            dispatch({ type: "address/remove", id: address.id });
+                          });
+                        }}
                       >
                         <Trash2 size={12} /> Remove
                       </Button>
@@ -144,6 +166,7 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
                   onCancel={() => setAdding(false)}
                   onSave={(address) => {
                     dispatch({ type: "address/add", address });
+                    dispatch({ type: "address/sync", address });
                     setAdding(false);
                     setError(null);
                   }}

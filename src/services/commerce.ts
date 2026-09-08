@@ -16,6 +16,7 @@ import { passwordProblem } from "@/lib/auth/password";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
 import { getOffer } from "./catalog";
+import { safeNextPath } from "@/lib/auth/oauth";
 import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
 
@@ -57,6 +58,16 @@ async function nextOrderNumber(tx: Prisma.TransactionClient) {
 export async function placeOrder(
   input: PlaceOrderInput,
 ): Promise<ActionResult<{ orderId: string; number: string }>> {
+  // Orders belong to an account: it is where tracking, invoices and returns
+  // live, so there is nowhere to put an order placed without one.
+  const session = await getCustomerSession();
+  if (!session)
+    return {
+      ok: false,
+      error: "Create an account or sign in to place this order. Nothing you have entered is lost.",
+      field: "account",
+    };
+
   if (!input.lines?.length) return { ok: false, error: "Your bag is empty." };
   if (!input.contact?.name?.trim()) return { ok: false, error: "Contact name is required.", field: "name" };
   if (!EMAIL.test(input.contact.email ?? "")) return { ok: false, error: "Enter a valid email.", field: "email" };
@@ -66,7 +77,6 @@ export async function placeOrder(
     return { ok: false, error: "Delivery address is incomplete." };
 
   const settings = await getSettings();
-  const session = await getCustomerSession();
 
   // Re-price every line from the catalogue.
   const products = await db.product.findMany({
@@ -158,17 +168,6 @@ export async function placeOrder(
   const method = input.paymentMethod.toUpperCase() as "UPI" | "CARD" | "NETBANKING" | "WALLET" | "COD";
   const email = input.contact.email.toLowerCase().trim();
 
-  // Guests get a customer row without a password so support can find them and
-  // so registering later with the same email claims their history.
-  const customer = session
-    ? { id: session.id }
-    : await db.customer.upsert({
-        where: { email },
-        create: { email, name: input.contact.name.trim(), phone: input.contact.phone.trim() },
-        update: {},
-        select: { id: true },
-      });
-
   let created: { id: string; number: string } | null = null;
   for (let attempt = 0; attempt < 3 && !created; attempt++) {
     try {
@@ -177,7 +176,7 @@ export async function placeOrder(
         const order = await tx.order.create({
           data: {
             number,
-            customerId: customer.id,
+            customerId: session.id,
             contactName: input.contact.name.trim(),
             contactEmail: email,
             contactPhone: input.contact.phone.trim(),
@@ -262,6 +261,19 @@ export async function placeOrder(
           await tx.offer.update({ where: { code: coupon.code }, data: { usedCount: { increment: 1 } } });
         }
 
+        // How they paid this time becomes the default next time, so a returning
+        // customer lands on the payment step with their choice already made.
+        await tx.customer.update({
+          where: { id: session.id },
+          data: {
+            preferredPayment: method,
+            phone: input.contact.phone.trim(),
+            ...(method === "UPI" && input.paymentDetail?.includes("@")
+              ? { upiId: input.paymentDetail.trim() }
+              : {}),
+          },
+        });
+
         return order;
       });
     } catch (error) {
@@ -271,8 +283,6 @@ export async function placeOrder(
   }
 
   if (!created) return { ok: false, error: "We could not place the order. Please try again." };
-
-  if (!session) await rememberGuestOrder(created.id);
 
   revalidatePath("/admin", "layout");
   revalidatePath("/", "layout");
@@ -531,8 +541,10 @@ export interface AuthFormState {
 }
 
 function safeNext(raw: FormDataEntryValue | null, fallback: string) {
-  const value = typeof raw === "string" ? raw : "";
-  return value.startsWith("/") && !value.startsWith("//") ? value : fallback;
+  // Shared with the OAuth callback so both doors sanitise the same way: a
+  // prefix check alone lets `/\evil.com` through, which browsers normalise
+  // into a protocol-relative URL and follow off-site.
+  return safeNextPath(typeof raw === "string" ? raw : null, fallback);
 }
 
 export async function loginAction(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {

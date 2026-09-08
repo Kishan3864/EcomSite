@@ -4,18 +4,22 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Gift, Lock, MapPin, Pencil, Truck, Wallet } from "lucide-react";
+import { Gift, Lock, MapPin, Pencil, Truck, UserRound, Wallet } from "lucide-react";
 import type { Offer } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Price } from "@/components/ui/primitives";
 import { useStore } from "@/store/store";
 import { computeTotals, estimatedDelivery, evaluateCoupon } from "@/lib/pricing";
 import { formatDate, formatINR } from "@/lib/utils";
 
+const REGISTER_HREF = "/register?next=/checkout/review";
+const SIGN_IN_HREF = "/login?next=/checkout/review";
+
 export function ReviewStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, config, customer, dispatch, hydrated } = useStore();
+  const { cart, coupon, checkout, addresses, config, customer, dispatch, hydrated, sessionChecked } =
+    useStore();
   const router = useRouter();
   const [placing, setPlacing] = useState(false);
 
@@ -42,12 +46,23 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
 
   const eta = estimatedDelivery(cart, delivery);
 
+  const needsAccount = sessionChecked && !customer;
+
   // Everything below is a proposal. The order is priced, stock-checked and
   // written by the server on the next screen; nothing here is trusted.
-  function placeOrder() {
-    if (!address || !payment) return;
-    const contact = checkout.contact ??
-      (customer ? { name: customer.name, email: customer.email, phone: customer.phone } : null);
+  function pay() {
+    // Until `/api/me` has answered we do not know who this is, and guessing
+    // would send a customer who is signed in off to the register page.
+    if (!address || !payment || !sessionChecked) return;
+    if (!customer) {
+      router.push(REGISTER_HREF);
+      return;
+    }
+    const contact =
+      checkout.contact ??
+      (customer.phone
+        ? { name: customer.name, email: customer.email, phone: customer.phone }
+        : null);
     if (!contact) {
       router.push("/checkout/contact");
       return;
@@ -73,6 +88,14 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
     });
     router.push("/checkout/processing");
   }
+
+  const payLabel = placing
+    ? "Placing order…"
+    : !sessionChecked
+      ? "Checking your account…"
+      : needsAccount
+        ? "Create an account to pay"
+        : `Pay ${formatINR(totals.total)}`;
 
   const summaryRows = [
     {
@@ -142,14 +165,43 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
             totals={totals}
             lines={cart}
             delivery={delivery}
-            cta={placing ? "Placing order…" : `Pay ${formatINR(totals.total)}`}
-            onCta={placeOrder}
+            cta={payLabel}
+            ctaHref={needsAccount ? REGISTER_HREF : undefined}
+            onCta={pay}
             footnote="256-bit encrypted. Demo checkout — no money moves."
           />
         </>
       }
     >
       <div className="space-y-4">
+        {needsAccount && (
+          <section className="rounded-xl border border-brand-200 bg-brand-50 p-5">
+            <h2 className="flex items-center gap-2 text-[14px] font-semibold text-ink-950">
+              <UserRound size={16} className="text-brand-700" />
+              You need an account to place this order
+            </h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-ink-700">
+              Your order history, tracking and returns all live in your account, so we ask for one
+              before the payment goes through. Creating it takes a minute.
+            </p>
+            <p className="mt-2 text-[13px] leading-relaxed text-ink-600">
+              Nothing here is lost. Your bag, address, delivery and payment choices stay exactly as
+              they are and we bring you back to this page.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <Link href={REGISTER_HREF} className={buttonClasses("primary", "md")}>
+                Create an account
+              </Link>
+              <Link
+                href={SIGN_IN_HREF}
+                className="text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+              >
+                I already have one
+              </Link>
+            </div>
+          </section>
+        )}
+
         <div className="grid gap-3 sm:grid-cols-3">
           {summaryRows.map((row) => (
             <section key={row.title} className="rounded-xl border border-hairline bg-surface p-4">
@@ -219,16 +271,23 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
             </Link>
             .
           </p>
-          <Button
-            size="lg"
-            className="shrink-0"
-            loading={placing}
-            onClick={placeOrder}
-            disabled={!address || !payment}
-          >
-            <Lock size={16} />
-            Pay {formatINR(totals.total)}
-          </Button>
+          {needsAccount ? (
+            <Link href={REGISTER_HREF} className={buttonClasses("primary", "lg", "shrink-0")}>
+              <UserRound size={16} />
+              Create an account to pay
+            </Link>
+          ) : (
+            <Button
+              size="lg"
+              className="shrink-0"
+              loading={placing || !sessionChecked}
+              onClick={pay}
+              disabled={!address || !payment}
+            >
+              <Lock size={16} />
+              Pay {formatINR(totals.total)}
+            </Button>
+          )}
         </div>
 
         <Link

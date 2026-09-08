@@ -1,20 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import {
+  ChevronDown,
   ChevronRight,
+  CreditCard,
   Heart,
+  LifeBuoy,
+  LogIn,
+  LogOut,
+  MapPin,
   Menu,
   Package,
+  RotateCcw,
   Search,
   ShoppingBag,
   Sparkles,
+  Truck,
   User,
+  UserPlus,
+  UserRound,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -23,9 +33,32 @@ import { SearchBar } from "./search-bar";
 import type { SearchDoc } from "@/lib/search-index";
 import type { Category } from "@/lib/types";
 import { Drawer } from "@/components/ui/overlay";
+import { logoutAction } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cartCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
+
+/** Everything the account owns, in the order a shopper is likely to want it. */
+const ACCOUNT_LINKS = [
+  { href: "/account", label: "My account", icon: UserRound },
+  { href: "/account/orders", label: "My orders", icon: Package },
+  { href: "/track", label: "Track an order", icon: Truck },
+  { href: "/account/addresses", label: "Saved addresses", icon: MapPin },
+  { href: "/account/settings#payment", label: "Payment preferences", icon: CreditCard },
+  { href: "/account/returns", label: "Returns and refunds", icon: RotateCcw },
+  { href: "/wishlist", label: "Wishlist", icon: Heart },
+  { href: "/contact", label: "Help and support", icon: LifeBuoy },
+];
+
+const GUEST_LINKS = [
+  { href: "/login", label: "Sign in", icon: LogIn },
+  { href: "/register", label: "Create an account", icon: UserPlus },
+];
+
+const GUEST_HELP_LINKS = [
+  { href: "/track", label: "Track an order", icon: Truck },
+  { href: "/contact", label: "Help and support", icon: LifeBuoy },
+];
 
 export function HeaderClient({
   searchDocs,
@@ -42,7 +75,7 @@ export function HeaderClient({
   const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
   const [searchOpenAt, setSearchOpenAt] = useState<string | null>(null);
   const pathname = usePathname();
-  const { cart, wishlist, customer, sessionChecked, hydrated, openCartDrawer } = useStore();
+  const { cart, wishlist, hydrated, openCartDrawer } = useStore();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -74,12 +107,7 @@ export function HeaderClient({
               <SearchBar docs={searchDocs} />
             </div>
             <nav className="flex items-center gap-1" aria-label="Account and cart">
-              <HeaderAction
-                href="/account"
-                icon={<User size={19} />}
-                label={customer ? `Hi, ${customer.name.split(" ")[0]}` : "Account"}
-                sublabel={customer ? "Your orders" : sessionChecked ? "Sign in" : ""}
-              />
+              <AccountMenu />
               <HeaderAction
                 href="/wishlist"
                 icon={<Heart size={19} />}
@@ -237,6 +265,239 @@ function HeaderAction({
   );
 }
 
+function MenuLink({
+  href,
+  label,
+  icon: Icon,
+  onSelect,
+}: {
+  href: string;
+  label: string;
+  icon: typeof User;
+  onSelect: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      role="menuitem"
+      onClick={onSelect}
+      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-950 focus-visible:bg-ink-50 focus-visible:text-ink-950"
+    >
+      <Icon size={15} className="text-ink-400" />
+      {label}
+    </Link>
+  );
+}
+
+/**
+ * Signing out redirects to the home page, which is not one of the routes the
+ * store re-checks the session on, so the customer is cleared here as well —
+ * otherwise the header goes on greeting somebody who has already left.
+ */
+function SignOutForm({
+  className,
+  role,
+  onSignOut,
+  children,
+}: {
+  className: string;
+  role?: "menuitem";
+  onSignOut: () => void;
+  children: React.ReactNode;
+}) {
+  const { dispatch } = useStore();
+
+  return (
+    <form
+      action={logoutAction}
+      role="none"
+      onSubmit={() => {
+        dispatch({ type: "session/set", customer: null, addresses: [] });
+        onSignOut();
+      }}
+    >
+      <button type="submit" role={role} className={className}>
+        {children}
+      </button>
+    </form>
+  );
+}
+
+function AccountMenu() {
+  const { customer, sessionChecked } = useStore();
+  const pathname = usePathname();
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const wrapper = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const reduce = usePrefersReducedMotion();
+
+  const open = openAt === pathname;
+  const close = () => setOpenAt(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) {
+      if (!wrapper.current?.contains(e.target as Node)) setOpenAt(null);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      setOpenAt(null);
+      trigger.current?.focus();
+    }
+    document.addEventListener("mousedown", onDown);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  // Landing on the first item means the arrow keys have somewhere to start and
+  // a keyboard user is never left with focus on a trigger that has moved on.
+  useEffect(() => {
+    if (!open) return;
+    wrapper.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+  }, [open, sessionChecked]);
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) return;
+    if (!open) {
+      if (e.key !== "ArrowDown") return;
+      e.preventDefault();
+      setOpenAt(pathname);
+      return;
+    }
+
+    const items = Array.from(
+      wrapper.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+    );
+    if (items.length === 0) return;
+
+    e.preventDefault();
+    const last = items.length - 1;
+    const at = items.indexOf(document.activeElement as HTMLElement);
+    const next =
+      e.key === "Home"
+        ? 0
+        : e.key === "End"
+          ? last
+          : e.key === "ArrowDown"
+            ? at >= last
+              ? 0
+              : at + 1
+            : at <= 0
+              ? last
+              : at - 1;
+    items[next].focus();
+  }
+
+  return (
+    <div ref={wrapper} className="relative" onKeyDown={onKeyDown}>
+      <button
+        ref={trigger}
+        type="button"
+        onClick={() => setOpenAt(open ? null : pathname)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? "account-menu" : undefined}
+        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-ink-100"
+      >
+        <span className="text-ink-700">
+          <User size={19} />
+        </span>
+        <span className="sr-only xl:hidden">Account</span>
+        <span className="hidden xl:block">
+          <span className="block text-[10px] uppercase tracking-[0.1em] text-ink-400">
+            {customer ? "Your account" : sessionChecked ? "Sign in" : ""}
+          </span>
+          <span className="block text-[13px] font-semibold text-ink-900">
+            {customer ? `Hi, ${customer.name.split(" ")[0]}` : "Account"}
+          </span>
+        </span>
+        <ChevronDown
+          size={13}
+          className={cn(
+            "hidden text-ink-400 transition-transform duration-200 xl:block",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id="account-menu"
+            role="menu"
+            aria-label="Your account"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-hairline bg-surface shadow-xl"
+          >
+            {!sessionChecked ? (
+              <p className="px-4 py-6 text-center text-[12.5px] text-ink-500">
+                Checking your session&hellip;
+              </p>
+            ) : customer ? (
+              <>
+                <div role="none" className="flex items-center gap-3 border-b border-hairline px-4 py-3.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-900 text-[12px] font-bold text-white">
+                    {customer.avatarUrl ? (
+                      // Avatars come from the sign-in provider, whose hosts are
+                      // not in the next/image remote patterns.
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={customer.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      customer.name.slice(0, 1).toUpperCase()
+                    )}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[13.5px] font-semibold text-ink-950">
+                      {customer.name}
+                    </span>
+                    <span className="block truncate text-[11.5px] text-ink-500">
+                      {customer.email}
+                    </span>
+                  </span>
+                </div>
+                <div role="none" className="p-1.5">
+                  {ACCOUNT_LINKS.map((link) => (
+                    <MenuLink key={link.href} {...link} onSelect={close} />
+                  ))}
+                </div>
+                <div role="none" className="border-t border-hairline p-1.5">
+                  <SignOutForm
+                    role="menuitem"
+                    onSignOut={close}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600 focus-visible:bg-ink-50"
+                  >
+                    <LogOut size={15} className="text-ink-400" />
+                    Sign out
+                  </SignOutForm>
+                </div>
+              </>
+            ) : (
+              <>
+                <div role="none" className="p-1.5">
+                  {GUEST_LINKS.map((link) => (
+                    <MenuLink key={link.href} {...link} onSelect={close} />
+                  ))}
+                </div>
+                <div role="none" className="border-t border-hairline p-1.5">
+                  {GUEST_HELP_LINKS.map((link) => (
+                    <MenuLink key={link.href} {...link} onSelect={close} />
+                  ))}
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function AnnouncementBar({ offerCount }: { offerCount: number }) {
   const { config } = useStore();
   const items = [
@@ -280,6 +541,26 @@ function MobileMenu({
   const [expanded, setExpanded] = useState<string | null>(null);
   const { wishlist, customer, hydrated } = useStore();
 
+  const links = [
+    { href: "/offers", label: "Offers and deals" },
+    ...(customer
+      ? [
+          { href: "/account", label: "My account" },
+          { href: "/account/orders", label: "My orders" },
+          { href: "/track", label: "Track an order" },
+          { href: "/account/addresses", label: "Saved addresses" },
+          { href: "/account/settings#payment", label: "Payment preferences" },
+          { href: "/account/returns", label: "Returns and refunds" },
+        ]
+      : [{ href: "/track", label: "Track an order" }]),
+    {
+      href: "/wishlist",
+      label: `Wishlist${hydrated && wishlist.length ? ` (${wishlist.length})` : ""}`,
+    },
+    { href: "/contact", label: "Help and support" },
+    { href: "/faq", label: "FAQ" },
+  ];
+
   return (
     <Drawer open={open} onClose={onClose} side="left" className="max-w-[330px]">
       <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
@@ -312,10 +593,10 @@ function MobileMenu({
                 My account
               </Link>
               <Link
-                href="/account/orders"
+                href="/account/settings"
                 className="flex-1 rounded-lg border border-white/25 px-3 py-2 text-center text-[13px] font-semibold text-white"
               >
-                My orders
+                Settings
               </Link>
             </>
           ) : (
@@ -403,15 +684,7 @@ function MobileMenu({
           Your account
         </p>
         <ul className="space-y-0.5">
-          {[
-            { href: "/offers", label: "Offers and deals" },
-            { href: "/account/orders", label: "My orders" },
-            { href: "/wishlist", label: `Wishlist${hydrated && wishlist.length ? ` (${wishlist.length})` : ""}` },
-            { href: "/track", label: "Track an order" },
-            { href: "/account/returns", label: "Returns" },
-            { href: "/contact", label: "Contact us" },
-            { href: "/faq", label: "Help and FAQ" },
-          ].map((item) => (
+          {links.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
@@ -422,6 +695,16 @@ function MobileMenu({
               </Link>
             </li>
           ))}
+          {customer && (
+            <li>
+              <SignOutForm
+                onSignOut={onClose}
+                className="block w-full rounded-lg px-2 py-2.5 text-left text-sm text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
+              >
+                Sign out
+              </SignOutForm>
+            </li>
+          )}
         </ul>
       </nav>
     </Drawer>

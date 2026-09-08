@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BadgePercent, Copy } from "lucide-react";
 import type { Banner, Brand, Category, Offer, PromoTile } from "@/lib/types";
 import { SectionHeader } from "@/components/ui/primitives";
+import { RailScroller } from "@/components/ui/rail-scroller";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/ui/motion";
 import { buttonClasses } from "@/components/ui/button";
 import { cn, formatINR } from "@/lib/utils";
@@ -169,18 +170,21 @@ export function FeatureBanner({ banner }: { banner: Banner }) {
 export function OfferCards({ offers }: { offers: Offer[] }) {
   return (
     <section className="container-page py-10 sm:py-14">
-      <Reveal>
-        <SectionHeader
-          eyebrow="Save more"
-          title="Coupons live right now"
-          description="Apply any of these at checkout. Bank offers stack with product discounts."
-          href="/offers"
-          linkLabel="All offers"
-          className="mb-6"
-        />
-      </Reveal>
-
-      <div className="rail -mx-4 px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <RailScroller
+        label="offers"
+        railClassName="-mx-4 px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        header={
+          <Reveal>
+            <SectionHeader
+              eyebrow="Save more"
+              title="Coupons live right now"
+              description="Apply any of these at checkout. Bank offers stack with product discounts."
+              href="/offers"
+              linkLabel="All offers"
+            />
+          </Reveal>
+        }
+      >
         {offers.map((offer) => (
           <article
             key={offer.id}
@@ -213,7 +217,7 @@ export function OfferCards({ offers }: { offers: Offer[] }) {
             </p>
           </article>
         ))}
-      </div>
+      </RailScroller>
     </section>
   );
 }
