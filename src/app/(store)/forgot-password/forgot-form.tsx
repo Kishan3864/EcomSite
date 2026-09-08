@@ -1,33 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
 import Link from "next/link";
+import { useFormStatus } from "react-dom";
 import { motion } from "motion/react";
-import { ArrowLeft, MailCheck, Send } from "lucide-react";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { ArrowLeft, Headset, Send } from "lucide-react";
+import { buttonClasses, Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
+import { requestPasswordHelp } from "@/services/commerce";
+import { BRAND } from "@/components/brand/logo";
 
+function SendButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" size="lg" className="w-full" loading={pending}>
+      <Send size={16} /> {pending ? "Sending…" : "Ask support to reset it"}
+    </Button>
+  );
+}
+
+/**
+ * No automated reset email exists yet, so this raises a support request rather
+ * than claiming to have sent a link nobody would receive.
+ */
 export function ForgotForm() {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [state, action] = useActionState(requestPasswordHelp, {});
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(email)) {
-      setError("Enter the email address on your account.");
-      return;
-    }
-    setError(null);
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSent(true);
-    }, 900);
-  }
-
-  if (sent) {
+  if (state.ok) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -36,24 +35,21 @@ export function ForgotForm() {
         className="rounded-xl border border-brand-200 bg-brand-50 p-6"
       >
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
-          <MailCheck size={20} />
+          <Headset size={20} />
         </span>
         <h2 className="mt-4 font-display text-xl tracking-[-0.015em] text-ink-950">
-          Check your inbox
+          Our team will get back to you
         </h2>
         <p className="mt-2 text-[13.5px] leading-relaxed text-ink-700">
-          If an account exists for <strong className="text-ink-950">{email}</strong>, we have sent a
-          reset link. It expires in 30 minutes.
+          If there is an account for that address, your request is with support now. They will
+          verify who you are and set a new password with you, usually within a few working hours.
         </p>
-        <p className="mt-3 text-[12.5px] text-ink-600">
-          Nothing arrived? Check spam, or{" "}
-          <button
-            onClick={() => setSent(false)}
-            className="font-semibold text-brand-700 underline-offset-2 hover:underline"
-          >
-            try a different address
-          </button>
-          .
+        <p className="mt-3 text-[12.5px] leading-relaxed text-ink-600">
+          In a hurry? Call{" "}
+          <a href={`tel:${BRAND.supportPhone}`} className="font-semibold text-brand-700 hover:underline">
+            {BRAND.supportPhone}
+          </a>{" "}
+          between 8am and 10pm, any day.
         </p>
         <Link href="/login" className={buttonClasses("outline", "md", "mt-5")}>
           <ArrowLeft size={15} /> Back to sign in
@@ -63,30 +59,31 @@ export function ForgotForm() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-5">
+    <form action={action} className="space-y-5">
       <Field
         label="Email address"
         htmlFor="forgot-email"
-        error={error ?? undefined}
-        hint="We will send a secure link to reset your password."
+        error={state.error}
+        hint="We will match it to your account and have support reset the password with you."
       >
         <Input
           id="forgot-email"
+          name="email"
           type="email"
           autoComplete="email"
-          value={email}
-          invalid={Boolean(error)}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setError(null);
-          }}
+          required
+          defaultValue={state.values?.email ?? ""}
+          invalid={Boolean(state.error)}
           placeholder="you@example.in"
         />
       </Field>
 
-      <Button type="submit" size="lg" className="w-full" loading={loading}>
-        <Send size={16} /> Send reset link
-      </Button>
+      <p className="rounded-lg bg-ink-50 p-3 text-[12px] leading-relaxed text-ink-600">
+        Automatic reset emails are not switched on yet, so a person handles this rather than a
+        link landing in your inbox.
+      </p>
+
+      <SendButton />
 
       <Link
         href="/login"

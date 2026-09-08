@@ -483,6 +483,44 @@ export async function trackOrderAction(
   redirect(`/track/${order.id}`);
 }
 
+/* --------------------------- Password help --------------------------- */
+
+export interface PasswordHelpState {
+  ok?: boolean;
+  error?: string;
+  values?: { email?: string };
+}
+
+/**
+ * There is no email provider wired up, so this cannot send a reset link and
+ * does not pretend to. It raises a support request that lands in the admin
+ * inbox, and the answer to the customer says exactly that. The reply is the
+ * same whether or not the account exists, so nobody can probe for addresses.
+ */
+export async function requestPasswordHelp(
+  _prev: PasswordHelpState,
+  formData: FormData,
+): Promise<PasswordHelpState> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!EMAIL.test(email))
+    return { error: "Enter the email address on your account.", values: { email } };
+
+  const customer = await db.customer.findUnique({ where: { email }, select: { id: true, name: true } });
+  if (customer) {
+    await db.contactMessage.create({
+      data: {
+        name: customer.name,
+        email,
+        topic: "Password reset",
+        message: "Asked for help signing in from the forgot-password page.",
+      },
+    });
+    revalidatePath("/admin/messages");
+  }
+
+  return { ok: true };
+}
+
 /* -------------------------------- Auth ------------------------------ */
 
 export interface AuthFormState {
