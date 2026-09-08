@@ -245,7 +245,7 @@ async function validateSubcategory(formData: FormData, categoryId: string, curre
   const imageUrl = str(formData, "imageUrl");
   const imageAlt = str(formData, "imageAlt") || name;
   const sortOrderRaw = str(formData, "sortOrder");
-  const isActive = formData.has("isActive") ? bool(formData, "isActive") : true;
+  const isActive = bool(formData, "isActive");
 
   if (name.length < 2) return { error: "Subcategory name is required.", field: "name" } as const;
   if (name.length > 60) return { error: "Keep the name under 60 characters.", field: "name" } as const;
