@@ -1,12 +1,11 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
-import { buttonClasses } from "@/components/ui/button";
 import { configuredProviders, type ProviderId } from "@/lib/auth/oauth";
 
 /** Brand marks, drawn inline — the shared social icons file has no login marks. */
 const MARKS: Record<ProviderId, () => ReactElement> = {
   google: () => (
-    <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
       <path
         fill="#4285f4"
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"
@@ -26,7 +25,7 @@ const MARKS: Record<ProviderId, () => ReactElement> = {
     </svg>
   ),
   facebook: () => (
-    <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
       <path
         fill="#1877f2"
         d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.5c-1.48 0-1.94.92-1.94 1.87v2.25h3.3l-.53 3.49h-2.77V24C19.61 23.1 24 18.1 24 12.07Z"
@@ -48,7 +47,7 @@ export function SocialSignIn({ next }: { next?: string }) {
 
   return (
     <div className="mb-7">
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {providers.map(({ id, label }) => {
           const Mark = MARKS[id];
           return (
@@ -57,9 +56,13 @@ export function SocialSignIn({ next }: { next?: string }) {
             <a
               key={id}
               href={`/api/auth/${id}/start${query}`}
-              className={buttonClasses("outline", "lg", "w-full")}
+              // The mark sits at a fixed inset and the label is centred on the
+              // button, so two providers stack without their text shifting.
+              className="group relative flex h-13 w-full items-center justify-center rounded-lg border border-ink-200 bg-surface px-14 text-[14.5px] font-semibold tracking-[-0.01em] text-ink-900 shadow-xs transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-ink-300 hover:bg-ink-50 hover:shadow-md active:translate-y-0 active:scale-[0.995] active:bg-ink-100 active:shadow-xs"
             >
-              <Mark />
+              <span className="absolute left-4 flex h-7 w-7 items-center justify-center rounded-md bg-white shadow-xs ring-1 ring-ink-100 transition-transform duration-200 group-hover:scale-105">
+                <Mark />
+              </span>
               Continue with {label}
             </a>
           );
