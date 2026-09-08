@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/admin";
-import { getSettings } from "@/services/settings";
 import { BarList, TrendChart, type TrendPoint } from "@/components/admin/charts";
 import {
   Card,
@@ -54,7 +53,6 @@ export default async function AdminDashboardPage({
   const session = await requireAdmin();
   const { range } = await searchParams;
   const days = RANGES.some((r) => r.key === range) ? Number(range) : 30;
-  const settings = await getSettings();
 
   const now = new Date();
   const since = startOfDay(new Date(now.getTime() - (days - 1) * 86_400_000));
@@ -97,7 +95,7 @@ export default async function AdminDashboardPage({
       },
     }),
     db.product.findMany({
-      where: { status: "ACTIVE", stock: { lte: settings.inventory.lowStockThreshold } },
+      where: { status: "ACTIVE", stock: { lte: db.product.fields.lowStockThreshold } },
       orderBy: { stock: "asc" },
       take: 6,
       select: { id: true, title: true, sku: true, stock: true, lowStockThreshold: true },
@@ -171,7 +169,7 @@ export default async function AdminDashboardPage({
     { icon: RotateCcw, label: "Return requests", count: pendingReturns, href: "/admin/returns?status=REQUESTED" },
     { icon: Star, label: "Reviews to moderate", count: pendingReviews, href: "/admin/reviews?status=PENDING" },
     { icon: Inbox, label: "Unanswered messages", count: newMessages, href: "/admin/messages?status=NEW" },
-    { icon: Boxes, label: "Low-stock products", count: lowStock.length, href: "/admin/inventory?stock=low" },
+    { icon: Boxes, label: "Low-stock products", count: lowStock.length, href: "/admin/inventory" },
   ];
 
   const hour = now.getHours();
@@ -302,7 +300,7 @@ export default async function AdminDashboardPage({
             title="Low stock"
             padded={false}
             actions={
-              <Link href="/admin/inventory?stock=low" className="text-[12.5px] font-semibold text-brand-700 hover:underline">
+              <Link href="/admin/inventory" className="text-[12.5px] font-semibold text-brand-700 hover:underline">
                 Inventory
               </Link>
             }

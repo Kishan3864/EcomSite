@@ -205,7 +205,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                       <span className="text-ink-300">—</span>
                     )}
                   </Td>
-                  <Td className="max-w-[340px]">
+                  <Td className="w-full max-w-0">
                     <Link href={`/admin/messages/${m.id}`} className="block truncate text-ink-600 hover:text-ink-900">
                       {excerpt(m.message)}
                     </Link>

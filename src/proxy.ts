@@ -23,6 +23,11 @@ export async function proxy(request: NextRequest) {
     const claims = await adminToken.verify(request.cookies.get(ADMIN_COOKIE)?.value);
 
     if (!claims && !isLogin) {
+      // Route handlers under /admin (CSV exports) serve machine clients: answer
+      // with 401 JSON rather than bouncing them to the login page.
+      if (pathname.endsWith("/export")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
       url.search = pathname === "/admin" ? "" : `?next=${encodeURIComponent(pathname + search)}`;

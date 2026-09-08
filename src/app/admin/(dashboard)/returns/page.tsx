@@ -131,22 +131,21 @@ export default async function ReturnsPage({ searchParams }: { searchParams: Prom
       <Table>
         <thead>
           <tr>
-            <Th>Request</Th>
-            <Th>Order</Th>
-            <Th>Product</Th>
-            <Th>Customer</Th>
-            <Th>Reason</Th>
-            <Th align="right">Refund</Th>
-            <Th>Status</Th>
-            <Th>Requested</Th>
-            <Th>Age</Th>
-            <Th align="right">Actions</Th>
+            <Th className="px-2.5">Request</Th>
+            <Th className="px-2.5">Order</Th>
+            <Th className="px-2.5">Product</Th>
+            <Th className="px-2.5">Customer</Th>
+            <Th className="px-2.5">Reason</Th>
+            <Th align="right" className="px-2.5">Refund</Th>
+            <Th className="px-2.5">Status</Th>
+            <Th className="px-2.5">Requested</Th>
+            <Th align="right" className="px-2.5">Actions</Th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (
             <EmptyRow
-              colSpan={10}
+              colSpan={9}
               title={filtered ? "No returns match" : "No return requests yet"}
               body={
                 filtered
@@ -161,31 +160,31 @@ export default async function ReturnsPage({ searchParams }: { searchParams: Prom
               const detail = `${BASE}/${r.id}`;
               return (
                 <Tr key={r.id}>
-                  <Td>
+                  <Td className="px-2.5">
                     <Link href={detail} title={r.id} className="font-mono text-[12px] font-medium text-ink-950 hover:text-brand-700">
                       #{shortReturnId(r.id)}
                     </Link>
                   </Td>
-                  <Td>
-                    <Link href={`/admin/orders/${r.order.id}`} className="whitespace-nowrap font-medium text-ink-900 hover:text-brand-700">
+                  <Td className="px-2.5">
+                    <Link href={`/admin/orders/${r.order.id}`} className="whitespace-nowrap text-[12.5px] font-medium text-ink-900 hover:text-brand-700">
                       {r.order.number}
                     </Link>
                   </Td>
-                  <Td>
+                  <Td className="px-2.5">
                     <div className="flex items-center gap-3">
-                      <ReturnThumb src={r.orderLine.image} alt="" size={40} />
+                      <ReturnThumb src={r.orderLine.image} alt="" size={36} />
                       <div className="min-w-0">
-                        <Link href={detail} className="block max-w-[240px] truncate font-medium text-ink-950 hover:text-brand-700">
+                        <Link href={detail} className="block max-w-[150px] truncate font-medium text-ink-950 hover:text-brand-700">
                           {r.orderLine.title}
                         </Link>
-                        <span className="block max-w-[240px] truncate text-[11.5px] text-ink-400">
+                        <span className="block max-w-[150px] truncate text-[11.5px] text-ink-400">
                           {r.orderLine.brand}
                           {r.orderLine.variantLabel ? ` · ${r.orderLine.variantLabel}` : ""}
                         </span>
                       </div>
                     </div>
                   </Td>
-                  <Td>
+                  <Td className="px-2.5">
                     {r.customer ? (
                       <Link href={`/admin/customers/${r.customer.id}`} className="block font-medium text-ink-900 hover:text-brand-700">
                         {customerName}
@@ -193,29 +192,29 @@ export default async function ReturnsPage({ searchParams }: { searchParams: Prom
                     ) : (
                       <span className="block font-medium text-ink-900">{customerName}</span>
                     )}
-                    <span className="block max-w-[200px] truncate text-[11.5px] text-ink-400">{customerEmail}</span>
+                    <span className="block max-w-[130px] truncate text-[11.5px] text-ink-400">{customerEmail}</span>
                   </Td>
-                  <Td className="max-w-[220px]">
+                  <Td className="max-w-[110px] px-2.5">
                     <span className="block truncate text-ink-700" title={r.reason}>
                       {r.reason}
                     </span>
                   </Td>
-                  <Td align="right">
+                  <Td align="right" className="px-2.5">
                     <Money value={r.refundAmount} className="font-medium text-ink-900" />
-                    <span className="block max-w-[160px] truncate text-[11.5px] text-ink-400" title={r.refundMode}>
+                    <span className="ml-auto block max-w-[90px] truncate text-[11.5px] text-ink-400" title={r.refundMode}>
                       {r.refundMode}
                     </span>
                   </Td>
-                  <Td>
+                  <Td className="px-2.5">
                     <StatusPill status={r.status} />
                   </Td>
-                  <Td>
+                  <Td className="px-2.5">
                     <DateCell value={r.requestedAt} />
+                    <span className="block">
+                      <AgeCell status={r.status} requestedAt={r.requestedAt} resolvedAt={r.resolvedAt} now={now} />
+                    </span>
                   </Td>
-                  <Td>
-                    <AgeCell status={r.status} requestedAt={r.requestedAt} resolvedAt={r.resolvedAt} now={now} />
-                  </Td>
-                  <Td align="right">
+                  <Td align="right" className="px-2.5">
                     <div className="flex items-center justify-end gap-1">
                       {canManage && r.status === "REQUESTED" && (
                         <ConfirmForm action={approveReturn} message={`Approve the return for ${r.orderLine.title}? You can add a note from the return page.`}>
@@ -295,7 +294,7 @@ function AgeCell({
   if (!isReturnOpen(status)) {
     const closedAt = resolvedAt ?? now;
     const turnaround = hoursBetween(requestedAt, closedAt) < 24 ? "same day" : `in ${ageLabel(requestedAt, closedAt)}`;
-    return <span className="whitespace-nowrap text-[12px] text-ink-400">Resolved {turnaround}</span>;
+    return <span className="whitespace-nowrap text-[12px] text-ink-400">Closed {turnaround}</span>;
   }
   const overdue = status === "REQUESTED" && hoursBetween(requestedAt, now) > DECISION_SLA_HOURS;
   return (

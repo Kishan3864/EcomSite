@@ -9,10 +9,12 @@ import { ConfirmForm, Notice, SubmitButton } from "@/components/admin/client";
 import { Card, DateCell, KeyValue, Money, PageHeader, Pill, StatusPill, statusLabelOf } from "@/components/admin/ui";
 import { decideReturn, markReturnPickedUp, refundReturn, updateReturnDetails } from "@/services/admin/returns-actions";
 import {
+  RETURN_ACTIVITY_ACTIONS,
   RETURN_STATUS_COPY,
   buildReturnTimeline,
   isRefundAmountEditable,
   shortReturnId,
+  type TimelineEvents,
   type TimelineStep,
 } from "../return-helpers";
 import { ReturnThumb } from "../return-thumb";
@@ -23,42 +25,52 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
   const session = await requireAdmin();
   const { id } = await params;
 
-  const row = await db.returnRequest.findUnique({
-    where: { id },
-    include: {
-      orderLine: {
-        include: { product: { select: { id: true, slug: true, stock: true, status: true } } },
-      },
-      order: {
-        select: {
-          id: true,
-          number: true,
-          status: true,
-          paymentStatus: true,
-          paymentMethod: true,
-          paymentDetail: true,
-          total: true,
-          placedAt: true,
-          deliveredAt: true,
-          contactName: true,
-          contactEmail: true,
-          contactPhone: true,
-          shipCity: true,
-          shipState: true,
-          lines: { select: { id: true, title: true, quantity: true, price: true } },
-          returns: { select: { id: true, orderLineId: true, status: true } },
+  const [row, activity] = await Promise.all([
+    db.returnRequest.findUnique({
+      where: { id },
+      include: {
+        orderLine: {
+          include: { product: { select: { id: true, slug: true, stock: true, status: true } } },
         },
+        order: {
+          select: {
+            id: true,
+            number: true,
+            status: true,
+            paymentStatus: true,
+            paymentMethod: true,
+            paymentDetail: true,
+            total: true,
+            placedAt: true,
+            deliveredAt: true,
+            contactName: true,
+            contactEmail: true,
+            contactPhone: true,
+            shipCity: true,
+            shipState: true,
+            lines: { select: { id: true, title: true, quantity: true, price: true } },
+            returns: { select: { id: true, orderLineId: true, status: true } },
+          },
+        },
+        customer: { select: { id: true, name: true, email: true, phone: true, tier: true } },
       },
-      customer: { select: { id: true, name: true, email: true, phone: true, tier: true } },
-    },
-  });
+    }),
+    // The request only stores requestedAt/resolvedAt; the activity log records when each step happened.
+    db.activityLog.findMany({
+      where: { entity: "ReturnRequest", entityId: id, action: { in: Object.keys(RETURN_ACTIVITY_ACTIONS) } },
+      orderBy: { createdAt: "asc" },
+      select: { action: true, actorName: true, createdAt: true },
+    }),
+  ]);
   if (!row) notFound();
 
   const canManage = hasRole(session, "MANAGER");
   const line = row.orderLine;
   const lineTotal = line.price * line.quantity;
   const detailPath = `/admin/returns/${row.id}`;
-  const timeline = buildReturnTimeline(row);
+  const events: TimelineEvents = {};
+  for (const a of activity) events[RETURN_ACTIVITY_ACTIONS[a.action]] = { at: a.createdAt, actor: a.actorName };
+  const timeline = buildReturnTimeline(row, events);
   const customerName = row.customer?.name ?? row.order.contactName;
   const customerEmail = row.customer?.email ?? row.order.contactEmail;
   const customerPhone = row.customer?.phone ?? row.order.contactPhone;
@@ -349,9 +361,12 @@ function Timeline({ steps, rejected }: { steps: TimelineStep[]; rejected: boolea
           />
           <p className={cn("text-[13px] font-medium leading-tight", s.state === "upcoming" ? "text-ink-400" : "text-ink-900")}>{s.label}</p>
           {s.at ? (
-            <p className="mt-0.5 text-[12px] text-ink-500">{formatDateTime(s.at)}</p>
+            <p className="mt-0.5 text-[12px] text-ink-500">
+              {formatDateTime(s.at)}
+              {s.actor && <span className="text-ink-400"> · {s.actor}</span>}
+            </p>
           ) : (
-            <p className="mt-0.5 text-[12px] text-ink-400">Pending</p>
+            <p className="mt-0.5 text-[12px] text-ink-400">{s.state === "done" ? "Completed" : "Pending"}</p>
           )}
           {s.state === "current" && <p className="mt-0.5 text-[11.5px] text-ink-400">{RETURN_STATUS_COPY[s.status].hint}</p>}
         </li>

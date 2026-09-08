@@ -477,6 +477,10 @@ async function seedReturns(customerId: string) {
         resolvedAt: r.status === "refunded" ? new Date(r.requestedAt) : null,
       },
     });
+    // A refunded line means the parent order was (partially) refunded.
+    if (r.status === "refunded") {
+      await db.order.update({ where: { id: order.id }, data: { paymentStatus: "PARTIALLY_REFUNDED" } });
+    }
   }
   log("return requests", returnRequests.length);
 }

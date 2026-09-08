@@ -75,35 +75,54 @@ export interface TimelineStep {
   label: string;
   state: "done" | "current" | "upcoming";
   at: Date | null;
+  /** Admin who moved the return into this step, when the activity log knows. */
+  actor: string | null;
 }
+
+/** When (and by whom) a step was reached, as recorded in the activity log. */
+export type TimelineEvents = Partial<Record<ReturnStatus, { at: Date; actor: string | null }>>;
+
+/** Activity-log actions written by the returns actions, keyed by the status they lead to. */
+export const RETURN_ACTIVITY_ACTIONS: Record<string, ReturnStatus> = {
+  "return.approve": "APPROVED",
+  "return.picked_up": "PICKED_UP",
+  "return.refund": "REFUNDED",
+  "return.reject": "REJECTED",
+};
 
 /**
  * The request only stores requestedAt and resolvedAt, so intermediate steps
  * are derived from the status: everything up to the current status is done,
  * the current step carries the last update time, terminal steps use resolvedAt.
+ * Activity-log events, when supplied, give the done steps their real times.
  */
-export function buildReturnTimeline(input: {
-  status: ReturnStatus;
-  requestedAt: Date;
-  resolvedAt: Date | null;
-  updatedAt: Date;
-}): TimelineStep[] {
+export function buildReturnTimeline(
+  input: {
+    status: ReturnStatus;
+    requestedAt: Date;
+    resolvedAt: Date | null;
+    updatedAt: Date;
+  },
+  events: TimelineEvents = {},
+): TimelineStep[] {
   const { status, requestedAt, resolvedAt, updatedAt } = input;
 
   if (status === "REJECTED") {
+    const ev = events.REJECTED;
     return [
-      { status: "REQUESTED", label: "Requested", state: "done", at: requestedAt },
-      { status: "REJECTED", label: "Rejected", state: "current", at: resolvedAt ?? updatedAt },
+      { status: "REQUESTED", label: "Requested", state: "done", at: requestedAt, actor: null },
+      { status: "REJECTED", label: "Rejected", state: "current", at: resolvedAt ?? ev?.at ?? updatedAt, actor: ev?.actor ?? null },
     ];
   }
 
   const current = RETURN_FLOW.indexOf(status);
   return RETURN_FLOW.map((step, i) => {
     const state: TimelineStep["state"] = i < current ? "done" : i === current ? "current" : "upcoming";
-    let at: Date | null = null;
+    const ev = state === "upcoming" ? undefined : events[step];
+    let at: Date | null = ev?.at ?? null;
     if (i === 0) at = requestedAt;
-    else if (step === "REFUNDED" && state === "current") at = resolvedAt ?? updatedAt;
-    else if (state === "current") at = updatedAt;
-    return { status: step, label: RETURN_STATUS_COPY[step].label, state, at };
+    else if (!at && step === "REFUNDED" && state === "current") at = resolvedAt ?? updatedAt;
+    else if (!at && state === "current") at = updatedAt;
+    return { status: step, label: RETURN_STATUS_COPY[step].label, state, at, actor: ev?.actor ?? null };
   });
 }
