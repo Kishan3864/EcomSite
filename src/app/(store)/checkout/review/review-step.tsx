@@ -12,12 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/primitives";
 import { useStore } from "@/store/store";
 import { computeTotals, estimatedDelivery, evaluateCoupon } from "@/lib/pricing";
-import { buildOrder } from "@/lib/order-builder";
-import { deliveryOptions, paymentMethods } from "@/data/marketing";
 import { formatDate, formatINR } from "@/lib/utils";
 
 export function ReviewStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, dispatch, hydrated } = useStore();
+  const { cart, coupon, checkout, addresses, config, customer, dispatch, hydrated } = useStore();
   const router = useRouter();
   const [placing, setPlacing] = useState(false);
 
@@ -27,8 +25,9 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
   }, [hydrated, cart.length, checkout.paymentMethod, router]);
 
   const address = addresses.find((a) => a.id === checkout.addressId);
-  const delivery = deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? deliveryOptions[0];
-  const payment = paymentMethods.find((p) => p.id === checkout.paymentMethod);
+  const delivery =
+    config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0];
+  const payment = config.paymentMethods.find((p) => p.id === checkout.paymentMethod);
 
   const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
   const applied = offers.find((o) => o.code === coupon) ?? null;
@@ -37,24 +36,41 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
     : { ok: false, discount: 0 };
   const totals = computeTotals(cart, {
     delivery,
+    rates: config.rates,
     coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
   const eta = estimatedDelivery(cart, delivery);
 
+  // Everything below is a proposal. The order is priced, stock-checked and
+  // written by the server on the next screen; nothing here is trusted.
   function placeOrder() {
     if (!address || !payment) return;
+    const contact = checkout.contact ??
+      (customer ? { name: customer.name, email: customer.email, phone: customer.phone } : null);
+    if (!contact) {
+      router.push("/checkout/contact");
+      return;
+    }
+
     setPlacing(true);
-
-    const order = buildOrder({
-      lines: cart,
-      address,
-      delivery,
-      paymentMethod: { ...payment, description: checkout.paymentDetail ?? payment.description },
-      totals,
+    dispatch({
+      type: "checkout/stage",
+      pending: {
+        amount: totals.total,
+        input: {
+          lines: cart,
+          contact,
+          address,
+          deliveryId: checkout.deliveryId,
+          deliveryDate: checkout.deliveryDate,
+          giftWrap: checkout.giftWrap,
+          paymentMethod: payment.id,
+          paymentDetail: checkout.paymentDetail,
+          couponCode: applied && check.ok ? applied.code : null,
+        },
+      },
     });
-
-    dispatch({ type: "order/pending", order });
     router.push("/checkout/processing");
   }
 

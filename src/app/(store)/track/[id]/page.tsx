@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/primitives";
 import { TrackDetail } from "../track-client";
+import { getOrderForViewer } from "@/services/orders";
 
 export const metadata: Metadata = {
   title: "Order tracking",
@@ -13,6 +14,7 @@ export default async function TrackDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const order = await getOrderForViewer(id);
 
   return (
     <div className="container-page py-5 sm:py-7">
@@ -24,7 +26,7 @@ export default async function TrackDetailPage({
         ]}
         className="mb-5"
       />
-      <TrackDetail id={id} />
+      <TrackDetail order={order} />
     </div>
   );
 }

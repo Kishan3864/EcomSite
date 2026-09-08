@@ -19,7 +19,7 @@ import {
 import type { Order } from "@/lib/types";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
-import { useStore } from "@/store/store";
+
 import { formatDate, formatINR } from "@/lib/utils";
 
 /** Celebratory tick — drawn, not animated with a library, so it stays cheap. */
@@ -62,13 +62,13 @@ function SuccessMark() {
   );
 }
 
-export function OrderClient({ id }: { id: string }) {
-  const { orders, hydrated } = useStore();
+export function OrderClient({ order }: { order: Order | null }) {
+
   // The processing screen appends ?placed=1, so the celebratory copy is driven
   // by an explicit flag rather than by guessing from a timestamp.
   const justPlaced = useSearchParams().get("placed") === "1";
   const [copied, setCopied] = useState(false);
-  const order = orders.find((o) => o.id === id || o.number === id);
+
 
   // Arriving here via router.replace() from the processing screen keeps the
   // previous scroll offset, which would hide the confirmation mark.
@@ -81,14 +81,6 @@ export function OrderClient({ id }: { id: string }) {
     const t = setTimeout(() => setCopied(false), 1800);
     return () => clearTimeout(t);
   }, [copied]);
-
-  if (!hydrated) {
-    return (
-      <div className="container-page py-14">
-        <div className="skeleton mx-auto h-64 max-w-2xl rounded-2xl" />
-      </div>
-    );
-  }
 
   if (!order) {
     return (

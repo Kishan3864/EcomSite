@@ -12,24 +12,20 @@ import {
   Truck,
   Wallet,
 } from "lucide-react";
+import type { Order } from "@/lib/types";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
-import { useStore } from "@/store/store";
 import { formatDate, formatDateTime, formatINR } from "@/lib/utils";
 
-export function OrderDetailClient({ id }: { id: string }) {
-  const { orders, hydrated } = useStore();
-  const order = orders.find((o) => o.id === id || o.number === id);
-
-  if (!hydrated) return <div className="skeleton h-96 rounded-xl" />;
+export function OrderDetailClient({ order }: { order: Order | null }) {
 
   if (!order) {
     return (
       <EmptyState
         icon={<Package size={26} />}
         title="Order not found"
-        body="This order is not on this device. Order history is stored locally in this phase of the build."
+        body="We could not find that order on your account. It may have been placed as a guest with a different email."
         action={
           <Link href="/account/orders" className={buttonClasses("primary", "md")}>
             Back to my orders

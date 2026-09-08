@@ -197,6 +197,7 @@ export default async function ProductPage({ params }: { params: Params }) {
             </section>
 
             <ReviewsSection
+              productId={product.id}
               reviews={reviews}
               rating={product.rating}
               reviewCount={product.reviewCount}

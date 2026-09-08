@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
-import { deliveryOptions } from "@/data/marketing";
+
 
 export function AddressStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, dispatch, hydrated } = useStore();
+  const { cart, coupon, checkout, addresses, config, dispatch, hydrated } = useStore();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
@@ -34,7 +34,8 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
     ? evaluateCoupon(applied, itemsTotal, [...new Set(cart.map((l) => l.categorySlug))])
     : { ok: false, discount: 0 };
   const totals = computeTotals(cart, {
-    delivery: deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? deliveryOptions[0],
+    delivery: config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0],
+    rates: config.rates,
     coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 

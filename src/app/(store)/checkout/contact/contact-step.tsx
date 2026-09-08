@@ -11,17 +11,27 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
-import { deliveryOptions, customer } from "@/data/marketing";
+
+
+interface Contact {
+  name: string;
+  email: string;
+  phone: string;
+}
 
 export function ContactStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, dispatch } = useStore();
+  const { cart, coupon, checkout, customer, config, dispatch } = useStore();
   const router = useRouter();
 
-  const [form, setForm] = useState({
-    name: checkout.contact?.name ?? "",
-    email: checkout.contact?.email ?? "",
-    phone: checkout.contact?.phone ?? "",
-  });
+  // Untouched, the form shows the signed-in customer's details — which arrive
+  // after mount, so the draft stays null until they actually type something.
+  const [draft, setDraft] = useState<Contact | null>(checkout.contact);
+  const form: Contact = draft ?? {
+    name: customer?.name ?? "",
+    email: customer?.email ?? "",
+    phone: customer?.phone ?? "",
+  };
+  const setForm = (patch: Partial<Contact>) => setDraft({ ...form, ...patch });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
@@ -31,7 +41,8 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
     : { ok: false, discount: 0 };
 
   const totals = computeTotals(cart, {
-    delivery: deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? deliveryOptions[0],
+    delivery: config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0],
+    rates: config.rates,
     coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
@@ -49,12 +60,6 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
 
     dispatch({ type: "checkout/patch", patch: { contact: form } });
     router.push("/checkout/address");
-  }
-
-  function useDemoAccount() {
-    const demo = { name: customer.name, email: customer.email, phone: customer.phone };
-    setForm(demo);
-    setErrors({});
   }
 
   return (
@@ -84,7 +89,7 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
                 autoComplete="name"
                 value={form.name}
                 invalid={Boolean(errors.name)}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                onChange={(e) => setForm({ name: e.target.value })}
                 placeholder="Ananya Iyer"
               />
             </Field>
@@ -102,7 +107,7 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
                 autoComplete="email"
                 value={form.email}
                 invalid={Boolean(errors.email)}
-                onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                onChange={(e) => setForm({ email: e.target.value })}
                 placeholder="you@example.in"
               />
             </Field>
@@ -121,7 +126,7 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
                 autoComplete="tel"
                 value={form.phone}
                 invalid={Boolean(errors.phone)}
-                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                onChange={(e) => setForm({ phone: e.target.value })}
                 placeholder="+91 98450 12345"
               />
             </Field>
@@ -129,22 +134,25 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
 
           <p className="mt-4 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12px] leading-relaxed text-ink-600">
             <Info size={13} className="mt-px shrink-0 text-brand-600" />
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-semibold text-brand-700 underline-offset-2 hover:underline"
-            >
-              Sign in
-            </Link>{" "}
-            to use your saved addresses and payment methods — or{" "}
-            <button
-              type="button"
-              onClick={useDemoAccount}
-              className="font-semibold text-brand-700 underline-offset-2 hover:underline"
-            >
-              fill in the demo account
-            </button>
-            .
+            {customer ? (
+              <span>
+                Signed in as <strong className="font-semibold text-ink-900">{customer.email}</strong>
+                . Your saved addresses are ready at the next step, and this order will appear in your
+                account.
+              </span>
+            ) : (
+              <span>
+                Already have an account?{" "}
+                <Link
+                  href="/login?next=/checkout/contact"
+                  className="font-semibold text-brand-700 underline-offset-2 hover:underline"
+                >
+                  Sign in
+                </Link>{" "}
+                to use your saved addresses and keep this order in your history. You can also carry
+                on as a guest — we will still email you the invoice.
+              </span>
+            )}
           </p>
         </div>
 

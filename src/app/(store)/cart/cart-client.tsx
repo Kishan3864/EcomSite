@@ -20,11 +20,11 @@ import { OrderSummary } from "@/components/cart/order-summary";
 import { useStore } from "@/store/store";
 import { useCommerce } from "@/store/commerce";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
-import { deliveryOptions } from "@/data/marketing";
+
 import { formatINR } from "@/lib/utils";
 
 export function CartClient({ offers }: { offers: Offer[] }) {
-  const { cart, saved, coupon, dispatch, hydrated } = useStore();
+  const { cart, saved, coupon, config, dispatch, hydrated } = useStore();
   const { toggleWishlist, isWishlisted } = useCommerce();
 
   if (!hydrated) {
@@ -68,7 +68,8 @@ export function CartClient({ offers }: { offers: Offer[] }) {
     : { ok: false, discount: 0 };
 
   const totals = computeTotals(cart, {
-    delivery: deliveryOptions[0],
+    delivery: config.deliveryOptions[0],
+    rates: config.rates,
     coupon:
       appliedOffer && check.ok
         ? { code: appliedOffer.code, discount: check.discount, type: appliedOffer.type }
@@ -299,7 +300,7 @@ export function CartClient({ offers }: { offers: Offer[] }) {
           <OrderSummary
             totals={totals}
             lines={cart}
-            delivery={deliveryOptions[0]}
+            delivery={config.deliveryOptions[0]}
             cta="Proceed to checkout"
             ctaHref="/checkout/address"
           />

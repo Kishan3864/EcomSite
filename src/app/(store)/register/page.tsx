@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { redirect } from "next/navigation";
 import { RegisterForm } from "./register-form";
+import { getCustomerSession } from "@/lib/auth/customer";
 
 export const metadata: Metadata = {
   title: "Create an account",
@@ -9,7 +11,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/register" },
 };
 
-export default function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const [session, params] = await Promise.all([getCustomerSession(), searchParams]);
+  const next = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : undefined;
+  if (session) redirect(next ?? "/account");
+
   return (
     <AuthShell
       title="Create your account"
@@ -24,7 +34,7 @@ export default function RegisterPage() {
         </>
       }
     >
-      <RegisterForm />
+      <RegisterForm next={next} />
     </AuthShell>
   );
 }

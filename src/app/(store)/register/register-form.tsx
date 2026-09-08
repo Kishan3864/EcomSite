@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
 import Link from "next/link";
+import { useFormStatus } from "react-dom";
 import { motion } from "motion/react";
-import { Check, Eye, EyeOff } from "lucide-react";
+import { AlertTriangle, Check, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
-import { useToast } from "@/components/ui/toast";
+import { registerAction } from "@/services/commerce";
 import { cn } from "@/lib/utils";
 
 function strength(password: string) {
@@ -22,89 +22,86 @@ function strength(password: string) {
 const LABELS = ["Too short", "Weak", "Fair", "Good", "Strong"];
 const TONES = ["bg-ink-200", "bg-sale-500", "bg-gold-400", "bg-brand-400", "bg-brand-600"];
 
-export function RegisterForm() {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+function CreateButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" size="lg" className="w-full" loading={pending}>
+      <Check size={17} /> {pending ? "Creating your account…" : "Create my account"}
+    </Button>
+  );
+}
+
+export function RegisterForm({ next }: { next?: string }) {
+  const [state, action] = useActionState(registerAction, {});
+  const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [accepted, setAccepted] = useState(true);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const toast = useToast();
-
-  const score = useMemo(() => strength(form.password), [form.password]);
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const next: Record<string, string> = {};
-    if (form.name.trim().length < 2) next.name = "Tell us your name.";
-    if (!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(form.email))
-      next.email = "Enter a valid email address.";
-    if (!/^(\+91[\s-]?)?[6-9]\d{9}$/.test(form.phone.replace(/\s/g, "")))
-      next.phone = "Enter a 10-digit Indian mobile number.";
-    if (form.password.length < 8) next.password = "Use at least 8 characters.";
-    if (!accepted) next.terms = "Please accept the terms to continue.";
-
-    setErrors(next);
-    if (Object.keys(next).length) return;
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      toast({
-        title: "Account created",
-        description: `Welcome to Mayura, ${form.name.split(" ")[0]}.`,
-      });
-      router.push("/account");
-    }, 950);
-  }
+  const score = strength(password);
+  const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form onSubmit={submit} className="space-y-5">
-      <Field label="Full name" htmlFor="reg-name" error={errors.name}>
+    <form action={action} className="space-y-5">
+      {next && <input type="hidden" name="next" value={next} />}
+
+      {state.error && !state.field && (
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700"
+        >
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          {state.error}
+        </p>
+      )}
+
+      <Field label="Full name" htmlFor="reg-name" error={err("name")}>
         <Input
           id="reg-name"
+          name="name"
           autoComplete="name"
-          value={form.name}
-          invalid={Boolean(errors.name)}
-          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          required
+          defaultValue={state.values?.name ?? ""}
+          invalid={state.field === "name"}
           placeholder="Ananya Iyer"
         />
       </Field>
 
-      <Field label="Email address" htmlFor="reg-email" error={errors.email}>
+      <Field label="Email address" htmlFor="reg-email" error={err("email")}>
         <Input
           id="reg-email"
+          name="email"
           type="email"
           autoComplete="email"
-          value={form.email}
-          invalid={Boolean(errors.email)}
-          onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+          required
+          defaultValue={state.values?.email ?? ""}
+          invalid={state.field === "email"}
           placeholder="you@example.in"
         />
       </Field>
 
-      <Field label="Mobile number" htmlFor="reg-phone" error={errors.phone}>
+      <Field label="Mobile number" htmlFor="reg-phone" error={err("phone")}>
         <Input
           id="reg-phone"
+          name="phone"
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          value={form.phone}
-          invalid={Boolean(errors.phone)}
-          onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+          required
+          defaultValue={state.values?.phone ?? ""}
+          invalid={state.field === "phone"}
           placeholder="+91 98450 12345"
         />
       </Field>
 
-      <Field label="Password" htmlFor="reg-password" error={errors.password}>
+      <Field label="Password" htmlFor="reg-password" error={err("password")}>
         <div className="relative">
           <Input
             id="reg-password"
+            name="password"
             type={show ? "text" : "password"}
             autoComplete="new-password"
-            value={form.password}
-            invalid={Boolean(errors.password)}
-            onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+            required
+            value={password}
+            invalid={state.field === "password"}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="At least 8 characters"
             className="pr-11"
           />
@@ -119,7 +116,7 @@ export function RegisterForm() {
         </div>
       </Field>
 
-      {form.password && (
+      {password && (
         <div>
           <div className="flex gap-1">
             {[0, 1, 2, 3].map((i) => (
@@ -138,35 +135,29 @@ export function RegisterForm() {
         </div>
       )}
 
-      <div>
-        <label className="flex cursor-pointer items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">
-          <input
-            type="checkbox"
-            checked={accepted}
-            onChange={(e) => {
-              setAccepted(e.target.checked);
-              setErrors((x) => ({ ...x, terms: "" }));
-            }}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-700)]"
-          />
-          <span>
-            I agree to the{" "}
-            <Link href="/legal/terms" className="font-semibold text-brand-700 hover:underline">
-              terms of service
-            </Link>{" "}
-            and{" "}
-            <Link href="/legal/privacy" className="font-semibold text-brand-700 hover:underline">
-              privacy policy
-            </Link>
-            .
-          </span>
-        </label>
-        {errors.terms && <p className="mt-1.5 text-[12px] text-sale-600">{errors.terms}</p>}
-      </div>
+      {/* Required, so the browser blocks the submit rather than a round trip. */}
+      <label className="flex cursor-pointer items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">
+        <input
+          type="checkbox"
+          name="terms"
+          required
+          defaultChecked
+          className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-700)]"
+        />
+        <span>
+          I agree to the{" "}
+          <Link href="/legal/terms" className="font-semibold text-brand-700 hover:underline">
+            terms of service
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/privacy" className="font-semibold text-brand-700 hover:underline">
+            privacy policy
+          </Link>
+          .
+        </span>
+      </label>
 
-      <Button type="submit" size="lg" className="w-full" loading={loading}>
-        <Check size={17} /> Create my account
-      </Button>
+      <CreateButton />
     </form>
   );
 }

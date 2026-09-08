@@ -5,16 +5,19 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, MessageSquare, ThumbsUp, VerifiedIcon } from "lucide-react";
 import type { QuestionAnswer, RatingBreakdown, Review } from "@/lib/types";
+import { ReviewForm } from "./review-form";
 import { Stars } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { cn, formatCompact, formatDate } from "@/lib/utils";
 
 export function ReviewsSection({
+  productId,
   reviews,
   rating,
   reviewCount,
   breakdown,
 }: {
+  productId: string;
   reviews: Review[];
   rating: number;
   reviewCount: number;
@@ -209,6 +212,8 @@ export function ReviewsSection({
               Show more reviews ({filtered.length - visible} left)
             </Button>
           )}
+
+          <ReviewForm productId={productId} />
         </div>
       </div>
     </section>

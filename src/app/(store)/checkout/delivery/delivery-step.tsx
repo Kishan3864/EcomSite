@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { computeTotals, estimatedDelivery, evaluateCoupon } from "@/lib/pricing";
-import { deliveryOptions } from "@/data/marketing";
+
 import { addDays, cn, formatDate, formatINR } from "@/lib/utils";
 
 const ICONS: Record<DeliverySpeed, typeof Truck> = {
@@ -22,7 +22,7 @@ const ICONS: Record<DeliverySpeed, typeof Truck> = {
 };
 
 export function DeliveryStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, dispatch, hydrated } = useStore();
+  const { cart, coupon, checkout, addresses, config, dispatch, hydrated } = useStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -30,7 +30,8 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
   }, [hydrated, cart.length, checkout.addressId, router]);
 
   const address = addresses.find((a) => a.id === checkout.addressId);
-  const selected = deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? deliveryOptions[0];
+  const selected =
+    config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0];
 
   const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
   const applied = offers.find((o) => o.code === coupon) ?? null;
@@ -39,6 +40,7 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
     : { ok: false, discount: 0 };
   const totals = computeTotals(cart, {
     delivery: selected,
+    rates: config.rates,
     coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
@@ -62,10 +64,10 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
     >
       <div className="space-y-4">
         <ul className="space-y-3">
-          {deliveryOptions.map((option) => {
+          {config.deliveryOptions.map((option) => {
             const Icon = ICONS[option.id];
             const eta = estimatedDelivery(cart, option);
-            const free = option.id === "standard" && itemsTotal >= 999;
+            const free = option.id === "standard" && itemsTotal >= config.rates.freeThreshold;
 
             return (
               <li key={option.id}>

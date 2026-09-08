@@ -1,68 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useFormStatus } from "react-dom";
 import { motion } from "motion/react";
 import { MapPin, Package, PackageSearch, Phone, Search, Truck } from "lucide-react";
+import type { Order } from "@/lib/types";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { Field, Input } from "@/components/ui/field";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
-import { useStore } from "@/store/store";
+import { trackOrderAction } from "@/services/commerce";
 import { formatDate, formatINR, statusLabel } from "@/lib/utils";
 
 /* ------------------------------ Lookup ----------------------------- */
 
-export function TrackLookup() {
-  const { orders, hydrated } = useStore();
-  const [value, setValue] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+function TrackButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" size="lg" className="mt-4 w-full" loading={pending}>
+      <Search size={17} /> {pending ? "Looking it up…" : "Track my order"}
+    </Button>
+  );
+}
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const term = value.trim().toUpperCase();
-    const match = orders.find(
-      (o) => o.number.toUpperCase() === term || o.id.toUpperCase() === term || o.awb.toUpperCase() === term,
-    );
-    if (!match) {
-      setError("We could not find an order with that number on this device.");
-      return;
-    }
-    router.push(`/track/${match.id}`);
-  }
+/**
+ * `orders` are the signed-in customer's recent orders, loaded on the server.
+ * Everyone else looks an order up by number plus the email or phone it was
+ * placed with — knowing the number alone is not enough.
+ */
+export function TrackLookup({ orders }: { orders: Order[] }) {
+  const [state, action] = useActionState(trackOrderAction, {});
 
   return (
     <div className="mx-auto max-w-xl">
-      <form onSubmit={submit} className="rounded-2xl border border-hairline bg-surface p-6">
+      <form action={action} className="rounded-2xl border border-hairline bg-surface p-6">
         <Field
-          label="Order number or AWB"
-          htmlFor="order-lookup"
-          error={error ?? undefined}
-          hint="Example: MYR-2026-004691. It is on your confirmation email."
+          label="Order number"
+          htmlFor="order-number"
+          error={state.field === "number" ? state.error : undefined}
+          hint="Example: MYR-2026-005001. It is on your confirmation email."
         >
           <Input
-            id="order-lookup"
-            value={value}
-            invalid={Boolean(error)}
-            onChange={(e) => {
-              setValue(e.target.value);
-              setError(null);
-            }}
-            placeholder="MYR-2026-004691"
+            id="order-number"
+            name="number"
+            required
+            defaultValue={state.values?.number ?? ""}
+            invalid={state.field === "number"}
+            placeholder="MYR-2026-005001"
           />
         </Field>
-        <Button type="submit" size="lg" className="mt-4 w-full">
-          <Search size={17} /> Track my order
-        </Button>
+        <Field
+          label="Email or mobile on the order"
+          htmlFor="order-contact"
+          error={state.field === "contact" ? state.error : undefined}
+          hint="So only you can see where your parcel is."
+          className="mt-4"
+        >
+          <Input
+            id="order-contact"
+            name="contact"
+            required
+            defaultValue={state.values?.contact ?? ""}
+            invalid={state.field === "contact"}
+            placeholder="you@example.in"
+          />
+        </Field>
+        <TrackButton />
       </form>
 
-      {hydrated && orders.length > 0 && (
+      {orders.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-            Recent orders on this device
+            Your recent orders
           </h2>
           <ul className="space-y-2">
             {orders.slice(0, 4).map((order) => (
@@ -117,20 +128,13 @@ const STATUS_COPY: Record<string, { title: string; body: string }> = {
   returned: { title: "Returned", body: "The return was completed and refunded." },
 };
 
-export function TrackDetail({ id }: { id: string }) {
-  const { orders, hydrated } = useStore();
-  const order = orders.find((o) => o.id === id || o.number === id);
-
-  if (!hydrated) {
-    return <div className="skeleton mx-auto h-96 max-w-4xl rounded-2xl" />;
-  }
-
+export function TrackDetail({ order }: { order: Order | null }) {
   if (!order) {
     return (
       <EmptyState
         icon={<PackageSearch size={26} />}
         title="No order with that number"
-        body="Order history is stored on the device the order was placed on. Try the device you ordered from, or contact support with your order number."
+        body="Either that order does not exist, or this browser has not been shown it yet. Look it up with your order number and the email or phone you ordered with."
         action={
           <div className="flex flex-wrap justify-center gap-2">
             <Link href="/track" className={buttonClasses("primary", "md")}>

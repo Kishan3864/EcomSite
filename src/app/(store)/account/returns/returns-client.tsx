@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, CircleDollarSign, PackageOpen, RotateCcw, Truck } from "lucide-react";
-import type { ReturnRequest } from "@/lib/types";
+import type { Order, ReturnRequest } from "@/lib/types";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { Field, Select } from "@/components/ui/field";
-import { useStore } from "@/store/store";
+import { requestReturn } from "@/services/commerce";
 import { useToast } from "@/components/ui/toast";
 import { cn, formatDate, formatINR } from "@/lib/utils";
 
@@ -28,13 +29,6 @@ const STATUS_LABEL: Record<ReturnRequest["status"], string> = {
   rejected: "Not eligible",
 };
 
-/** Ids are minted outside the component so render stays pure. */
-let returnSequence = 0;
-function nextReturnId() {
-  returnSequence += 1;
-  return `ret_local_${returnSequence}`;
-}
-
 const REASONS = [
   "Size or fit is wrong",
   "Item arrived damaged",
@@ -44,35 +38,51 @@ const REASONS = [
   "Found a better price elsewhere",
 ];
 
-export function ReturnsClient({ seeded }: { seeded: ReturnRequest[] }) {
-  const { orders, hydrated } = useStore();
-  const [requests, setRequests] = useState(seeded);
+/**
+ * `requests` and `orders` are the customer's real records. Raising a return
+ * writes to the database and refreshes the page, so what is on screen is always
+ * what the warehouse sees.
+ */
+export function ReturnsClient({
+  requests,
+  orders,
+}: {
+  requests: ReturnRequest[];
+  orders: Order[];
+}) {
   const [openFor, setOpenFor] = useState<string | null>(null);
   const [reason, setReason] = useState(REASONS[0]);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
   const toast = useToast();
 
+  // Already-returned lines must not offer a second return.
+  const returnedTitles = new Set(requests.map((r) => `${r.orderNumber}::${r.productTitle}`));
   const eligible = orders
     .filter((o) => o.status === "delivered")
-    .flatMap((o) => o.lines.map((line) => ({ order: o, line })));
+    .flatMap((o) => o.lines.map((line) => ({ order: o, line })))
+    .filter(({ order, line }) => !returnedTitles.has(`${order.number}::${line.title}`));
 
-  function raise(orderNumber: string, line: { title: string; image: string; price: number }) {
-    const request: ReturnRequest = {
-      id: nextReturnId(),
-      orderNumber,
-      productTitle: line.title,
-      image: line.image,
-      reason,
-      status: "requested",
-      requestedAt: new Date().toISOString(),
-      refundAmount: line.price,
-      refundMode: "Original payment method",
-    };
-    setRequests((r) => [request, ...r]);
-    setOpenFor(null);
-    toast({
-      title: "Return requested",
-      description: `${line.title} — pickup will be scheduled within 24 hours.`,
-      image: line.image,
+  function raise(order: Order, line: { id: string; title: string; image: string }) {
+    setError(null);
+    startTransition(async () => {
+      const result = await requestReturn({
+        orderId: order.id,
+        orderLineId: line.id,
+        reason,
+      });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setOpenFor(null);
+      toast({
+        title: "Return requested",
+        description: `${line.title} — pickup will be scheduled within 24 hours.`,
+        image: line.image,
+      });
+      router.refresh();
     });
   }
 
@@ -200,9 +210,7 @@ export function ReturnsClient({ seeded }: { seeded: ReturnRequest[] }) {
           Delivered items are eligible for the return window shown on each product page.
         </p>
 
-        {!hydrated ? (
-          <div className="skeleton h-32 rounded-xl" />
-        ) : eligible.length === 0 ? (
+        {eligible.length === 0 ? (
           <EmptyState
             icon={<PackageOpen size={24} />}
             title="Nothing eligible right now"
@@ -276,8 +284,13 @@ export function ReturnsClient({ seeded }: { seeded: ReturnRequest[] }) {
                           A pickup will be scheduled within 24 hours. Keep the item in its original
                           packaging with all tags attached.
                         </p>
+                        {error && (
+                          <p role="alert" className="mt-3 text-[12.5px] font-medium text-sale-600">
+                            {error}
+                          </p>
+                        )}
                         <div className="mt-3 flex gap-2">
-                          <Button size="sm" onClick={() => raise(order.number, line)}>
+                          <Button size="sm" loading={pending} onClick={() => raise(order, line)}>
                             Confirm return
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => setOpenFor(null)}>

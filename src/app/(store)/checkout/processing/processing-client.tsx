@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { Check, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Check, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/store";
+import { placeOrder } from "@/services/commerce";
 import { cn, formatINR } from "@/lib/utils";
 
 const STAGES = [
@@ -16,45 +19,113 @@ const STAGES = [
   { label: "Done", detail: "Payment received", ms: 700 },
 ];
 
+type Outcome =
+  | { ok: true; orderId: string }
+  | { ok: false; error: string };
+
 export function ProcessingClient() {
   const [stage, setStage] = useState(0);
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
   const router = useRouter();
-  const { pendingOrder, dispatch, hydrated } = useStore();
+  const { pendingCheckout, dispatch, hydrated } = useStore();
   const reduce = usePrefersReducedMotion();
 
-  const amount = pendingOrder?.totals.total ?? null;
+  const amount = pendingCheckout?.amount ?? null;
+  const failed = outcome && !outcome.ok ? outcome.error : null;
+  // "Confirmed" means the order really exists, not just that the animation ran.
+  const complete = Boolean(outcome?.ok) && stage >= STAGES.length;
+  // While the server is still working, hold the last step on its spinner.
+  const shown = outcome?.ok ? stage : Math.min(stage, STAGES.length - 1);
 
-  // Placing the order clears pendingOrder, which re-runs the effect below.
-  // Without this latch that re-run would treat the cleared order as "nothing
-  // to pay for" and bounce the customer to the cart mid-navigation.
-  const placed = useRef(false);
+  /**
+   * The order is created exactly once. `sent` also guards the bounce below:
+   * finishing an order clears the staged checkout, and without it that would
+   * read as "nothing to pay for" and throw the customer back to their bag.
+   */
+  const sent = useRef(false);
 
+  // Nothing staged and nothing sent means the customer landed here directly.
   useEffect(() => {
-    if (!hydrated || placed.current) return;
+    if (hydrated && !pendingCheckout && !sent.current) router.replace("/cart");
+  }, [hydrated, pendingCheckout, router]);
 
-    if (!pendingOrder) {
-      router.replace("/cart");
-      return;
-    }
-
+  // The reassuring bank-style stages. Purely cosmetic, and independent of the
+  // request so a slow server just means the last stage waits a little longer.
+  useEffect(() => {
+    if (!pendingCheckout || failed) return;
     const timers: ReturnType<typeof setTimeout>[] = [];
     let elapsed = 0;
-
     STAGES.forEach((s, i) => {
       elapsed += s.ms;
       timers.push(setTimeout(() => setStage(i + 1), elapsed));
     });
-
-    timers.push(
-      setTimeout(() => {
-        placed.current = true;
-        dispatch({ type: "order/place", order: pendingOrder });
-        router.replace(`/order/${pendingOrder.id}?placed=1`);
-      }, elapsed + 500),
-    );
-
     return () => timers.forEach(clearTimeout);
-  }, [hydrated, pendingOrder, dispatch, router]);
+  }, [pendingCheckout, failed]);
+
+  // Deliberately not cancelled on cleanup: a request already sent has to be
+  // seen through, or a customer could end up with an order they never saw.
+  useEffect(() => {
+    if (!hydrated || !pendingCheckout || sent.current) return;
+    sent.current = true;
+
+    placeOrder(pendingCheckout.input)
+      .then((result) =>
+        setOutcome(
+          result.ok
+            ? { ok: true, orderId: result.data.orderId }
+            : { ok: false, error: result.error },
+        ),
+      )
+      .catch(() =>
+        setOutcome({
+          ok: false,
+          error: "We could not reach the payment service. Nothing has been charged.",
+        }),
+      );
+  }, [hydrated, pendingCheckout]);
+
+  // Move on only once the order exists and the stages have played out.
+  useEffect(() => {
+    if (!outcome?.ok || stage < STAGES.length) return;
+    dispatch({ type: "checkout/complete" });
+    router.replace(`/order/${outcome.orderId}?placed=1`);
+  }, [outcome, stage, dispatch, router]);
+
+  if (failed) {
+    return (
+      <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md rounded-2xl border border-hairline bg-surface p-7 text-center">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sale-50 text-sale-600">
+            <AlertTriangle size={26} />
+          </span>
+          <h1 className="mt-5 font-display text-2xl tracking-[-0.02em] text-ink-950">
+            We could not place this order
+          </h1>
+          <p className="mx-auto mt-2 max-w-sm text-[13.5px] leading-relaxed text-ink-600">{failed}</p>
+          <p className="mt-3 text-[12px] text-ink-500">
+            Nothing has been charged and your bag is exactly as you left it.
+          </p>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Button
+              size="md"
+              onClick={() => {
+                dispatch({ type: "checkout/abort" });
+                router.push("/cart");
+              }}
+            >
+              Back to my bag
+            </Button>
+            <Link
+              href="/contact"
+              className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-medium text-ink-600 hover:text-ink-900"
+            >
+              Contact support
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
@@ -71,7 +142,7 @@ export function ProcessingClient() {
               className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur"
             >
               <AnimatePresence mode="wait">
-                {stage >= STAGES.length ? (
+                {complete ? (
                   <motion.span
                     key="done"
                     initial={{ scale: 0.5, opacity: 0 }}
@@ -89,10 +160,10 @@ export function ProcessingClient() {
             </motion.div>
 
             <h1 className="mt-5 font-display text-2xl tracking-[-0.02em] text-white">
-              {stage >= STAGES.length ? "Payment confirmed" : "Processing your payment"}
+              {complete ? "Payment confirmed" : "Processing your payment"}
             </h1>
             <p className="mt-1.5 text-[13px] text-white/60">
-              {stage >= STAGES.length
+              {complete
                 ? "Taking you to your order confirmation…"
                 : "Please do not close this window or press back."}
             </p>
@@ -105,8 +176,8 @@ export function ProcessingClient() {
 
           <ol className="divide-y divide-hairline">
             {STAGES.map((s, i) => {
-              const done = i < stage;
-              const active = i === stage;
+              const done = i < shown;
+              const active = i === shown;
               return (
                 <li key={s.label} className="flex items-center gap-3 px-5 py-3.5">
                   <span
@@ -155,7 +226,7 @@ export function ProcessingClient() {
         </div>
 
         <p className="mt-6 text-center text-[11.5px] leading-relaxed text-ink-400">
-          This is a demonstration checkout. No payment gateway is connected and no money moves.
+          Your order is created and stock is reserved for real. The payment step is simulated — no gateway is connected and no money moves.
         </p>
       </div>
     </div>

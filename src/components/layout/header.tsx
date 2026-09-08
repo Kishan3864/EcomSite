@@ -1,6 +1,6 @@
 import { HeaderClient } from "./header-client";
 import { getSearchDocs } from "@/services/search-docs";
-import { getCategories } from "@/services/catalog";
+import { getCategories, getOffers } from "@/services/catalog";
 
 /**
  * Server shell for the header.
@@ -10,6 +10,12 @@ import { getCategories } from "@/services/catalog";
  * browser bundle and admin edits to categories show up on the next request.
  */
 export async function Header() {
-  const [searchDocs, categories] = await Promise.all([getSearchDocs(), getCategories()]);
-  return <HeaderClient searchDocs={searchDocs} categories={categories} />;
+  const [searchDocs, categories, offers] = await Promise.all([
+    getSearchDocs(),
+    getCategories(),
+    getOffers(),
+  ]);
+  return (
+    <HeaderClient searchDocs={searchDocs} categories={categories} offerCount={offers.length} />
+  );
 }

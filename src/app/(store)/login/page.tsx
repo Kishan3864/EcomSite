@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
+import { getCustomerSession } from "@/lib/auth/customer";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -9,7 +11,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/login" },
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  // Already signed in? There is nothing to do here.
+  const [session, params] = await Promise.all([getCustomerSession(), searchParams]);
+  const next = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : undefined;
+  if (session) redirect(next ?? "/account");
+
   return (
     <AuthShell
       title="Welcome back"
@@ -25,7 +36,7 @@ export default function LoginPage() {
         </>
       }
     >
-      <LoginForm />
+      <LoginForm next={next} />
     </AuthShell>
   );
 }

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  ArrowRight,
   Headset,
   Mail,
   MapPin,
@@ -13,6 +12,7 @@ import { BRAND, Logo } from "@/components/brand/logo";
 import { InstagramIcon, XIcon, YoutubeIcon } from "@/components/brand/social-icons";
 import { getCategories } from "@/services/catalog";
 import { trustBadges } from "@/data/marketing";
+import { NewsletterForm } from "./newsletter-form";
 
 const TRUST_ICONS = {
   truck: Truck,
@@ -94,35 +94,7 @@ export async function Footer() {
               our maker studios. Unsubscribe in one click.
             </p>
           </div>
-          <form className="w-full" action="/contact">
-            <div className="flex flex-col gap-2.5 sm:flex-row">
-              <label htmlFor="newsletter-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="newsletter-email"
-                name="email"
-                type="email"
-                required
-                placeholder="you@example.in"
-                className="h-12 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-white outline-none transition-colors placeholder:text-white/35 focus:border-gold-400 focus:bg-white/10"
-              />
-              <button
-                type="submit"
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gold-500 px-6 text-sm font-semibold text-ink-950 transition-colors hover:bg-gold-400"
-              >
-                Subscribe
-                <ArrowRight size={16} />
-              </button>
-            </div>
-            <p className="mt-3 text-[11.5px] text-white/40">
-              By subscribing you agree to our{" "}
-              <Link href="/legal/privacy" className="underline underline-offset-2 hover:text-white/70">
-                privacy policy
-              </Link>
-              .
-            </p>
-          </form>
+          <NewsletterForm />
         </div>
       </div>
 

@@ -5,10 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, Package, RotateCcw, Star } from "lucide-react";
-import type { OrderStatus } from "@/lib/types";
+import type { Order, OrderStatus } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
-import { useStore } from "@/store/store";
+
 import { cn, formatDate, formatINR, statusLabel } from "@/lib/utils";
 
 const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
@@ -28,8 +28,8 @@ const STATUS_TONE: Record<string, string> = {
   returned: "bg-ink-100 text-ink-600",
 };
 
-export function OrdersClient() {
-  const { orders, hydrated } = useStore();
+export function OrdersClient({ orders }: { orders: Order[] }) {
+
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["id"]>("all");
 
   const filtered = useMemo(() => {
@@ -39,16 +39,6 @@ export function OrdersClient() {
     return orders.filter((o) => o.status === filter);
   }, [orders, filter]);
 
-  if (!hydrated) {
-    return (
-      <div className="space-y-3">
-        {[0, 1, 2].map((i) => (
-          <div key={i} className="skeleton h-40 rounded-xl" />
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-5">
       <header>
@@ -56,7 +46,7 @@ export function OrdersClient() {
           My orders
         </h1>
         <p className="mt-2 text-[14px] text-ink-600">
-          Every order placed on this device, newest first.
+          Every order on your account, newest first.
         </p>
       </header>
 

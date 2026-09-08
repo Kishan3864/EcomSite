@@ -23,7 +23,6 @@ import { SearchBar } from "./search-bar";
 import type { SearchDoc } from "@/lib/search-index";
 import type { Category } from "@/lib/types";
 import { Drawer } from "@/components/ui/overlay";
-import { offers } from "@/data/marketing";
 import { useStore } from "@/store/store";
 import { cartCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -31,9 +30,11 @@ import { cn } from "@/lib/utils";
 export function HeaderClient({
   searchDocs,
   categories,
+  offerCount,
 }: {
   searchDocs: SearchDoc[];
   categories: Category[];
+  offerCount: number;
 }) {
   const [scrolled, setScrolled] = useState(false);
   // The drawers are keyed to the route they were opened on, so navigating
@@ -41,7 +42,7 @@ export function HeaderClient({
   const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
   const [searchOpenAt, setSearchOpenAt] = useState<string | null>(null);
   const pathname = usePathname();
-  const { cart, wishlist, hydrated, openCartDrawer } = useStore();
+  const { cart, wishlist, customer, sessionChecked, hydrated, openCartDrawer } = useStore();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -57,7 +58,7 @@ export function HeaderClient({
 
   return (
     <>
-      <AnnouncementBar />
+      <AnnouncementBar offerCount={offerCount} />
 
       <header
         className={cn(
@@ -73,7 +74,12 @@ export function HeaderClient({
               <SearchBar docs={searchDocs} />
             </div>
             <nav className="flex items-center gap-1" aria-label="Account and cart">
-              <HeaderAction href="/account" icon={<User size={19} />} label="Account" sublabel="Sign in" />
+              <HeaderAction
+                href="/account"
+                icon={<User size={19} />}
+                label={customer ? `Hi, ${customer.name.split(" ")[0]}` : "Account"}
+                sublabel={customer ? "Your orders" : sessionChecked ? "Sign in" : ""}
+              />
               <HeaderAction
                 href="/wishlist"
                 icon={<Heart size={19} />}
@@ -231,13 +237,14 @@ function HeaderAction({
   );
 }
 
-function AnnouncementBar() {
+function AnnouncementBar({ offerCount }: { offerCount: number }) {
+  const { config } = useStore();
   const items = [
-    "Free delivery on orders above ₹999",
+    `Free delivery on orders above ₹${config.rates.freeThreshold.toLocaleString("en-IN")}`,
     "Use MAYURA10 for 10% off your first order",
     "14-day easy returns, free pickup",
     "100% genuine, sourced direct from brands",
-    `${offers.length} live offers today`,
+    offerCount > 0 ? `${offerCount} live offers today` : "New arrivals every week",
   ];
 
   return (
@@ -271,7 +278,7 @@ function MobileMenu({
   categories: Category[];
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
-  const { wishlist, orders, hydrated } = useStore();
+  const { wishlist, customer, hydrated } = useStore();
 
   return (
     <Drawer open={open} onClose={onClose} side="left" className="max-w-[330px]">
@@ -287,23 +294,46 @@ function MobileMenu({
       </div>
 
       <div className="border-b border-hairline bg-brand-950 px-5 py-5 text-white">
-        <p className="font-display text-lg tracking-[-0.01em]">Welcome back</p>
+        <p className="font-display text-lg tracking-[-0.01em]">
+          {customer ? `Hello, ${customer.name.split(" ")[0]}` : "Welcome back"}
+        </p>
         <p className="mt-0.5 text-xs text-white/60">
-          Sign in for faster checkout and order tracking.
+          {customer
+            ? customer.email
+            : "Sign in for faster checkout and order tracking."}
         </p>
         <div className="mt-3.5 flex gap-2">
-          <Link
-            href="/login"
-            className="flex-1 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold text-ink-950"
-          >
-            Sign in
-          </Link>
-          <Link
-            href="/register"
-            className="flex-1 rounded-lg border border-white/25 px-3 py-2 text-center text-[13px] font-semibold text-white"
-          >
-            Create account
-          </Link>
+          {customer ? (
+            <>
+              <Link
+                href="/account"
+                className="flex-1 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold text-ink-950"
+              >
+                My account
+              </Link>
+              <Link
+                href="/account/orders"
+                className="flex-1 rounded-lg border border-white/25 px-3 py-2 text-center text-[13px] font-semibold text-white"
+              >
+                My orders
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="flex-1 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold text-ink-950"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className="flex-1 rounded-lg border border-white/25 px-3 py-2 text-center text-[13px] font-semibold text-white"
+              >
+                Create account
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -375,7 +405,7 @@ function MobileMenu({
         <ul className="space-y-0.5">
           {[
             { href: "/offers", label: "Offers and deals" },
-            { href: "/account/orders", label: `My orders${hydrated && orders.length ? ` (${orders.length})` : ""}` },
+            { href: "/account/orders", label: "My orders" },
             { href: "/wishlist", label: `Wishlist${hydrated && wishlist.length ? ` (${wishlist.length})` : ""}` },
             { href: "/track", label: "Track an order" },
             { href: "/account/returns", label: "Returns" },

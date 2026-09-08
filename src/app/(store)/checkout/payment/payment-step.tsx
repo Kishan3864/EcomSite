@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, OptionCard, Select } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
-import { banks, deliveryOptions, paymentMethods, upiApps, wallets } from "@/data/marketing";
+import { banks, upiApps, wallets } from "@/data/marketing";
 import { cn, formatINR } from "@/lib/utils";
 
 const ICONS: Record<PaymentMethodId, typeof Wallet> = {
@@ -32,7 +32,7 @@ const ICONS: Record<PaymentMethodId, typeof Wallet> = {
 };
 
 export function PaymentStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, dispatch, hydrated } = useStore();
+  const { cart, coupon, checkout, config, dispatch, hydrated } = useStore();
   const router = useRouter();
   const [detail, setDetail] = useState(checkout.paymentDetail ?? "");
   const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
@@ -43,7 +43,7 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
   }, [hydrated, cart.length, checkout.addressId, router]);
 
   const selectedDelivery =
-    deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? deliveryOptions[0];
+    config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0];
   const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
   const applied = offers.find((o) => o.code === coupon) ?? null;
   const check = applied
@@ -51,10 +51,11 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
     : { ok: false, discount: 0 };
   const totals = computeTotals(cart, {
     delivery: selectedDelivery,
+    rates: config.rates,
     coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
-  const codAllowed = totals.total <= 25000;
+  const codAllowed = totals.total <= config.codLimit;
 
   function choose(id: PaymentMethodId) {
     dispatch({ type: "checkout/patch", patch: { paymentMethod: id, paymentDetail: null } });
@@ -118,7 +119,7 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
     >
       <div className="space-y-4">
         <ul className="space-y-3">
-          {paymentMethods.map((method) => {
+          {config.paymentMethods.map((method) => {
             const Icon = ICONS[method.id];
             const disabled = method.id === "cod" && !codAllowed;
 

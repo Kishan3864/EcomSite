@@ -11,7 +11,7 @@ import {
   Ticket,
   UserRound,
 } from "lucide-react";
-import { customer } from "@/data/marketing";
+import { logoutAction } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -24,13 +24,29 @@ const LINKS = [
   { href: "/offers", label: "Coupons", icon: Ticket },
 ];
 
-export function AccountNav() {
-  const pathname = usePathname();
-  const { orders, wishlist, hydrated } = useStore();
+export interface AccountProfile {
+  name: string;
+  email: string;
+  tier: string;
+  loyaltyPoints: number;
+  memberSince: string;
+  avatarInitials: string;
+}
 
-  const counts: Record<string, number> = hydrated
-    ? { "/account/orders": orders.length, "/wishlist": wishlist.length }
-    : {};
+export function AccountNav({
+  profile,
+  orderCount,
+}: {
+  profile: AccountProfile | null;
+  orderCount: number;
+}) {
+  const pathname = usePathname();
+  const { wishlist, hydrated } = useStore();
+
+  const counts: Record<string, number> = {
+    "/account/orders": orderCount,
+    "/wishlist": hydrated ? wishlist.length : 0,
+  };
 
   return (
     <div className="space-y-4">
@@ -38,11 +54,11 @@ export function AccountNav() {
         <div className="peacock-surface p-5">
           <div className="flex items-center gap-3">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold-400 text-[15px] font-bold text-brand-950">
-              {customer.avatarInitials}
+              {profile?.avatarInitials ?? "··"}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-semibold text-white">{customer.name}</p>
-              <p className="truncate text-[12px] text-white/60">{customer.email}</p>
+              <p className="truncate text-[15px] font-semibold text-white">{profile?.name}</p>
+              <p className="truncate text-[12px] text-white/60">{profile?.email}</p>
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2.5 backdrop-blur">
@@ -50,19 +66,19 @@ export function AccountNav() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/50">
                 Membership
               </p>
-              <p className="text-[13px] font-semibold text-gold-300">{customer.tier}</p>
+              <p className="text-[13px] font-semibold text-gold-300">{profile?.tier}</p>
             </div>
             <div className="text-right">
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/50">
                 Points
               </p>
               <p className="text-[13px] font-semibold tabular-nums text-white">
-                {customer.loyaltyPoints.toLocaleString("en-IN")}
+                {(profile?.loyaltyPoints ?? 0).toLocaleString("en-IN")}
               </p>
             </div>
           </div>
           <p className="mt-3 text-[11px] text-white/40">
-            Member since {formatDate(customer.memberSince, "short")}
+            Member since {profile ? formatDate(profile.memberSince, "short") : "—"}
           </p>
         </div>
       </div>
@@ -99,13 +115,15 @@ export function AccountNav() {
             );
           })}
           <li>
-            <Link
-              href="/login"
-              className="flex items-center gap-3 px-4 py-3 text-[13.5px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
-            >
-              <LogOut size={16} className="text-ink-400" />
-              Sign out
-            </Link>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13.5px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
+              >
+                <LogOut size={16} className="text-ink-400" />
+                Sign out
+              </button>
+            </form>
           </li>
         </ul>
       </nav>

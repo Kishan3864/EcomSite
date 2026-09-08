@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/primitives";
 import { TrackLookup } from "./track-client";
+import { getCustomerOrders } from "@/services/orders";
 
 export const metadata: Metadata = {
   title: "Track your order",
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/track" },
 };
 
-export default function TrackPage() {
+export default async function TrackPage() {
+  // Signed in, this is a shortcut list; signed out it is simply empty.
+  const orders = await getCustomerOrders();
+
   return (
     <div className="container-page py-5 sm:py-7">
       <Breadcrumbs
@@ -29,7 +33,7 @@ export default function TrackPage() {
         </p>
       </header>
 
-      <TrackLookup />
+      <TrackLookup orders={orders} />
     </div>
   );
 }

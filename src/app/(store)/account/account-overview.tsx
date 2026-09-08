@@ -12,19 +12,33 @@ import {
 } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 import { useStore } from "@/store/store";
-import { customer, returnRequests } from "@/data/marketing";
+import type { Address, Order, ReturnRequest } from "@/lib/types";
 import { cartCount } from "@/lib/pricing";
 import { formatDate, formatINR, statusLabel } from "@/lib/utils";
 
-export function AccountOverview() {
-  const { orders, wishlist, cart, addresses, hydrated } = useStore();
+/**
+ * Orders, returns and addresses come from the account; the wishlist and bag
+ * belong to this browser, so those two counts still come from the store.
+ */
+export function AccountOverview({
+  name,
+  orders,
+  returns,
+  addresses,
+}: {
+  name: string;
+  orders: Order[];
+  returns: ReturnRequest[];
+  addresses: Address[];
+}) {
+  const { wishlist, cart, hydrated } = useStore();
 
   const active = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
   const latest = active[0] ?? orders[0];
 
   const stats = [
-    { label: "Orders placed", value: hydrated ? orders.length : 0, href: "/account/orders", icon: Package },
-    { label: "In transit", value: hydrated ? active.length : 0, href: "/account/orders", icon: Truck },
+    { label: "Orders placed", value: orders.length, href: "/account/orders", icon: Package },
+    { label: "In transit", value: active.length, href: "/account/orders", icon: Truck },
     { label: "Wishlist", value: hydrated ? wishlist.length : 0, href: "/wishlist", icon: Heart },
     { label: "In your bag", value: hydrated ? cartCount(cart) : 0, href: "/cart", icon: Package },
   ];
@@ -33,7 +47,7 @@ export function AccountOverview() {
     <div className="space-y-6">
       <header>
         <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
-          Hello, {customer.name.split(" ")[0]}
+          Hello, {name.split(" ")[0]}
         </h1>
         <p className="mt-2 text-[14px] text-ink-600">
           Everything about your orders, returns and saved details lives here.
@@ -120,7 +134,7 @@ export function AccountOverview() {
             <MapPin size={14} className="text-brand-600" />
             Default address
           </h2>
-          {hydrated && addresses[0] ? (
+          {addresses[0] ? (
             <p className="text-[13px] leading-relaxed text-ink-600">
               <strong className="font-semibold text-ink-900">{addresses[0].fullName}</strong>
               <br />
@@ -145,9 +159,9 @@ export function AccountOverview() {
             <RotateCcw size={14} className="text-brand-600" />
             Recent returns
           </h2>
-          {returnRequests.length > 0 ? (
+          {returns.length > 0 ? (
             <ul className="space-y-2">
-              {returnRequests.slice(0, 2).map((r) => (
+              {returns.slice(0, 2).map((r) => (
                 <li key={r.id} className="text-[13px] text-ink-600">
                   <span className="font-medium text-ink-900">{r.productTitle}</span>
                   <span className="block text-[12px] text-ink-500">

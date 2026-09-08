@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ReturnsClient } from "./returns-client";
-import { returnRequests } from "@/data/marketing";
+import { getCustomerOrders, getCustomerReturns } from "@/services/orders";
 
 export const metadata: Metadata = {
   title: "Returns and refunds",
@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function ReturnsPage() {
-  return <ReturnsClient seeded={returnRequests} />;
+export default async function ReturnsPage() {
+  const [requests, orders] = await Promise.all([getCustomerReturns(), getCustomerOrders()]);
+  return <ReturnsClient requests={requests} orders={orders} />;
 }

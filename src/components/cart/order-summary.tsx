@@ -5,7 +5,8 @@ import { motion } from "motion/react";
 import { ArrowRight, Lock, Truck } from "lucide-react";
 import type { CartLine, DeliveryOption, Offer, OrderTotals } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
-import { estimatedDelivery, FREE_SHIPPING_THRESHOLD } from "@/lib/pricing";
+import { estimatedDelivery } from "@/lib/pricing";
+import { useStore } from "@/store/store";
 import { cn, formatDate, formatINR } from "@/lib/utils";
 
 export function OrderSummary({
@@ -31,8 +32,9 @@ export function OrderSummary({
   showDeliveryEstimate?: boolean;
   className?: string;
 }) {
+  const { config } = useStore();
   const eta = estimatedDelivery(lines, delivery);
-  const toFree = Math.max(0, FREE_SHIPPING_THRESHOLD - totals.itemsTotal);
+  const toFree = Math.max(0, config.rates.freeThreshold - totals.itemsTotal);
 
   const rows: { label: string; value: string; tone?: "muted" | "save" }[] = [
     {

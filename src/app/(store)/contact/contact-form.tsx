@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { CheckCircle2, Send } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
+import { submitContact } from "@/services/commerce";
 
 const TOPICS = [
   "Where is my order?",
@@ -27,7 +28,7 @@ export function ContactForm() {
     message: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const [pending, startTransition] = useTransition();
   const [sent, setSent] = useState(false);
 
   function submit(e: React.FormEvent) {
@@ -42,11 +43,21 @@ export function ContactForm() {
     setErrors(next);
     if (Object.keys(next).length) return;
 
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    // Lands in the admin inbox, where support answers it.
+    startTransition(async () => {
+      const result = await submitContact({
+        name: form.name,
+        email: form.email,
+        topic: form.topic,
+        orderNumber: form.orderNumber || undefined,
+        message: form.message,
+      });
+      if (!result.ok) {
+        setErrors({ message: result.error });
+        return;
+      }
       setSent(true);
-    }, 900);
+    });
   }
 
   if (sent) {
@@ -164,7 +175,7 @@ export function ContactForm() {
           </Link>
           .
         </p>
-        <Button type="submit" size="lg" loading={loading}>
+        <Button type="submit" size="lg" loading={pending}>
           <Send size={16} /> Send message
         </Button>
       </div>

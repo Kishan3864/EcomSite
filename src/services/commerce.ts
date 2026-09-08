@@ -16,6 +16,7 @@ import { passwordProblem } from "@/lib/auth/password";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
 import { getOffer } from "./catalog";
+import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
 
 /**
@@ -135,7 +136,15 @@ export async function placeOrder(
     minDays: speed === "express" ? settings.shipping.expressDays[0] : settings.shipping.standardDays[0],
     maxDays: speed === "express" ? settings.shipping.expressDays[1] : settings.shipping.standardDays[1],
   };
-  const totals = computeTotals(priced, { delivery, coupon });
+  const totals = computeTotals(priced, {
+    delivery,
+    coupon,
+    rates: {
+      freeThreshold: settings.shipping.freeThreshold,
+      standardFee: settings.shipping.standardFee,
+      gstRate: settings.tax.gstRate,
+    },
+  });
 
   if (input.paymentMethod === "cod" && (!settings.payments.cod || totals.total > settings.payments.codLimit))
     return { ok: false, error: `Cash on Delivery is not available on this order.`, field: "payment" };
@@ -434,11 +443,53 @@ export async function removeAddress(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/* ------------------------------ Tracking ----------------------------- */
+
+export interface TrackFormState {
+  error?: string;
+  field?: string;
+  /** Echoed back so a failed lookup does not wipe what was typed. */
+  values?: { number: string; contact: string };
+}
+
+/**
+ * Public tracking. The order number alone is not enough — the visitor also has
+ * to know the email or phone the order was placed with. Once they prove that,
+ * the order is added to this browser's guest cookie so the tracking page can
+ * show it without asking again.
+ */
+export async function trackOrderAction(
+  _prev: TrackFormState,
+  formData: FormData,
+): Promise<TrackFormState> {
+  const number = String(formData.get("number") ?? "").trim();
+  const contact = String(formData.get("contact") ?? "").trim();
+  const values = { number, contact };
+
+  if (!number) return { error: "Enter your order number.", field: "number", values };
+  if (!contact)
+    return { error: "Enter the email or phone used on the order.", field: "contact", values };
+
+  const order = await lookupOrder(number, contact);
+  if (!order)
+    return {
+      error:
+        "No order matches that number and contact detail. Check the confirmation email, or contact support.",
+      field: "number",
+      values,
+    };
+
+  await rememberGuestOrder(order.id);
+  redirect(`/track/${order.id}`);
+}
+
 /* -------------------------------- Auth ------------------------------ */
 
 export interface AuthFormState {
   error?: string;
   field?: string;
+  /** React resets a form after its action runs; this puts the values back. */
+  values?: { name?: string; email?: string; phone?: string };
 }
 
 function safeNext(raw: FormDataEntryValue | null, fallback: string) {
@@ -449,11 +500,12 @@ function safeNext(raw: FormDataEntryValue | null, fallback: string) {
 export async function loginAction(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  if (!EMAIL.test(email)) return { error: "Enter a valid email address.", field: "email" };
-  if (password.length < 6) return { error: "Enter your password.", field: "password" };
+  const values = { email };
+  if (!EMAIL.test(email)) return { error: "Enter a valid email address.", field: "email", values };
+  if (password.length < 6) return { error: "Enter your password.", field: "password", values };
 
   const result = await signInCustomer(email, password);
-  if (!result.ok) return { error: result.reason };
+  if (!result.ok) return { error: result.reason, values };
 
   redirect(safeNext(formData.get("next"), "/account"));
 }
@@ -464,14 +516,16 @@ export async function registerAction(_prev: AuthFormState, formData: FormData): 
   const phone = String(formData.get("phone") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (name.length < 2) return { error: "Tell us your name.", field: "name" };
-  if (!EMAIL.test(email)) return { error: "Enter a valid email address.", field: "email" };
-  if (!PHONE.test(phone.replace(/\s/g, ""))) return { error: "Enter a 10-digit Indian mobile number.", field: "phone" };
+  const values = { name, email, phone };
+  if (name.length < 2) return { error: "Tell us your name.", field: "name", values };
+  if (!EMAIL.test(email)) return { error: "Enter a valid email address.", field: "email", values };
+  if (!PHONE.test(phone.replace(/\s/g, "")))
+    return { error: "Enter a 10-digit Indian mobile number.", field: "phone", values };
   const weak = passwordProblem(password);
-  if (weak) return { error: weak, field: "password" };
+  if (weak) return { error: weak, field: "password", values };
 
   const result = await registerCustomer({ name, email, phone, password });
-  if (!result.ok) return { error: result.reason, field: "email" };
+  if (!result.ok) return { error: result.reason, field: "email", values };
 
   redirect(safeNext(formData.get("next"), "/account"));
 }

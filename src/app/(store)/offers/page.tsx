@@ -11,10 +11,10 @@ import {
   getCategories,
   getFlashDeals,
   getLimitedStock,
+  getBanners,
   getOffers,
   searchProducts,
 } from "@/services/catalog";
-import { midBanners } from "@/data/marketing";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { formatDate } from "@/lib/utils";
 
@@ -36,12 +36,13 @@ const crumbs = [
 ];
 
 export default async function OffersPage() {
-  const [offers, flashDeals, limited, categories, bigDiscounts] = await Promise.all([
+  const [offers, flashDeals, limited, categories, bigDiscounts, banners] = await Promise.all([
     getOffers(),
     getFlashDeals(10),
     getLimitedStock(10),
     getCategories(),
     searchProducts({ minDiscount: 30, sort: "discount", perPage: 15 }),
+    getBanners(),
   ]);
 
   return (
@@ -122,7 +123,7 @@ export default async function OffersPage() {
         products={toCardModels(flashDeals)}
       />
 
-      <FeatureBanner banner={midBanners[0]} />
+      {banners.mid[0] && <FeatureBanner banner={banners.mid[0]} />}
 
       <ProductRail
         eyebrow="Almost gone"

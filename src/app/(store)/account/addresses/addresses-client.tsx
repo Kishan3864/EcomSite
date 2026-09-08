@@ -1,22 +1,63 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { MapPin, Pencil, Plus, Star, Trash2 } from "lucide-react";
 import type { Address } from "@/lib/types";
 import { AddressForm } from "@/components/checkout/address-form";
 import { Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
+import { removeAddress, saveAddress } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { useToast } from "@/components/ui/toast";
 
-export function AddressesClient() {
-  const { addresses, dispatch, hydrated } = useStore();
+/**
+ * Addresses belong to the account, so every change is written to the database
+ * first. The client store is updated alongside it purely so checkout, which is
+ * already open in the same session, sees the change without a round trip.
+ */
+export function AddressesClient({ addresses }: { addresses: Address[] }) {
+  const { dispatch } = useStore();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
+  const router = useRouter();
   const toast = useToast();
 
-  if (!hydrated) return <div className="skeleton h-64 rounded-xl" />;
+  function persist(address: Address, message: string, after?: () => void) {
+    setError(null);
+    startTransition(async () => {
+      const result = await saveAddress(address);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      dispatch({
+        type: address.id === result.data.id && addresses.some((a) => a.id === address.id)
+          ? "address/update"
+          : "address/add",
+        address: { ...address, id: result.data.id },
+      });
+      after?.();
+      toast({ title: message, description: address.line1 });
+      router.refresh();
+    });
+  }
+
+  function drop(address: Address) {
+    setError(null);
+    startTransition(async () => {
+      const result = await removeAddress(address.id);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      dispatch({ type: "address/remove", id: address.id });
+      router.refresh();
+    });
+  }
 
   return (
     <div className="space-y-5">
@@ -27,6 +68,11 @@ export function AddressesClient() {
         <p className="mt-2 text-[14px] text-ink-600">
           Add the places you order to most. You can pick any of them at checkout.
         </p>
+        {error && (
+          <p role="alert" className="mt-3 text-[13px] font-medium text-sale-600">
+            {error}
+          </p>
+        )}
       </header>
 
       <ul className="grid gap-3 sm:grid-cols-2">
@@ -41,11 +87,7 @@ export function AddressesClient() {
                   initial={address}
                   submitLabel="Save changes"
                   onCancel={() => setEditing(null)}
-                  onSave={(updated) => {
-                    dispatch({ type: "address/update", address: updated });
-                    setEditing(null);
-                    toast({ title: "Address updated", description: updated.line1 });
-                  }}
+                  onSave={(updated) => persist(updated, "Address updated", () => setEditing(null))}
                 />
               </div>
             ) : (
@@ -74,13 +116,7 @@ export function AddressesClient() {
                     <Button
                       size="xs"
                       variant="ghost"
-                      onClick={() => {
-                        dispatch({
-                          type: "address/update",
-                          address: { ...address, isDefault: true },
-                        });
-                        toast({ title: "Default address updated", description: address.line1 });
-                      }}
+                      onClick={() => persist({ ...address, isDefault: true }, "Default address updated")}
                     >
                       <Star size={12} /> Make default
                     </Button>
@@ -90,7 +126,7 @@ export function AddressesClient() {
                       size="xs"
                       variant="ghost"
                       className="text-sale-600"
-                      onClick={() => dispatch({ type: "address/remove", id: address.id })}
+                      onClick={() => drop(address)}
                     >
                       <Trash2 size={12} /> Remove
                     </Button>
@@ -117,11 +153,7 @@ export function AddressesClient() {
               </h2>
               <AddressForm
                 onCancel={() => setAdding(false)}
-                onSave={(address) => {
-                  dispatch({ type: "address/add", address });
-                  setAdding(false);
-                  toast({ title: "Address saved", description: address.line1 });
-                }}
+                onSave={(address) => persist(address, "Address saved", () => setAdding(false))}
               />
             </div>
           </motion.div>

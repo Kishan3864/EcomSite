@@ -1,7 +1,17 @@
 import type { CartLine, DeliveryOption, Offer, OrderTotals } from "./types";
 
-export const FREE_SHIPPING_THRESHOLD = 999;
-export const GST_RATE = 0.18;
+/**
+ * Rates the shop owner controls from Settings. The defaults here match the
+ * seeded values and are only a fallback — everything that can reach the
+ * database passes the real ones in.
+ */
+export interface Rates {
+  freeThreshold: number;
+  standardFee: number;
+  gstRate: number;
+}
+
+export const DEFAULT_RATES: Rates = { freeThreshold: 999, standardFee: 79, gstRate: 18 };
 
 export interface CouponResult {
   code: string;
@@ -39,8 +49,10 @@ export function computeTotals(
   options: {
     delivery?: DeliveryOption | null;
     coupon?: { code: string; discount: number; type?: Offer["type"] } | null;
+    rates?: Rates;
   } = {},
 ): OrderTotals {
+  const rates = options.rates ?? DEFAULT_RATES;
   const itemsTotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
   const mrpTotal = lines.reduce((sum, l) => sum + l.mrp * l.quantity, 0);
   const productDiscount = mrpTotal - itemsTotal;
@@ -48,20 +60,20 @@ export function computeTotals(
   const couponDiscount = options.coupon?.discount ?? 0;
 
   const baseShipping = options.delivery?.price ?? 0;
-  const qualifiesFree = itemsTotal >= FREE_SHIPPING_THRESHOLD;
+  const qualifiesFree = itemsTotal >= rates.freeThreshold;
   const waivedByCoupon = options.coupon?.type === "shipping";
 
   const shipping =
     options.delivery?.id === "standard"
-      ? qualifiesFree
+      ? qualifiesFree || waivedByCoupon
         ? 0
-        : 79
+        : rates.standardFee
       : waivedByCoupon
         ? 0
         : baseShipping;
 
   const payable = Math.max(0, itemsTotal - couponDiscount) + shipping;
-  const tax = Math.round(payable - payable / (1 + GST_RATE));
+  const tax = Math.round(payable - payable / (1 + rates.gstRate / 100));
 
   return {
     itemsTotal,

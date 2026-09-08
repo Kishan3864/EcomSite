@@ -10,22 +10,19 @@ import {
   useRef,
   useState,
 } from "react";
-import type {
-  Address,
-  CartLine,
-  DeliverySpeed,
-  Order,
-  PaymentMethodId,
-} from "@/lib/types";
-import { savedAddresses } from "@/data/marketing";
-import { demoOrders } from "@/data/orders";
+import { usePathname } from "next/navigation";
+import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
+import type { PlaceOrderInput } from "@/services/commerce";
+import type { StorefrontConfig } from "@/services/storefront-config";
 
 /* ------------------------------------------------------------------ *
  * Client-side commerce state.
  *
- * Persisted to localStorage today; the same actions map one-to-one onto
- * `/api/cart`, `/api/wishlist` and `/api/orders` calls later — only the
- * reducer's side effects change, not any component that consumes it.
+ * The bag, wishlist and checkout draft live here and persist to
+ * localStorage — they belong to the browser, not the server. Anything
+ * the shop is the source of truth for (orders, saved addresses, who is
+ * signed in) is read from the database instead: server components pass
+ * it down, and `/api/me` refreshes the session-scoped parts on mount.
  * ------------------------------------------------------------------ */
 
 export interface WishlistItem {
@@ -62,19 +59,39 @@ export interface CheckoutDraft {
   deliveryDate: string | null;
 }
 
+export interface StoreCustomer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+}
+
+/**
+ * What the review step hands to the processing screen. The order itself is
+ * created by the server from `input`; `amount` is only what we quote on screen
+ * while the request is in flight.
+ */
+export interface PendingCheckout {
+  input: PlaceOrderInput;
+  amount: number;
+}
+
 export interface StoreState {
   cart: CartLine[];
   saved: CartLine[];
   wishlist: WishlistItem[];
   recent: RecentItem[];
+  /** Signed in: the customer's saved addresses. Guest: this browser's drafts. */
   addresses: Address[];
-  orders: Order[];
-  /** Built at the review step, consumed by the processing screen. */
-  pendingOrder: Order | null;
+  customer: StoreCustomer | null;
+  /** Set at the review step, consumed by the processing screen. */
+  pendingCheckout: PendingCheckout | null;
   coupon: string | null;
   checkout: CheckoutDraft;
   recentSearches: string[];
   hydrated: boolean;
+  /** True once `/api/me` has answered, so the header knows what to greet with. */
+  sessionChecked: boolean;
 }
 
 const INITIAL: StoreState = {
@@ -82,13 +99,13 @@ const INITIAL: StoreState = {
   saved: [],
   wishlist: [],
   recent: [],
-  addresses: savedAddresses,
-  orders: demoOrders,
-  pendingOrder: null,
+  addresses: [],
+  customer: null,
+  pendingCheckout: null,
   coupon: null,
   checkout: {
     contact: null,
-    addressId: savedAddresses.find((a) => a.isDefault)?.id ?? null,
+    addressId: null,
     deliveryId: "standard",
     paymentMethod: null,
     paymentDetail: null,
@@ -97,6 +114,7 @@ const INITIAL: StoreState = {
   },
   recentSearches: [],
   hydrated: false,
+  sessionChecked: false,
 };
 
 type Action =
@@ -116,8 +134,10 @@ type Action =
   | { type: "address/remove"; id: string }
   | { type: "coupon/set"; code: string | null }
   | { type: "checkout/patch"; patch: Partial<CheckoutDraft> }
-  | { type: "order/pending"; order: Order }
-  | { type: "order/place"; order: Order }
+  | { type: "checkout/stage"; pending: PendingCheckout }
+  | { type: "checkout/abort" }
+  | { type: "checkout/complete" }
+  | { type: "session/set"; customer: StoreCustomer | null; addresses: Address[] }
   | { type: "search/record"; term: string }
   | { type: "search/clear" };
 
@@ -127,8 +147,12 @@ function lineKey(productId: string, variantKey?: string) {
 
 function reducer(state: StoreState, action: Action): StoreState {
   switch (action.type) {
-    case "hydrate":
-      return { ...state, ...action.payload, hydrated: true };
+    case "hydrate": {
+      const payload = { ...action.payload };
+      // If the session answered first, its addresses outrank the stored ones.
+      if (state.customer) delete payload.addresses;
+      return { ...state, ...payload, hydrated: true };
+    }
 
     case "cart/add": {
       const id = lineKey(action.line.productId, action.line.variantKey);
@@ -265,18 +289,40 @@ function reducer(state: StoreState, action: Action): StoreState {
     case "checkout/patch":
       return { ...state, checkout: { ...state.checkout, ...action.patch } };
 
-    case "order/pending":
-      return { ...state, pendingOrder: action.order };
+    case "checkout/stage":
+      return { ...state, pendingCheckout: action.pending };
 
-    case "order/place":
+    case "checkout/abort":
+      return { ...state, pendingCheckout: null };
+
+    // The order now lives in the database, so all that is left here is to empty
+    // the bag and forget the coupon and payment choice.
+    case "checkout/complete":
       return {
         ...state,
-        orders: [action.order, ...state.orders],
-        pendingOrder: null,
+        pendingCheckout: null,
         cart: [],
         coupon: null,
         checkout: { ...state.checkout, paymentMethod: null, paymentDetail: null },
       };
+
+    case "session/set": {
+      if (!action.customer) return { ...state, customer: null, sessionChecked: true };
+      // A signed-in customer's addresses come from their account, not this
+      // browser; the checkout selection follows whichever is default.
+      const addressId =
+        action.addresses.find((a) => a.id === state.checkout.addressId)?.id ??
+        action.addresses.find((a) => a.isDefault)?.id ??
+        action.addresses[0]?.id ??
+        null;
+      return {
+        ...state,
+        customer: action.customer,
+        addresses: action.addresses,
+        checkout: { ...state.checkout, addressId },
+        sessionChecked: true,
+      };
+    }
 
     case "search/record":
       return {
@@ -299,14 +345,16 @@ function reducer(state: StoreState, action: Action): StoreState {
 
 const STORAGE_KEY = "mayura.store.v1";
 
+/** Routes where signing in, registering or signing out can happen. */
+const SESSION_ROUTE = /^\/(login|register|account|checkout)/;
+
 const PERSISTED: (keyof StoreState)[] = [
   "cart",
   "saved",
   "wishlist",
   "recent",
   "addresses",
-  "orders",
-  "pendingOrder",
+  "pendingCheckout",
   "coupon",
   "checkout",
   "recentSearches",
@@ -314,6 +362,8 @@ const PERSISTED: (keyof StoreState)[] = [
 
 interface StoreContextValue extends StoreState {
   dispatch: React.Dispatch<Action>;
+  /** Delivery, payment and tax settings, read from the database by the shell. */
+  config: StorefrontConfig;
   cartDrawerOpen: boolean;
   openCartDrawer: () => void;
   closeCartDrawer: () => void;
@@ -321,7 +371,13 @@ interface StoreContextValue extends StoreState {
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
-export function StoreProvider({ children }: { children: React.ReactNode }) {
+export function StoreProvider({
+  config,
+  children,
+}: {
+  config: StorefrontConfig;
+  children: React.ReactNode;
+}) {
   const [state, dispatch] = useReducer(reducer, INITIAL);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const loaded = useRef(false);
@@ -329,23 +385,42 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as Partial<StoreState>;
-        // Demo orders always stay at the bottom of the list.
-        const stored = parsed.orders ?? [];
-        const merged = [
-          ...stored.filter((o) => !demoOrders.some((d) => d.id === o.id)),
-          ...demoOrders,
-        ];
-        dispatch({ type: "hydrate", payload: { ...parsed, orders: merged } });
-      } else {
-        dispatch({ type: "hydrate", payload: {} });
-      }
+      const parsed = raw ? (JSON.parse(raw) as Partial<StoreState>) : {};
+      // Never restore these from storage — the server decides them.
+      delete parsed.customer;
+      delete parsed.sessionChecked;
+      dispatch({ type: "hydrate", payload: parsed });
     } catch {
       dispatch({ type: "hydrate", payload: {} });
     }
     loaded.current = true;
   }, []);
+
+  /**
+   * Who is signed in, and their saved addresses. Fetched rather than rendered
+   * so the catalogue pages stay static and cacheable.
+   *
+   * Re-checked whenever the visitor moves through a route where the session can
+   * begin or end — signing in, registering, signing out of the account — since
+   * those all happen server-side and the provider is never remounted. Browsing
+   * the catalogue costs nothing extra.
+   */
+  const pathname = usePathname();
+  const sessionKey = SESSION_ROUTE.test(pathname) ? pathname : "";
+
+  useEffect(() => {
+    const abort = new AbortController();
+    fetch("/api/me", { signal: abort.signal, cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { customer: StoreCustomer | null; addresses: Address[] } | null) => {
+        if (!data) return;
+        dispatch({ type: "session/set", customer: data.customer, addresses: data.addresses });
+      })
+      .catch(() => {
+        /* offline or aborted — the guest experience still works */
+      });
+    return () => abort.abort();
+  }, [sessionKey]);
 
   useEffect(() => {
     if (!state.hydrated || !loaded.current) return;
@@ -363,8 +438,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const closeCartDrawer = useCallback(() => setCartDrawerOpen(false), []);
 
   const value = useMemo<StoreContextValue>(
-    () => ({ ...state, dispatch, cartDrawerOpen, openCartDrawer, closeCartDrawer }),
-    [state, cartDrawerOpen, openCartDrawer, closeCartDrawer],
+    () => ({ ...state, dispatch, config, cartDrawerOpen, openCartDrawer, closeCartDrawer }),
+    [state, config, cartDrawerOpen, openCartDrawer, closeCartDrawer],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

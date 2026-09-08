@@ -8,14 +8,15 @@ import { Drawer } from "@/components/ui/overlay";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { useStore } from "@/store/store";
-import { computeTotals, FREE_SHIPPING_THRESHOLD } from "@/lib/pricing";
+import { computeTotals } from "@/lib/pricing";
 import { formatINR } from "@/lib/utils";
 
 export function CartDrawer() {
-  const { cart, cartDrawerOpen, closeCartDrawer, dispatch, hydrated } = useStore();
-  const totals = computeTotals(cart, { delivery: null });
-  const toFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - totals.itemsTotal);
-  const progress = Math.min(100, (totals.itemsTotal / FREE_SHIPPING_THRESHOLD) * 100);
+  const { cart, cartDrawerOpen, closeCartDrawer, config, dispatch, hydrated } = useStore();
+  const totals = computeTotals(cart, { delivery: null, rates: config.rates });
+  const freeThreshold = config.rates.freeThreshold;
+  const toFreeShipping = Math.max(0, freeThreshold - totals.itemsTotal);
+  const progress = Math.min(100, (totals.itemsTotal / freeThreshold) * 100);
 
   return (
     <Drawer

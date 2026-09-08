@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import { AccountOverview } from "./account-overview";
+import {
+  getCustomerAddresses,
+  getCustomerOrders,
+  getCustomerProfile,
+  getCustomerReturns,
+} from "@/services/orders";
 
 export const metadata: Metadata = {
   title: "My account",
@@ -7,6 +13,20 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function AccountPage() {
-  return <AccountOverview />;
+export default async function AccountPage() {
+  const [profile, orders, returns, addresses] = await Promise.all([
+    getCustomerProfile(),
+    getCustomerOrders(),
+    getCustomerReturns(),
+    getCustomerAddresses(),
+  ]);
+
+  return (
+    <AccountOverview
+      name={profile?.name ?? "there"}
+      orders={orders}
+      returns={returns}
+      addresses={addresses}
+    />
+  );
 }
