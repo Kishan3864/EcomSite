@@ -67,7 +67,9 @@ if (cmd === "start") {
   if (status()) {
     console.log(`Local Postgres already running on ${PORT}.`);
   } else {
-    run(pgctl, ["-D", DATA, "-l", join(DATA, "server.log"), "-w", "start"]);
+    // Detached + ignored stdio: on Windows pg_ctl otherwise keeps the console
+    // pipe open through the postgres child and never returns.
+    run(pgctl, ["-D", DATA, "-l", join(DATA, "server.log"), "-w", "start"], { stdio: "ignore", windowsHide: true });
   }
   // Create the app database if it is missing (idempotent).
   const exists = spawnSync(

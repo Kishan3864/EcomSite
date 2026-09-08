@@ -1,70 +1,96 @@
-# Mayura — storefront
+# Mayura — storefront + admin
 
-A production-quality customer-facing storefront for an Indian e-commerce brand.
-Next.js App Router, TypeScript, Tailwind v4, Motion. Static/mock data today,
-wired so it can be swapped for a database or API without touching the UI.
+A production-quality Indian e-commerce storefront with a full admin panel, on
+Next.js 16 (App Router), TypeScript, Tailwind v4, Motion, and **Prisma 7 +
+PostgreSQL**.
 
 ```bash
-npm run dev     # http://localhost:3000
-npm run build   # 212 prerendered pages
-npm run lint
+npm install          # also generates the Prisma client
+npm run db:start     # isolated local Postgres 16 on :5433 (first run initialises it)
+npm run db:migrate   # apply migrations
+npm run db:seed      # 137 products, categories, brands, reviews, demo orders, admin user
+npm run dev          # http://localhost:3000  ·  admin at /admin
 ```
 
-## The one thing to know
+Local logins after seeding:
 
-Everything the UI renders comes through **`src/services/`**. Those functions are
-async, take plain arguments and return plain serialisable objects — the exact
-shape a real API would. Replacing a mock body with a `fetch()` or a Prisma query
-is the whole migration; no component changes.
+| Where | Email | Password |
+| --- | --- | --- |
+| `/admin` | `admin@mayura.in` (owner) | `Mayura@2026` |
+| `/login` (storefront) | `ananya.iyer@example.in` | `Ananya@2026` |
+
+Change both from the admin **Settings → Profile** / storefront account before going live.
+
+## How it fits together
 
 ```
-components  →  services/catalog.ts  →  data/*.ts        (today)
-components  →  services/catalog.ts  →  fetch() / db     (later)
+storefront pages  →  src/services/*.ts   →  Prisma (src/lib/db.ts)  →  Postgres
+admin pages       →  db reads in page    →  src/services/admin/*-actions.ts (writes)
 ```
 
-`src/services/catalog.ts` is `server-only`, so the catalogue can never leak into
-a client bundle by accident.
+- **`src/services/catalog.ts`** — every storefront read (products, categories, brands,
+  offers, banners, reviews, Q&A, search). Same function signatures as the phase-1
+  mock layer, so the UI never changed when the database arrived.
+- **`src/services/commerce.ts`** — storefront writes: `placeOrder` (re-prices from the
+  DB, validates stock and coupons, writes order + lines + events, decrements stock),
+  customer auth, addresses, returns, reviews, contact, newsletter.
+- **`src/services/orders.ts`, `settings.ts`, `search-docs.ts`** — order reads and
+  access control, store settings with defaults, header autocomplete index.
+- **`src/services/admin/*-actions.ts`** — one file per admin module; every write
+  validates, logs to `ActivityLog`, and revalidates the storefront.
+- **`src/lib/auth/`** — bcrypt passwords, signed JWT cookies (jose), admin roles
+  (OWNER / MANAGER / STAFF) with token-version revocation, customer sessions, and a
+  signed guest-orders cookie so guests can see their own confirmations.
+- **`src/proxy.ts`** — edge guard for `/admin/*` and `/account/*`.
 
-## Layout
+`docs/admin-module-guide.md` documents the admin conventions and the reference module.
 
-| Path | What lives there |
+## Admin panel (`/admin`)
+
+Dashboard (revenue, orders, AOV, customers, trend, top products, category share,
+attention list) · Orders (workflow, tracking events, shipment, cancel/restock,
+invoice) · Returns (approve → pick-up → refund with restock) · Customers ·
+Products (full editor: images, variants, specs, relations, SEO) · Categories &
+subcategories · Brands · Inventory (adjustments, ledger, CSV export) · Coupons &
+offers · Banners · Reviews & Q&A moderation · Inbox (contact messages,
+newsletter) · Settings (store, shipping, payments, tax, inventory, team, profile) ·
+Activity log.
+
+## Database
+
+- Schema: `prisma/schema.prisma`; migrations in `prisma/migrations/`.
+- Local dev uses an isolated cluster in `./.pgdata` (gitignored) via
+  `scripts/db-local.mjs`, so it never touches a system Postgres on 5432.
+- `npm run db:seed` is idempotent — safe to re-run after a schema change.
+- `npm run db:studio` opens Prisma Studio.
+
+## Environment
+
+Copy `.env.example` → `.env`:
+
+| Variable | Purpose |
 | --- | --- |
-| `src/data/` | Mock data: products, taxonomy, reviews, offers, orders, policies. All images resolve through `data/images.ts` — no URL is written in a component. |
-| `src/services/` | The data boundary. Async, server-only, returns domain objects. |
-| `src/lib/` | Pure logic: types, pricing rules, URL⇄query translation, card view models, formatting. |
-| `src/store/` | Client commerce state (cart, wishlist, orders, checkout draft) via reducer + localStorage. Actions map one-to-one onto future `/api` calls. |
-| `src/components/` | UI, grouped by area. `ui/` holds the primitives every page shares. |
+| `DATABASE_URL` | Postgres connection string |
+| `AUTH_SECRET` | ≥ 24 chars; signs every session cookie |
+| `NEXT_PUBLIC_SITE_URL` | public origin for canonicals and sitemap |
+| `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` | first admin, created by the seed only if none exists |
 
-## Customer journey
+## Deploying to ecom.flexypdf.com
 
-Home → category → subcategory → product → cart → contact → address → delivery →
-payment → review → payment processing → order confirmed → tracking.
-
-Every step works against local state: filters and sorting drive real URLs,
-quantity and wishlist controls persist, coupons validate against minimum spend
-and category rules, and the checkout produces a real order object that appears
-in **My orders** and **Track order**.
+See **`deploy/README.md`** — a step-by-step runbook plus `deploy/deploy.sh`
+(pull → install → migrate → seed-if-empty → build → PM2 reload), an nginx vhost
+and a PM2 process file. It adds one app, one port (3040), one vhost and one
+database, and touches nothing else on the server.
 
 ## Design system
 
 Tokens live in `src/app/globals.css` under `@theme` — peacock teal, marigold,
-rani pink, warm neutrals, plus radius, elevation and easing scales. Change them
-there and the whole storefront follows. Brand identity (mark, wordmark, name,
-contact details) is confined to `src/components/brand/logo.tsx`.
+rani pink, warm neutrals. Brand identity is confined to
+`src/components/brand/logo.tsx`. Type: Fraunces (display) + Plus Jakarta Sans (UI).
 
-Type is Fraunces for display and Plus Jakarta Sans for UI, loaded via
-`next/font`.
+## Not in this phase
 
-## Notes on the build
-
-- **SEO** — per-route metadata and canonicals, Open Graph, JSON-LD for
-  Organization, WebSite, Product, Breadcrumb, ItemList and FAQ, plus a
-  `sitemap.ts` generated from the same service layer the pages use.
-- **Motion** — reduced-motion is respected through
-  `lib/use-reduced-motion.ts`, which reads the media query via
-  `useSyncExternalStore` so the preference never causes a hydration mismatch.
-- **Images** — the product catalogue stays server-side; only a compact search
-  index crosses to the client for the header autocomplete
-  (`services/search-docs.ts` explains the trade).
-- **Not included, by design** — no admin panel, database, payments, or backend.
-  The payment step is a faithful UI with no gateway behind it.
+Payment gateway (checkout simulates authorisation and records the method),
+transactional email (contact replies and password reset are recorded, not sent),
+image uploads (images are URLs — the admin previews them). Each has a clear seam
+in `src/services/` to plug into.
