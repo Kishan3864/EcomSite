@@ -8,6 +8,7 @@ import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { ImagesEditor, RelationPicker, SpecsEditor, VariantsEditor } from "./product-editors";
 import {
+  GST_RATES,
   PRODUCT_BADGES,
   PRODUCT_STATUSES,
   STATUS_HELP,
@@ -30,6 +31,8 @@ export interface ProductFormValues {
   mrp: number | "";
   stock: number;
   lowStockThreshold: number;
+  hsnCode: string;
+  taxRate: number | "";
   badges: string[];
   tags: string[];
   colors: string[];
@@ -70,6 +73,8 @@ const DEFAULTS: ProductFormValues = {
   mrp: "",
   stock: 0,
   lowStockThreshold: 10,
+  hsnCode: "",
+  taxRate: "",
   badges: [],
   tags: [],
   colors: [],
@@ -235,6 +240,27 @@ export function ProductForm({
               </Label>
               <input id="p-low" name="lowStockThreshold" type="number" min={0} step={1} inputMode="numeric" defaultValue={dv("lowStockThreshold", init.lowStockThreshold)} className={cn(inputCls, "tabular-nums")} required />
               <FieldError>{err("lowStockThreshold")}</FieldError>
+            </div>
+            <div>
+              <Label htmlFor="p-hsn" hint="4, 6 or 8 digits, printed on the tax invoice. Blank inherits the category's default." optional>
+                HSN code
+              </Label>
+              <input id="p-hsn" name="hsnCode" inputMode="numeric" maxLength={8} defaultValue={dv("hsnCode", init.hsnCode)} className={cn(inputCls, "font-mono text-[13px]")} placeholder="8517" />
+              <FieldError>{err("hsnCode")}</FieldError>
+            </div>
+            <div>
+              <Label htmlFor="p-tax" hint="Blank inherits the category's default, and failing that the rate in Settings." optional>
+                GST rate
+              </Label>
+              <select id="p-tax" name="taxRate" defaultValue={dv("taxRate", init.taxRate)} className={selectCls} style={selectArrow}>
+                <option value="">Inherit from category</option>
+                {GST_RATES.map((r) => (
+                  <option key={r} value={r}>
+                    {r}%
+                  </option>
+                ))}
+              </select>
+              <FieldError>{err("taxRate")}</FieldError>
             </div>
           </div>
         </FormSection>

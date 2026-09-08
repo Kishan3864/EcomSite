@@ -86,6 +86,10 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
               imageAlt: category.imageAlt,
               highlights: category.highlights,
               featuredBrandSlugs: category.featuredBrandSlugs,
+              // Omitting these would clear them on every save: the action
+              // writes whatever the form posts.
+              defaultHsnCode: category.defaultHsnCode ?? "",
+              defaultTaxRate: category.defaultTaxRate,
               sortOrder: category.sortOrder,
               isActive: category.isActive,
             }}

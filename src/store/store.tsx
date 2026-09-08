@@ -57,6 +57,8 @@ export interface CheckoutDraft {
   paymentDetail: string | null;
   giftWrap: boolean;
   deliveryDate: string | null;
+  /** Supplied by a business buyer who needs the invoice for input credit. */
+  buyerGstin: string | null;
 }
 
 export interface StoreCustomer {
@@ -120,6 +122,7 @@ const INITIAL: StoreState = {
     paymentDetail: null,
     giftWrap: false,
     deliveryDate: null,
+    buyerGstin: null,
   },
   recentSearches: [],
   hydrated: false,

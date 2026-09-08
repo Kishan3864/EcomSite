@@ -10,6 +10,7 @@ import { OrderSummary } from "@/components/cart/order-summary";
 import { Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
+import { GstInvoiceOption } from "@/components/checkout/gst-invoice-option";
 import { useStore } from "@/store/store";
 import { computeTotals, estimatedDelivery, evaluateCoupon } from "@/lib/pricing";
 
@@ -169,6 +170,11 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
             </span>
           </label>
         </div>
+
+        <GstInvoiceOption
+          value={checkout.buyerGstin}
+          onChange={(buyerGstin) => dispatch({ type: "checkout/patch", patch: { buyerGstin } })}
+        />
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <Link

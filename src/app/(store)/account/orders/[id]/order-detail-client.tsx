@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Download,
+  FileText,
   Headset,
   MapPin,
   Package,
@@ -13,7 +13,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { Order } from "@/lib/types";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
 import { formatDate, formatDateTime, formatINR } from "@/lib/utils";
@@ -55,9 +55,9 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => window.print()}>
-            <Download size={14} /> Invoice
-          </Button>
+          <Link href={`/order/${order.id}/invoice`} className={buttonClasses("outline", "sm")}>
+            <FileText size={14} /> Invoice
+          </Link>
           <Link href={`/track/${order.id}`} className={buttonClasses("primary", "sm")}>
             <Truck size={14} /> Track
           </Link>

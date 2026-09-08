@@ -19,6 +19,7 @@ import {
   type VariantType,
 } from "../src/generated/prisma/client";
 
+import { financialYear, gstinState, invoiceNumberFor, stateCode } from "../src/lib/gst";
 import { brands, categories } from "../src/data/taxonomy";
 import { products } from "../src/data/products";
 import { questions, reviews } from "../src/data/reviews";
@@ -64,6 +65,93 @@ const CATEGORY_CODE: Record<string, string> = {
   books: "BOK",
 };
 
+type Tax = [hsn: string, rate: number];
+
+/** Inherited by every product in the category that carries none of its own. */
+export const CATEGORY_TAX: Record<string, Tax> = {
+  electronics: ["8517", 18],
+  fashion: ["6204", 12],
+  "home-living": ["9403", 18],
+  kitchen: ["7323", 12],
+  beauty: ["3304", 18],
+  jewellery: ["7113", 3],
+  sports: ["9506", 18],
+  books: ["4901", 0],
+};
+
+/** Whole subcategories that sit in a different chapter from their category. */
+export const SUBCATEGORY_TAX: Record<string, Tax> = {
+  "electronics/laptops": ["8471", 18],
+  "electronics/audio": ["8518", 18],
+  "electronics/cameras": ["8525", 18],
+  "fashion/men": ["6205", 12],
+  "fashion/footwear": ["6403", 12],
+  "fashion/bags": ["4202", 18],
+  "fashion/watches": ["9102", 18],
+  "home-living/decor": ["9405", 12],
+  "home-living/bedding": ["6302", 12],
+  "home-living/rugs": ["5702", 12],
+  "kitchen/appliances": ["8509", 18],
+  "kitchen/dining": ["6912", 12],
+  "beauty/haircare": ["3305", 18],
+  "beauty/fragrance": ["3303", 18],
+  "beauty/wellness": ["2106", 18],
+  "sports/outdoor": ["4202", 18],
+  "sports/activewear": ["6109", 12],
+  "books/stationery": ["4820", 12],
+  "books/art": ["4820", 12],
+};
+
+/** The few products their subcategory still classifies wrongly. */
+export const PRODUCT_TAX: Record<string, Tax> = {
+  "loomcraft-kota-doria-saree": ["5208", 5],
+  "loomcraft-jute-market-bag": ["6305", 5],
+  "kavya-arched-wall-mirror": ["7009", 18],
+  "kavya-block-print-wall-art": ["4911", 12],
+  "studio-vayu-stoneware-vase": ["6913", 12],
+  "studio-vayu-terrazzo-coasters": ["6810", 18],
+  "studio-vayu-handblown-glasses": ["7013", 18],
+  "copperleaf-brass-serving-platter": ["7418", 12],
+  "copperleaf-airtight-jar-set": ["7013", 18],
+  "studio-vayu-cane-basket-trio": ["4602", 12],
+  "nirvaan-tulsi-green-tea": ["0902", 5],
+  "studio-vayu-gua-sha-stone": ["7116", 3],
+  "studio-vayu-brass-torque": ["7117", 3],
+  "peak-pine-2p-trekking-tent": ["6306", 12],
+  "peak-pine-insulated-bottle-1l": ["9617", 18],
+  "peak-pine-massage-gun": ["9019", 12],
+  "studio-vayu-brass-pen": ["9608", 18],
+  "studio-vayu-watercolour-set": ["3213", 18],
+};
+
+type Classified = { slug: string; categorySlug: string; subcategorySlug: string };
+
+/** What the product itself carries; null means it inherits the category. */
+function ownTax(p: Classified): Tax | null {
+  return PRODUCT_TAX[p.slug] ?? SUBCATEGORY_TAX[`${p.categorySlug}/${p.subcategorySlug}`] ?? null;
+}
+
+/** What checkout would freeze onto an order line, inheritance resolved. */
+function resolvedTax(p: Classified): Tax {
+  return ownTax(p) ?? CATEGORY_TAX[p.categorySlug];
+}
+
+/**
+ * The shop's own registration. Seeded into settings and, separately, copied
+ * onto every seeded order, because an invoice has to reprint the same after the
+ * owner edits the GSTIN or the registered address.
+ */
+const STORE = {
+  name: "Mayura",
+  legalName: "Mayura Commerce Private Limited",
+  tagline: "Made well. Priced honestly.",
+  supportEmail: "hello@mayura.in",
+  supportPhone: "+91 80 4718 2200",
+  address: "4th Floor, Ekam House, 27 Residency Road, Bengaluru 560025",
+  gstin: "29AABCM1234K1ZP",
+  currency: "INR",
+};
+
 function log(label: string, count: number) {
   console.log(`  ${label.padEnd(22)} ${String(count).padStart(4)}`);
 }
@@ -82,34 +170,26 @@ async function seedBrands() {
 async function seedCategories() {
   let subs = 0;
   for (const [i, c] of categories.entries()) {
+    const [defaultHsnCode, defaultTaxRate] = CATEGORY_TAX[c.slug];
+    const base = {
+      name: c.name,
+      menuLabel: c.menuLabel,
+      icon: c.icon,
+      accent: c.accent,
+      description: c.description,
+      imageUrl: c.image.url,
+      imageAlt: c.image.alt,
+      highlights: c.highlights,
+      featuredBrandSlugs: c.featuredBrands,
+      defaultHsnCode,
+      defaultTaxRate,
+      sortOrder: i,
+    };
+
     await db.category.upsert({
       where: { slug: c.slug },
-      create: {
-        id: c.id,
-        slug: c.slug,
-        name: c.name,
-        menuLabel: c.menuLabel,
-        icon: c.icon,
-        accent: c.accent,
-        description: c.description,
-        imageUrl: c.image.url,
-        imageAlt: c.image.alt,
-        highlights: c.highlights,
-        featuredBrandSlugs: c.featuredBrands,
-        sortOrder: i,
-      },
-      update: {
-        name: c.name,
-        menuLabel: c.menuLabel,
-        icon: c.icon,
-        accent: c.accent,
-        description: c.description,
-        imageUrl: c.image.url,
-        imageAlt: c.image.alt,
-        highlights: c.highlights,
-        featuredBrandSlugs: c.featuredBrands,
-        sortOrder: i,
-      },
+      create: { id: c.id, slug: c.slug, ...base },
+      update: base,
     });
 
     for (const [j, s] of c.subcategories.entries()) {
@@ -149,6 +229,7 @@ async function seedProducts() {
 
   for (const [i, p] of products.entries()) {
     const sku = `MAY-${CATEGORY_CODE[p.categorySlug] ?? "GEN"}-${String(i + 1).padStart(4, "0")}`;
+    const own = ownTax(p);
     const base = {
       slug: p.slug,
       sku,
@@ -158,6 +239,8 @@ async function seedProducts() {
       status: "ACTIVE" as const,
       price: p.price,
       mrp: p.mrp,
+      hsnCode: own?.[0] ?? null,
+      taxRate: own?.[1] ?? null,
       stock: p.stock,
       lowStockThreshold: 12,
       soldCount: p.soldCount,
@@ -371,14 +454,28 @@ async function seedCustomer() {
 }
 
 async function seedOrders(customerId: string) {
+  // Keyed by slug, not id: the demo lines carry ids that no longer point at the
+  // product they name, and the slug is the field that still identifies it.
+  const catalogue = new Map(products.map((p) => [p.slug, p]));
   let lines = 0;
-  for (const o of demoOrders) {
+
+  // Oldest first, so the invoice serials run in the order the orders were placed.
+  const placedFirst = [...demoOrders].sort((x, y) => Date.parse(x.placedAt) - Date.parse(y.placedAt));
+
+  for (const o of placedFirst) {
     const existing = await db.order.findUnique({ where: { number: o.number } });
     if (existing) continue;
 
     const a = o.address;
     const method = o.paymentMethod.id.toUpperCase() as "UPI" | "CARD" | "NETBANKING" | "WALLET" | "COD";
     const status = o.status.toUpperCase() as "CONFIRMED" | "PACKED" | "SHIPPED" | "OUT_FOR_DELIVERY" | "DELIVERED";
+    const placedAt = new Date(o.placedAt);
+
+    // The serial is unique across the financial year, and this database may
+    // already hold invoices raised through checkout, so it is counted afresh.
+    const issued = await db.order.count({
+      where: { invoiceNumber: { startsWith: `MYR/${financialYear(placedAt).label}/` } },
+    });
 
     await db.order.create({
       data: {
@@ -412,26 +509,42 @@ async function seedOrders(customerId: string) {
         shipping: o.totals.shipping,
         tax: o.totals.tax,
         total: o.totals.total,
+        invoiceNumber: invoiceNumberFor(placedAt, issued + 1),
+        invoiceDate: placedAt,
+        sellerLegalName: STORE.legalName,
+        sellerAddress: STORE.address,
+        sellerGstin: STORE.gstin,
+        sellerStateCode: gstinState(STORE.gstin),
+        placeOfSupply: a.state,
+        placeOfSupplyCode: stateCode(a.state),
         courier: o.courier,
         awb: o.awb,
         estimatedDelivery: new Date(o.estimatedDelivery),
         deliveredAt: status === "DELIVERED" ? new Date(o.estimatedDelivery) : null,
-        placedAt: new Date(o.placedAt),
+        placedAt,
         lines: {
-          create: o.lines.map((l) => ({
-            id: `${o.id}-${l.productId}`,
-            productId: l.productId,
-            slug: l.slug,
-            title: l.title,
-            brand: l.brand,
-            categorySlug: l.categorySlug,
-            image: l.image,
-            variantLabel: l.variantLabel,
-            variantKey: l.variantKey,
-            price: l.price,
-            mrp: l.mrp,
-            quantity: l.quantity,
-          })),
+          create: o.lines.map((l) => {
+            const product = catalogue.get(l.slug);
+            const [hsnCode, taxRate] = product ? resolvedTax(product) : CATEGORY_TAX[l.categorySlug];
+            return {
+              id: `${o.id}-${l.productId}`,
+              // The demo line ids no longer name the product they describe, so the
+              // link is resolved from the slug that does.
+              productId: catalogue.get(l.slug)?.id ?? null,
+              slug: l.slug,
+              title: l.title,
+              brand: l.brand,
+              categorySlug: l.categorySlug,
+              image: l.image,
+              variantLabel: l.variantLabel,
+              variantKey: l.variantKey,
+              price: l.price,
+              mrp: l.mrp,
+              quantity: l.quantity,
+              hsnCode,
+              taxRate,
+            };
+          }),
         },
         events: {
           create: o.tracking
@@ -507,16 +620,7 @@ async function seedAdmin() {
 
 async function seedSettings() {
   const settings: Record<string, unknown> = {
-    store: {
-      name: "Mayura",
-      legalName: "Mayura Commerce Private Limited",
-      tagline: "Made well. Priced honestly.",
-      supportEmail: "hello@mayura.in",
-      supportPhone: "+91 80 4718 2200",
-      address: "4th Floor, Ekam House, 27 Residency Road, Bengaluru 560025",
-      gstin: "29AABCM1234K1ZP",
-      currency: "INR",
-    },
+    store: STORE,
     shipping: {
       freeThreshold: 999,
       standardFee: 79,

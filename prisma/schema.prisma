@@ -172,6 +172,9 @@ model Category {
   imageAlt           String
   highlights         String[] @default([])
   featuredBrandSlugs String[] @default([])
+  /// Inherited by products in this category that set none of their own.
+  defaultHsnCode     String?
+  defaultTaxRate     Float?
   sortOrder          Int      @default(0)
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
@@ -215,6 +218,12 @@ model Product {
   price             Int
   mrp               Int
   currency          String         @default("INR")
+  /// HSN for goods (SAC for services) — printed on every tax invoice.
+  hsnCode           String?
+  /// GST percentage for this item; falls back to the category, then to Settings.
+  taxRate           Float?
+  /// Unique Quantity Code — Rule 46 asks for the unit alongside the quantity.
+  uqc               String?        @default("NOS")
   stock             Int            @default(0)
   lowStockThreshold Int            @default(10)
   soldCount         Int            @default(0)
@@ -527,6 +536,21 @@ model Order {
   tax             Int     @default(0)
   total           Int
 
+  /// Tax invoice, frozen at the moment it was raised. A GSTIN or a registered
+  /// address the shop changes next year must not rewrite last year's invoices,
+  /// so the seller's details are copied here rather than read from Settings.
+  invoiceNumber     String?   @unique
+  invoiceDate       DateTime?
+  sellerLegalName   String?
+  sellerAddress     String?
+  sellerGstin       String?
+  sellerStateCode   String?
+  /// Where the goods are delivered: it decides CGST+SGST against IGST.
+  placeOfSupply     String?
+  placeOfSupplyCode String?
+  /// Given by a business buyer who needs the invoice for input credit.
+  buyerGstin        String?
+
   courier           String?
   awb               String?
   estimatedDelivery DateTime
@@ -564,6 +588,11 @@ model OrderLine {
   price        Int
   mrp          Int
   quantity     Int
+  /// Snapshotted with the line: an invoice must read the same years later,
+  /// even after the product's HSN or the shop's GST rate has been changed.
+  hsnCode      String?
+  taxRate      Float    @default(18)
+  uqc          String   @default("NOS")
 
   returns ReturnRequest[]
 

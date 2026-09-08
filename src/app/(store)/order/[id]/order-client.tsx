@@ -9,7 +9,7 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import {
   ArrowRight,
   Copy,
-  Download,
+  FileText,
   Check,
   MapPin,
   Package,
@@ -17,7 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { Order } from "@/lib/types";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 
 import { formatDate, formatINR } from "@/lib/utils";
@@ -305,14 +305,12 @@ export function OrderClient({ order }: { order: Order | null }) {
             <Link href={`/track/${order.id}`} className={buttonClasses("outline", "lg", "flex-1")}>
               Track order
             </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => window.print()}
-              className="shrink-0"
+            <Link
+              href={`/order/${order.id}/invoice`}
+              className={buttonClasses("outline", "lg", "shrink-0")}
             >
-              <Download size={16} /> Invoice
-            </Button>
+              <FileText size={16} /> Invoice
+            </Link>
           </div>
 
           <p className="text-center text-[12px] leading-relaxed text-ink-400">

@@ -33,9 +33,10 @@ import {
 } from "lucide-react";
 import { cn, slugify } from "@/lib/utils";
 import { Notice, SubmitButton } from "@/components/admin/client";
-import { FieldError, FormSection, Label, inputCls, textareaCls } from "@/components/admin/ui";
+import { FieldError, FormSection, Label, inputCls, selectArrow, selectCls, textareaCls } from "@/components/admin/ui";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
+import { GST_RATES } from "../products/product-schema";
 
 export interface CategoryFormValues {
   name: string;
@@ -48,6 +49,8 @@ export interface CategoryFormValues {
   imageAlt: string;
   highlights: string[];
   featuredBrandSlugs: string[];
+  defaultHsnCode: string;
+  defaultTaxRate: number | null;
   sortOrder: number | null;
   isActive: boolean;
 }
@@ -466,6 +469,46 @@ export function CategoryForm({
                   : `${orderedSelection.length} selected: ${orderedSelection.join(", ")}`}
               </span>
             </div>
+          </div>
+        </div>
+      </FormSection>
+
+      <FormSection title="Tax defaults" description="Products in this category inherit these unless they set their own.">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="cat-hsn" hint="4, 6 or 8 digits. Printed on the tax invoice for every product that inherits it." optional>
+              Default HSN code
+            </Label>
+            <input
+              id="cat-hsn"
+              name="defaultHsnCode"
+              inputMode="numeric"
+              maxLength={8}
+              defaultValue={initial?.defaultHsnCode ?? ""}
+              className={cn(inputCls, "font-mono text-[13px]")}
+              placeholder="8517"
+            />
+            <FieldError>{err("defaultHsnCode")}</FieldError>
+          </div>
+          <div>
+            <Label htmlFor="cat-tax" hint="Leave blank to fall back to the rate in Settings." optional>
+              Default GST rate
+            </Label>
+            <select
+              id="cat-tax"
+              name="defaultTaxRate"
+              defaultValue={initial?.defaultTaxRate ?? ""}
+              className={selectCls}
+              style={selectArrow}
+            >
+              <option value="">Use the rate in Settings</option>
+              {GST_RATES.map((r) => (
+                <option key={r} value={r}>
+                  {r}%
+                </option>
+              ))}
+            </select>
+            <FieldError>{err("defaultTaxRate")}</FieldError>
           </div>
         </div>
       </FormSection>

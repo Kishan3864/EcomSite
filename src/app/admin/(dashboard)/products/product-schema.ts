@@ -12,6 +12,22 @@ export const STATUS_HELP: Record<ProductStatusValue, string> = {
   ARCHIVED: "Retired. Hidden everywhere but kept for order history.",
 };
 
+/**
+ * The GST rates India actually levies. Shared with the category form, whose
+ * defaults are only ever a fallback for the products inside it.
+ */
+export const GST_RATES = [0, 0.25, 3, 5, 12, 18, 28] as const;
+export type GstRateValue = (typeof GST_RATES)[number];
+
+export function isGstRate(value: number): value is GstRateValue {
+  return (GST_RATES as readonly number[]).includes(value);
+}
+
+/** HSN codes run to 4, 6 or 8 digits; a service SAC is 6. */
+export function isHsnCode(value: string) {
+  return /^\d{4}(?:\d{2}){0,2}$/.test(value);
+}
+
 export const PRODUCT_BADGES = [
   { value: "BESTSELLER", label: "Bestseller" },
   { value: "NEW", label: "New in" },

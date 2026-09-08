@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { logActivity, requireAdmin } from "@/lib/auth/admin";
 import type { FormState } from "./form-state";
 import { bool, lines, list, num, revalidateAdmin, revalidateStorefront, slugify, str } from "./shared";
+import { isGstRate, isHsnCode } from "@/app/admin/(dashboard)/products/product-schema";
 
 /**
  * Categories & subcategories. Both feed the storefront's mega menu, footer and
@@ -48,6 +49,8 @@ async function validateCategory(formData: FormData, currentId?: string) {
   const imageAlt = str(formData, "imageAlt") || name;
   const highlights = lines(formData, "highlights");
   const featuredBrandSlugs = list(formData, "featuredBrandSlugs");
+  const defaultHsnCode = str(formData, "defaultHsnCode");
+  const defaultTaxRateRaw = str(formData, "defaultTaxRate");
   const sortOrderRaw = str(formData, "sortOrder");
   const isActive = bool(formData, "isActive");
 
@@ -71,6 +74,13 @@ async function validateCategory(formData: FormData, currentId?: string) {
   if (highlights.some((h) => h.length > MAX_HIGHLIGHT_LENGTH)) {
     return { error: `Each highlight should be ${MAX_HIGHLIGHT_LENGTH} characters or fewer.`, field: "highlights" } as const;
   }
+  if (defaultHsnCode && !isHsnCode(defaultHsnCode)) {
+    return { error: "Default HSN code must be 4, 6 or 8 digits.", field: "defaultHsnCode" } as const;
+  }
+  const defaultTaxRate = defaultTaxRateRaw === "" ? null : num(formData, "defaultTaxRate", Number.NaN);
+  if (defaultTaxRate !== null && !isGstRate(defaultTaxRate)) {
+    return { error: "Choose one of the listed GST rates, or leave it blank.", field: "defaultTaxRate" } as const;
+  }
   if (sortOrderRaw !== "" && !Number.isInteger(Number(sortOrderRaw))) {
     return { error: "Position must be a whole number.", field: "sortOrder" } as const;
   }
@@ -92,7 +102,21 @@ async function validateCategory(formData: FormData, currentId?: string) {
   if (clash) return { error: `The slug “${slug}” is already used by ${clash.name}.`, field: "slug" } as const;
 
   return {
-    data: { name, slug, menuLabel, icon, accent, description, imageUrl, imageAlt, highlights, featuredBrandSlugs, isActive },
+    data: {
+      name,
+      slug,
+      menuLabel,
+      icon,
+      accent,
+      description,
+      imageUrl,
+      imageAlt,
+      highlights,
+      featuredBrandSlugs,
+      defaultHsnCode: defaultHsnCode || null,
+      defaultTaxRate,
+      isActive,
+    },
     sortOrder,
   } as const;
 }

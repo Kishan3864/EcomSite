@@ -11,6 +11,8 @@ import {
   PRODUCT_STATUSES,
   VARIANT_TYPES,
   WARRANTY_DEFAULT,
+  isGstRate,
+  isHsnCode,
   type ImageInput,
   type ProductBadgeValue,
   type ProductStatusValue,
@@ -186,6 +188,15 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
   const lowStockThreshold = intIn(formData, "lowStockThreshold", 0, 1_000_000, 10);
   if (lowStockThreshold === null) return { error: "Low-stock threshold must be a whole number, 0 or more.", field: "lowStockThreshold" };
 
+  // Both are optional: blank means the category's default, then the rate in Settings.
+  const hsnCode = str(formData, "hsnCode");
+  if (hsnCode && !isHsnCode(hsnCode)) return { error: "HSN code must be 4, 6 or 8 digits.", field: "hsnCode" };
+  const taxRateRaw = str(formData, "taxRate");
+  const taxRate = taxRateRaw === "" ? null : num(formData, "taxRate", Number.NaN);
+  if (taxRate !== null && !isGstRate(taxRate)) {
+    return { error: "Choose one of the listed GST rates, or leave it blank to inherit.", field: "taxRate" };
+  }
+
   const badgeValues = formData.getAll("badges").filter((v): v is string => typeof v === "string");
   const badges: ProductBadgeValue[] = [];
   for (const b of badgeValues) {
@@ -260,6 +271,8 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
       price,
       mrp,
       lowStockThreshold,
+      hsnCode: hsnCode || null,
+      taxRate,
       badges,
       tags,
       colors,
@@ -503,6 +516,8 @@ export async function duplicateProduct(formData: FormData) {
         currency: source.currency,
         stock: 0,
         lowStockThreshold: source.lowStockThreshold,
+        hsnCode: source.hsnCode,
+        taxRate: source.taxRate,
         badges: source.badges,
         tags: source.tags,
         colors: source.colors,

@@ -80,6 +80,7 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
           deliveryId: checkout.deliveryId,
           deliveryDate: checkout.deliveryDate,
           giftWrap: checkout.giftWrap,
+          buyerGstin: checkout.buyerGstin,
           paymentMethod: payment.id,
           paymentDetail: checkout.paymentDetail,
           couponCode: applied && check.ok ? applied.code : null,

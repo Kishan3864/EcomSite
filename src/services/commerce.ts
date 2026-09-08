@@ -15,6 +15,14 @@ import {
 import { passwordProblem } from "@/lib/auth/password";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
+import {
+  financialYear,
+  gstinState,
+  invoiceNumberFor,
+  stateCode,
+  taxOnOrder,
+  toPaise,
+} from "@/lib/gst";
 import { getOffer } from "./catalog";
 import { safeNextPath } from "@/lib/auth/oauth";
 import { lookupOrder } from "./orders";
@@ -42,10 +50,16 @@ export interface PlaceOrderInput {
   deliveryId: DeliverySpeed;
   deliveryDate?: string | null;
   giftWrap: boolean;
+  buyerGstin?: string | null;
   paymentMethod: PaymentMethodId;
   paymentDetail?: string | null;
   couponCode?: string | null;
 }
+
+const INVOICE_PREFIX = "MYR";
+
+/** Delivery is SAC 9968, taxed at 18% — the invoice bills it the same way. */
+const DELIVERY_TAX_RATE = 18;
 
 async function nextOrderNumber(tx: Prisma.TransactionClient) {
   const year = new Date().getFullYear();
@@ -53,6 +67,19 @@ async function nextOrderNumber(tx: Prisma.TransactionClient) {
   // Sequential and human-readable; a collision under concurrent checkouts is
   // caught by the unique index and retried by the caller.
   return `MYR-${year}-${String(5000 + count + 1).padStart(6, "0")}`;
+}
+
+async function nextInvoiceNumber(tx: Prisma.TransactionClient, at: Date) {
+  // One consecutive series per financial year, so the count is scoped to this
+  // year's prefix — the backfilled numbers carry the same shape and are counted
+  // with it. Concurrent checkouts that count the same total both try to insert
+  // the same number: the unique index rejects the loser with P2002, and the
+  // caller's retry counts again, now seeing the committed row.
+  const { label } = financialYear(at);
+  const count = await tx.order.count({
+    where: { invoiceNumber: { startsWith: `${INVOICE_PREFIX}/${label}/` } },
+  });
+  return invoiceNumberFor(at, count + 1, INVOICE_PREFIX);
 }
 
 export async function placeOrder(
@@ -81,11 +108,14 @@ export async function placeOrder(
   // Re-price every line from the catalogue.
   const products = await db.product.findMany({
     where: { id: { in: input.lines.map((l) => l.productId) }, status: "ACTIVE" },
-    include: { variantGroups: { include: { options: true } } },
+    include: {
+      variantGroups: { include: { options: true } },
+      category: { select: { defaultHsnCode: true, defaultTaxRate: true } },
+    },
   });
   const byId = new Map(products.map((p) => [p.id, p]));
 
-  const priced: CartLine[] = [];
+  const priced: (CartLine & { hsnCode: string | null; taxRate: number })[] = [];
   for (const line of input.lines) {
     const product = byId.get(line.productId);
     if (!product) return { ok: false, error: `${line.title} is no longer available.` };
@@ -114,6 +144,11 @@ export async function placeOrder(
       deliveryDays: product.deliveryDays,
       freeShipping: product.freeShipping,
       categorySlug: line.categorySlug,
+      // Resolved now and frozen onto the line: the invoice has to reprint the
+      // same rate years later, whatever the product or the shop is set to then.
+      // A missing HSN is legitimate — a rate is not, so Settings backs it.
+      hsnCode: product.hsnCode ?? product.category.defaultHsnCode ?? null,
+      taxRate: product.taxRate ?? product.category.defaultTaxRate ?? settings.tax.gstRate,
     });
   }
 
@@ -167,12 +202,39 @@ export async function placeOrder(
 
   const method = input.paymentMethod.toUpperCase() as "UPI" | "CARD" | "NETBANKING" | "WALLET" | "COD";
   const email = input.contact.email.toLowerCase().trim();
+  // A business buyer claiming input credit must have their GSTIN on the invoice;
+  // anything that is not one is dropped rather than printed as fact.
+  const gstin = (input.buyerGstin ?? "").trim().toUpperCase();
+  const buyerGstin = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]{3}$/.test(gstin) ? gstin : null;
+
+  // The tax stored on the order is the same figure the invoice will print, from
+  // the same helper: two ways of arriving at it is one way too many on a
+  // document the customer can be asked to produce for a refund or a tax claim.
+  const sellerStateCode = gstinState(settings.store.gstin);
+  const placeCode = stateCode(input.address.state);
+  const taxSummary = taxOnOrder({
+    items: priced.map((l) => ({
+      amountPaise: toPaise(l.price * l.quantity),
+      ratePercent: l.taxRate,
+    })),
+    discountPaise: toPaise(totals.couponDiscount),
+    shipping:
+      totals.shipping > 0
+        ? { amountPaise: toPaise(totals.shipping), ratePercent: DELIVERY_TAX_RATE }
+        : null,
+    interState: sellerStateCode !== placeCode,
+    inclusive: true,
+  });
+  // Stored in whole rupees like every other money column on the order.
+  const taxRupees = Math.round(taxSummary.totals.tax / 100);
 
   let created: { id: string; number: string } | null = null;
   for (let attempt = 0; attempt < 3 && !created; attempt++) {
     try {
       created = await db.$transaction(async (tx) => {
         const number = await nextOrderNumber(tx);
+        const invoicedAt = new Date();
+        const invoiceNumber = await nextInvoiceNumber(tx, invoicedAt);
         const order = await tx.order.create({
           data: {
             number,
@@ -190,6 +252,7 @@ export async function placeOrder(
             deliveryPrice: totals.shipping,
             scheduledDate: speed === "scheduled" ? scheduled : null,
             giftWrap: Boolean(input.giftWrap),
+            buyerGstin,
             shipLabel: input.address.label,
             shipName: input.address.fullName,
             shipPhone: input.address.phone,
@@ -205,8 +268,18 @@ export async function placeOrder(
             couponCode: coupon?.code ?? null,
             couponDiscount: totals.couponDiscount,
             shipping: totals.shipping,
-            tax: totals.tax,
+            tax: taxRupees,
             total: totals.total,
+            invoiceNumber,
+            invoiceDate: invoicedAt,
+            // Copied, not referenced: a GSTIN or a registered address the shop
+            // changes next April must not rewrite the invoice raised today.
+            sellerLegalName: settings.store.legalName,
+            sellerAddress: settings.store.address,
+            sellerGstin: settings.store.gstin,
+            sellerStateCode,
+            placeOfSupply: input.address.state,
+            placeOfSupplyCode: placeCode,
             courier: speed === "express" ? "Mayura Express" : "Mayura Fleet",
             awb: `MYRX${Date.now().toString().slice(-9)}`,
             estimatedDelivery,
@@ -223,6 +296,8 @@ export async function placeOrder(
                 price: l.price,
                 mrp: l.mrp,
                 quantity: l.quantity,
+                hsnCode: l.hsnCode,
+                taxRate: l.taxRate,
               })),
             },
             events: {
