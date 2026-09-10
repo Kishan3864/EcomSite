@@ -1,5 +1,6 @@
 "use server";
 
+import { BUSINESS } from "@/config/business";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@/generated/prisma/client";
@@ -242,11 +243,16 @@ export async function placeOrder(
             contactName: input.contact.name.trim(),
             contactEmail: email,
             contactPhone: input.contact.phone.trim(),
-            status: "CONFIRMED",
-            paymentStatus: method === "COD" ? "COD_PENDING" : "PAID",
+            // An online order is not confirmed until the gateway says the money
+            // arrived. It is written PENDING here and moved to PAID by
+            // src/services/payments.ts, from the webhook. Marking it PAID at
+            // creation would confirm every abandoned checkout as a sale.
+            status: method === "COD" ? "CONFIRMED" : "PENDING",
+            paymentStatus: method === "COD" ? "COD_PENDING" : "PENDING",
             paymentMethod: method,
             paymentDetail: input.paymentDetail ?? null,
-            paymentRef: method === "COD" ? null : `SIM-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+            // Filled with the gateway's payment id once one exists.
+            paymentRef: null,
             deliverySpeed: speed.toUpperCase() as "STANDARD" | "EXPRESS" | "SCHEDULED",
             deliveryName: delivery.name,
             deliveryPrice: totals.shipping,
@@ -280,7 +286,7 @@ export async function placeOrder(
             sellerStateCode,
             placeOfSupply: input.address.state,
             placeOfSupplyCode: placeCode,
-            courier: speed === "express" ? "WeekendCart Express" : "WeekendCart Fleet",
+            courier: BUSINESS.ops.courierPartners[0] ?? "Courier partner",
             awb: `WKCX${Date.now().toString().slice(-9)}`,
             estimatedDelivery,
             lines: {

@@ -20,12 +20,22 @@ const CSP = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  "form-action 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  // Checkout renders the bank and UPI pages inside an iframe it owns.
+  "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com",
+  "child-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
+  // A bank's 3-D Secure page posts back through Razorpay.
+  "form-action 'self' https://api.razorpay.com https://checkout.razorpay.com",
+  // Razorpay's checkout script. It is loaded from their CDN and cannot be
+  // self-hosted: it is versioned by them and must stay current for card
+  // network and UPI changes.
+  "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
-  "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://cdn.pixabay.com",
-  "connect-src 'self'",
+  "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://cdn.pixabay.com https://cdn.razorpay.com https://badges.razorpay.com",
+  // Checkout talks to the gateway directly from the browser, and reports its
+  // own telemetry to lumberjack. Blocking either breaks the payment flow with
+  // no visible error.
+  "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com",
   "manifest-src 'self'",
   "media-src 'self'",
   "worker-src 'self' blob:",
@@ -69,14 +79,18 @@ const SECURITY_HEADERS = [
       "magnetometer=()",
       "microphone=()",
       "midi=()",
-      "payment=()",
+      // Checkout may use the Payment Request API on supported browsers.
+      "payment=(self \"https://checkout.razorpay.com\")",
       "usb=()",
       "interest-cohort=()",
     ].join(", "),
   },
 
   // Keep this origin out of other tabs' process, and out of their reach.
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  // same-origin-allow-popups, not same-origin: Razorpay opens the UPI and
+  // bank flows in a popup and needs a handle back to this window to report the
+  // result. Strict same-origin severs that and the payment silently hangs.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
 
   { key: "X-DNS-Prefetch-Control", value: "on" },

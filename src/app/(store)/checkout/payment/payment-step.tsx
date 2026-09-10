@@ -35,7 +35,6 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
   const { cart, coupon, checkout, config, customer, dispatch, hydrated } = useStore();
   const router = useRouter();
   const [typed, setTyped] = useState<string | null>(null);
-  const [card, setCard] = useState({ number: "", name: "", expiry: "", cvv: "" });
   const [error, setError] = useState<string | null>(null);
   // What they have picked or typed here, or whatever the draft already carries.
   const detail = typed ?? checkout.paymentDetail ?? "";
@@ -89,22 +88,10 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
       setError("Pick an app or enter your UPI ID.");
       return;
     }
-    if (method === "card") {
-      const digits = card.number.replace(/\s/g, "");
-      if (digits.length < 12 || !/^\d+$/.test(digits)) {
-        setError("Enter a valid card number.");
-        return;
-      }
-      if (!/^\d{2}\s?\/\s?\d{2}$/.test(card.expiry)) {
-        setError("Enter the expiry as MM/YY.");
-        return;
-      }
-      if (!/^\d{3,4}$/.test(card.cvv)) {
-        setError("Enter the 3-digit CVV.");
-        return;
-      }
-      resolved = `${card.name || "Card"} ending ${digits.slice(-4)}`;
-    }
+    // Nothing to validate for a card here: the details are collected by the
+    // gateway, on its own page. Collecting them on ours would put this site
+    // in PCI-DSS scope for no benefit.
+    if (method === "card") resolved = "Card";
     if (method === "netbanking" && !detail) {
       setError("Choose your bank.");
       return;
@@ -213,73 +200,11 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
                   )}
 
                   {method.id === "card" && (
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Field label="Card number" htmlFor="card-number" className="sm:col-span-2">
-                        <Input
-                          id="card-number"
-                          inputMode="numeric"
-                          autoComplete="cc-number"
-                          value={card.number}
-                          onChange={(e) => {
-                            const digits = e.target.value.replace(/\D/g, "").slice(0, 16);
-                            setCard((c) => ({
-                              ...c,
-                              number: digits.replace(/(.{4})/g, "$1 ").trim(),
-                            }));
-                            setError(null);
-                          }}
-                          placeholder="4111 1111 1111 1111"
-                        />
-                      </Field>
-                      <Field label="Name on card" htmlFor="card-name" className="sm:col-span-2">
-                        <Input
-                          id="card-name"
-                          autoComplete="cc-name"
-                          value={card.name}
-                          onChange={(e) => setCard((c) => ({ ...c, name: e.target.value }))}
-                          placeholder="ANANYA IYER"
-                        />
-                      </Field>
-                      <Field label="Expiry (MM/YY)" htmlFor="card-expiry">
-                        <Input
-                          id="card-expiry"
-                          inputMode="numeric"
-                          autoComplete="cc-exp"
-                          value={card.expiry}
-                          onChange={(e) => {
-                            const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
-                            setCard((c) => ({
-                              ...c,
-                              expiry:
-                                digits.length > 2
-                                  ? `${digits.slice(0, 2)}/${digits.slice(2)}`
-                                  : digits,
-                            }));
-                            setError(null);
-                          }}
-                          placeholder="09/29"
-                        />
-                      </Field>
-                      <Field label="CVV" htmlFor="card-cvv">
-                        <Input
-                          id="card-cvv"
-                          type="password"
-                          inputMode="numeric"
-                          autoComplete="cc-csc"
-                          value={card.cvv}
-                          onChange={(e) => {
-                            setCard((c) => ({ ...c, cvv: e.target.value.replace(/\D/g, "").slice(0, 4) }));
-                            setError(null);
-                          }}
-                          placeholder="123"
-                        />
-                      </Field>
-                      <p className="flex items-center gap-1.5 text-[11.5px] text-ink-400 sm:col-span-2">
-                        <ShieldCheck size={12} className="text-brand-600" />
-                        This is a demo checkout. Card details are never sent anywhere and nothing
-                        is stored.
-                      </p>
-                    </div>
+                    <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-600">
+                      <ShieldCheck size={14} className="mt-0.5 shrink-0 text-brand-600" />
+                      Your card number, expiry and CVV are entered on Razorpay&apos;s secure page
+                      at the next step. They never reach our servers, and we never store them.
+                    </p>
                   )}
 
                   {method.id === "netbanking" && (

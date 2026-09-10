@@ -17,9 +17,15 @@ datasource db {
   provider = "postgresql"
 }
 
-/* ------------------------------------------------------------------ */
-/*  Enums                                                              */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Enums
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 enum ProductStatus {
   DRAFT
@@ -139,9 +145,15 @@ enum MessageStatus {
   CLOSED
 }
 
-/* ------------------------------------------------------------------ */
-/*  Catalogue                                                          */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Catalogue
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 model Brand {
   id          String   @id @default(cuid())
@@ -332,9 +344,15 @@ model StockMovement {
   @@index([productId, createdAt])
 }
 
-/* ------------------------------------------------------------------ */
-/*  Social proof                                                       */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Social proof
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 model Review {
   id           String       @id @default(cuid())
@@ -375,9 +393,15 @@ model Question {
   @@index([status, createdAt])
 }
 
-/* ------------------------------------------------------------------ */
-/*  Marketing                                                          */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Marketing
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 model Offer {
   id          String    @id @default(cuid())
@@ -424,9 +448,15 @@ model Banner {
   @@index([placement, isActive, sortOrder])
 }
 
-/* ------------------------------------------------------------------ */
-/*  Customers                                                          */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Customers
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 model Customer {
   id            String       @id @default(cuid())
@@ -449,10 +479,10 @@ model Customer {
   upiId            String?
 
   /// Federated sign-in. `providerId` is the provider's own subject id.
-  authProvider   AuthProvider @default(PASSWORD)
-  providerId     String?
-  avatarUrl      String?
-  emailVerified  Boolean      @default(false)
+  authProvider  AuthProvider @default(PASSWORD)
+  providerId    String?
+  avatarUrl     String?
+  emailVerified Boolean      @default(false)
 
   addresses Address[]
   orders    Order[]
@@ -489,26 +519,34 @@ model Address {
   @@index([customerId])
 }
 
-/* ------------------------------------------------------------------ */
-/*  Orders                                                             */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Orders
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 model Order {
   id     String @id @default(cuid())
   number String @unique
 
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   // Guests check out too; these are always filled so support can reach anyone.
   contactName  String
   contactEmail String
   contactPhone String
 
-  status        OrderStatus   @default(CONFIRMED)
-  paymentStatus PaymentStatus @default(PAID)
+  status        OrderStatus      @default(CONFIRMED)
+  paymentStatus PaymentStatus    @default(PAID)
   paymentMethod PaymentMethod
   paymentDetail String?
   paymentRef    String?
+  /// Every attempt made against this order, successful or not.
+  payments      PaymentAttempt[]
 
   deliverySpeed DeliverySpeed @default(STANDARD)
   deliveryName  String
@@ -636,9 +674,15 @@ model ReturnRequest {
   @@index([orderId])
 }
 
-/* ------------------------------------------------------------------ */
-/*  Inbox                                                              */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Inbox
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 model ContactMessage {
   id          String        @id @default(cuid())
@@ -662,9 +706,15 @@ model NewsletterSubscriber {
   createdAt DateTime @default(now())
 }
 
-/* ------------------------------------------------------------------ */
-/*  Admin                                                              */
-/* ------------------------------------------------------------------ */
+/**
+ * ------------------------------------------------------------------
+ */
+/**
+ * Admin
+ */
+/**
+ * ------------------------------------------------------------------
+ */
 
 model AdminUser {
   id           String    @id @default(cuid())
@@ -703,4 +753,72 @@ model StoreSetting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+/// One attempt to pay for an order.
+///
+/// An order can carry several: a customer whose UPI request times out will
+/// simply try again, and each try gets its own gateway records. Keeping them
+/// separate is what lets support answer "where did my money go" precisely
+/// rather than guessing from a single overwritten column.
+model PaymentAttempt {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Razorpay's order id (order_xxx). Created before the customer pays.
+  gatewayOrderId   String  @unique
+  /// Razorpay's payment id (pay_xxx). Only exists once a payment is attempted.
+  gatewayPaymentId String? @unique
+
+  /// Paise, as the gateway counts it — never rupees. Storing what was actually
+  /// sent to the gateway is what makes a mismatch detectable later.
+  amount   Int
+  currency String @default("INR")
+
+  status PaymentAttemptStatus @default(CREATED)
+
+  /// upi, card, netbanking, wallet — as the gateway reports it.
+  method String?
+  /// Which UPI app the customer chose, where the gateway tells us.
+  upiApp String?
+
+  failureCode        String?
+  failureDescription String?
+
+  /// The gateway's own payload, kept verbatim for reconciliation and disputes.
+  payload Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+/// Every webhook the gateway has delivered.
+///
+/// Razorpay retries a webhook until it gets a 2xx, so the same event arrives
+/// several times as a matter of course. The unique event id is what makes
+/// processing idempotent: without it, one payment would confirm one order
+/// repeatedly, decrementing stock and sending mail each time.
+model WebhookEvent {
+  id        String    @id @default(cuid())
+  /// x-razorpay-event-id header. Unique, and that is the entire point.
+  eventId   String    @unique
+  event     String
+  payload   Json
+  /// Set once the event has been acted on; a redelivery then short-circuits.
+  handledAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([event])
 }

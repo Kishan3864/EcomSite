@@ -1,260 +1,381 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { AlertTriangle, Check, Loader2, Lock, ShieldCheck, UserRound } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { useStore } from "@/store/store";
 import { placeOrder } from "@/services/commerce";
+import { confirmPayment, failPayment, paymentStatusOf, startPayment } from "@/services/payments";
 import { cn, formatINR } from "@/lib/utils";
+import { BUSINESS } from "@/config/business";
 
-const STAGES = [
-  { label: "Contacting your bank", detail: "Opening a secure channel", ms: 1400 },
-  { label: "Authorising payment", detail: "Verifying the transaction", ms: 1600 },
-  { label: "Confirming your order", detail: "Reserving stock at the warehouse", ms: 1300 },
-  { label: "Done", detail: "Payment received", ms: 700 },
-];
+/**
+ * Checkout, from a staged basket to a paid order.
+ *
+ * The old version played four reassuring "contacting your bank" stages that
+ * were pure animation, then created an order already marked paid. Now the
+ * stages describe what is genuinely happening, and the order only becomes paid
+ * when Razorpay says the money moved.
+ *
+ * The flow is deliberately paranoid about the last mile. Razorpay's checkout
+ * hands a success back to the browser, and that is checked — but a browser can
+ * be closed, a phone can die, and a UPI collect can land two minutes after the
+ * customer walks away. So the page also polls its own server, and the webhook
+ * confirms the order whether or not anybody is still watching this screen.
+ */
 
-type Outcome =
-  | { ok: true; orderId: string }
-  | { ok: false; error: string; field?: string };
+type Phase =
+  | "creating" // writing the order, still unpaid
+  | "opening" // asking the gateway for a payment session
+  | "waiting" // checkout is open, or the webhook is still to land
+  | "done"
+  | "failed";
+
+type Failure = { message: string; needsAccount?: boolean };
+
+/** The slice of the Razorpay checkout API this page uses. */
+interface RazorpayCheckout {
+  open(): void;
+  on(event: string, handler: (payload: { error?: { description?: string } }) => void): void;
+}
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => RazorpayCheckout;
+  }
+}
+
+const STAGE_LABEL: Record<Phase, { title: string; detail: string }> = {
+  creating: { title: "Preparing your order", detail: "Reserving the items in your bag" },
+  opening: { title: "Opening secure payment", detail: "Handing over to Razorpay" },
+  waiting: { title: "Waiting for payment", detail: "Complete the payment in the window that opened" },
+  done: { title: "Payment confirmed", detail: "Your order is placed" },
+  failed: { title: "Payment not completed", detail: "" },
+};
 
 export function ProcessingClient() {
-  const [stage, setStage] = useState(0);
-  const [outcome, setOutcome] = useState<Outcome | null>(null);
   const router = useRouter();
   const { pendingCheckout, dispatch, hydrated } = useStore();
   const reduce = usePrefersReducedMotion();
 
+  const [phase, setPhase] = useState<Phase>("creating");
+  const [failure, setFailure] = useState<Failure | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [scriptReady, setScriptReady] = useState(false);
+
   const amount = pendingCheckout?.amount ?? null;
-  const failed = outcome && !outcome.ok ? outcome.error : null;
-  // The session can lapse between the review step and this one.
-  const needsAccount = Boolean(outcome && !outcome.ok && outcome.field === "account");
-  // "Confirmed" means the order really exists, not just that the animation ran.
-  const complete = Boolean(outcome?.ok) && stage >= STAGES.length;
-  // While the server is still working, hold the last step on its spinner.
-  const shown = outcome?.ok ? stage : Math.min(stage, STAGES.length - 1);
 
   /**
-   * The order is created exactly once. `sent` also guards the bounce below:
+   * The order is created exactly once. `started` also guards the bounce below:
    * finishing an order clears the staged checkout, and without it that would
    * read as "nothing to pay for" and throw the customer back to their bag.
    */
-  const sent = useRef(false);
+  const started = useRef(false);
 
-  // Nothing staged and nothing sent means the customer landed here directly.
   useEffect(() => {
-    if (hydrated && !pendingCheckout && !sent.current) router.replace("/cart");
+    if (hydrated && !pendingCheckout && !started.current) router.replace("/cart");
   }, [hydrated, pendingCheckout, router]);
 
-  // The reassuring bank-style stages. Purely cosmetic, and independent of the
-  // request so a slow server just means the last stage waits a little longer.
-  useEffect(() => {
-    if (!pendingCheckout || failed) return;
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    let elapsed = 0;
-    STAGES.forEach((s, i) => {
-      elapsed += s.ms;
-      timers.push(setTimeout(() => setStage(i + 1), elapsed));
-    });
-    return () => timers.forEach(clearTimeout);
-  }, [pendingCheckout, failed]);
+  const finish = useCallback(
+    (id: string) => {
+      setPhase("done");
+      dispatch({ type: "checkout/complete" });
+      // A moment on the confirmation so it registers as an outcome rather than
+      // a flash between two screens.
+      setTimeout(() => router.replace(`/order/${id}?placed=1`), 900);
+    },
+    [dispatch, router],
+  );
 
-  // Deliberately not cancelled on cleanup: a request already sent has to be
-  // seen through, or a customer could end up with an order they never saw.
+  /** Open Razorpay's checkout for an order that already exists as PENDING. */
+  const pay = useCallback(
+    async (id: string) => {
+      setPhase("opening");
+
+      const session = await startPayment(id);
+      if (!session.ok || !session.gatewayOrderId || !session.keyId) {
+        setFailure({ message: session.error ?? "We could not start the payment." });
+        setPhase("failed");
+        return;
+      }
+
+      if (!window.Razorpay) {
+        setFailure({
+          message:
+            "The payment window could not load. Check your connection or any ad blocker, then try again.",
+        });
+        setPhase("failed");
+        return;
+      }
+
+      setPhase("waiting");
+
+      const checkout = new window.Razorpay({
+        key: session.keyId,
+        order_id: session.gatewayOrderId,
+        amount: session.amountPaise,
+        currency: "INR",
+        name: BUSINESS.brandName,
+        description: `Order ${session.orderNumber}`,
+        prefill: session.prefill,
+        notes: { orderId: id },
+        theme: { color: "#0b1611" },
+        retry: { enabled: false },
+
+        handler: async (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) => {
+          const result = await confirmPayment({
+            orderId: id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            signature: response.razorpay_signature,
+          });
+
+          if (result.ok && result.status === "paid") {
+            finish(id);
+            return;
+          }
+          if (!result.ok) {
+            setFailure({ message: result.error ?? "This payment could not be verified." });
+            setPhase("failed");
+            return;
+          }
+          // Authorised but not yet settled. The poll below will catch it.
+          setPhase("waiting");
+        },
+
+        modal: {
+          escape: false,
+          ondismiss: async () => {
+            // Closing the window is not proof nothing was paid: a UPI collect
+            // can still be approved on the phone. Ask the server before
+            // declaring failure and releasing the stock.
+            const status = await paymentStatusOf(id);
+            if (status === "paid") {
+              finish(id);
+              return;
+            }
+            await failPayment({
+              orderId: id,
+              gatewayOrderId: session.gatewayOrderId,
+              reason: "Payment window closed before completion",
+            });
+            setFailure({
+              message:
+                "The payment window was closed before the payment completed. Nothing has been charged, and your bag is unchanged.",
+            });
+            setPhase("failed");
+          },
+        },
+      });
+
+      checkout.on("payment.failed", (payload) => {
+        setFailure({
+          message:
+            payload.error?.description ??
+            "The payment did not go through. Nothing has been charged.",
+        });
+        setPhase("failed");
+      });
+
+      checkout.open();
+    },
+    [finish],
+  );
+
+  // Create the order, then pay for it.
   useEffect(() => {
-    if (!hydrated || !pendingCheckout || sent.current) return;
-    sent.current = true;
+    if (!hydrated || !pendingCheckout || started.current || !scriptReady) return;
+    started.current = true;
 
     placeOrder(pendingCheckout.input)
-      .then((result) =>
-        setOutcome(
-          result.ok
-            ? { ok: true, orderId: result.data.orderId }
-            : { ok: false, error: result.error, field: result.field },
-        ),
-      )
-      .catch(() =>
-        setOutcome({
-          ok: false,
-          error: "We could not reach the payment service. Nothing has been charged.",
-        }),
-      );
-  }, [hydrated, pendingCheckout]);
+      .then(async (result) => {
+        if (!result.ok) {
+          setFailure({ message: result.error, needsAccount: result.field === "account" });
+          setPhase("failed");
+          return;
+        }
 
-  // Move on only once the order exists and the stages have played out.
+        setOrderId(result.data.orderId);
+
+        // Cash on delivery takes no gateway: the order is already confirmed.
+        if (pendingCheckout.input.paymentMethod === "cod") {
+          finish(result.data.orderId);
+          return;
+        }
+
+        await pay(result.data.orderId);
+      })
+      .catch(() => {
+        setFailure({
+          message: "We could not reach the payment service. Nothing has been charged.",
+        });
+        setPhase("failed");
+      });
+  }, [hydrated, pendingCheckout, scriptReady, pay, finish]);
+
+  /**
+   * Poll our own database, not the gateway.
+   *
+   * The webhook is what confirms an order, and it can arrive before, during or
+   * after the browser's callback. Polling our own record means whichever gets
+   * there first wins and the customer never waits on the slower one.
+   */
   useEffect(() => {
-    if (!outcome?.ok || stage < STAGES.length) return;
-    dispatch({ type: "checkout/complete" });
-    router.replace(`/order/${outcome.orderId}?placed=1`);
-  }, [outcome, stage, dispatch, router]);
+    if (phase !== "waiting" || !orderId) return;
+    let cancelled = false;
 
-  if (failed) {
+    const id = setInterval(async () => {
+      const status = await paymentStatusOf(orderId);
+      if (cancelled) return;
+      if (status === "paid") {
+        clearInterval(id);
+        finish(orderId);
+      }
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [phase, orderId, finish]);
+
+  const stage = STAGE_LABEL[phase];
+  const complete = phase === "done";
+
+  if (phase === "failed" && failure) {
     return (
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md rounded-2xl border border-hairline bg-surface p-7 text-center">
+        <div className="w-full max-w-md border border-hairline bg-surface p-7 text-center">
           <span
             className={cn(
-              "mx-auto flex h-14 w-14 items-center justify-center rounded-2xl",
-              needsAccount ? "bg-brand-50 text-brand-700" : "bg-sale-50 text-sale-600",
+              "mx-auto flex h-14 w-14 items-center justify-center",
+              failure.needsAccount ? "bg-brand-50 text-brand-700" : "bg-sale-50 text-sale-600",
             )}
           >
-            {needsAccount ? <UserRound size={26} /> : <AlertTriangle size={26} />}
+            {failure.needsAccount ? <UserRound size={26} /> : <AlertTriangle size={26} />}
           </span>
           <h1 className="mt-5 font-display text-2xl tracking-[-0.02em] text-ink-950">
-            {needsAccount ? "An account is needed first" : "We could not place this order"}
+            {failure.needsAccount ? "An account is needed first" : "Payment not completed"}
           </h1>
-          <p className="mx-auto mt-2 max-w-sm text-[13.5px] leading-relaxed text-ink-600">{failed}</p>
-          <p className="mt-3 text-[12px] text-ink-500">
-            Nothing has been charged and your bag is exactly as you left it.
+          <p className="mx-auto mt-2 max-w-sm text-[13.5px] leading-relaxed text-ink-600">
+            {failure.message}
           </p>
+
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
-            {needsAccount ? (
+            {failure.needsAccount ? (
               <>
-                <Link
-                  href="/register?next=/checkout/review"
-                  className={buttonClasses("primary", "md")}
-                >
+                <Link href="/register?next=/checkout/review" className={buttonClasses("primary")}>
                   Create an account
                 </Link>
-                <Link
-                  href="/login?next=/checkout/review"
-                  className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-medium text-ink-600 hover:text-ink-900"
-                >
-                  Sign in instead
+                <Link href="/login?next=/checkout/review" className={buttonClasses("outline")}>
+                  Sign in
                 </Link>
               </>
             ) : (
               <>
-                <Button
-                  size="md"
-                  onClick={() => {
-                    dispatch({ type: "checkout/abort" });
-                    router.push("/cart");
-                  }}
-                >
-                  Back to my bag
-                </Button>
-                <Link
-                  href="/contact"
-                  className="inline-flex h-11 items-center justify-center rounded-lg px-5 text-sm font-medium text-ink-600 hover:text-ink-900"
-                >
-                  Contact support
+                <Link href="/checkout/review" className={buttonClasses("primary")}>
+                  Try again
+                </Link>
+                <Link href="/cart" className={buttonClasses("outline")}>
+                  Back to bag
                 </Link>
               </>
             )}
           </div>
+
+          <p className="mt-6 text-[12px] leading-relaxed text-ink-500">
+            If money left your account, it is a bank-side hold and reverses on its own within 5 to 7
+            business days. Send us the reference and we will chase it.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-          <Logo href={null} size="md" />
-        </div>
+    <>
+      {/* Loaded before the order is created, so the window can open the instant
+          the gateway session exists rather than after a second round trip. */}
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="afterInteractive"
+        onReady={() => setScriptReady(true)}
+        onLoad={() => setScriptReady(true)}
+        onError={() => {
+          setFailure({
+            message:
+              "The payment window could not load. Check your connection or any ad blocker, then try again.",
+          });
+          setPhase("failed");
+        }}
+      />
 
-        <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-lg">
-          <div className="peacock-surface px-6 py-8 text-center">
-            <motion.div
-              animate={reduce ? undefined : { scale: [1, 1.06, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur"
-            >
-              <AnimatePresence mode="wait">
-                {complete ? (
-                  <motion.span
-                    key="done"
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 420, damping: 18 }}
-                  >
-                    <Check size={30} className="text-gold-300" strokeWidth={3} />
-                  </motion.span>
-                ) : (
-                  <motion.span key="spin" exit={{ opacity: 0 }}>
-                    <Loader2 size={28} className="animate-spin text-gold-300" />
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.div>
-
-            <h1 className="mt-5 font-display text-2xl tracking-[-0.02em] text-white">
-              {complete ? "Payment confirmed" : "Processing your payment"}
-            </h1>
-            <p className="mt-1.5 text-[13px] text-white/60">
-              {complete
-                ? "Taking you to your order confirmation…"
-                : "Please do not close this window or press back."}
-            </p>
-            {amount != null && (
-              <p className="mt-4 inline-block rounded-lg bg-white/10 px-4 py-2 text-[15px] font-semibold tabular-nums text-white">
-                {formatINR(amount)}
-              </p>
-            )}
+      <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md">
+          <div className="mb-8 flex justify-center">
+            <Logo href={null} />
           </div>
 
-          <ol className="divide-y divide-hairline">
-            {STAGES.map((s, i) => {
-              const done = i < shown;
-              const active = i === shown;
-              return (
-                <li key={s.label} className="flex items-center gap-3 px-5 py-3.5">
-                  <span
-                    className={cn(
-                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-colors duration-300",
-                      done
-                        ? "bg-brand-600 text-white"
-                        : active
-                          ? "bg-brand-100 text-brand-700"
-                          : "border border-ink-200 text-ink-300",
-                    )}
-                  >
-                    {done ? (
-                      <Check size={13} strokeWidth={3} />
-                    ) : active ? (
-                      <Loader2 size={13} className="animate-spin" />
-                    ) : (
-                      <span className="text-[10px] font-bold">{i + 1}</span>
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span
-                      className={cn(
-                        "block text-[13.5px] font-medium transition-colors",
-                        done || active ? "text-ink-950" : "text-ink-400",
-                      )}
+          <div className="overflow-hidden border border-hairline bg-surface">
+            <div className="peacock-surface px-6 py-8 text-center">
+              <motion.div
+                initial={reduce ? false : { scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="mx-auto flex h-16 w-16 items-center justify-center border border-white/20 bg-white/10"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {complete ? (
+                    <motion.span
+                      key="done"
+                      initial={reduce ? false : { scale: 0.6, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
                     >
-                      {s.label}
-                    </span>
-                    <span className="block text-[11.5px] text-ink-400">{s.detail}</span>
-                  </span>
-                </li>
-              );
-            })}
-          </ol>
+                      <Check size={30} className="text-gold-300" strokeWidth={3} />
+                    </motion.span>
+                  ) : (
+                    <motion.span key="busy" exit={{ opacity: 0 }}>
+                      <Loader2 size={28} className="animate-spin text-white/80" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
 
-          <div className="border-t border-hairline bg-canvas px-5 py-3.5">
-            <p className="flex items-center justify-center gap-1.5 text-[11.5px] text-ink-500">
-              <Lock size={11} className="text-brand-600" />
-              Secured with 256-bit encryption
-              <span className="mx-1 text-ink-300">·</span>
-              <ShieldCheck size={11} className="text-brand-600" />
-              PCI-DSS compliant
-            </p>
+              <h1 className="mt-5 font-display text-[22px] tracking-[-0.02em] text-white">
+                {stage.title}
+              </h1>
+              <p className="mt-1.5 text-[13px] text-white/60">{stage.detail}</p>
+
+              {amount !== null && (
+                <p className="mt-4 font-display text-[26px] leading-none text-white">
+                  {formatINR(amount)}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-3 px-6 py-6">
+              <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">
+                <Lock size={14} className="mt-0.5 shrink-0 text-brand-600" />
+                Your card and UPI details are entered on Razorpay&apos;s secure page. They never
+                reach our servers.
+              </p>
+              <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">
+                <ShieldCheck size={14} className="mt-0.5 shrink-0 text-brand-600" />
+                Do not close this tab. If the payment window did not open, check your pop-up
+                blocker.
+              </p>
+            </div>
           </div>
         </div>
-
-        <p className="mt-6 text-center text-[11.5px] leading-relaxed text-ink-400">
-          Your order is created and stock is reserved for real. The payment step is simulated — no gateway is connected and no money moves.
-        </p>
       </div>
-    </div>
+    </>
   );
 }
