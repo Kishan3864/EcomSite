@@ -6,6 +6,7 @@ import { FieldError, FormSection, Label, inputCls, selectArrow, selectCls, texta
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { LOYALTY_POINTS_MAX, TIER_OPTIONS } from "./customer-meta";
+import { Form } from "@/components/ui/form";
 
 export interface CustomerFormValues {
   name: string;
@@ -31,7 +32,7 @@ export function CustomerForm({
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={formAction} className="grid gap-5">
+    <Form action={formAction} className="grid gap-5">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -130,6 +131,6 @@ export function CustomerForm({
       <div className="flex items-center justify-end gap-2">
         <SubmitButton pendingText="Saving…">Save customer</SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }

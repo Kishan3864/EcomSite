@@ -17,6 +17,7 @@ import {
 } from "@/services/admin/categories-actions";
 import { CategoryForm } from "../category-form";
 import { CategoryIcon } from "../category-icon";
+import { Form } from "@/components/ui/form";
 
 const iconBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
 const iconBtnDisabled = "rounded-md p-1.5 text-ink-200";
@@ -188,7 +189,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                     <div className="flex items-center gap-1">
                       <span className="w-5 text-[12px] tabular-nums text-ink-400">{i + 1}</span>
                       <div className="flex flex-col">
-                        <form action={moveSubcategory}>
+                        <Form action={moveSubcategory}>
                           <input type="hidden" name="id" value={s.id} />
                           <input type="hidden" name="direction" value="up" />
                           <button
@@ -200,8 +201,8 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                           >
                             <ArrowUp size={13} />
                           </button>
-                        </form>
-                        <form action={moveSubcategory}>
+                        </Form>
+                        <Form action={moveSubcategory}>
                           <input type="hidden" name="id" value={s.id} />
                           <input type="hidden" name="direction" value="down" />
                           <button
@@ -213,7 +214,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                           >
                             <ArrowDown size={13} />
                           </button>
-                        </form>
+                        </Form>
                       </div>
                     </div>
                   </Td>
@@ -260,12 +261,12 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                       >
                         <Pencil size={14} />
                       </Link>
-                      <form action={toggleSubcategoryActive}>
+                      <Form action={toggleSubcategoryActive}>
                         <input type="hidden" name="id" value={s.id} />
                         <button type="submit" title={s.isActive ? "Hide from menu" : "Show in menu"} className={iconBtn}>
                           <Power size={14} />
                         </button>
-                      </form>
+                      </Form>
                       {canDelete &&
                         (s._count.products > 0 ? (
                           <Link

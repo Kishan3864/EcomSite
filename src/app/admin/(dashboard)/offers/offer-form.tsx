@@ -9,6 +9,7 @@ import { INITIAL_FORM } from "@/services/admin/form-state";
 import type { OfferType } from "@/generated/prisma/client";
 import { formatDate, formatINR } from "@/lib/utils";
 import { OFFER_TYPE, OFFER_TYPES } from "./lib";
+import { Form } from "@/components/ui/form";
 
 export interface OfferFormValues {
   code: string;
@@ -104,7 +105,7 @@ export function OfferForm({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <form
+      <Form
         ref={formRef}
         action={formAction}
         onChange={(e) => setPreview(readForm(e.currentTarget))}
@@ -330,7 +331,7 @@ export function OfferForm({
         <div className="flex items-center justify-end gap-2">
           <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
         </div>
-      </form>
+      </Form>
 
       <aside className="space-y-4">
         <div>

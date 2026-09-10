@@ -11,6 +11,7 @@ import { searchDocs, type SearchDoc, type SearchHit } from "@/lib/search-index";
 import { popularSearches, trendingSearches } from "@/data/marketing";
 import { useStore } from "@/store/store";
 import { cn, formatINR } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 const ROTATING = [
   "Search for cotton kurtas",
@@ -119,7 +120,7 @@ export function SearchBar({
 
   return (
     <div ref={wrapper} className={cn("relative w-full", className)}>
-      <form onSubmit={submit} role="search">
+      <Form onSubmit={submit} role="search">
         <div
           className={cn(
             "flex items-center gap-2.5 rounded-xl border bg-surface px-3.5 transition-all duration-200",
@@ -169,7 +170,7 @@ export function SearchBar({
             </kbd>
           )}
         </div>
-      </form>
+      </Form>
 
       <AnimatePresence>
         {showPanel && (

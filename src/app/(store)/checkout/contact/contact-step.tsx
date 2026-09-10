@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { computeTotals, evaluateCoupon } from "@/lib/pricing";
+import { Form } from "@/components/ui/form";
 
 
 interface Contact {
@@ -82,7 +83,7 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
         </>
       }
     >
-      <form onSubmit={submit} className="space-y-5">
+      <Form onSubmit={submit} className="space-y-5">
         <div className="rounded-xl border border-hairline bg-surface p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-900">
@@ -198,7 +199,7 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
             <ArrowRight size={17} />
           </Button>
         </div>
-      </form>
+      </Form>
     </CheckoutShell>
   );
 }

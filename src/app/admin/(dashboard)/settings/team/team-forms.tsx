@@ -12,6 +12,7 @@ import {
   resetTeamPassword,
   updateTeamMember,
 } from "@/services/admin/team-actions";
+import { Form } from "@/components/ui/form";
 
 export interface TeamMember {
   id: string;
@@ -79,7 +80,7 @@ export function AddMemberForm() {
   }
 
   return (
-    <form action={action} className="grid gap-4 rounded-xl border border-hairline bg-surface p-5">
+    <Form action={action} className="grid gap-4 rounded-xl border border-hairline bg-surface p-5">
       <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
         Add a team member
       </h2>
@@ -136,7 +137,7 @@ export function AddMemberForm() {
           <Plus size={14} /> Add member
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -161,7 +162,7 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
         </p>
       </div>
 
-      <form action={action} className="grid gap-4">
+      <Form action={action} className="grid gap-4">
         <input type="hidden" name="id" value={member.id} />
         {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
         {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
@@ -209,7 +210,7 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
             <Save size={14} /> Save
           </SubmitButton>
         </div>
-      </form>
+      </Form>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
         <ResetPasswordForm memberId={member.id} name={member.name} />
@@ -251,7 +252,7 @@ function ResetPasswordForm({ memberId, name }: { memberId: string; name: string 
   }
 
   return (
-    <form action={action} className="flex w-full flex-wrap items-end gap-2">
+    <Form action={action} className="flex w-full flex-wrap items-end gap-2">
       <input type="hidden" name="id" value={memberId} />
       <div className="min-w-[220px] flex-1">
         <Label htmlFor={`pw-${memberId}`}>New password for {name}</Label>
@@ -271,6 +272,6 @@ function ResetPasswordForm({ memberId, name }: { memberId: string; name: string 
       <SubmitButton size="sm" variant="outline" pendingText="Saving…">
         Set password
       </SubmitButton>
-    </form>
+    </Form>
   );
 }

@@ -6,13 +6,14 @@ import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls } from "@/components/admin/ui";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { changeOwnPassword, updateOwnProfile } from "@/services/admin/team-actions";
+import { Form } from "@/components/ui/form";
 
 export function ProfileForm({ name, email }: { name: string; email: string }) {
   const [state, action] = useActionState(updateOwnProfile, INITIAL_FORM);
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={action} className="grid gap-4">
+    <Form action={action} className="grid gap-4">
       <FormSection title="Your details" description="Shown on the activity log beside everything you change.">
         {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
         {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
@@ -45,7 +46,7 @@ export function ProfileForm({ name, email }: { name: string; email: string }) {
           </SubmitButton>
         </div>
       </FormSection>
-    </form>
+    </Form>
   );
 }
 
@@ -54,7 +55,7 @@ export function PasswordForm() {
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={action} className="grid gap-4">
+    <Form action={action} className="grid gap-4">
       <FormSection
         title="Password"
         description="Changing it signs you out of every other device. This one stays signed in."
@@ -110,6 +111,6 @@ export function PasswordForm() {
           </SubmitButton>
         </div>
       </FormSection>
-    </form>
+    </Form>
   );
 }

@@ -8,6 +8,7 @@ import { Notice } from "@/components/admin/client";
 import { FieldError, Label, textareaCls } from "@/components/admin/ui";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
+import { Form } from "@/components/ui/form";
 
 /**
  * Approve / reject a REQUESTED return. One form, two submit buttons: the
@@ -24,7 +25,7 @@ export function ReturnDecisionForm({
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={formAction} className="grid gap-4">
+    <Form action={formAction} className="grid gap-4">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
 
       <div>
@@ -43,7 +44,7 @@ export function ReturnDecisionForm({
       </div>
 
       <DecisionButtons productTitle={productTitle} />
-    </form>
+    </Form>
   );
 }
 

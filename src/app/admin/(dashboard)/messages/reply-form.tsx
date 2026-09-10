@@ -5,6 +5,7 @@ import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, Label, textareaCls } from "@/components/admin/ui";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
+import { Form } from "@/components/ui/form";
 
 /**
  * Reply editor for a contact message. Saving stores the reply on the message
@@ -22,7 +23,7 @@ export function ReplyForm({
   const [state, formAction] = useActionState(action, INITIAL_FORM);
 
   return (
-    <form action={formAction} className="grid gap-3">
+    <Form action={formAction} className="grid gap-3">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -49,6 +50,6 @@ export function ReplyForm({
           {hasReply ? "Update reply" : "Save reply"}
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }

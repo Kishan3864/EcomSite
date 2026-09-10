@@ -9,6 +9,7 @@ import { ConfirmForm } from "@/components/admin/client";
 import { EmptyRow, PageHeader, Pill, Table, Td, Th, Tr } from "@/components/admin/ui";
 import { deleteCategory, moveCategory, toggleCategoryActive } from "@/services/admin/categories-actions";
 import { CategoryIcon } from "./category-icon";
+import { Form } from "@/components/ui/form";
 
 const iconBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
 const iconBtnDisabled = "rounded-md p-1.5 text-ink-200";
@@ -78,7 +79,7 @@ export default async function CategoriesPage() {
                     <span className="w-5 text-[12px] tabular-nums text-ink-400">{i + 1}</span>
                     {canEdit ? (
                       <div className="flex flex-col">
-                        <form action={moveCategory}>
+                        <Form action={moveCategory}>
                           <input type="hidden" name="id" value={c.id} />
                           <input type="hidden" name="direction" value="up" />
                           <button
@@ -90,8 +91,8 @@ export default async function CategoriesPage() {
                           >
                             <ArrowUp size={13} />
                           </button>
-                        </form>
-                        <form action={moveCategory}>
+                        </Form>
+                        <Form action={moveCategory}>
                           <input type="hidden" name="id" value={c.id} />
                           <input type="hidden" name="direction" value="down" />
                           <button
@@ -103,7 +104,7 @@ export default async function CategoriesPage() {
                           >
                             <ArrowDown size={13} />
                           </button>
-                        </form>
+                        </Form>
                       </div>
                     ) : null}
                   </div>
@@ -154,12 +155,12 @@ export default async function CategoriesPage() {
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {canEdit && (
-                      <form action={toggleCategoryActive}>
+                      <Form action={toggleCategoryActive}>
                         <input type="hidden" name="id" value={c.id} />
                         <button type="submit" title={c.isActive ? "Hide from menu" : "Show in menu"} className={iconBtn}>
                           <Power size={14} />
                         </button>
-                      </form>
+                      </Form>
                     )}
                     {canDelete && (
                       <ConfirmForm

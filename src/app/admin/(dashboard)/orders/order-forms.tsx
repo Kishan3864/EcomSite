@@ -12,6 +12,7 @@ import {
   setAdminNote,
   setShipment,
 } from "@/services/admin/orders-actions";
+import { Form } from "@/components/ui/form";
 
 /** Courier and AWB, edited in place on the order detail page. */
 export function ShipmentForm({
@@ -31,7 +32,7 @@ export function ShipmentForm({
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={action} className="grid gap-3">
+    <Form action={action} className="grid gap-3">
       <input type="hidden" name="id" value={orderId} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
@@ -81,7 +82,7 @@ export function ShipmentForm({
           </SubmitButton>
         </div>
       )}
-    </form>
+    </Form>
   );
 }
 
@@ -99,7 +100,7 @@ export function AddEventForm({ orderId, defaultLocation }: { orderId: string; de
   }
 
   return (
-    <form action={action} className="grid gap-3 rounded-xl border border-hairline bg-canvas p-4">
+    <Form action={action} className="grid gap-3 rounded-xl border border-hairline bg-canvas p-4">
       <input type="hidden" name="id" value={orderId} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
@@ -135,7 +136,7 @@ export function AddEventForm({ orderId, defaultLocation }: { orderId: string; de
           Add update
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -144,7 +145,7 @@ export function AdminNoteForm({ orderId, note }: { orderId: string; note: string
   const [state, action] = useActionState(setAdminNote, INITIAL_FORM);
 
   return (
-    <form action={action} className="grid gap-2">
+    <Form action={action} className="grid gap-2">
       <input type="hidden" name="id" value={orderId} />
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       <textarea
@@ -159,7 +160,7 @@ export function AdminNoteForm({ orderId, note }: { orderId: string; note: string
           <Save size={14} /> Save note
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -182,7 +183,7 @@ export function CancelOrderForm({ orderId }: { orderId: string }) {
   }
 
   return (
-    <form action={action} className="grid gap-2">
+    <Form action={action} className="grid gap-2">
       <input type="hidden" name="id" value={orderId} />
       {state.error && <Notice tone="error">{state.error}</Notice>}
       <Label htmlFor="cancel-reason" hint="Shown to the customer on their order page.">
@@ -207,6 +208,6 @@ export function CancelOrderForm({ orderId }: { orderId: string }) {
           Cancel and restock
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }

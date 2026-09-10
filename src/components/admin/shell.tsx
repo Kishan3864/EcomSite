@@ -9,6 +9,7 @@ import { AdminSidebar, type SidebarCounts } from "./sidebar";
 import { FlashMessage } from "./client";
 import { logoutAdminAction } from "@/services/admin/auth-actions";
 import { StatusPill } from "./ui";
+import { Form } from "@/components/ui/form";
 
 export interface AdminShellUser {
   name: string;
@@ -121,7 +122,7 @@ export function AdminShell({
                 <span className="block text-[12.5px] font-semibold leading-tight text-ink-900">{user.name}</span>
                 <StatusPill status={user.role} className="mt-0.5 !px-1.5 !py-0 !text-[9.5px]" />
               </span>
-              <form action={logoutAdminAction}>
+              <Form action={logoutAdminAction}>
                 <button
                   type="submit"
                   aria-label="Sign out"
@@ -130,7 +131,7 @@ export function AdminShell({
                 >
                   <LogOut size={15} />
                 </button>
-              </form>
+              </Form>
             </div>
           </div>
         </header>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { evaluateCoupon } from "@/lib/pricing";
 import { useStore } from "@/store/store";
 import { cn, formatINR } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 export function CouponBox({
   offers,
@@ -71,7 +72,7 @@ export function CouponBox({
           </motion.div>
         ) : (
           <motion.div key="entry" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <form
+            <Form
               onSubmit={(e) => {
                 e.preventDefault();
                 apply(input);
@@ -94,7 +95,7 @@ export function CouponBox({
               <Button type="submit" variant="subtle" disabled={!input.trim()}>
                 Apply
               </Button>
-            </form>
+            </Form>
             {error && (
               <p className="mt-2 flex items-start gap-1.5 text-[12px] text-sale-600">
                 <AlertCircle size={13} className="mt-px shrink-0" />

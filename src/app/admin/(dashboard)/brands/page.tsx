@@ -17,6 +17,7 @@ import {
 } from "@/components/admin/ui";
 import { deleteBrand, toggleBrandActive } from "@/services/admin/brands-actions";
 import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
+import { Form } from "@/components/ui/form";
 
 /**
  * Reference admin list page. URL search params drive everything (search,
@@ -112,7 +113,7 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {hasRole(session, "MANAGER") && (
-                      <form action={toggleBrandActive}>
+                      <Form action={toggleBrandActive}>
                         <input type="hidden" name="id" value={b.id} />
                         <button
                           type="submit"
@@ -121,7 +122,7 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
                         >
                           <Power size={14} />
                         </button>
-                      </form>
+                      </Form>
                     )}
                     {hasRole(session, "OWNER") && (
                       <ConfirmForm action={deleteBrand} message={`Delete ${b.name}? This cannot be undone.`}>

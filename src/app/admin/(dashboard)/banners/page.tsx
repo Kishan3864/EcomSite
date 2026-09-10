@@ -8,6 +8,7 @@ import { Card, DateCell, PageHeader, Pill } from "@/components/admin/ui";
 import { deleteBanner, moveBanner, toggleBannerActive } from "@/services/admin/banners-actions";
 import { cn } from "@/lib/utils";
 import { BANNER_STATUS, PLACEMENTS, PLACEMENT_META, bannerStatus } from "./lib";
+import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Banners" };
 
@@ -135,7 +136,7 @@ export default async function BannersPage() {
                         <div className="flex shrink-0 items-center gap-1">
                           {canEdit && (
                             <>
-                              <form action={moveBanner}>
+                              <Form action={moveBanner}>
                                 <input type="hidden" name="id" value={b.id} />
                                 <input type="hidden" name="direction" value="up" />
                                 <button
@@ -146,8 +147,8 @@ export default async function BannersPage() {
                                 >
                                   <ArrowUp size={14} />
                                 </button>
-                              </form>
-                              <form action={moveBanner}>
+                              </Form>
+                              <Form action={moveBanner}>
                                 <input type="hidden" name="id" value={b.id} />
                                 <input type="hidden" name="direction" value="down" />
                                 <button
@@ -158,8 +159,8 @@ export default async function BannersPage() {
                                 >
                                   <ArrowDown size={14} />
                                 </button>
-                              </form>
-                              <form action={toggleBannerActive}>
+                              </Form>
+                              <Form action={toggleBannerActive}>
                                 <input type="hidden" name="id" value={b.id} />
                                 <button
                                   type="submit"
@@ -168,7 +169,7 @@ export default async function BannersPage() {
                                 >
                                   <Power size={14} />
                                 </button>
-                              </form>
+                              </Form>
                             </>
                           )}
                           <Link

@@ -13,6 +13,7 @@ import {
   saveTaxSettings,
 } from "@/services/admin/settings-actions";
 import type { StoreSettings } from "@/services/settings";
+import { Form } from "@/components/ui/form";
 
 /* ---------------------------- Shared pieces ---------------------------- */
 
@@ -32,7 +33,7 @@ function SettingsForm({
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={formAction} className="grid max-w-3xl gap-4">
+    <Form action={formAction} className="grid max-w-3xl gap-4">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       {children(err)}
@@ -41,7 +42,7 @@ function SettingsForm({
           <Save size={15} /> {saveLabel}
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }
 

@@ -5,6 +5,7 @@ import { CheckSquare, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubmitButton } from "@/components/admin/client";
 import { PRODUCT_STATUSES, type ProductStatusValue } from "./product-schema";
+import { Form } from "@/components/ui/form";
 
 /**
  * Row selection for the products list. The table itself is server-rendered;
@@ -111,7 +112,7 @@ export function BulkBar({
   if (count === 0) return null;
 
   return (
-    <form
+    <Form
       action={action}
       className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3.5 py-2.5 text-[13px] text-brand-900"
       onSubmit={(e) => {
@@ -152,6 +153,6 @@ export function BulkBar({
       <Button type="button" variant="ghost" size="xs" onClick={clear} className="ml-auto">
         <X size={13} /> Clear
       </Button>
-    </form>
+    </Form>
   );
 }

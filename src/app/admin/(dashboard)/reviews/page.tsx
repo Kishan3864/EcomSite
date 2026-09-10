@@ -34,6 +34,7 @@ import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from
 import { AnswerForm } from "./answer-form";
 import { BulkBar, SelectAllBox } from "./bulk-bar";
 import { ReviewExcerpt } from "./review-excerpt";
+import { Form } from "@/components/ui/form";
 
 /**
  * Reviews & Q&A moderation. One URL, two tabs (`?tab=reviews|questions`);
@@ -405,22 +406,22 @@ async function ReviewsTab({ params, current, returnTo, canModerate, canDelete, p
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {canModerate && r.status !== "APPROVED" && (
-                      <form action={approveReview}>
+                      <Form action={approveReview}>
                         <input type="hidden" name="id" value={r.id} />
                         <input type="hidden" name="returnTo" value={returnTo} />
                         <button type="submit" title="Approve" className={cn(rowBtn, "hover:text-brand-700")}>
                           <Check size={14} />
                         </button>
-                      </form>
+                      </Form>
                     )}
                     {canModerate && r.status !== "HIDDEN" && (
-                      <form action={hideReview}>
+                      <Form action={hideReview}>
                         <input type="hidden" name="id" value={r.id} />
                         <input type="hidden" name="returnTo" value={returnTo} />
                         <button type="submit" title="Hide from storefront" className={rowBtn}>
                           <EyeOff size={14} />
                         </button>
-                      </form>
+                      </Form>
                     )}
                     {canDelete && (
                       <ConfirmForm
@@ -582,22 +583,22 @@ async function QuestionsTab({
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {canModerate && qn.status !== "HIDDEN" && (
-                      <form action={hideQuestion}>
+                      <Form action={hideQuestion}>
                         <input type="hidden" name="id" value={qn.id} />
                         <input type="hidden" name="returnTo" value={returnTo} />
                         <button type="submit" title="Hide from storefront" className={rowBtn}>
                           <EyeOff size={14} />
                         </button>
-                      </form>
+                      </Form>
                     )}
                     {canModerate && qn.status === "HIDDEN" && (
-                      <form action={restoreQuestion}>
+                      <Form action={restoreQuestion}>
                         <input type="hidden" name="id" value={qn.id} />
                         <input type="hidden" name="returnTo" value={returnTo} />
                         <button type="submit" title="Show on storefront" className={cn(rowBtn, "hover:text-brand-700")}>
                           <Eye size={14} />
                         </button>
-                      </form>
+                      </Form>
                     )}
                     {canDelete && (
                       <ConfirmForm action={deleteQuestion} message={`Delete ${qn.askedBy}'s question? This cannot be undone.`}>

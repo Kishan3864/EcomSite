@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { ArrowRight, Check } from "lucide-react";
 import { subscribeNewsletter } from "@/services/commerce";
+import { Form } from "@/components/ui/form";
 
 interface State {
   ok?: boolean;
@@ -46,7 +47,7 @@ export function NewsletterForm() {
   }
 
   return (
-    <form action={action} className="w-full">
+    <Form action={action} className="w-full">
       <div className="flex flex-col gap-2.5 sm:flex-row">
         <label htmlFor="newsletter-email" className="sr-only">
           Email address
@@ -74,6 +75,6 @@ export function NewsletterForm() {
         </Link>
         .
       </p>
-    </form>
+    </Form>
   );
 }

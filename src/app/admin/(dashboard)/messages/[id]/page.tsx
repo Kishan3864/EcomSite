@@ -9,6 +9,7 @@ import { CopyButton } from "@/components/admin/client";
 import { Card, DateCell, KeyValue, Money, PageHeader, Pill, StatusPill } from "@/components/admin/ui";
 import { replyToMessage, setMessageStatus } from "@/services/admin/messages-actions";
 import { ReplyForm } from "../reply-form";
+import { Form } from "@/components/ui/form";
 
 const TIER: Record<string, { label: string; tone: "neutral" | "gold" | "brand" }> = {
   SILVER: { label: "Silver", tone: "neutral" },
@@ -90,21 +91,21 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
               </a>
               {canManage &&
                 (isClosed ? (
-                  <form action={setMessageStatus}>
+                  <Form action={setMessageStatus}>
                     <input type="hidden" name="id" value={message.id} />
                     <input type="hidden" name="status" value={message.reply ? "REPLIED" : "NEW"} />
                     <button type="submit" className={buttonClasses("primary", "sm")}>
                       <RotateCcw size={14} /> Reopen
                     </button>
-                  </form>
+                  </Form>
                 ) : (
-                  <form action={setMessageStatus}>
+                  <Form action={setMessageStatus}>
                     <input type="hidden" name="id" value={message.id} />
                     <input type="hidden" name="status" value="CLOSED" />
                     <button type="submit" className={buttonClasses("subtle", "sm")}>
                       <Archive size={14} /> Close
                     </button>
-                  </form>
+                  </Form>
                 ))}
             </>
           }

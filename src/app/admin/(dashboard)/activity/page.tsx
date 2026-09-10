@@ -16,6 +16,7 @@ import {
 } from "@/components/admin/ui";
 import { formatDateTime } from "@/lib/utils";
 import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
+import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Activity log" };
 
@@ -129,7 +130,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
           allLabel="Any action"
           options={actionPrefixes.map((a) => ({ value: a, label: a }))}
         />
-        <form className="flex items-center gap-1.5" action="/admin/activity">
+        <Form className="flex items-center gap-1.5" action="/admin/activity">
           {params.q && <input type="hidden" name="q" value={params.q} />}
           {f.actor && <input type="hidden" name="actor" value={f.actor} />}
           {f.entity && <input type="hidden" name="entity" value={f.entity} />}
@@ -154,7 +155,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
           >
             Apply
           </button>
-        </form>
+        </Form>
         {filtered && (
           <Link
             href="/admin/activity"

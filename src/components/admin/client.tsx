@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { AlertTriangle, Check, Copy, Loader2, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button, type ButtonProps } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 
 /**
  * Interactive admin primitives. Everything here is deliberately small — forms
@@ -42,7 +43,7 @@ export function ConfirmForm({
   className?: string;
 }) {
   return (
-    <form
+    <Form
       action={action}
       className={cn("inline", className)}
       onSubmit={(e) => {
@@ -50,7 +51,7 @@ export function ConfirmForm({
       }}
     >
       {children}
-    </form>
+    </Form>
   );
 }
 

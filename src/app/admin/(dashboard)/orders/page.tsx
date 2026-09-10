@@ -32,6 +32,7 @@ import {
   type RawParams,
 } from "@/services/admin/shared";
 import { cn, statusLabel } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Orders" };
 
@@ -181,7 +182,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           allLabel="Any method"
           options={PAYMENT_METHODS.map((m) => ({ value: m, label: PAYMENT_METHOD_LABEL[m] }))}
         />
-        <form className="flex items-center gap-1.5" action="/admin/orders">
+        <Form className="flex items-center gap-1.5" action="/admin/orders">
           {params.q && <input type="hidden" name="q" value={params.q} />}
           {f.status && <input type="hidden" name="status" value={f.status} />}
           <input
@@ -205,7 +206,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           >
             Apply
           </button>
-        </form>
+        </Form>
         {(params.q || Object.values(f).some(Boolean)) && (
           <Link
             href="/admin/orders"

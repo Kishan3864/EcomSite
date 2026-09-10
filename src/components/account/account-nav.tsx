@@ -15,6 +15,7 @@ import {
 import { logoutAction } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cn, formatDate } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 const LINKS = [
   { href: "/account", label: "Overview", icon: UserRound, exact: true },
@@ -117,7 +118,7 @@ export function AccountNav({
             );
           })}
           <li>
-            <form action={logoutAction}>
+            <Form action={logoutAction}>
               <button
                 type="submit"
                 className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13.5px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
@@ -125,7 +126,7 @@ export function AccountNav({
                 <LogOut size={16} className="text-ink-400" />
                 Sign out
               </button>
-            </form>
+            </Form>
           </li>
         </ul>
       </nav>

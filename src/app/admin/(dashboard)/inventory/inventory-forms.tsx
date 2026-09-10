@@ -9,6 +9,7 @@ import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { cn } from "@/lib/utils";
 import { STOCK_REASONS, type StockReason } from "./inventory-shared";
+import { Form } from "@/components/ui/form";
 
 type BoundAction = (prev: FormState, formData: FormData) => Promise<FormState>;
 
@@ -52,7 +53,7 @@ export function AdjustStockForm({
   const noteRequired = reason === "other";
 
   return (
-    <form action={formAction} className="grid gap-4">
+    <Form action={formAction} className="grid gap-4">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -148,7 +149,7 @@ export function AdjustStockForm({
           Apply change
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }
 
@@ -257,7 +258,7 @@ export function ThresholdForm({ action, value }: { action: BoundAction; value: n
   const err = state.field === "threshold" ? state.error : undefined;
 
   return (
-    <form action={formAction} className="grid gap-3">
+    <Form action={formAction} className="grid gap-3">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       <div>
@@ -282,6 +283,6 @@ export function ThresholdForm({ action, value }: { action: BoundAction; value: n
         </div>
         <FieldError>{err}</FieldError>
       </div>
-    </form>
+    </Form>
   );
 }

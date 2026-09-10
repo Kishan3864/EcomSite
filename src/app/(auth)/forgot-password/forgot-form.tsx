@@ -9,6 +9,7 @@ import { buttonClasses, Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { requestPasswordHelp } from "@/services/commerce";
 import { BRAND } from "@/components/brand/logo";
+import { Form } from "@/components/ui/form";
 
 function SendButton() {
   const { pending } = useFormStatus();
@@ -59,7 +60,7 @@ export function ForgotForm() {
   }
 
   return (
-    <form action={action} className="space-y-5">
+    <Form action={action} className="space-y-5">
       <Field
         label="Email address"
         htmlFor="forgot-email"
@@ -91,6 +92,6 @@ export function ForgotForm() {
       >
         <ArrowLeft size={14} /> Back to sign in
       </Link>
-    </form>
+    </Form>
   );
 }

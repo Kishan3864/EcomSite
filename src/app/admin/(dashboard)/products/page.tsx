@@ -25,6 +25,7 @@ import { bulkSetProductStatus, deleteProduct, duplicateProduct, setProductStatus
 import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
 import { BulkBar, BulkProvider, RowCheckbox, SelectAllCheckbox } from "./bulk-actions";
 import { PRODUCT_STATUSES, SORT_OPTIONS, STOCK_STATES } from "./product-schema";
+import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Products" };
 
@@ -295,14 +296,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                         </Link>
                         {canManage && (
                           <>
-                            <form action={duplicateProduct}>
+                            <Form action={duplicateProduct}>
                               <input type="hidden" name="id" value={p.id} />
                               <input type="hidden" name="returnTo" value={returnTo} />
                               <button type="submit" title="Duplicate as draft" className={iconBtn}>
                                 <Copy size={14} />
                               </button>
-                            </form>
-                            <form action={setProductStatus}>
+                            </Form>
+                            <Form action={setProductStatus}>
                               <input type="hidden" name="id" value={p.id} />
                               <input type="hidden" name="returnTo" value={returnTo} />
                               <input type="hidden" name="status" value={p.status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED"} />
@@ -313,7 +314,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                               >
                                 {p.status === "ARCHIVED" ? <ArchiveRestore size={14} /> : <Archive size={14} />}
                               </button>
-                            </form>
+                            </Form>
                           </>
                         )}
                         {canDelete && p._count.orderLines === 0 && (

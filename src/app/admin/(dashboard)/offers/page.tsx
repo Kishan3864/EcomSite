@@ -21,6 +21,7 @@ import { deleteOffer, toggleOfferActive } from "@/services/admin/offers-actions"
 import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
 import type { Prisma } from "@/generated/prisma/client";
 import { OFFER_STATUS, OFFER_TYPE, OFFER_TYPES, offerStatus } from "./lib";
+import { Form } from "@/components/ui/form";
 
 export default async function OffersPage({ searchParams }: { searchParams: Promise<RawParams> }) {
   const session = await requireAdmin();
@@ -191,7 +192,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
                           >
                             <Pencil size={14} />
                           </Link>
-                          <form action={toggleOfferActive}>
+                          <Form action={toggleOfferActive}>
                             <input type="hidden" name="id" value={o.id} />
                             <button
                               type="submit"
@@ -200,7 +201,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
                             >
                               <Power size={14} />
                             </button>
-                          </form>
+                          </Form>
                         </>
                       )}
                       {hasRole(session, "OWNER") && (

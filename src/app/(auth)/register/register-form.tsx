@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { registerAction } from "@/services/commerce";
 import { cn } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 function strength(password: string) {
   let score = 0;
@@ -39,7 +40,7 @@ export function RegisterForm({ next }: { next?: string }) {
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={action} className="space-y-5">
+    <Form action={action} className="space-y-5">
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.error && !state.field && (
@@ -158,6 +159,6 @@ export function RegisterForm({ next }: { next?: string }) {
       </label>
 
       <CreateButton />
-    </form>
+    </Form>
   );
 }

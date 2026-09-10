@@ -37,6 +37,7 @@ import { FieldError, FormSection, Label, inputCls, selectArrow, selectCls, texta
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { GST_RATES } from "../products/product-schema";
+import { Form } from "@/components/ui/form";
 
 export interface CategoryFormValues {
   name: string;
@@ -140,7 +141,7 @@ export function CategoryForm({
   const orderedSelection = [...selectedBrands].filter((s) => brands.some((b) => b.slug === s));
 
   return (
-    <form action={formAction} className="grid gap-5">
+    <Form action={formAction} className="grid gap-5">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       {state.error && state.field && (
@@ -533,6 +534,6 @@ export function CategoryForm({
       <div className="flex items-center justify-end gap-2">
         <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }

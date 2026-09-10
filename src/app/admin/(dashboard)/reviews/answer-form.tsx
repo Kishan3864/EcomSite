@@ -6,6 +6,7 @@ import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, Label, inputCls, textareaCls } from "@/components/admin/ui";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
+import { Form } from "@/components/ui/form";
 
 /**
  * Inline per-row answer editor for the Q&A tab. Closed, it shows the current
@@ -64,7 +65,7 @@ export function AnswerForm({
   }
 
   return (
-    <form action={formAction} className="grid w-[min(520px,70vw)] gap-3 rounded-lg border border-hairline bg-canvas p-3">
+    <Form action={formAction} className="grid w-[min(520px,70vw)] gap-3 rounded-lg border border-hairline bg-canvas p-3">
       <input type="hidden" name="returnTo" value={returnTo} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
 
@@ -103,6 +104,6 @@ export function AnswerForm({
           {hasAnswer ? "Update answer" : "Post answer"}
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }

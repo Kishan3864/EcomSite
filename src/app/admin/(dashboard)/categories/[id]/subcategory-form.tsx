@@ -8,6 +8,7 @@ import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls, textareaCls } from "@/components/admin/ui";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
+import { Form } from "@/components/ui/form";
 
 export interface SubcategoryFormValues {
   name: string;
@@ -47,7 +48,7 @@ export function SubcategoryForm({
   const previewImage = looksLikeImage(imageUrl);
 
   return (
-    <form action={formAction} className="grid gap-5">
+    <Form action={formAction} className="grid gap-5">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       {state.error && state.field && (
@@ -202,6 +203,6 @@ export function SubcategoryForm({
       <div className="flex items-center justify-end gap-2">
         <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }

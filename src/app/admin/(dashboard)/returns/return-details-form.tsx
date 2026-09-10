@@ -7,6 +7,7 @@ import { FieldError, Label, inputCls, textareaCls } from "@/components/admin/ui"
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { formatINR } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 /**
  * Refund amount + internal note. The amount input is only rendered while the
@@ -32,7 +33,7 @@ export function ReturnDetailsForm({
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <form action={formAction} className="grid gap-4">
+    <Form action={formAction} className="grid gap-4">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -101,6 +102,6 @@ export function ReturnDetailsForm({
           Save details
         </SubmitButton>
       </div>
-    </form>
+    </Form>
   );
 }

@@ -37,6 +37,7 @@ import {
   toDateInput,
 } from "../workflow";
 import { AddEventForm, AdminNoteForm, CancelOrderForm, ShipmentForm } from "../order-forms";
+import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Order" };
 
@@ -83,22 +84,22 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <Printer size={14} /> Invoice
             </Link>
             {canEdit && showCod && (
-              <form action={markCodPaid}>
+              <Form action={markCodPaid}>
                 <input type="hidden" name="id" value={order.id} />
                 <button type="submit" className={buttonClasses("outline", "sm")}>
                   <BadgeIndianRupee size={14} /> Mark cash collected
                 </button>
-              </form>
+              </Form>
             )}
             {canEdit && advance && (
-              <form action={advanceOrderStatus}>
+              <Form action={advanceOrderStatus}>
                 <input type="hidden" name="id" value={order.id} />
                 <input type="hidden" name="status" value={advance} />
                 <button type="submit" className={buttonClasses("primary", "sm")}>
                   {ADVANCE_LABEL[advance] ?? `Move to ${statusLabel(advance)}`}
                   <ArrowRight size={14} />
                 </button>
-              </form>
+              </Form>
             )}
           </>
         }

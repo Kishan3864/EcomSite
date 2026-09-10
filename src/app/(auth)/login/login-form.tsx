@@ -7,6 +7,7 @@ import { AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { loginAction } from "@/services/commerce";
+import { Form } from "@/components/ui/form";
 
 function SignInButton() {
   const { pending } = useFormStatus();
@@ -26,7 +27,7 @@ export function LoginForm({ next }: { next?: string }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form action={action} className="space-y-5">
+    <Form action={action} className="space-y-5">
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.error && !state.field && (
@@ -93,6 +94,6 @@ export function LoginForm({ next }: { next?: string }) {
       </div>
 
       <SignInButton />
-    </form>
+    </Form>
   );
 }

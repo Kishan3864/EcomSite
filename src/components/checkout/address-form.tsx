@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
 import { INDIAN_STATES } from "@/data/marketing";
 import { cn } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 const EMPTY: Omit<Address, "id"> = {
   label: "Home",
@@ -56,7 +57,7 @@ export function AddressForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <Form onSubmit={submit} className="space-y-4">
       <div>
         <span className="mb-2 block text-[12.5px] font-medium text-ink-800">Address type</span>
         <div className="flex gap-2">
@@ -201,6 +202,6 @@ export function AddressForm({
           </Button>
         )}
       </div>
-    </form>
+    </Form>
   );
 }

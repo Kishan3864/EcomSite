@@ -27,6 +27,7 @@ import {
   type AccountFormState,
 } from "@/services/account-actions";
 import { useStore } from "@/store/store";
+import { Form } from "@/components/ui/form";
 
 const ICONS: Record<PaymentMethodId, typeof Wallet> = {
   upi: Smartphone,
@@ -138,7 +139,7 @@ function DetailsSection({ profile }: { profile: SettingsProfile }) {
       title="Your details"
       description="The name and number we put on deliveries, and use when we need to reach you about an order."
     >
-      <form action={action} className="space-y-4">
+      <Form action={action} className="space-y-4">
         <Feedback state={state} />
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -191,7 +192,7 @@ function DetailsSection({ profile }: { profile: SettingsProfile }) {
         </div>
 
         <SaveButton>Save details</SaveButton>
-      </form>
+      </Form>
     </Section>
   );
 }
@@ -217,7 +218,7 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
       title="Default delivery address"
       description="Checkout starts here. You can still pick a different address at the time."
     >
-      <form action={setDefaultAddress} className="space-y-4">
+      <Form action={setDefaultAddress} className="space-y-4">
         <ul className="space-y-3">
           {addresses.map((address) => (
             <li key={address.id}>
@@ -257,7 +258,7 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
             Add or edit addresses
           </Link>
         </div>
-      </form>
+      </Form>
     </Section>
   );
 }
@@ -285,7 +286,7 @@ function PaymentSection() {
       title="Payment preferences"
       description="We remember how you like to pay and pre-select it at checkout. Card numbers are never stored."
     >
-      <form action={action} className="space-y-4">
+      <Form action={action} className="space-y-4">
         <Feedback state={state} />
 
         {sessionChecked ? (
@@ -354,7 +355,7 @@ function PaymentSection() {
         </Field>
 
         <SaveButton disabled={!sessionChecked}>Save preferences</SaveButton>
-      </form>
+      </Form>
     </Section>
   );
 }

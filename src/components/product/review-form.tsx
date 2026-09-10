@@ -8,6 +8,7 @@ import { Field, Input } from "@/components/ui/field";
 import { submitReview } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cn } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 /**
  * Reviews are held for moderation, so nothing written here appears on the page
@@ -85,7 +86,7 @@ export function ReviewForm({ productId }: { productId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-6 rounded-xl border border-hairline bg-surface p-5">
+    <Form onSubmit={submit} className="mt-6 rounded-xl border border-hairline bg-surface p-5">
       <h3 className="text-[14px] font-semibold text-ink-950">Write a review</h3>
       <p className="mt-1 text-[12.5px] text-ink-500">
         Posting as {customer.name}. Reviews are checked before they appear.
@@ -148,6 +149,6 @@ export function ReviewForm({ productId }: { productId: string }) {
           Cancel
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Check, EyeOff } from "lucide-react";
 import { PendingHint } from "@/components/admin/client";
 import { buttonClasses } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
 
 const RECOUNT_EVENT = "reviews:recount";
 
@@ -50,7 +51,7 @@ export function BulkBar({
   }, [formId, key]);
 
   return (
-    <form
+    <Form
       id={formId}
       action={action}
       className="ml-auto flex items-center gap-2"
@@ -83,7 +84,7 @@ export function BulkBar({
       <button type="submit" name="intent" value="hide" disabled={count === 0} className={buttonClasses("outline", "xs")}>
         <EyeOff size={13} /> Hide
       </button>
-    </form>
+    </Form>
   );
 }
 

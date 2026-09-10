@@ -17,6 +17,7 @@ import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { cn } from "@/lib/utils";
 import { PLACEMENTS, PLACEMENT_META } from "./lib";
+import { Form } from "@/components/ui/form";
 
 export interface BannerFormValues {
   placement: BannerPlacement;
@@ -82,7 +83,7 @@ export function BannerForm({
   const dark = placement === "MID" ? theme === "dark" : true;
 
   return (
-    <form action={formAction} className="grid gap-5">
+    <Form action={formAction} className="grid gap-5">
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -409,6 +410,6 @@ export function BannerForm({
           <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
         </div>
       )}
-    </form>
+    </Form>
   );
 }

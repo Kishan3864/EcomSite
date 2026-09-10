@@ -19,6 +19,7 @@ import {
   type SpecGroupInput,
   type VariantGroupInput,
 } from "./product-schema";
+import { Form } from "@/components/ui/form";
 
 export interface ProductFormValues {
   title: string;
@@ -139,7 +140,7 @@ export function ProductForm({
   const statusHelp = STATUS_HELP;
 
   return (
-    <form
+    <Form
       action={formAction}
       onSubmit={(e) => {
         const fd = new FormData(e.currentTarget);
@@ -487,6 +488,6 @@ export function ProductForm({
           </div>
         )}
       </fieldset>
-    </form>
+    </Form>
   );
 }

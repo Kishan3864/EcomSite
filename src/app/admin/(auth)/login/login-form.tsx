@@ -6,13 +6,14 @@ import { Field, Input } from "@/components/ui/field";
 import { SubmitButton, Notice } from "@/components/admin/client";
 import { loginAdminAction } from "@/services/admin/auth-actions";
 import { INITIAL_FORM } from "@/services/admin/form-state";
+import { Form } from "@/components/ui/form";
 
 export function AdminLoginForm({ next }: { next?: string }) {
   const [state, action] = useActionState(loginAdminAction, INITIAL_FORM);
   const [show, setShow] = useState(false);
 
   return (
-    <form action={action} className="space-y-4">
+    <Form action={action} className="space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.error && <Notice tone="error">{state.error}</Notice>}
@@ -54,6 +55,6 @@ export function AdminLoginForm({ next }: { next?: string }) {
       <SubmitButton size="lg" className="w-full" pendingText="Signing in…">
         Sign in
       </SubmitButton>
-    </form>
+    </Form>
   );
 }

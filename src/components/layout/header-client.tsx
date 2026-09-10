@@ -37,6 +37,7 @@ import { logoutAction } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cartCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 /** Everything the account owns, in the order a shopper is likely to want it. */
 const ACCOUNT_LINKS = [
@@ -308,7 +309,7 @@ function SignOutForm({
   const { dispatch } = useStore();
 
   return (
-    <form
+    <Form
       action={logoutAction}
       role="none"
       onSubmit={() => {
@@ -319,7 +320,7 @@ function SignOutForm({
       <button type="submit" role={role} className={className}>
         {children}
       </button>
-    </form>
+    </Form>
   );
 }
 

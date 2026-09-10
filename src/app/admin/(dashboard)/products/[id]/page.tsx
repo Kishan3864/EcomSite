@@ -16,6 +16,7 @@ import type {
   VariantGroupInput,
   VariantTypeValue,
 } from "../product-schema";
+import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Edit product" };
 
@@ -220,7 +221,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           <Card title="Danger zone">
             <div className="space-y-3">
               <div>
-                <form action={setProductStatus}>
+                <Form action={setProductStatus}>
                   <input type="hidden" name="id" value={product.id} />
                   <input type="hidden" name="status" value={archived ? "DRAFT" : "ARCHIVED"} />
                   <button type="submit" className={buttonClasses("outline", "sm", "w-full")}>
@@ -234,7 +235,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
                       </>
                     )}
                   </button>
-                </form>
+                </Form>
                 <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-500">
                   {archived
                     ? "Brings it back as a draft so you can review before going live."

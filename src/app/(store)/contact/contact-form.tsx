@@ -7,6 +7,7 @@ import { CheckCircle2, Send } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
 import { submitContact } from "@/services/commerce";
+import { Form } from "@/components/ui/form";
 
 const TOPICS = [
   "Where is my order?",
@@ -97,7 +98,7 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={submit} className="rounded-2xl border border-hairline bg-surface p-6 sm:p-8">
+    <Form onSubmit={submit} className="rounded-2xl border border-hairline bg-surface p-6 sm:p-8">
       <h2 className="font-display text-2xl tracking-[-0.02em] text-ink-950">Send us a message</h2>
       <p className="mt-2 text-[13.5px] text-ink-600">
         The more specific you are, the faster we can fix it. Include an order number if you have
@@ -179,6 +180,6 @@ export function ContactForm() {
           <Send size={16} /> Send message
         </Button>
       </div>
-    </form>
+    </Form>
   );
 }

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { AlertCircle, Check, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 interface CheckResult {
   ok: boolean;
@@ -80,7 +81,7 @@ export function DeliveryCheck({
         Check delivery to your pincode
       </h2>
 
-      <form onSubmit={check} className="flex gap-2">
+      <Form onSubmit={check} className="flex gap-2">
         <label htmlFor="pincode" className="sr-only">
           Pincode
         </label>
@@ -98,7 +99,7 @@ export function DeliveryCheck({
         <Button type="submit" variant="subtle" loading={checking} className="shrink-0">
           Check
         </Button>
-      </form>
+      </Form>
 
       <AnimatePresence mode="wait">
         {result && (

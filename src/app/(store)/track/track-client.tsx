@@ -13,6 +13,7 @@ import { Field, Input } from "@/components/ui/field";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
 import { trackOrderAction } from "@/services/commerce";
 import { formatDate, formatINR, statusLabel } from "@/lib/utils";
+import { Form } from "@/components/ui/form";
 
 /* ------------------------------ Lookup ----------------------------- */
 
@@ -35,7 +36,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <form action={action} className="rounded-2xl border border-hairline bg-surface p-6">
+      <Form action={action} className="rounded-2xl border border-hairline bg-surface p-6">
         <Field
           label="Order number"
           htmlFor="order-number"
@@ -68,7 +69,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
           />
         </Field>
         <TrackButton />
-      </form>
+      </Form>
 
       {orders.length > 0 && (
         <section className="mt-8">
