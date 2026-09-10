@@ -21,23 +21,23 @@ export interface StorefrontConfig {
 
 /** Copy that belongs to the option rather than to the price. */
 const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
+  // No offerText on either: there is no cashback scheme and no bank
+  // arrangement behind one. An inducement we cannot honour is the kind of
+  // claim a payment reviewer treats as a red flag, and a customer as a lie.
   upi: {
     name: "UPI",
-    description: "GPay, PhonePe, Paytm, BHIM or any UPI ID",
+    description: "Google Pay, PhonePe, Paytm, BHIM or any UPI app",
     badge: "Fastest",
-    offerText: "₹50 cashback on orders above ₹999",
   },
   card: {
     name: "Credit / Debit card",
     description: "Visa, Mastercard, RuPay and Amex, issued in India",
-    offerText: "15% instant discount with HDFC credit cards",
   },
   netbanking: { name: "Net banking", description: "All major Indian banks supported" },
   wallet: { name: "Wallets", description: "Paytm, Amazon Pay, Mobikwik, Freecharge" },
   cod: {
     name: "Cash on Delivery",
     description: "Pay in cash or by UPI when the order arrives",
-    badge: "Popular",
   },
 };
 

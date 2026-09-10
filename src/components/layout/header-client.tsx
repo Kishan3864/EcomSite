@@ -38,6 +38,7 @@ import { useStore } from "@/store/store";
 import { cartCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
+import { BUSINESS } from "@/config/business";
 
 /** Everything the account owns, in the order a shopper is likely to want it. */
 const ACCOUNT_LINKS = [
@@ -504,8 +505,12 @@ function AnnouncementBar({ offerCount }: { offerCount: number }) {
   const items = [
     `Free delivery on orders above ₹${config.rates.freeThreshold.toLocaleString("en-IN")}`,
     "Use WEEKEND10 for 10% off your first order",
-    "14-day easy returns, free pickup",
-    "100% genuine, sourced direct from brands",
+    // Both claims below have to be ones we can stand behind. Free pickup is
+    // only offered where the courier services the pincode, and "sourced direct
+    // from brands" was never true of a reseller — what is true is that we hold
+    // the stock and invoice it ourselves.
+    `${BUSINESS.ops.returnWindowDays}-day returns on most items`,
+    "Bought and invoiced by us, not a marketplace",
     offerCount > 0 ? `${offerCount} live offers today` : "New arrivals every week",
   ];
 

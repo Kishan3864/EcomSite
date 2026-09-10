@@ -64,7 +64,9 @@ export function OrderSummary({
       value: totals.shipping === 0 ? "Free" : formatINR(totals.shipping),
       tone: totals.shipping === 0 ? "save" : undefined,
     },
-    { label: "GST (included)", value: formatINR(totals.tax), tone: "muted" },
+    ...(totals.tax > 0
+      ? [{ label: "GST (included)", value: formatINR(totals.tax), tone: "muted" as const }]
+      : []),
   ];
 
   return (

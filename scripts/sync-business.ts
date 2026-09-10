@@ -69,6 +69,46 @@ async function main() {
     update: { value: store },
   });
 
+  // Which methods the checkout offers, and whether tax is charged at all.
+  // Both were seeded before this business existed and neither is true of it:
+  // COD is not offered, and an unregistered seller charges no GST.
+  const payments = {
+    upi: true,
+    card: true,
+    netbanking: true,
+    wallet: true,
+    cod: BUSINESS.ops.codEnabled,
+    codLimit: BUSINESS.ops.codLimit,
+  };
+  await db.storeSetting.upsert({
+    where: { key: "payments" },
+    create: { key: "payments", value: payments },
+    update: { value: payments },
+  });
+
+  const tax = { gstRate: isGstRegistered ? 18 : 0, pricesIncludeTax: true };
+  await db.storeSetting.upsert({
+    where: { key: "tax" },
+    create: { key: "tax", value: tax },
+    update: { value: tax },
+  });
+
+  const shipping = {
+    freeThreshold: BUSINESS.ops.freeShippingThreshold,
+    standardFee: BUSINESS.ops.shippingFee,
+    expressFee: 99,
+    scheduledFee: 49,
+    standardDays: [BUSINESS.ops.deliveryDaysMin, BUSINESS.ops.deliveryDaysMax],
+    expressDays: [1, 2],
+  };
+  await db.storeSetting.upsert({
+    where: { key: "shipping" },
+    create: { key: "shipping", value: shipping },
+    update: { value: shipping },
+  });
+
+  console.log(`payments: cod ${payments.cod ? "on" : "off"} · tax: ${tax.gstRate}%`);
+
   console.log("store settings updated:");
   for (const [k, v] of Object.entries(store)) {
     console.log(`  ${k.padEnd(14)} ${v === "" ? "(empty)" : v}`);
