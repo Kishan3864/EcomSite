@@ -304,10 +304,21 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             )}
           </dl>
         </div>
+        {/*
+          No signature block. Rule 46(q) of the CGST Rules requires a signature
+          on a tax invoice, but its proviso exempts invoices issued
+          electronically — and an unregistered seller is outside Rule 46
+          altogether. Drawing a blank signature line here would also contradict
+          the declaration in the footer, which already states the document is
+          valid without one. Nor should a scanned signature ever go on a page
+          every customer can download: that hands a clean copy of it to anyone
+          who buys anything.
+        */}
         <div className="sm:text-right">
-          <p className="text-ink-700">For {seller.legalName}</p>
-          <p className="mt-12 border-t border-ink-400 pt-1.5 text-[11px] text-ink-600 sm:ml-auto sm:w-56 print:mt-8">
-            Authorised signatory
+          <p className="font-medium text-ink-900">For {seller.legalName}</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-ink-500 sm:ml-auto sm:max-w-[16rem]">
+            Issued electronically. No signature or stamp is required on this
+            document.
           </p>
         </div>
       </section>
@@ -319,8 +330,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           charged for the goods described.
         </p>
         <p className="mt-1.5">
-          This is a computer-generated document and is valid without a physical signature. Queries
-          about it go to {seller.email} or {seller.phone}, quoting order {invoice.orderNumber}.
+          Queries about this invoice go to {seller.email} or {seller.phone}, quoting order{" "}
+          {invoice.orderNumber}.
         </p>
       </footer>
     </div>
