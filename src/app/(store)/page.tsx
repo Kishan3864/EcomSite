@@ -1,31 +1,22 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/hero";
-import { FlashDeals } from "@/components/home/flash-deals";
 import {
-  BrandStrip,
-  CategoryStrip,
-  FeatureBanner,
-  OfferCards,
-  PromoTiles,
-  ValueProps,
-} from "@/components/home/sections";
-import { ProductRail } from "@/components/product/product-rail";
-import { RecentlyViewed } from "@/components/product/recently-viewed";
+  CategoryMosaic,
+  DealsBoard,
+  EditorialBand,
+  ProductGrid,
+  Spotlight,
+  TrustRow,
+} from "@/components/home/showcase";
 import { toCardModels } from "@/lib/card";
 import {
   getBanners,
   getBestsellers,
-  getBrands,
   getCategories,
-  getCategoryTop,
   getFlashDeals,
-  getHandpicked,
-  getLimitedStock,
   getNewArrivals,
-  getOffers,
-  getRecommended,
-  getTrending,
 } from "@/services/catalog";
+import { trustBadges } from "@/data/marketing";
 import { BRAND } from "@/components/brand/logo";
 
 export const revalidate = 120;
@@ -41,116 +32,62 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Homepage.
+ *
+ * Eight bands, five distinct shapes. The previous version ran the same product
+ * rail seven times, so the page was long without being informative — every
+ * section looked identical and nothing was given room. Here each band earns its
+ * place: departments, then deals, then the products themselves at a size worth
+ * looking at, with one product given a full spread and one full-bleed statement
+ * to break the rhythm.
+ */
 export default async function HomePage() {
-  const [
-    banners,
-    brands,
-    categories,
-    trending,
-    bestsellers,
-    newArrivals,
-    flashDeals,
-    limited,
-    handpicked,
-    recommended,
-    electronics,
-    offers,
-  ] = await Promise.all([
+  const [banners, categories, flashDeals, bestsellers, newArrivals] = await Promise.all([
     getBanners(),
-    getBrands(),
     getCategories(),
-    getTrending(10),
+    getFlashDeals(7),
     getBestsellers(10),
     getNewArrivals(10),
-    getFlashDeals(8),
-    getLimitedStock(8),
-    getHandpicked(10),
-    getRecommended(10),
-    getCategoryTop("home-living", 8),
-    getOffers(),
   ]);
+
+  const best = toCardModels(bestsellers);
 
   return (
     <>
       <Hero banners={banners.hero} />
 
-      <CategoryStrip categories={categories} />
+      <CategoryMosaic categories={categories} />
 
-      <FlashDeals products={toCardModels(flashDeals)} />
+      <DealsBoard products={toCardModels(flashDeals)} />
 
-      <ProductRail
-        eyebrow="Moving fast"
-        title="Trending this week"
-        description="What customers are adding to their bags right now, updated every few hours."
+      <ProductGrid
+        eyebrow="Proven"
+        title="What people keep buying"
+        description="Our best-selling products, ranked by what actually leaves the shelf."
         href="/products?sort=popularity"
-        linkLabel="See all trending"
-        products={toCardModels(trending)}
+        linkLabel="All bestsellers"
+        products={best}
+        columns={5}
         priority
       />
 
-      <PromoTiles tiles={banners.promoTiles} />
+      {/* One product, given the space a magazine would give it. */}
+      <Spotlight product={best[0]} />
 
-      <ProductRail
-        eyebrow="Proven"
-        title="Bestsellers"
-        description="The products that keep selling out and coming back."
-        href="/products?sort=popularity"
-        products={toCardModels(bestsellers)}
-      />
+      <EditorialBand banner={banners.mid[0]} />
 
-      {banners.mid[0] && <FeatureBanner banner={banners.mid[0]} />}
-
-      <ProductRail
+      <ProductGrid
         eyebrow="Just landed"
-        title="New arrivals"
-        description="Fresh from our maker studios this month."
+        title="New this month"
+        description="The most recent additions to the catalogue."
         href="/products?sort=newest"
+        linkLabel="See what's new"
         products={toCardModels(newArrivals)}
+        columns={5}
       />
 
-      <OfferCards offers={offers} />
-
-      <ProductRail
-        eyebrow="Almost gone"
-        title="Limited stock"
-        description="Small runs and last pieces. When these go, they go."
-        href="/offers"
-        linkLabel="See deals"
-        products={toCardModels(limited)}
-      />
-
-      {banners.mid[1] && <FeatureBanner banner={banners.mid[1]} />}
-
-      <ProductRail
-        eyebrow="Chosen by us"
-        title="Handpicked this season"
-        description="The things the buying team argued about, and won."
-        href="/products"
-        products={toCardModels(handpicked)}
-      />
-
-      <ProductRail
-        eyebrow="For the home"
-        title="Set up your space"
-        description="Furniture, lighting and soft furnishing scaled for Indian apartments."
-        href="/c/home-living"
-        linkLabel="Shop home"
-        products={toCardModels(electronics)}
-      />
-
-      <ValueProps />
-
-      <BrandStrip brands={brands} />
-
-      <ProductRail
-        eyebrow="Because you are here"
-        title="Recommended for you"
-        description="Highly rated across the catalogue — a good place to start."
-        href="/products?sort=rating"
-        products={toCardModels(recommended)}
-      />
-
-      <RecentlyViewed />
+      <TrustRow items={trustBadges.map(({ title, body }) => ({ title, body }))} />
     </>
   );
 }

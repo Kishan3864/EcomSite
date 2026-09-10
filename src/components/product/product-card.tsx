@@ -5,14 +5,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { Eye, Heart, ShoppingBag, Truck, Check } from "lucide-react";
+import { Check, Eye, Heart, ShoppingBag } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
-import { cn, discountPercent, formatCompact } from "@/lib/utils";
-import { Price, ProductBadgePill, RatingChip } from "@/components/ui/primitives";
-import { Button } from "@/components/ui/button";
+import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
+import { RatingChip } from "@/components/ui/primitives";
 import { fromCard, useCommerce } from "@/store/commerce";
 import { QuickView } from "./quick-view";
 
+/**
+ * Product card.
+ *
+ * Deliberately not a card: no box, no shadow, no lift. The tile sits flat on
+ * the surface and lets the photograph do the selling, which is what stops a
+ * page of these reading as a wall of identical widgets. Separation comes from
+ * the 1px grid the parent draws (`.tile-grid`), not from each tile outlining
+ * itself.
+ */
 export function ProductCard({
   product,
   priority = false,
@@ -48,193 +56,189 @@ export function ProductCard({
     <>
       <article
         className={cn(
-          "group relative flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface",
-          "transition-[box-shadow,border-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          "hover:-translate-y-1 hover:border-ink-200 hover:shadow-lg",
-          layout === "rail" && "w-[172px] sm:w-[212px]",
+          "group relative flex flex-col bg-surface transition-colors duration-300",
+          "hover:bg-ink-50/60",
+          layout === "rail" && "w-[190px] sm:w-[236px]",
           className,
         )}
       >
         <Link
           href={`/p/${product.slug}`}
-          className="relative block aspect-[4/5] overflow-hidden bg-ink-100"
-          aria-label={product.title}
+          className="relative block aspect-[3/4] overflow-hidden bg-ink-100"
         >
           <Image
             src={product.image}
-            alt={product.imageAlt}
+            alt={product.imageAlt || product.title}
             fill
+            priority={priority}
             sizes={sizes}
-            loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : "auto"}
             className={cn(
-              "object-cover transition-[transform,opacity] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-              !reduce && "group-hover:scale-[1.06] group-hover:opacity-0",
+              "object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+              "group-hover:scale-[1.04]",
+              outOfStock && "opacity-45 grayscale",
             )}
           />
-          {!reduce && (
+          {product.hoverImage && !outOfStock && (
             <Image
               src={product.hoverImage}
               alt=""
               fill
               sizes={sizes}
               aria-hidden
-              className="scale-[1.06] object-cover opacity-0 transition-[transform,opacity] duration-[600ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-100 group-hover:opacity-100"
+              className="object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
             />
           )}
 
-          {/* Badges */}
-          <div className="pointer-events-none absolute left-2.5 top-2.5 flex flex-col items-start gap-1.5">
-            {product.badges.slice(0, 1).map((b) => (
-              <ProductBadgePill key={b} badge={b} />
-            ))}
-            {off >= 25 && (
-              <span className="rounded-full bg-sale-500 px-2 py-1 text-[10px] font-bold uppercase leading-none tracking-[0.06em] text-white">
-                {off}% off
-              </span>
-            )}
-          </div>
+          {/* Discount reads as a typographic mark in the corner, not a sticker. */}
+          {off > 0 && !outOfStock && (
+            <span className="absolute left-0 top-0 bg-ink-950 px-2.5 py-1.5 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-white">
+              {off}% off
+            </span>
+          )}
 
           {outOfStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-canvas/75 backdrop-blur-[1px]">
-              <span className="rounded-full bg-ink-950 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-white">
-                Out of stock
+            <div className="absolute inset-0 flex items-center justify-center bg-canvas/70">
+              <span className="border border-ink-950 px-3.5 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-950">
+                Sold out
               </span>
             </div>
           )}
 
-          {/* Hover actions — always reachable on touch via the visible buttons below */}
-          <div className="absolute right-2.5 top-2.5 flex flex-col gap-1.5">
+          {/* Utilities stay square and appear only on intent. */}
+          <div className="absolute right-0 top-0 flex flex-col">
             <button
+              type="button"
+              aria-label={wished ? "Remove from wishlist" : "Save for later"}
+              aria-pressed={wished}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 toggleWishlist(fromCard(product));
               }}
-              aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
-              aria-pressed={wished}
               className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full shadow-sm backdrop-blur transition-all duration-200",
+                "flex h-9 w-9 items-center justify-center transition-colors duration-200",
                 wished
-                  ? "bg-sale-500 text-white"
-                  : "bg-surface/90 text-ink-600 hover:bg-surface hover:text-sale-500",
+                  ? "bg-sale-600 text-white"
+                  : "bg-surface/85 text-ink-600 opacity-0 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100",
               )}
             >
-              <motion.span
-                key={String(wished)}
-                initial={reduce ? false : { scale: 0.6 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 520, damping: 16 }}
-              >
-                <Heart size={14} fill={wished ? "currentColor" : "none"} strokeWidth={2} />
-              </motion.span>
+              <Heart size={15} className={wished ? "fill-current" : undefined} />
             </button>
-
             <button
+              type="button"
+              aria-label="Quick view"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setQuickView(true);
               }}
-              aria-label={`Quick view ${product.title}`}
-              className="hidden h-8 w-8 items-center justify-center rounded-full bg-surface/90 text-ink-600 opacity-0 shadow-sm backdrop-blur transition-all duration-200 hover:bg-surface hover:text-brand-700 group-hover:opacity-100 sm:flex"
+              className="hidden h-9 w-9 items-center justify-center bg-surface/85 text-ink-600 opacity-0 transition-colors duration-200 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:flex"
             >
-              <Eye size={14} strokeWidth={2} />
+              <Eye size={15} />
             </button>
           </div>
 
-          {/* Colour swatches */}
-          {product.colors.length > 1 && (
-            <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1">
-              {product.colors.map((c) => (
+          {product.colors && product.colors.length > 0 && (
+            <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
+              {product.colors.slice(0, 4).map(({ name, hex }) => (
                 <span
-                  key={c.name}
-                  title={c.name}
-                  className="h-3 w-3 rounded-full border border-white/70 shadow-sm"
-                  style={{ backgroundColor: c.hex }}
+                  key={name}
+                  style={{ background: hex }}
+                  className="is-circle h-2.5 w-2.5 rounded-full ring-1 ring-white/80"
                 />
               ))}
             </div>
           )}
         </Link>
 
-        <div className="flex flex-1 flex-col p-3 sm:p-3.5">
-          <p className="mb-1 truncate text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-400">
+        <div className="flex flex-1 flex-col px-3.5 pb-3.5 pt-4">
+          <p className="mb-1.5 truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-700">
             {product.brand}
           </p>
-          <h3 className="mb-1.5 text-[13.5px] font-medium leading-snug tracking-[-0.005em] text-ink-900 sm:text-sm">
+
+          <h3 className="text-[13.5px] font-medium leading-[1.4] tracking-[-0.005em] text-ink-900">
             <Link href={`/p/${product.slug}`} className="line-clamp-2 hover:text-brand-700">
               {product.title}
             </Link>
           </h3>
 
-          <RatingChip value={product.rating} count={product.reviewCount} className="mb-2.5" />
-
-          <Price price={product.price} mrp={product.mrp} size="md" className="mb-2" />
-
-          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-ink-500">
-            {product.deliveryDays <= 2 && (
-              <span className="inline-flex items-center gap-1 font-medium text-brand-700">
-                <Truck size={12} /> {product.deliveryDays === 1 ? "Next day" : "2-day"} delivery
+          {/* Price in the display face — the one place the card raises its voice. */}
+          <div className="mt-2.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="font-display text-[19px] leading-none tracking-[-0.02em] text-ink-950">
+              {formatINR(product.price)}
+            </span>
+            {product.mrp > product.price && (
+              <span className="text-[12px] leading-none text-ink-400 line-through">
+                {formatINR(product.mrp)}
               </span>
-            )}
-            {lowStock && (
-              <span className="font-medium text-sale-600">Only {product.stock} left</span>
-            )}
-            {!lowStock && product.soldCount > 2000 && (
-              <span>{formatCompact(product.soldCount)}+ sold</span>
             )}
           </div>
 
-          <div className="mt-auto flex gap-1.5">
-            <Button
-              size="sm"
-              variant={added ? "primary" : "outline"}
-              className="flex-1"
+          <div className="mt-2.5 flex items-center gap-2.5">
+            <RatingChip value={product.rating} count={product.reviewCount} />
+            {product.soldCount ? (
+              <span className="text-[11px] text-ink-400">
+                {formatCompact(product.soldCount)} sold
+              </span>
+            ) : null}
+          </div>
+
+          {lowStock && (
+            <p className="mt-2 text-[11px] font-medium text-sale-600">
+              Only {product.stock} left
+            </p>
+          )}
+
+          {/* One action, full width, square. It slides up on hover on desktop
+              and is simply always there on touch. */}
+          <div className="mt-auto pt-3.5">
+            <button
+              type="button"
               onClick={handleAdd}
               disabled={outOfStock}
+              className={cn(
+                "relative flex h-10 w-full items-center justify-center gap-2 border text-[12px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
+                outOfStock
+                  ? "cursor-not-allowed border-ink-200 text-ink-400"
+                  : added
+                    ? "border-brand-700 bg-brand-700 text-white"
+                    : "border-ink-950 text-ink-950 hover:bg-ink-950 hover:text-white",
+              )}
             >
               <AnimatePresence mode="wait" initial={false}>
                 {added ? (
                   <motion.span
                     key="added"
-                    initial={reduce ? false : { opacity: 0, y: 6 }}
+                    initial={reduce ? false : { opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={reduce ? undefined : { opacity: 0, y: -6 }}
-                    className="inline-flex items-center gap-1.5"
+                    exit={reduce ? undefined : { opacity: 0, y: -4 }}
+                    transition={{ duration: 0.18 }}
+                    className="inline-flex items-center gap-2"
                   >
-                    <Check size={14} strokeWidth={2.5} /> Added
+                    <Check size={14} /> Added
                   </motion.span>
                 ) : (
                   <motion.span
                     key="add"
-                    initial={reduce ? false : { opacity: 0, y: 6 }}
+                    initial={reduce ? false : { opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={reduce ? undefined : { opacity: 0, y: -6 }}
-                    className="inline-flex items-center gap-1.5"
+                    exit={reduce ? undefined : { opacity: 0, y: -4 }}
+                    transition={{ duration: 0.18 }}
+                    className="inline-flex items-center gap-2"
                   >
-                    <ShoppingBag size={14} /> {outOfStock ? "Notify me" : "Add"}
+                    <ShoppingBag size={14} />
+                    {outOfStock ? "Sold out" : "Add to bag"}
                   </motion.span>
                 )}
               </AnimatePresence>
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              className="px-2.5 sm:hidden"
-              onClick={(e) => {
-                e.preventDefault();
-                setQuickView(true);
-              }}
-              aria-label={`Quick view ${product.title}`}
-            >
-              <Eye size={15} />
-            </Button>
+            </button>
           </div>
         </div>
       </article>
 
-      <QuickView product={product} open={quickView} onClose={() => setQuickView(false)} />
+      {quickView && (
+        <QuickView product={product} open={quickView} onClose={() => setQuickView(false)} />
+      )}
     </>
   );
 }

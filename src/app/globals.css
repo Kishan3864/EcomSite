@@ -2,85 +2,100 @@
 
 /* ------------------------------------------------------------------ *
  *  MAYURA — design tokens
- *  Peacock teal + marigold. Swap the values here to rebrand entirely.
+ *
+ *  Direction: quiet luxury. Deep evergreen, aged brass, parchment.
+ *  Nothing shouts; the product photography carries the colour and the
+ *  interface stays out of its way.
+ *
+ *  Corners are square by policy. The radius scale below is collapsed to
+ *  2px on purpose, so every `rounded-*` utility across the app lands on
+ *  the same crisp edge. Form controls are the one exception and opt in
+ *  with `rounded-field`.
  * ------------------------------------------------------------------ */
 
 @theme {
-  /* Brand — peacock */
-  --color-brand-50: #eff8f7;
-  --color-brand-100: #d5ece9;
-  --color-brand-200: #aad9d3;
-  --color-brand-300: #77bfb8;
-  --color-brand-400: #48a099;
-  --color-brand-500: #2c837c;
-  --color-brand-600: #1f6963;
-  --color-brand-700: #1a5450;
-  --color-brand-800: #164441;
-  --color-brand-900: #113634;
-  --color-brand-950: #0a2322;
+  /* Brand — deep evergreen. Reads as considered and trustworthy rather
+     than loud, and gives the brass accent something to sit against. */
+  --color-brand-50: #f2f5f3;
+  --color-brand-100: #dfe8e3;
+  --color-brand-200: #bccfc5;
+  --color-brand-300: #91b0a1;
+  --color-brand-400: #648b78;
+  --color-brand-500: #426b58;
+  --color-brand-600: #305344;
+  --color-brand-700: #274337;
+  --color-brand-800: #1e332b;
+  --color-brand-900: #16261f;
+  --color-brand-950: #0b1611;
 
-  /* Accent — marigold */
-  --color-gold-50: #fff9ed;
-  --color-gold-100: #fdefcf;
-  --color-gold-200: #fadd9e;
-  --color-gold-300: #f7c563;
-  --color-gold-400: #f4ad38;
-  --color-gold-500: #ee9014;
-  --color-gold-600: #d2740c;
-  --color-gold-700: #a5530d;
-  --color-gold-800: #864212;
-  --color-gold-900: #6f3812;
+  /* Accent — aged brass. Used sparingly: eyebrows, rules, one CTA. */
+  --color-gold-50: #fbf7ee;
+  --color-gold-100: #f5ebd3;
+  --color-gold-200: #ecd5a4;
+  --color-gold-300: #dfb96f;
+  --color-gold-400: #d0a04b;
+  --color-gold-500: #b8832f;
+  --color-gold-600: #9a6926;
+  --color-gold-700: #7b5122;
+  --color-gold-800: #654322;
+  --color-gold-900: #55391f;
 
-  /* Sale — rani pink */
-  --color-sale-50: #fff1f5;
-  --color-sale-100: #ffe4ec;
-  --color-sale-200: #ffc9db;
-  --color-sale-300: #fda2c0;
-  --color-sale-400: #f4699b;
-  --color-sale-500: #e0316a;
-  --color-sale-600: #c81a54;
-  --color-sale-700: #a71247;
+  /* Sale — claret. A discount should look considered, not like a siren. */
+  --color-sale-50: #fdf3f4;
+  --color-sale-100: #fae3e6;
+  --color-sale-200: #f4ccd2;
+  --color-sale-300: #e9a3ae;
+  --color-sale-400: #d96e82;
+  --color-sale-500: #c04159;
+  --color-sale-600: #a12943;
+  --color-sale-700: #851f37;
 
-  /* Ink — warm neutrals */
-  --color-ink-50: #f8f8f7;
-  --color-ink-100: #f0f0ee;
-  --color-ink-200: #e4e4e0;
-  --color-ink-300: #cdcdc7;
-  --color-ink-400: #a1a19a;
-  --color-ink-500: #77776f;
-  --color-ink-600: #585851;
-  --color-ink-700: #43433e;
-  --color-ink-800: #2b2b28;
-  --color-ink-900: #1a1a18;
-  --color-ink-950: #0f0f0e;
+  /* Ink — warm greys with real depth at the dark end. */
+  --color-ink-50: #f7f6f4;
+  --color-ink-100: #eeece8;
+  --color-ink-200: #e0ddd7;
+  --color-ink-300: #c7c2b9;
+  --color-ink-400: #9c968b;
+  --color-ink-500: #736d63;
+  --color-ink-600: #55504a;
+  --color-ink-700: #403c37;
+  --color-ink-800: #2a2724;
+  --color-ink-900: #191714;
+  --color-ink-950: #0d0c0a;
 
-  --color-canvas: #fbfaf8;
+  --color-canvas: #f7f5f1;
   --color-surface: #ffffff;
-  --color-hairline: #e8e6e1;
+  --color-hairline: #e2ded6;
+  /* A second, darker rule for editorial dividers that need to be seen. */
+  --color-rule: #cdc7bb;
 
   /* Type */
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 
-  /* Radius scale — crisp, not pill-soft */
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.25rem;
-  /* Retuned too, or it would keep Tailwind's 2rem — the old 3xl we moved away from. */
-  --radius-4xl: 1.5rem;
+  /* Radius — square by policy. Every step is the same 2px so no component
+     can quietly reintroduce a soft corner by reaching for a bigger name. */
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 2px;
+  --radius-4xl: 2px;
+  /* The single exception: form controls, where a little softening helps
+     the eye find the input. Use `rounded-field`. */
+  --radius-field: 4px;
 
-  /* Elevation — soft, warm, premium */
-  --shadow-xs: 0 1px 2px 0 rgb(26 26 24 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(26 26 24 / 0.06), 0 1px 2px -1px rgb(26 26 24 / 0.06);
-  --shadow-md: 0 4px 14px -4px rgb(26 26 24 / 0.10), 0 2px 4px -2px rgb(26 26 24 / 0.05);
-  --shadow-lg: 0 12px 32px -12px rgb(26 26 24 / 0.16), 0 4px 10px -6px rgb(26 26 24 / 0.07);
-  --shadow-xl: 0 24px 56px -20px rgb(26 26 24 / 0.22), 0 8px 20px -12px rgb(26 26 24 / 0.10);
-  --shadow-ring: 0 0 0 1px rgb(232 230 225 / 1);
+  /* Elevation — shadows are almost absent. Depth comes from hairlines and
+     from the flat planes of canvas against surface. */
+  --shadow-xs: 0 1px 1px 0 rgb(13 12 10 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(13 12 10 / 0.05);
+  --shadow-md: 0 2px 8px -2px rgb(13 12 10 / 0.07);
+  --shadow-lg: 0 8px 24px -10px rgb(13 12 10 / 0.12);
+  --shadow-xl: 0 20px 48px -20px rgb(13 12 10 / 0.18);
+  --shadow-ring: 0 0 0 1px rgb(226 222 214 / 1);
 
   /* Motion */
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
@@ -99,8 +114,8 @@
     to { transform: translateX(-50%); }
   }
   @keyframes pop {
-    0% { transform: scale(0.85); opacity: 0; }
-    60% { transform: scale(1.06); opacity: 1; }
+    0% { transform: scale(0.9); opacity: 0; }
+    60% { transform: scale(1.04); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
   }
 }
@@ -127,15 +142,20 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* `rounded-full` is Tailwind's own value, not one of our tokens, so the
+     radius policy has to catch it here. Genuine circles — colour swatches,
+     avatars, dots — opt back in with `.is-circle`. */
+  .rounded-full:not(.is-circle) {
+    border-radius: 2px;
+  }
+
   ::selection {
     background: var(--color-brand-900);
     color: #fff;
   }
 
-  /* An outline already follows the element's own border-radius, so forcing one
-     here only squared off buttons and cards for as long as they held focus. */
   :focus-visible {
-    outline: 2px solid var(--color-brand-500);
+    outline: 2px solid var(--color-gold-500);
     outline-offset: 2px;
   }
 
@@ -189,10 +209,15 @@
   @media (min-width: 640px) { .container-page { padding-inline: 1.5rem; } }
   @media (min-width: 1024px) { .container-page { padding-inline: 2rem; } }
 
+  /* The one place a soft corner is allowed. */
+  .rounded-field {
+    border-radius: var(--radius-field);
+  }
+
   /* Horizontal snap rails used across the storefront */
   .rail {
     display: flex;
-    gap: 0.875rem;
+    gap: 1px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: 1rem;
@@ -216,12 +241,44 @@
     animation: var(--animate-shimmer);
   }
 
-  /* Understated brand sheen for hero surfaces */
+  /* Deep brand plane for hero and editorial surfaces. Brass warms one
+     corner, evergreen holds the rest. */
   .peacock-surface {
     background:
-      radial-gradient(120% 110% at 8% 0%, rgb(44 131 124 / 0.16) 0%, transparent 58%),
-      radial-gradient(90% 90% at 96% 8%, rgb(238 144 20 / 0.14) 0%, transparent 55%),
+      radial-gradient(110% 100% at 6% 0%, rgb(66 107 88 / 0.35) 0%, transparent 60%),
+      radial-gradient(80% 80% at 98% 4%, rgb(184 131 47 / 0.22) 0%, transparent 58%),
       var(--color-brand-950);
+  }
+
+  /* Section eyebrow: small caps over a short brass rule. Used instead of
+     the coloured pill labels the old design repeated on every band. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-gold-700);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.75rem;
+    height: 1px;
+    background: var(--color-gold-500);
+  }
+
+  /* A hairline grid that lets product tiles sit edge to edge with a single
+     shared rule between them, instead of every card drawing its own box. */
+  .tile-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--color-hairline);
+    border: 1px solid var(--color-hairline);
+  }
+  .tile-grid > * {
+    background: var(--color-surface);
   }
 }
 

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export const inputClasses = (invalid?: boolean) =>
   cn(
-    "h-11 w-full rounded-lg border bg-canvas px-3.5 text-[14px] text-ink-900 outline-none",
+    "h-11 w-full rounded-field border bg-canvas px-3.5 text-[14px] text-ink-900 outline-none",
     "transition-colors placeholder:text-ink-400",
     invalid
       ? "border-sale-500 focus:border-sale-600"
@@ -116,7 +116,7 @@ export function OptionCard({
   return (
     <div
       className={cn(
-        "rounded-xl border bg-surface transition-all duration-200",
+        "rounded-field border bg-surface transition-all duration-200",
         selected ? "border-brand-700 shadow-[0_0_0_1px_var(--color-brand-700)]" : "border-ink-200",
         disabled && "opacity-55",
         className,
@@ -131,7 +131,7 @@ export function OptionCard({
       >
         <span
           className={cn(
-            "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border transition-all",
+            "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center is-circle rounded-full border transition-all",
             selected ? "border-[5px] border-brand-700" : "border-ink-300",
           )}
         />
