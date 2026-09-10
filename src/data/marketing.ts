@@ -9,6 +9,7 @@ import type {
   ReturnRequest,
 } from "@/lib/types";
 import { POOL, img } from "./images";
+import { BUSINESS } from "@/config/business";
 
 /* ------------------------------ Banners ---------------------------- */
 
@@ -243,10 +244,26 @@ export const returnRequests: ReturnRequest[] = [
 /* ----------------------------- Trust bar ---------------------------- */
 
 export const trustBadges = [
-  { icon: "truck", title: "Free delivery over ₹999", body: "Own fleet in 14 metros, trusted partners everywhere else" },
-  { icon: "rotate-ccw", title: "Easy 14-day returns", body: "Free pickup, refunds processed within 48 hours" },
-  { icon: "shield-check", title: "100% genuine products", body: "Sourced direct from brands, never from grey markets" },
-  { icon: "headset", title: "Support that replies", body: "WhatsApp and phone, 8am to 10pm, all seven days" },
+  {
+    icon: "truck",
+    title: `Free delivery over ₹${BUSINESS.ops.freeShippingThreshold}`,
+    body: `Dispatched in ${BUSINESS.ops.dispatchDays} business days, delivered in ${BUSINESS.ops.deliveryDaysMin}–${BUSINESS.ops.deliveryDaysMax}`,
+  },
+  {
+    icon: "rotate-ccw",
+    title: `${BUSINESS.ops.returnWindowDays}–${BUSINESS.ops.returnWindowExtendedDays} day returns`,
+    body: "No restocking fee. Refunds go back to how you paid",
+  },
+  {
+    icon: "shield-check",
+    title: "Bought and invoiced by us",
+    body: "A first-party store, not a marketplace. No third-party sellers",
+  },
+  {
+    icon: "headset",
+    title: "A person answers",
+    body: BUSINESS.supportHours,
+  },
 ];
 
 export const popularSearches = [

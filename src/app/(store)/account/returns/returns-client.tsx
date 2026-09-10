@@ -309,7 +309,7 @@ export function ReturnsClient({
 
       <p className="rounded-xl border border-hairline bg-surface p-4 text-[12.5px] leading-relaxed text-ink-600">
         Read the full{" "}
-        <Link href="/legal/returns" className="font-semibold text-brand-700 hover:underline">
+        <Link href="/legal/refunds" className="font-semibold text-brand-700 hover:underline">
           return policy
         </Link>{" "}
         for category-specific windows. Beauty and personal care items can only be returned

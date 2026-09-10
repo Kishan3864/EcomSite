@@ -1,5 +1,5 @@
 import { Lock, ShieldCheck } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { BRAND, Logo } from "@/components/brand/logo";
 import { AdminLoginForm } from "./login-form";
 
 export default async function AdminLoginPage({
@@ -57,7 +57,7 @@ export default async function AdminLoginPage({
             ))}
           </ul>
         </div>
-        <p className="text-[12px] text-white/35">Mayura Commerce Private Limited</p>
+        <p className="text-[12px] text-white/35">{BRAND.legalName}</p>
       </div>
     </div>
   );

@@ -6,15 +6,14 @@ import { buttonClasses } from "@/components/ui/button";
 import { FaqAccordion } from "./faq-accordion";
 import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/seo/json-ld";
 import { faqs } from "@/data/policies";
-import { BRAND } from "@/components/brand/logo";
+import { BUSINESS } from "@/config/business";
 
 export const metadata: Metadata = {
   title: "Help and FAQ",
-  description:
-    "Answers to the questions customers actually ask about orders, delivery, payments, returns and products on Mayura.",
+  description: `Answers to the questions customers actually ask about orders, delivery, payments, returns and products on ${BUSINESS.brandName}.`,
   alternates: { canonical: "/faq" },
   openGraph: {
-    title: "Help and FAQ · Mayura",
+    title: `Help and FAQ · ${BUSINESS.brandName}`,
     description: "Answers about orders, delivery, payments and returns.",
     url: "/faq",
   },
@@ -59,18 +58,18 @@ export default function FaqPage() {
               Still stuck?
             </h2>
             <p className="mt-2 text-[13px] leading-relaxed text-ink-600">
-              Our support team answers within a few minutes between 8am and 10pm, all seven days.
-              Real people, based in Bengaluru.
+              We answer {BUSINESS.supportHours}. A person replies, not a bot. Anything that arrives
+              outside those hours is answered the next working day.
             </p>
             <div className="mt-4 space-y-2">
               <Link href="/contact" className={buttonClasses("primary", "md", "w-full")}>
                 <MessageCircle size={15} /> Message us
               </Link>
               <a
-                href={`tel:${BRAND.supportPhone}`}
+                href={`tel:${BUSINESS.supportPhoneDigits}`}
                 className={buttonClasses("outline", "md", "w-full")}
               >
-                <Phone size={15} /> {BRAND.supportPhone}
+                <Phone size={15} /> {BUSINESS.supportPhone}
               </a>
             </div>
           </div>
@@ -81,10 +80,12 @@ export default function FaqPage() {
             </h2>
             <ul className="mt-3 space-y-2">
               {[
-                { label: "Shipping policy", href: "/legal/shipping" },
-                { label: "Return and refund policy", href: "/legal/returns" },
+                { label: "Shipping and delivery", href: "/legal/shipping" },
+                { label: "Refund and cancellation", href: "/legal/refunds" },
+                { label: "Payments and security", href: "/legal/payments" },
                 { label: "Privacy policy", href: "/legal/privacy" },
-                { label: "Terms and conditions", href: "/legal/terms" },
+                { label: "Terms of use", href: "/legal/terms" },
+                { label: "Disclaimer", href: "/legal/disclaimer" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProsePage } from "@/components/content/prose-page";
 import { policies, policyMap } from "@/data/policies";
+import { BUSINESS } from "@/config/business";
 
 type Params = Promise<{ slug: string }>;
 
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     description: policy.description,
     alternates: { canonical: `/legal/${policy.slug}` },
     openGraph: {
-      title: `${policy.title} · Mayura`,
+      title: `${policy.title} · ${BUSINESS.brandName}`,
       description: policy.description,
       url: `/legal/${policy.slug}`,
     },
@@ -47,10 +48,10 @@ export default async function LegalPage({ params }: { params: Params }) {
         <>
           Still unclear about something? Email{" "}
           <a
-            href="mailto:hello@mayura.in"
+            href={`mailto:${BUSINESS.supportEmail}`}
             className="font-semibold text-brand-700 hover:underline"
           >
-            hello@mayura.in
+            {BUSINESS.supportEmail}
           </a>{" "}
           or read the other policies:{" "}
           {policies

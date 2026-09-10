@@ -2,6 +2,7 @@ import "server-only";
 
 import { cache } from "react";
 import { db } from "@/lib/db";
+import { BUSINESS, formatAddress, isGstRegistered } from "@/config/business";
 
 /**
  * Store settings the owner edits from the admin panel, merged over defaults so
@@ -41,24 +42,31 @@ export interface StoreSettings {
 
 export const DEFAULT_SETTINGS: StoreSettings = {
   store: {
-    name: "Mayura",
-    legalName: "Mayura Commerce Private Limited",
-    tagline: "Made well. Priced honestly.",
-    supportEmail: "hello@mayura.in",
-    supportPhone: "+91 80 4718 2200",
-    address: "4th Floor, Ekam House, 27 Residency Road, Bengaluru 560025",
-    gstin: "29AABCM1234K1ZP",
+    name: BUSINESS.brandName,
+    legalName: BUSINESS.legalName,
+    tagline: BUSINESS.tagline,
+    supportEmail: BUSINESS.supportEmail,
+    supportPhone: BUSINESS.supportPhone,
+    address: formatAddress(),
+    gstin: isGstRegistered ? BUSINESS.gstin : "",
     currency: "INR",
   },
   shipping: {
-    freeThreshold: 999,
-    standardFee: 79,
+    freeThreshold: BUSINESS.ops.freeShippingThreshold,
+    standardFee: BUSINESS.ops.shippingFee,
     expressFee: 99,
     scheduledFee: 49,
-    standardDays: [3, 5],
+    standardDays: [BUSINESS.ops.deliveryDaysMin, BUSINESS.ops.deliveryDaysMax],
     expressDays: [1, 2],
   },
-  payments: { upi: true, card: true, netbanking: true, wallet: true, cod: true, codLimit: 25000 },
+  payments: {
+    upi: true,
+    card: true,
+    netbanking: true,
+    wallet: true,
+    cod: BUSINESS.ops.codEnabled,
+    codLimit: BUSINESS.ops.codLimit,
+  },
   tax: { gstRate: 18, pricesIncludeTax: true },
   inventory: { lowStockThreshold: 12, allowBackorders: false },
 };

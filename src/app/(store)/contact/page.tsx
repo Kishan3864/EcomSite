@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock, Mail, MapPin, MessageCircle, Package, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle, Package, Phone, UserRound } from "lucide-react";
 import { Breadcrumbs } from "@/components/ui/primitives";
 import { ContactForm } from "./contact-form";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { BRAND } from "@/components/brand/logo";
+import { BUSINESS, addressLines, isFilled } from "@/config/business";
 
 export const metadata: Metadata = {
   title: "Contact us",
-  description:
-    "Talk to the Mayura team — WhatsApp, phone or email, 8am to 10pm every day. Median first reply is under nine minutes.",
+  description: `Contact ${BUSINESS.brandName} — phone, email and our registered address. Support runs ${BUSINESS.supportHours}.`,
   alternates: { canonical: "/contact" },
   openGraph: {
-    title: "Contact us · Mayura",
-    description: "Talk to the Mayura team, 8am to 10pm every day.",
+    title: `Contact us · ${BUSINESS.brandName}`,
+    description: `Reach ${BUSINESS.brandName} by phone or email, ${BUSINESS.supportHours}.`,
     url: "/contact",
   },
 };
@@ -24,26 +24,30 @@ const crumbs = [
 ];
 
 const CHANNELS = [
-  {
-    icon: MessageCircle,
-    title: "WhatsApp",
-    body: "Fastest for order questions. Send your order number and we will pull it up.",
-    action: BRAND.supportPhone,
-    href: `https://wa.me/918047182200`,
-  },
+  ...(BUSINESS.whatsappEnabled
+    ? [
+        {
+          icon: MessageCircle,
+          title: "WhatsApp",
+          body: "Fastest for order questions. Send your order number and we will pull it up.",
+          action: BUSINESS.supportPhone,
+          href: `https://wa.me/${BUSINESS.supportPhoneDigits}`,
+        },
+      ]
+    : []),
   {
     icon: Phone,
     title: "Phone",
-    body: "8am to 10pm, all seven days. A person picks up, not a menu.",
-    action: BRAND.supportPhone,
-    href: `tel:${BRAND.supportPhone}`,
+    body: `${BUSINESS.supportHours}. A person picks up, not a menu.`,
+    action: BUSINESS.supportPhone,
+    href: `tel:${BUSINESS.supportPhoneDigits}`,
   },
   {
     icon: Mail,
     title: "Email",
-    body: "Best for anything with attachments — photos of a damaged parcel, invoices, GST queries.",
-    action: BRAND.supportEmail,
-    href: `mailto:${BRAND.supportEmail}`,
+    body: "Best for anything with attachments — photos of a damaged parcel, invoices, tax queries.",
+    action: BUSINESS.supportEmail,
+    href: `mailto:${BUSINESS.supportEmail}`,
   },
 ];
 
@@ -61,8 +65,9 @@ export default function ContactPage() {
           Talk to a person
         </h1>
         <p className="mt-4 text-[15px] leading-relaxed text-ink-600">
-          Fourteen of us in Bengaluru handle every conversation. No scripts, no chatbot maze. Median
-          first reply is under nine minutes between 8am and 10pm.
+          Support runs {BUSINESS.supportHours}. Write, call or message us and a person will
+          answer — no scripts, no chatbot maze. Our full postal address and grievance officer are
+          listed below.
         </p>
       </header>
 
@@ -97,34 +102,74 @@ export default function ContactPage() {
             <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
               <Clock size={14} className="text-brand-600" /> When we are around
             </h2>
-            <dl className="mt-3 space-y-2 text-[13px]">
-              {[
-                ["Monday to Friday", "8:00am – 10:00pm"],
-                ["Saturday and Sunday", "9:00am – 9:00pm"],
-                ["National holidays", "10:00am – 6:00pm"],
-              ].map(([day, hours]) => (
-                <div key={day} className="flex justify-between gap-3">
-                  <dt className="text-ink-600">{day}</dt>
-                  <dd className="font-medium tabular-nums text-ink-900">{hours}</dd>
-                </div>
-              ))}
-            </dl>
+            <p className="mt-3 text-[13px] leading-relaxed text-ink-600">
+              {BUSINESS.supportHours}. Messages that arrive outside those hours are answered the
+              next working day.
+            </p>
           </div>
 
           <div className="rounded-xl border border-hairline bg-surface p-5">
             <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
-              <MapPin size={14} className="text-brand-600" /> Registered office
+              <MapPin size={14} className="text-brand-600" /> Registered address
+            </h2>
+            <address className="mt-3 text-[13px] not-italic leading-relaxed text-ink-600">
+              {BRAND.legalName}
+              {BUSINESS.entityType === "Proprietorship" ? (
+                <>
+                  <br />
+                  <span className="text-ink-500">
+                    Sole proprietorship of {BUSINESS.proprietorName}
+                  </span>
+                </>
+              ) : null}
+              {addressLines().map((line) => (
+                <span key={line}>
+                  <br />
+                  {line}
+                </span>
+              ))}
+              {isFilled(BUSINESS.gstin) ? (
+                <>
+                  <br />
+                  <span className="text-ink-400">GSTIN {BUSINESS.gstin}</span>
+                </>
+              ) : null}
+              {isFilled(BUSINESS.udyamNumber) ? (
+                <>
+                  <br />
+                  <span className="text-ink-400">Udyam {BUSINESS.udyamNumber}</span>
+                </>
+              ) : null}
+            </address>
+          </div>
+
+          {/* Required by the Consumer Protection (E-Commerce) Rules, 2020. */}
+          <div className="rounded-xl border border-hairline bg-surface p-5">
+            <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+              <UserRound size={14} className="text-brand-600" /> Grievance officer
             </h2>
             <p className="mt-3 text-[13px] leading-relaxed text-ink-600">
-              {BRAND.legalName}
+              {BUSINESS.grievanceOfficer.name}
               <br />
-              4th Floor, Ekam House
+              <span className="text-ink-500">{BUSINESS.grievanceOfficer.designation}</span>
               <br />
-              27 Residency Road
+              <a
+                href={`mailto:${BUSINESS.grievanceEmail}`}
+                className="font-medium text-brand-700 hover:underline"
+              >
+                {BUSINESS.grievanceEmail}
+              </a>
               <br />
-              Bengaluru, Karnataka 560025
-              <br />
-              <span className="text-ink-400">CIN U52100KA2024PTC109887</span>
+              <a
+                href={`tel:${BUSINESS.supportPhoneDigits}`}
+                className="font-medium text-brand-700 hover:underline"
+              >
+                {BUSINESS.supportPhone}
+              </a>
+            </p>
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-500">
+              Complaints are acknowledged within 48 hours and resolved within one month. If we
+              cannot resolve yours, escalate to the National Consumer Helpline on 1915.
             </p>
           </div>
 

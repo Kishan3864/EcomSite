@@ -267,7 +267,7 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
               terms
             </Link>{" "}
             and{" "}
-            <Link href="/legal/returns" className="font-medium text-brand-700 hover:underline">
+            <Link href="/legal/refunds" className="font-medium text-brand-700 hover:underline">
               return policy
             </Link>
             .

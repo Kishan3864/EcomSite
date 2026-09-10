@@ -1,24 +1,31 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { BUSINESS, isFilled } from "@/config/business";
 
 /**
- * Brand identity lives here and nowhere else. Replacing the mark, wordmark or
- * tagline is a single-file change.
+ * Brand identity, derived from the one place real business facts live.
+ *
+ * Nothing here is hardcoded any more — edit `@/config/business` and the logo,
+ * metadata, footer, structured data and every policy page follow. That is what
+ * keeps the site's legal name, address and contact details consistent, which is
+ * exactly what a payment aggregator checks.
  */
 
+/** Until a real domain is configured, keep URLs valid so builds do not fail. */
+const SITE_URL = isFilled(BUSINESS.url) ? BUSINESS.url : "http://localhost:3000";
+
 export const BRAND = {
-  name: "Mayura",
-  legalName: "Mayura Commerce Private Limited",
-  tagline: "Made well. Priced honestly.",
-  description:
-    "Mayura is an Indian storefront for things made well — handloom, hardware and homeware from 16 studios, priced honestly and delivered fast.",
-  url: "https://mayura.example",
-  supportEmail: "hello@mayura.in",
-  supportPhone: "+91 80 4718 2200",
+  name: BUSINESS.brandName,
+  legalName: BUSINESS.legalName,
+  tagline: BUSINESS.tagline,
+  description: BUSINESS.description,
+  url: SITE_URL,
+  supportEmail: BUSINESS.supportEmail,
+  supportPhone: BUSINESS.supportPhone,
   social: {
-    instagram: "https://instagram.com",
-    twitter: "https://x.com",
-    youtube: "https://youtube.com",
+    instagram: BUSINESS.social.instagram,
+    facebook: BUSINESS.social.facebook,
+    youtube: BUSINESS.social.youtube,
   },
 } as const;
 

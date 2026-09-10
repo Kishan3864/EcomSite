@@ -214,7 +214,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 icon: RotateCcw,
                 title: `${product.returnWindowDays}-day returns`,
                 body: `Changed your mind? Return within ${product.returnWindowDays} days of delivery in original packaging. Pickup is free from every serviceable pincode and the refund starts within 48 hours of the item reaching our warehouse.`,
-                href: "/legal/returns",
+                href: "/legal/refunds",
                 linkLabel: "Read the return policy",
               },
               {

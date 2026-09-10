@@ -308,7 +308,7 @@ export async function placeOrder(
                   method === "COD"
                     ? "We have received your order. Pay when it arrives."
                     : "We have received your order and payment.",
-                location: `Mayura, ${settings.store.address.split(",").slice(-1)[0]?.trim() || "Bengaluru"}`,
+                location: `${settings.store.name}, ${settings.store.address.split(",").slice(-2)[0]?.trim() ?? ""}`.replace(/, $/, ""),
                 actorName: "System",
               },
             },

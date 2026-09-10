@@ -9,7 +9,8 @@ import {
   Truck,
 } from "lucide-react";
 import { BRAND, Logo } from "@/components/brand/logo";
-import { InstagramIcon, XIcon, YoutubeIcon } from "@/components/brand/social-icons";
+import { BUSINESS, formatAddress, isFilled, isGstRegistered } from "@/config/business";
+import { InstagramIcon, YoutubeIcon } from "@/components/brand/social-icons";
 import { getCategories } from "@/services/catalog";
 import { trustBadges } from "@/data/marketing";
 import { NewsletterForm } from "./newsletter-form";
@@ -46,11 +47,24 @@ const LINK_COLUMNS = [
   {
     title: "Company",
     links: [
-      { label: "About Mayura", href: "/about" },
+      { label: `About ${BUSINESS.brandName}`, href: "/about" },
+      { label: "What we do", href: "/services" },
       { label: "Contact us", href: "/contact" },
       { label: "Help and FAQ", href: "/faq" },
-      { label: "Shipping policy", href: "/legal/shipping" },
-      { label: "Return policy", href: "/legal/returns" },
+      { label: "Track an order", href: "/track" },
+    ],
+  },
+  {
+    // Every policy page reachable from every page, without logging in. Payment
+    // aggregators check this specifically during merchant review.
+    title: "Policies",
+    links: [
+      { label: "Privacy policy", href: "/legal/privacy" },
+      { label: "Terms of use", href: "/legal/terms" },
+      { label: "Refund and cancellation", href: "/legal/refunds" },
+      { label: "Shipping and delivery", href: "/legal/shipping" },
+      { label: "Payments and security", href: "/legal/payments" },
+      { label: "Disclaimer", href: "/legal/disclaimer" },
     ],
   },
 ];
@@ -99,7 +113,7 @@ export async function Footer() {
       </div>
 
       {/* Links */}
-      <div className="container-page grid gap-10 py-14 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-12">
+      <div className="container-page grid gap-10 py-14 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-12">
         <div>
           <Logo href={null} />
           <p className="mt-4 max-w-sm text-[13px] leading-relaxed text-ink-600">
@@ -120,15 +134,18 @@ export async function Footer() {
             </li>
             <li className="flex items-start gap-2.5">
               <MapPin size={14} className="mt-0.5 shrink-0 text-brand-600" />
-              <span>4th Floor, Ekam House, 27 Residency Road, Bengaluru 560025</span>
+              <span>{formatAddress()}</span>
             </li>
           </ul>
           <div className="mt-5 flex gap-2">
             {[
               { href: BRAND.social.instagram, icon: InstagramIcon, label: "Instagram" },
-              { href: BRAND.social.twitter, icon: XIcon, label: "X" },
               { href: BRAND.social.youtube, icon: YoutubeIcon, label: "YouTube" },
-            ].map(({ href, icon: Icon, label }) => (
+            ]
+              // A dead social link is a trust signal reviewers notice. Render
+              // only the profiles that actually exist.
+              .filter(({ href }) => isFilled(href))
+              .map(({ href, icon: Icon, label }) => (
               <a
                 key={label}
                 href={href}
@@ -199,15 +216,18 @@ export async function Footer() {
       <div className="border-t border-hairline bg-canvas">
         <div className="container-page flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[12px] text-ink-500">
-            &copy; {new Date().getFullYear()} {BRAND.legalName}. All rights reserved. GSTIN
-            29AABCM1234K1ZP.
+            &copy; {new Date().getFullYear()} {BRAND.legalName}. All rights reserved.
+            {isGstRegistered ? ` GSTIN ${BUSINESS.gstin}.` : ""}
+            {isFilled(BUSINESS.udyamNumber) ? ` Udyam ${BUSINESS.udyamNumber}.` : ""}
           </p>
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {[
               { label: "Privacy", href: "/legal/privacy" },
               { label: "Terms", href: "/legal/terms" },
+              { label: "Refunds", href: "/legal/refunds" },
               { label: "Shipping", href: "/legal/shipping" },
-              { label: "Returns", href: "/legal/returns" },
+              { label: "Payments", href: "/legal/payments" },
+              { label: "Disclaimer", href: "/legal/disclaimer" },
             ].map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="text-[12px] text-ink-500 hover:text-brand-700">

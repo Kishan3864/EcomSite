@@ -1,6 +1,7 @@
 import type { Product } from "@/lib/types";
 import type { Crumb } from "@/components/ui/primitives";
 import { BRAND } from "@/components/brand/logo";
+import { BUSINESS, isFilled } from "@/config/business";
 
 /**
  * Structured data helpers.
@@ -20,6 +21,27 @@ function JsonLd({ data }: { data: Record<string, unknown> }) {
 }
 
 export function OrganizationJsonLd() {
+  const a = BUSINESS.address;
+
+  // Only emit address fields that have actually been filled in — a half-written
+  // PostalAddress with placeholder text is worse for Google than none at all.
+  const address = Object.fromEntries(
+    Object.entries({
+      "@type": "PostalAddress",
+      streetAddress: [a.line1, a.line2].filter(isFilled).join(", "),
+      addressLocality: a.city,
+      addressRegion: a.state,
+      postalCode: a.postalCode,
+      addressCountry: a.countryCode,
+    }).filter(([key, value]) => key === "@type" || isFilled(String(value))),
+  );
+
+  const sameAs = [
+    BUSINESS.social.instagram,
+    BUSINESS.social.facebook,
+    BUSINESS.social.youtube,
+  ].filter(isFilled);
+
   return (
     <JsonLd
       data={{
@@ -32,16 +54,18 @@ export function OrganizationJsonLd() {
         description: BRAND.description,
         email: BRAND.supportEmail,
         telephone: BRAND.supportPhone,
-        areaServed: "IN",
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: "4th Floor, Ekam House, 27 Residency Road",
-          addressLocality: "Bengaluru",
-          addressRegion: "Karnataka",
-          postalCode: "560025",
-          addressCountry: "IN",
+        currenciesAccepted: "INR",
+        areaServed: { "@type": "Country", name: "India" },
+        ...(Object.keys(address).length > 1 ? { address } : {}),
+        contactPoint: {
+          "@type": "ContactPoint",
+          contactType: "customer support",
+          email: BRAND.supportEmail,
+          telephone: BRAND.supportPhone,
+          areaServed: "IN",
+          availableLanguage: ["en", "hi"],
         },
-        sameAs: [BRAND.social.instagram, BRAND.social.twitter, BRAND.social.youtube],
+        ...(sameAs.length > 0 ? { sameAs } : {}),
       }}
     />
   );
