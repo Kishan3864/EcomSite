@@ -18,6 +18,28 @@ import {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  /**
+   * URL hygiene, before anything else.
+   *
+   * One page must have exactly one address. Without this, /Products,
+   * /products/ and /products are three URLs serving identical HTML — search
+   * engines split ranking between them and analytics counts them separately.
+   * A 308 keeps the method and body intact, so a POST that arrives at a
+   * mis-cased URL is not silently turned into a GET.
+   */
+  if (pathname !== pathname.toLowerCase()) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.toLowerCase();
+    return NextResponse.redirect(url, 308);
+  }
+
+  // Trailing slash on anything but the root.
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname.replace(/[/]+$/, "");
+    return NextResponse.redirect(url, 308);
+  }
+
   if (pathname.startsWith("/admin")) {
     const isLogin = pathname === "/admin/login";
     const claims = await adminToken.verify(request.cookies.get(ADMIN_COOKIE)?.value);
@@ -56,5 +78,11 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/account/:path*"],
+  /**
+   * Runs on every page request so URL normalisation is universal, but skips
+   * build output, image optimisation, API routes and any path with a file
+   * extension — those are never user-facing URLs and paying middleware cost on
+   * each static asset would undo the speed it is meant to protect.
+   */
+  matcher: ["/((?!_next/static|_next/image|api/|.*[.][a-zA-Z0-9]+$).*)"],
 };
