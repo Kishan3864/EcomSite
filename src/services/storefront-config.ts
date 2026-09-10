@@ -29,7 +29,7 @@ const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
   },
   card: {
     name: "Credit / Debit card",
-    description: "Visa, Mastercard, RuPay, Amex. EMI available.",
+    description: "Visa, Mastercard, RuPay and Amex, issued in India",
     offerText: "15% instant discount with HDFC credit cards",
   },
   netbanking: { name: "Net banking", description: "All major Indian banks supported" },

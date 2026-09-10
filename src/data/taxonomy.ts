@@ -54,7 +54,7 @@ export const categories: Category[] = [
       "Phones, laptops, audio and wearables from brands building for Indian conditions — with real warranty support and doorstep service.",
     image: { url: img(POOL.phones[1], { fit: "square", w: 600 }), alt: "Electronics" },
     featuredBrands: ["novair", "kestrel", "orbo", "mistral"],
-    highlights: ["Brand warranty on every unit", "7-day replacement", "No-cost EMI from ₹4,999"],
+    highlights: ["Brand warranty on every unit", "7-day replacement", "Bought and invoiced by us"],
     subcategories: buildSubs("electronics", [
       ["smartphones", "Smartphones", "phones", 0, "Flagship and mid-range phones with India-first warranty."],
       ["laptops", "Laptops", "laptops", 0, "Thin-and-light to creator-grade machines."],

@@ -118,7 +118,6 @@ export const offers: Offer[] = [
   { id: "o1", code: "WEEKEND10", title: "10% off your first order", description: "New customers get 10% off, capped at ₹750. Works on everything except books.", type: "percent", value: 10, minSpend: 1499, maxDiscount: 750, expiresAt: "2026-12-31T23:59:59.000Z", accent: "#2c837c" },
   { id: "o2", code: "FESTIVE500", title: "Flat ₹500 off above ₹4,999", description: "Our festive season discount. Stacks with bank offers, not with other coupons.", type: "flat", value: 500, minSpend: 4999, expiresAt: "2026-11-15T23:59:59.000Z", accent: "#ee9014" },
   { id: "o3", code: "FREESHIP", title: "Free express shipping", description: "Skip the ₹99 express fee on any order above ₹999.", type: "shipping", value: 99, minSpend: 999, expiresAt: "2026-12-31T23:59:59.000Z", accent: "#1f6963" },
-  { id: "o4", code: "HDFC15", title: "15% instant discount with HDFC cards", description: "On credit cards and EMI. Maximum discount ₹2,000 per card per month.", type: "bank", value: 15, minSpend: 4999, maxDiscount: 2000, expiresAt: "2026-10-31T23:59:59.000Z", accent: "#c81a54" },
   { id: "o5", code: "TECH2000", title: "₹2,000 off electronics above ₹24,999", description: "Applies to phones, laptops, cameras and audio.", type: "flat", value: 2000, minSpend: 24999, categorySlug: "electronics", expiresAt: "2026-10-20T23:59:59.000Z", accent: "#164441" },
   { id: "o6", code: "HOME20", title: "20% off home and living", description: "Furniture, decor, bedding and rugs. Capped at ₹5,000.", type: "percent", value: 20, minSpend: 2999, maxDiscount: 5000, categorySlug: "home-living", expiresAt: "2026-11-30T23:59:59.000Z", accent: "#d2740c" },
 ];
@@ -134,8 +133,8 @@ export const deliveryOptions: DeliveryOption[] = [
 ];
 
 export const paymentMethods: PaymentMethod[] = [
-  { id: "upi", name: "UPI", description: "GPay, PhonePe, Paytm, BHIM or any UPI ID", badge: "Fastest", offerText: "" },
-  { id: "card", name: "Credit / Debit card", description: "Visa, Mastercard, RuPay, Amex. EMI available.", offerText: "" },
+  { id: "upi", name: "UPI", description: "Google Pay, PhonePe, Paytm, BHIM or any UPI app", badge: "Fastest", offerText: "" },
+  { id: "card", name: "Credit / Debit card", description: "Visa, Mastercard, RuPay and Amex, issued in India", offerText: "" },
   { id: "netbanking", name: "Net banking", description: "All major Indian banks supported" },
   { id: "wallet", name: "Wallets", description: "Paytm, Amazon Pay, Mobikwik, Freecharge" },
   { id: "cod", name: "Cash on Delivery", description: "Pay in cash or by UPI when the order arrives", badge: "Popular" },

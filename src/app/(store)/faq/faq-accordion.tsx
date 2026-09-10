@@ -45,7 +45,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           type="search"
-          placeholder="Search — try 'refund' or 'EMI'"
+          placeholder="Search — try 'refund' or 'delivery'"
           className="min-w-0 flex-1 bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400"
         />
       </div>

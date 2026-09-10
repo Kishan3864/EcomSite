@@ -40,39 +40,39 @@ export const BUSINESS = {
    * Udyam — e.g. "WeekendCart Commerce" — NOT your personal name, and NOT a
    * "Private Limited" suffix.
    */
-  legalName: "TODO_LEGAL_NAME",
+  legalName: "Weekend Cart",
 
   /** One of: "Proprietorship" | "Partnership" | "LLP" | "Private Limited". */
   entityType: "Proprietorship" as const,
 
   /** Full name of the proprietor, as on PAN. Required on some invoices. */
-  proprietorName: "TODO_PROPRIETOR_FULL_NAME",
+  proprietorName: "Patel KishanKumar SureshBhai",
 
   /** Udyam / MSME registration number, e.g. "UDYAM-GJ-00-0000000". */
-  udyamNumber: "TODO_UDYAM_NUMBER",
+  udyamNumber: "UDYAM-GJ-22-0670828",
 
   /**
    * 15-character GSTIN. Leave as an empty string ("") if you are below the
    * registration threshold and genuinely not registered — the site then stops
    * claiming it issues GST invoices.
    */
-  gstin: "TODO_GSTIN",
+  gstin: "",
 
   // ── Contact ─────────────────────────────────────────────────────────────────
   /** General support inbox. Must be monitored. */
-  supportEmail: "TODO_SUPPORT_EMAIL",
+  supportEmail: "weekendscart@gmail.com",
 
   /** Where privacy and data-deletion requests go. May be the same as support. */
-  privacyEmail: "TODO_PRIVACY_EMAIL",
+  privacyEmail: "weekendscart@gmail.com",
 
   /** Where formal complaints go, published on the grievance section. */
-  grievanceEmail: "TODO_GRIEVANCE_EMAIL",
+  grievanceEmail: "weekendscart@gmail.com",
 
   /** Display format, e.g. "+91 98765 43210". A human must answer this. */
-  supportPhone: "TODO_SUPPORT_PHONE",
+  supportPhone: "+91 76009 08865",
 
   /** Same number, digits only with country code, for tel: and wa.me links. */
-  supportPhoneDigits: "TODO_SUPPORT_PHONE_DIGITS",
+  supportPhoneDigits: "917600908865",
 
   /** Set to false if you do not actually offer WhatsApp support. */
   whatsappEnabled: true,
@@ -82,11 +82,11 @@ export const BUSINESS = {
 
   // ── Registered / operating address ──────────────────────────────────────────
   address: {
-    line1: "TODO_ADDRESS_LINE_1",
-    line2: "TODO_ADDRESS_LINE_2",
-    city: "TODO_CITY",
-    state: "TODO_STATE",
-    postalCode: "TODO_PINCODE",
+    line1: "C-402, Shiv Bhakti Apartment",
+    line2: "Chikuwadi Road, Harinagar-3, Udhna",
+    city: "Surat",
+    state: "Gujarat",
+    postalCode: "394210",
     country: "India",
     countryCode: "IN",
   },
@@ -98,7 +98,7 @@ export const BUSINESS = {
    * normally the proprietor. The name, email and phone must be published.
    */
   grievanceOfficer: {
-    name: "TODO_GRIEVANCE_OFFICER_NAME",
+    name: "Patel KishanKumar SureshBhai",
     designation: "Proprietor and Grievance Officer",
   },
 
@@ -131,7 +131,7 @@ export const BUSINESS = {
   social: {
     // Delete any you do not actually run — a dead social link is a trust signal
     // reviewers notice.
-    instagram: "",
+    instagram: "https://www.instagram.com/weekendcart.official/",
     facebook: "",
     youtube: "",
   },
@@ -174,16 +174,16 @@ export const BUSINESS = {
     codLimit: 5000,
 
     /** Courier partners you have actually signed up with. Keep truthful. */
-    courierPartners: ["TODO_COURIER_PARTNER"],
+    courierPartners: ["Delhivery"],
 
     /** Payment aggregator you are onboarding with, e.g. "Razorpay". */
-    paymentAggregator: "TODO_PAYMENT_AGGREGATOR",
+    paymentAggregator: "Razorpay",
   },
 
   // ── Jurisdiction ────────────────────────────────────────────────────────────
   /** City whose courts have jurisdiction. Normally where you operate from. */
-  jurisdictionCity: "TODO_CITY",
-  jurisdictionState: "TODO_STATE",
+  jurisdictionCity: "Surat",
+  jurisdictionState: "Gujarat",
 
   /** Date the current policy text took effect. Update when you change policies. */
   policiesEffectiveFrom: "2026-09-10T00:00:00.000Z",

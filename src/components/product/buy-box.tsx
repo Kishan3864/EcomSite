@@ -5,7 +5,6 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import {
-  BadgeIndianRupee,
   Check,
   Heart,
   Minus,
@@ -156,14 +155,6 @@ export function BuyBox({
             </>
           )}
         </p>
-        {price >= 4999 && (
-          <p className="mt-2.5 flex items-center gap-1.5 text-[12.5px] text-ink-600">
-            <BadgeIndianRupee size={14} className="text-brand-600" />
-            EMI from{" "}
-            <strong className="text-ink-900">{formatINR(Math.round(price / 12))}/month</strong> ·
-            no-cost options at checkout
-          </p>
-        )}
       </div>
 
       {/* Offers */}
