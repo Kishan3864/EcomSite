@@ -170,7 +170,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           href={withParams(BASE, {}, { account: "account" })}
         />
         <StatCard
-          label="Peacock Club"
+          label="WeekendCart Club"
           value={peacock.toLocaleString("en-IN")}
           hint="Top loyalty tier"
           icon={<Crown size={16} />}

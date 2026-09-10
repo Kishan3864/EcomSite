@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploys (or updates) Mayura on the VPS. Safe to re-run.
+# Deploys (or updates) WeekendCart on the VPS. Safe to re-run.
 #
 #   ssh flexyuser@srv1545707
 #   git clone https://github.com/Kishan3864/EcomSite.git ~/ecom.flexypdf.com   # first time only
@@ -11,7 +11,7 @@
 #   3. applies pending database migrations (prisma migrate deploy — never resets)
 #   4. seeds only if the catalogue is empty
 #   5. builds the Next.js app
-#   6. starts or zero-downtime-reloads the PM2 process "mayura"
+#   6. starts or zero-downtime-reloads the PM2 process "weekendcart"
 #
 # It never touches nginx, other PM2 apps, or other directories.
 set -euo pipefail
@@ -52,9 +52,9 @@ fi
 step "Building"
 npm run build
 
-step "Starting / reloading PM2 process 'mayura'"
+step "Starting / reloading PM2 process 'weekendcart'"
 mkdir -p logs
-if pm2 describe mayura >/dev/null 2>&1; then
+if pm2 describe weekendcart >/dev/null 2>&1; then
   pm2 reload deploy/ecosystem.config.cjs --update-env
 else
   pm2 start deploy/ecosystem.config.cjs
@@ -66,6 +66,6 @@ sleep 3
 if curl -fsS -o /dev/null -w '  HTTP %{http_code} from http://127.0.0.1:3040/\n' http://127.0.0.1:3040/; then
   echo "  Deployed. If nginx is not configured yet, see deploy/README.md."
 else
-  echo "  App did not answer on 3040 — check: pm2 logs mayura --lines 50"
+  echo "  App did not answer on 3040 — check: pm2 logs weekendcart --lines 50"
   exit 1
 fi

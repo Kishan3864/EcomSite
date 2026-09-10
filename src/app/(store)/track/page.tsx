@@ -6,7 +6,7 @@ import { getCustomerOrders } from "@/services/orders";
 export const metadata: Metadata = {
   title: "Track your order",
   description:
-    "Enter your Mayura order number to see exactly where your parcel is and when it will arrive.",
+    "Enter your WeekendCart order number to see exactly where your parcel is and when it will arrive.",
   alternates: { canonical: "/track" },
 };
 

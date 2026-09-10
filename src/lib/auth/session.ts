@@ -8,9 +8,9 @@
  */
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 
-export const ADMIN_COOKIE = "mayura_admin";
-export const CUSTOMER_COOKIE = "mayura_customer";
-export const GUEST_ORDERS_COOKIE = "mayura_guest_orders";
+export const ADMIN_COOKIE = "weekendcart_admin";
+export const CUSTOMER_COOKIE = "weekendcart_customer";
+export const GUEST_ORDERS_COOKIE = "weekendcart_guest_orders";
 
 const ADMIN_TTL_SECONDS = 60 * 60 * 12; // 12 hours
 const CUSTOMER_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days

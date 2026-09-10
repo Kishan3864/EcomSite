@@ -304,7 +304,7 @@ async function settleRefund(row: LoadedReturn, session: AdminSession) {
                   status: "RETURNED",
                   title: "Order returned",
                   description: "Every item was returned and the refund has been issued.",
-                  location: "Mayura returns desk",
+                  location: "WeekendCart returns desk",
                   actorName: session.name,
                   at: now,
                 },

@@ -17,8 +17,8 @@ export async function generateMetadata({
   return {
     title: q ? `Search results for "${q}"` : "Search",
     description: q
-      ? `Products matching "${q}" on Mayura.`
-      : "Search across every product on Mayura.",
+      ? `Products matching "${q}" on WeekendCart.`
+      : "Search across every product on WeekendCart.",
     // Result pages should not compete with category pages in the index.
     robots: { index: false, follow: true },
     alternates: { canonical: q ? `/search?q=${encodeURIComponent(q)}` : "/search" },
@@ -44,7 +44,7 @@ export default async function SearchPage({
   return (
     <ListingShell
       eyebrow="Search"
-      title={term ? `Results for “${term}”` : "Search Mayura"}
+      title={term ? `Results for “${term}”` : "Search WeekendCart"}
       description={
         term
           ? `${result.total} ${result.total === 1 ? "product" : "products"} matched your search. Refine with the filters, or sort by price and rating.`

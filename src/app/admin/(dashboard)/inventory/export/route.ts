@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="mayura-inventory-${stamp}.csv"`,
+      "Content-Disposition": `attachment; filename="weekendcart-inventory-${stamp}.csv"`,
       "Cache-Control": "no-store",
     },
   });

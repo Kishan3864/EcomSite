@@ -24,7 +24,7 @@ export function AdminLoginForm({ next }: { next?: string }) {
           type="email"
           autoComplete="username"
           required
-          placeholder="you@mayura.in"
+          placeholder="you@weekendcart.com"
           autoFocus
         />
       </Field>

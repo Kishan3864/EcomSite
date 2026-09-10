@@ -288,7 +288,7 @@ export interface Customer {
   email: string;
   phone: string;
   memberSince: string;
-  tier: "Silver" | "Gold" | "Peacock Club";
+  tier: "Silver" | "Gold" | "WeekendCart Club";
   avatarInitials: string;
   loyaltyPoints: number;
 }

@@ -179,7 +179,7 @@ export default async function AdminDashboardPage({
     <>
       <PageHeader
         title={`${greeting}, ${session.name}`}
-        description={`Here is how Mayura is doing over the last ${days === 365 ? "12 months" : `${days} days`}.`}
+        description={`Here is how WeekendCart is doing over the last ${days === 365 ? "12 months" : `${days} days`}.`}
         actions={
           <div className="flex items-center gap-1 rounded-lg border border-hairline bg-surface p-1">
             {RANGES.map((r) => (

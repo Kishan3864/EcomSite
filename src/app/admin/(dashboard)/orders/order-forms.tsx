@@ -45,7 +45,7 @@ export function ShipmentForm({
             defaultValue={courier}
             className={inputCls}
             disabled={readOnly}
-            placeholder="Mayura Express"
+            placeholder="WeekendCart Express"
           />
         </div>
         <div>

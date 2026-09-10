@@ -340,7 +340,7 @@ export function CategoryForm({
                   value={imageAlt}
                   onChange={(e) => setImageAlt(e.target.value)}
                   className={inputCls}
-                  placeholder={name ? `${name} on Mayura` : "What the picture shows"}
+                  placeholder={name ? `${name} on WeekendCart` : "What the picture shows"}
                 />
               </div>
             </div>

@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     status: 200,
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="mayura-subscribers-${stamp}.csv"`,
+      "Content-Disposition": `attachment; filename="weekendcart-subscribers-${stamp}.csv"`,
       "Cache-Control": "no-store",
     },
   });

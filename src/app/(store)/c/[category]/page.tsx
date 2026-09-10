@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     description: category.description,
     alternates: { canonical: `/c/${category.slug}` },
     openGraph: {
-      title: `${title} · Mayura`,
+      title: `${title} · WeekendCart`,
       description: category.description,
       url: `/c/${category.slug}`,
       images: [{ url: category.image.url, alt: category.name }],

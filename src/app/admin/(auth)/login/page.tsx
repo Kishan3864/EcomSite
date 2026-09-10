@@ -40,7 +40,7 @@ export default async function AdminLoginPage({
       <div className="peacock-surface hidden flex-col justify-between p-12 lg:flex">
         <div />
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-300">Mayura Admin</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-300">WeekendCart Admin</p>
           <h2 className="mt-3 max-w-md font-display text-[34px] leading-[1.1] tracking-[-0.025em] text-white">
             Everything a customer sees is decided in here.
           </h2>

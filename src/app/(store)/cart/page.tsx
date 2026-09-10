@@ -5,7 +5,7 @@ import { getOffers } from "@/services/catalog";
 
 export const metadata: Metadata = {
   title: "Your bag",
-  description: "Review the items in your Mayura bag, apply a coupon and check out.",
+  description: "Review the items in your WeekendCart bag, apply a coupon and check out.",
   robots: { index: false, follow: true },
   alternates: { canonical: "/cart" },
 };

@@ -17,12 +17,12 @@ export const heroBanners: Banner[] = [
   {
     id: "hb1",
     eyebrow: "Festive Edit 2026",
-    title: "Made well. Priced honestly.",
+    title: "Everything for the weekend.",
     subtitle:
-      "Handloom, hardware and homeware from 16 Indian studios — with the margin explained on every product page.",
+      "Electronics, home appliances, kitchen and fashion — stocked in-house, priced with nothing hidden at checkout.",
     cta: "Shop the edit",
     href: "/offers",
-    image: { url: img(POOL.lifestyle[1], { fit: "ultrawide", w: 1800 }), alt: "Inside a Mayura partner store" },
+    image: { url: img(POOL.lifestyle[1], { fit: "ultrawide", w: 1800 }), alt: "WeekendCart product range" },
     align: "left",
     theme: "dark",
   },
@@ -40,11 +40,11 @@ export const heroBanners: Banner[] = [
   },
   {
     id: "hb3",
-    eyebrow: "Loomcraft x Mayura",
+    eyebrow: "Fashion Edit",
     title: "Woven in Kaithoon. Worn everywhere.",
     subtitle:
-      "A limited run of Kota Doria sarees, made by twelve weaving families we pay directly and name on the label.",
-    cta: "Meet the makers",
+      "A tighter fashion edit for the season, with the size chart and fabric stated on every product page.",
+    cta: "Shop fashion",
     href: "/c/fashion/women",
     image: { url: img(POOL.womenwear[2], { fit: "ultrawide", w: 1800, h: 760 }), alt: "Handloom collection" },
     align: "left",
@@ -115,7 +115,7 @@ export const midBanners: Banner[] = [
 /* ------------------------------ Offers ----------------------------- */
 
 export const offers: Offer[] = [
-  { id: "o1", code: "MAYURA10", title: "10% off your first order", description: "New customers get 10% off, capped at ₹750. Works on everything except books.", type: "percent", value: 10, minSpend: 1499, maxDiscount: 750, expiresAt: "2026-12-31T23:59:59.000Z", accent: "#2c837c" },
+  { id: "o1", code: "WEEKEND10", title: "10% off your first order", description: "New customers get 10% off, capped at ₹750. Works on everything except books.", type: "percent", value: 10, minSpend: 1499, maxDiscount: 750, expiresAt: "2026-12-31T23:59:59.000Z", accent: "#2c837c" },
   { id: "o2", code: "FESTIVE500", title: "Flat ₹500 off above ₹4,999", description: "Our festive season discount. Stacks with bank offers, not with other coupons.", type: "flat", value: 500, minSpend: 4999, expiresAt: "2026-11-15T23:59:59.000Z", accent: "#ee9014" },
   { id: "o3", code: "FREESHIP", title: "Free express shipping", description: "Skip the ₹99 express fee on any order above ₹999.", type: "shipping", value: 99, minSpend: 999, expiresAt: "2026-12-31T23:59:59.000Z", accent: "#1f6963" },
   { id: "o4", code: "HDFC15", title: "15% instant discount with HDFC cards", description: "On credit cards and EMI. Maximum discount ₹2,000 per card per month.", type: "bank", value: 15, minSpend: 4999, maxDiscount: 2000, expiresAt: "2026-10-31T23:59:59.000Z", accent: "#c81a54" },
@@ -128,14 +128,14 @@ export const offerMap = new Map(offers.map((o) => [o.code, o]));
 /* ------------------------- Checkout options ------------------------ */
 
 export const deliveryOptions: DeliveryOption[] = [
-  { id: "standard", name: "Standard delivery", description: "Free on orders above ₹999. Delivered by our own fleet in metros.", price: 0, minDays: 3, maxDays: 5 },
+  { id: "standard", name: "Standard delivery", description: "Free on orders above ₹999. Handed to our courier partner within 2 business days.", price: 0, minDays: 3, maxDays: 5 },
   { id: "express", name: "Express delivery", description: "Priority dispatch, delivered in 1 to 2 working days.", price: 99, minDays: 1, maxDays: 2 },
   { id: "scheduled", name: "Pick your day", description: "Choose a delivery date up to 10 days out. Ideal for gifting.", price: 49, minDays: 4, maxDays: 10 },
 ];
 
 export const paymentMethods: PaymentMethod[] = [
-  { id: "upi", name: "UPI", description: "GPay, PhonePe, Paytm, BHIM or any UPI ID", badge: "Fastest", offerText: "₹50 cashback on orders above ₹999" },
-  { id: "card", name: "Credit / Debit card", description: "Visa, Mastercard, RuPay, Amex. EMI available.", offerText: "15% instant discount with HDFC credit cards" },
+  { id: "upi", name: "UPI", description: "GPay, PhonePe, Paytm, BHIM or any UPI ID", badge: "Fastest", offerText: "" },
+  { id: "card", name: "Credit / Debit card", description: "Visa, Mastercard, RuPay, Amex. EMI available.", offerText: "" },
   { id: "netbanking", name: "Net banking", description: "All major Indian banks supported" },
   { id: "wallet", name: "Wallets", description: "Paytm, Amazon Pay, Mobikwik, Freecharge" },
   { id: "cod", name: "Cash on Delivery", description: "Pay in cash or by UPI when the order arrives", badge: "Popular" },
@@ -163,7 +163,7 @@ export const customer: Customer = {
   email: "ananya.iyer@example.in",
   phone: "+91 98450 12345",
   memberSince: "2024-03-18T00:00:00.000Z",
-  tier: "Peacock Club",
+  tier: "WeekendCart Club",
   avatarInitials: "AI",
   loyaltyPoints: 4820,
 };
@@ -237,7 +237,7 @@ export const returnRequests: ReturnRequest[] = [
     status: "picked_up",
     requestedAt: "2026-08-28T15:05:00.000Z",
     refundAmount: 3499,
-    refundMode: "Mayura wallet credit",
+    refundMode: "WeekendCart wallet credit",
   },
 ];
 

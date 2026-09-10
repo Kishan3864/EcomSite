@@ -113,7 +113,7 @@ export function ReviewsSection({
           </div>
 
           <p className="mt-5 rounded-lg bg-ink-50 p-3 text-[12px] leading-relaxed text-ink-500">
-            Only customers who bought the product on Mayura can leave a review. We never edit or
+            Only customers who bought the product on WeekendCart can leave a review. We never edit or
             remove a review for being negative.
           </p>
         </div>

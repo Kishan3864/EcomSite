@@ -53,8 +53,8 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
       name: "Standard delivery",
       description:
         s.shipping.freeThreshold > 0
-          ? `Free on orders above ₹${s.shipping.freeThreshold.toLocaleString("en-IN")}. Delivered by our own fleet in metros.`
-          : "Free on every order. Delivered by our own fleet in metros.",
+          ? `Free on orders above ₹${s.shipping.freeThreshold.toLocaleString("en-IN")}. Handed to our courier partner within 2 business days.`
+          : "Free on every order. Handed to our courier partner within 2 business days.",
       price: s.shipping.standardFee,
       minDays: s.shipping.standardDays[0],
       maxDays: s.shipping.standardDays[1],

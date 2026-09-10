@@ -73,7 +73,7 @@ export default async function SubscribersPage({ searchParams }: { searchParams: 
         description={
           allCount === 0
             ? "Nobody has signed up yet. The footer form and checkout opt-in feed this list."
-            : `${allCount.toLocaleString("en-IN")} ${allCount === 1 ? "person has" : "people have"} opted in to hear from Mayura.`
+            : `${allCount.toLocaleString("en-IN")} ${allCount === 1 ? "person has" : "people have"} opted in to hear from WeekendCart.`
         }
         actions={
           <a href={exportHref} className={buttonClasses("outline", "sm")} title="Download a CSV of the current list">

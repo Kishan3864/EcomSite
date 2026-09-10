@@ -4,7 +4,7 @@ import { OrderClient } from "./order-client";
 
 export const metadata: Metadata = {
   title: "Order confirmed",
-  description: "Your Mayura order confirmation.",
+  description: "Your WeekendCart order confirmation.",
   robots: { index: false, follow: false },
 };
 

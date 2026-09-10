@@ -160,7 +160,7 @@ export function providerLabel(authProvider: AuthProvider): string | null {
 
 /* --------------------------- Handshake cookie --------------------------- */
 
-export const OAUTH_COOKIE = "mayura_oauth";
+export const OAUTH_COOKIE = "weekendcart_oauth";
 export const OAUTH_TTL_SECONDS = 60 * 10;
 
 /** Held between the redirect out and the callback, and discarded either way. */
@@ -223,7 +223,7 @@ export function tokensMatch(a: string, b: string) {
 }
 
 /** Stand-in origin, used only to test that a `next` value stays on this site. */
-const SAME_SITE = "https://mayura.invalid";
+const SAME_SITE = "https://weekendcart.invalid";
 
 /** Only ever send people back to a path on this site. */
 export function safeNextPath(value: string | null | undefined, fallback = "/account") {

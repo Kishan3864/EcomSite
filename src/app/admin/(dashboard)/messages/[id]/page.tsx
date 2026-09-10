@@ -13,7 +13,7 @@ import { ReplyForm } from "../reply-form";
 const TIER: Record<string, { label: string; tone: "neutral" | "gold" | "brand" }> = {
   SILVER: { label: "Silver", tone: "neutral" },
   GOLD: { label: "Gold", tone: "gold" },
-  PEACOCK_CLUB: { label: "Peacock Club", tone: "brand" },
+  PEACOCK_CLUB: { label: "WeekendCart Club", tone: "brand" },
 };
 
 function initials(name: string) {
@@ -59,7 +59,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
   const replyAction = replyToMessage.bind(null, message.id);
   const isClosed = message.status === "CLOSED";
 
-  const subject = `Re: ${message.topic}${orderNumber ? ` (${orderNumber})` : ""} — Mayura`;
+  const subject = `Re: ${message.topic}${orderNumber ? ` (${orderNumber})` : ""} — WeekendCart`;
   const mailto = `mailto:${message.email}?subject=${encodeURIComponent(subject)}${
     message.reply ? `&body=${encodeURIComponent(message.reply)}` : ""
   }`;

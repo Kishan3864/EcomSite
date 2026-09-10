@@ -154,7 +154,7 @@ export function toOrder(row: OrderRow): Order {
     },
     estimatedDelivery: row.estimatedDelivery.toISOString(),
     tracking: buildTimeline(row),
-    courier: row.courier ?? "Mayura Fleet",
+    courier: row.courier ?? "WeekendCart Fleet",
     awb: row.awb ?? "",
   };
 }
@@ -261,7 +261,7 @@ export async function getCustomerProfile() {
     name: c.name,
     email: c.email,
     phone: c.phone ?? "",
-    tier: c.tier === "PEACOCK_CLUB" ? "Peacock Club" : c.tier === "GOLD" ? "Gold" : "Silver",
+    tier: c.tier === "PEACOCK_CLUB" ? "WeekendCart Club" : c.tier === "GOLD" ? "Gold" : "Silver",
     loyaltyPoints: c.loyaltyPoints,
     memberSince: c.createdAt.toISOString(),
     orderCount: c._count.orders,

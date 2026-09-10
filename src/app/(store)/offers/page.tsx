@@ -21,11 +21,11 @@ import { formatDate } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Offers and deals",
   description:
-    "Every coupon, bank offer and discount running on Mayura right now — with the terms written in plain language.",
+    "Every coupon, bank offer and discount running on WeekendCart right now — with the terms written in plain language.",
   alternates: { canonical: "/offers" },
   openGraph: {
-    title: "Offers and deals · Mayura",
-    description: "Every coupon and discount running on Mayura right now.",
+    title: "Offers and deals · WeekendCart",
+    description: "Every coupon and discount running on WeekendCart right now.",
     url: "/offers",
   },
 };

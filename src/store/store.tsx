@@ -444,7 +444,7 @@ function reducer(state: StoreState, action: Action): StoreState {
   }
 }
 
-const STORAGE_KEY = "mayura.store.v1";
+const STORAGE_KEY = "weekendcart.store.v1";
 
 /** Routes where signing in, registering or signing out can happen. */
 const SESSION_ROUTE = /^\/(login|register|account|checkout)/;

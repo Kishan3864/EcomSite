@@ -11,7 +11,7 @@ import { Pill } from "@/components/admin/ui";
 export const TIER_OPTIONS: { value: CustomerTier; label: string }[] = [
   { value: "SILVER", label: "Silver" },
   { value: "GOLD", label: "Gold" },
-  { value: "PEACOCK_CLUB", label: "Peacock Club" },
+  { value: "PEACOCK_CLUB", label: "WeekendCart Club" },
 ];
 
 export function isTier(value: string): value is CustomerTier {

@@ -12,7 +12,7 @@ import { PrismaClient } from "@/generated/prisma/client";
  */
 
 declare global {
-  var __mayuraPrisma: PrismaClient | undefined;
+  var __weekendcartPrisma: PrismaClient | undefined;
 }
 
 function createClient() {
@@ -31,8 +31,8 @@ function createClient() {
   });
 }
 
-export const db: PrismaClient = globalThis.__mayuraPrisma ?? createClient();
+export const db: PrismaClient = globalThis.__weekendcartPrisma ?? createClient();
 
-if (process.env.NODE_ENV !== "production") globalThis.__mayuraPrisma = db;
+if (process.env.NODE_ENV !== "production") globalThis.__weekendcartPrisma = db;
 
 export type { PrismaClient };

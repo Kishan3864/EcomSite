@@ -10,7 +10,7 @@ import { safeNextPath } from "@/lib/auth/oauth";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to Mayura to track orders, save addresses and reorder in one tap.",
+  description: "Sign in to WeekendCart to track orders, save addresses and reorder in one tap.",
   alternates: { canonical: "/login" },
 };
 
@@ -56,7 +56,7 @@ export default async function LoginPage({
       imageIndex={0}
       footer={
         <>
-          New to Mayura?{" "}
+          New to WeekendCart?{" "}
           {/* Carries `next` across, so someone sent here from checkout lands
               back on checkout whichever of the two forms they end up using. */}
           <Link

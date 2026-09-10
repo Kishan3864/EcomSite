@@ -98,14 +98,14 @@ export async function Footer() {
         <div className="container-page grid gap-8 py-14 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-300">
-              The Mayura Dispatch
+              The WeekendCart Dispatch
             </p>
             <h2 className="mt-3 font-display text-3xl leading-[1.1] tracking-[-0.02em] text-white sm:text-[38px]">
               One email a week. New drops, real discounts, no noise.
             </h2>
             <p className="mt-3 max-w-lg text-sm leading-relaxed text-white/60">
-              We write about what we have stocked and why, plus early access to limited runs from
-              our maker studios. Unsubscribe in one click.
+              We write about what we have stocked and why, plus first word when something is back
+              in stock. Unsubscribe in one click.
             </p>
           </div>
           <NewsletterForm />

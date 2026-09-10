@@ -4,7 +4,7 @@ import { getCustomerOrders, getCustomerReturns } from "@/services/orders";
 
 export const metadata: Metadata = {
   title: "Returns and refunds",
-  description: "Raise a return, track a refund and read the Mayura return policy.",
+  description: "Raise a return, track a refund and read the WeekendCart return policy.",
   robots: { index: false, follow: true },
 };
 

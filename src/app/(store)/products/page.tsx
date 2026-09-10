@@ -7,9 +7,9 @@ import { getBrands, searchProducts } from "@/services/catalog";
 export const metadata: Metadata = {
   title: "All products",
   description:
-    "Browse every product on Mayura — electronics, fashion, home, kitchen, beauty, jewellery, sport and books from 16 Indian studios.",
+    "Browse every product on WeekendCart — electronics, home appliances, kitchen, home, fashion, beauty, jewellery, sport and books.",
   alternates: { canonical: "/products" },
-  openGraph: { title: "All products · Mayura", url: "/products" },
+  openGraph: { title: "All products · WeekendCart", url: "/products" },
 };
 
 export default async function ProductsPage({

@@ -116,7 +116,7 @@ const QA_BANK: [string, string][] = [
   ["Is Cash on Delivery available for this item?", "COD is available on orders below ₹25,000. Above that we ask for prepaid payment, purely because of courier insurance limits."],
   ["How long does delivery usually take to a tier-2 city?", "Metro deliveries are 1 to 2 days. Tier-2 and tier-3 cities are typically 3 to 5 days, and you will see the exact date on the product page once you enter your pincode."],
   ["Is the product covered if it arrives damaged in transit?", "Fully covered. Report it within 48 hours with a photograph and we ship a replacement the same day, before the damaged unit is even picked up."],
-  ["Does the price include GST?", "Yes, every price you see on Mayura is inclusive of GST. There are no additional charges at checkout beyond shipping, which is shown before you pay."],
+  ["Does the price include GST?", "Yes, every price you see on WeekendCart is inclusive of GST. There are no additional charges at checkout beyond shipping, which is shown before you pay."],
 ];
 
 export const questions: QuestionAnswer[] = products.flatMap((product) => {
@@ -139,7 +139,7 @@ export const questions: QuestionAnswer[] = products.flatMap((product) => {
       question,
       answer,
       askedBy: pick(NAMES, rand).split(" ")[0],
-      answeredBy: rand() > 0.5 ? "Mayura Support" : "Seller",
+      answeredBy: rand() > 0.5 ? "WeekendCart Support" : "Seller",
       answeredAt: answered.toISOString(),
       upvotes: Math.floor(rand() * 90),
     } satisfies QuestionAnswer;

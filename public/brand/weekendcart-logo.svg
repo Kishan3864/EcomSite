@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" width="260" height="64" role="img" aria-label="WeekendCart">
+  <title>WeekendCart</title>
+  <!-- Full horizontal lockup for light backgrounds: invoices, letterheads,
+       marketplace and payment-aggregator onboarding forms, email signatures.
+       The wordmark uses a widely available serif stack so the file renders
+       correctly on machines that do not have the site's webfont. -->
+  <g>
+    <rect x="4" y="16" width="32" height="32" rx="2" fill="#0b1611"/>
+    <path d="M16 27.5V25.6a4 4 0 0 1 8 0v1.9" stroke="#91b0a1" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+    <path d="M11.6 27.5h16.8l-1.15 13.1a1.6 1.6 0 0 1-1.6 1.4H14.35a1.6 1.6 0 0 1-1.6-1.4L11.6 27.5Z" stroke="#91b0a1" stroke-width="1.7" stroke-linejoin="round" fill="none"/>
+    <path d="M15 31.6l2.4 5.4 2.6-3.7 2.6 3.7 2.4-5.4" stroke="#d0a04b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  <text x="48" y="41" font-family="Georgia, 'Times New Roman', 'Noto Serif', serif" font-size="27" letter-spacing="-0.8" fill="#0d0c0a">
+    <tspan font-weight="400">Weekend</tspan><tspan font-weight="700">Cart</tspan>
+  </text>
+</svg>

@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth/admin";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = {
-  title: { default: "Admin", template: "%s · Mayura Admin" },
+  title: { default: "Admin", template: "%s · WeekendCart Admin" },
   robots: { index: false, follow: false },
 };
 

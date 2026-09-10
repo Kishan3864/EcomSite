@@ -9,7 +9,7 @@ import { safeNextPath } from "@/lib/auth/oauth";
 
 export const metadata: Metadata = {
   title: "Create an account",
-  description: "Create a free Mayura account for faster checkout, order tracking and early access to limited runs.",
+  description: "Create a free WeekendCart account for faster checkout, order tracking and early access to limited runs.",
   alternates: { canonical: "/register" },
 };
 

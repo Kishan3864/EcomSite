@@ -1,5 +1,5 @@
 /**
- * PM2 process file for the Mayura storefront + admin.
+ * PM2 process file for the WeekendCart storefront + admin.
  *
  *   pm2 start deploy/ecosystem.config.cjs
  *   pm2 save && pm2 startup     # once, so it survives reboots
@@ -10,7 +10,7 @@
 module.exports = {
   apps: [
     {
-      name: "mayura",
+      name: "weekendcart",
       cwd: __dirname + "/..",
       script: "node_modules/next/dist/bin/next",
       args: "start -p 3040",

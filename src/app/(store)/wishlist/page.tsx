@@ -7,7 +7,7 @@ import { getRecommended } from "@/services/catalog";
 
 export const metadata: Metadata = {
   title: "Wishlist",
-  description: "Everything you have saved on Mayura, ready to move into your bag.",
+  description: "Everything you have saved on WeekendCart, ready to move into your bag.",
   robots: { index: false, follow: true },
   alternates: { canonical: "/wishlist" },
 };

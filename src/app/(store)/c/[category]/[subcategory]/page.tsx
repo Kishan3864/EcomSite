@@ -29,10 +29,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 
   return {
     title,
-    description: `${subcategory.description} Shop ${subcategory.name.toLowerCase()} on Mayura with free delivery over ₹999 and easy returns.`,
+    description: `${subcategory.description} Shop ${subcategory.name.toLowerCase()} on WeekendCart with free delivery over ₹999 and easy returns.`,
     alternates: { canonical },
     openGraph: {
-      title: `${title} · Mayura`,
+      title: `${title} · WeekendCart`,
       description: subcategory.description,
       url: canonical,
       images: [{ url: subcategory.image.url, alt: subcategory.name }],

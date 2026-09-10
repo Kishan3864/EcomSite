@@ -457,7 +457,7 @@ export async function getQuestions(productId: string): Promise<QuestionAnswer[]>
     question: q.question,
     answer: q.answer ?? "",
     askedBy: q.askedBy,
-    answeredBy: q.answeredBy ?? "Mayura Support",
+    answeredBy: q.answeredBy ?? "WeekendCart Support",
     answeredAt: (q.answeredAt ?? q.createdAt).toISOString(),
     upvotes: q.upvotes,
   }));

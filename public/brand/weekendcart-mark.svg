@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="512" height="512" role="img" aria-label="WeekendCart">
+  <title>WeekendCart</title>
+  <!-- Mark only, square. Use where a logo must sit in a fixed tile: app icon,
+       social avatar, marketplace seller badge. Scales cleanly to any size. -->
+  <rect width="32" height="32" rx="2" fill="#0b1611"/>
+  <path d="M12 11.5V9.6a4 4 0 0 1 8 0v1.9" stroke="#91b0a1" stroke-width="1.7" stroke-linecap="round" fill="none"/>
+  <path d="M7.6 11.5h16.8l-1.15 13.1a1.6 1.6 0 0 1-1.6 1.4H10.35a1.6 1.6 0 0 1-1.6-1.4L7.6 11.5Z" stroke="#91b0a1" stroke-width="1.7" stroke-linejoin="round" fill="none"/>
+  <path d="M11 15.6l2.4 5.4 2.6-3.7 2.6 3.7 2.4-5.4" stroke="#d0a04b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

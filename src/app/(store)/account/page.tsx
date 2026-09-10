@@ -9,7 +9,7 @@ import {
 
 export const metadata: Metadata = {
   title: "My account",
-  description: "Your Mayura account — orders, returns, addresses and saved items.",
+  description: "Your WeekendCart account — orders, returns, addresses and saved items.",
   robots: { index: false, follow: true },
 };
 

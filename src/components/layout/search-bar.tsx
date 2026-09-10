@@ -147,7 +147,7 @@ export function SearchBar({
             aria-autocomplete="list"
             role="combobox"
             aria-controls="search-suggestions"
-            placeholder={variant === "sheet" ? "Search Mayura" : ROTATING[placeholderIndex]}
+            placeholder={variant === "sheet" ? "Search WeekendCart" : ROTATING[placeholderIndex]}
             className="min-w-0 flex-1 bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400 [&::-webkit-search-cancel-button]:hidden"
           />
           {term && (

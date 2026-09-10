@@ -5,7 +5,7 @@ import { ForgotForm } from "./forgot-form";
 
 export const metadata: Metadata = {
   title: "Reset your password",
-  description: "Reset the password on your Mayura account.",
+  description: "Reset the password on your WeekendCart account.",
   alternates: { canonical: "/forgot-password" },
 };
 

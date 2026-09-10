@@ -198,7 +198,7 @@ export function HeaderClient({
         open={searchOpen}
         onClose={() => setSearchOpenAt(null)}
         side="bottom"
-        title="Search Mayura"
+        title="Search WeekendCart"
         className="max-h-[92vh]"
       >
         <div className="p-4">
@@ -502,7 +502,7 @@ function AnnouncementBar({ offerCount }: { offerCount: number }) {
   const { config } = useStore();
   const items = [
     `Free delivery on orders above ₹${config.rates.freeThreshold.toLocaleString("en-IN")}`,
-    "Use MAYURA10 for 10% off your first order",
+    "Use WEEKEND10 for 10% off your first order",
     "14-day easy returns, free pickup",
     "100% genuine, sourced direct from brands",
     offerCount > 0 ? `${offerCount} live offers today` : "New arrivals every week",

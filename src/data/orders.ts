@@ -9,7 +9,7 @@ import { savedAddresses } from "./marketing";
  */
 
 const TRACK_TEMPLATE: Omit<OrderTrackingEvent, "at" | "done">[] = [
-  { status: "confirmed", title: "Order confirmed", description: "We have received your order and payment.", location: "Mayura, Bengaluru" },
+  { status: "confirmed", title: "Order confirmed", description: "We have received your order and payment.", location: "WeekendCart, Bengaluru" },
   { status: "packed", title: "Packed and ready", description: "Your items are packed and handed to the courier.", location: "Fulfilment Centre, Hosur Road" },
   { status: "shipped", title: "Shipped", description: "In transit to your delivery city.", location: "Bengaluru Hub" },
   { status: "out_for_delivery", title: "Out for delivery", description: "Arriving today between 10am and 6pm.", location: "HSR Layout, Bengaluru" },
@@ -86,7 +86,7 @@ function order(
     },
     estimatedDelivery: eta.toISOString(),
     tracking: buildTracking(status, placedAt),
-    courier: "Mayura Express",
+    courier: "WeekendCart Express",
     awb: `MYRX${number.replace(/\D/g, "").slice(-10)}`,
     ...overrides,
   };

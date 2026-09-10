@@ -32,12 +32,12 @@
 export const BUSINESS = {
   // ── Identity ────────────────────────────────────────────────────────────────
   /** Customer-facing brand name. Appears in the logo, page titles and copy. */
-  brandName: "Mayura",
+  brandName: "WeekendCart",
 
   /**
    * Legal name of the entity, exactly as on your PAN and bank account.
    * For a sole proprietorship this is usually the trade name you registered on
-   * Udyam — e.g. "Mayura Commerce" — NOT your personal name, and NOT a
+   * Udyam — e.g. "WeekendCart Commerce" — NOT your personal name, and NOT a
    * "Private Limited" suffix.
    */
   legalName: "TODO_LEGAL_NAME",
@@ -108,16 +108,16 @@ export const BUSINESS = {
    * robots.txt. This is the domain the deploy runbook targets — change it here
    * if you move to your own domain, and set NEXT_PUBLIC_SITE_URL to match.
    */
-  url: "https://ecom.flexypdf.com",
+  url: "https://weekendcart.com",
 
   /** Bare domain for display. */
-  domain: "ecom.flexypdf.com",
+  domain: "weekendcart.com",
 
   // ── Positioning ─────────────────────────────────────────────────────────────
-  tagline: "Everyday things, honestly priced.",
+  tagline: "Everything for the weekend.",
 
   description:
-    "An Indian online store for electronics, home appliances, kitchen and home essentials, fashion and gadgets — stocked in-house and shipped across India.",
+    "WeekendCart is an Indian online store for electronics, home appliances, kitchen and home essentials, fashion and gadgets — stocked in-house and shipped across India.",
 
   /** Categories you actually sell. Keep this truthful; policies key off it. */
   categoriesSold: [

@@ -280,7 +280,7 @@ export async function placeOrder(
             sellerStateCode,
             placeOfSupply: input.address.state,
             placeOfSupplyCode: placeCode,
-            courier: speed === "express" ? "Mayura Express" : "Mayura Fleet",
+            courier: speed === "express" ? "WeekendCart Express" : "WeekendCart Fleet",
             awb: `MYRX${Date.now().toString().slice(-9)}`,
             estimatedDelivery,
             lines: {
