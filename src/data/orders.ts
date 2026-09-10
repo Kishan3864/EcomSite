@@ -87,7 +87,7 @@ function order(
     estimatedDelivery: eta.toISOString(),
     tracking: buildTracking(status, placedAt),
     courier: "WeekendCart Express",
-    awb: `MYRX${number.replace(/\D/g, "").slice(-10)}`,
+    awb: `WKCX${number.replace(/\D/g, "").slice(-10)}`,
     ...overrides,
   };
 }
@@ -95,7 +95,7 @@ function order(
 export const demoOrders: Order[] = [
   order(
     "ord_4691",
-    "MYR-2026-004691",
+    "WKC-2026-004691",
     "2026-08-26T11:12:00.000Z",
     "out_for_delivery",
     [
@@ -135,7 +135,7 @@ export const demoOrders: Order[] = [
   ),
   order(
     "ord_4182",
-    "MYR-2026-004182",
+    "WKC-2026-004182",
     "2026-07-08T16:40:00.000Z",
     "delivered",
     [
@@ -182,7 +182,7 @@ export const demoOrders: Order[] = [
   ),
   order(
     "ord_3907",
-    "MYR-2026-003907",
+    "WKC-2026-003907",
     "2026-05-19T09:05:00.000Z",
     "delivered",
     [

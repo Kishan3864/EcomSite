@@ -40,7 +40,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
           label="Order number"
           htmlFor="order-number"
           error={state.field === "number" ? state.error : undefined}
-          hint="Example: MYR-2026-005001. It is on your confirmation email."
+          hint="Example: WKC-2026-005001. It is on your confirmation email."
         >
           <Input
             id="order-number"
@@ -48,7 +48,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
             required
             defaultValue={state.values?.number ?? ""}
             invalid={state.field === "number"}
-            placeholder="MYR-2026-005001"
+            placeholder="WKC-2026-005001"
           />
         </Field>
         <Field

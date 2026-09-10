@@ -9,6 +9,7 @@
  *   npm run db:seed
  */
 import "dotenv/config";
+import { BUSINESS, formatAddress, isGstRegistered } from "../src/config/business";
 import bcrypt from "bcryptjs";
 import { PrismaPg } from "@prisma/adapter-pg";
 import {
@@ -142,13 +143,16 @@ function resolvedTax(p: Classified): Tax {
  * owner edits the GSTIN or the registered address.
  */
 const STORE = {
-  name: "Mayura",
-  legalName: "Mayura Commerce Private Limited",
-  tagline: "Made well. Priced honestly.",
-  supportEmail: "hello@mayura.in",
-  supportPhone: "+91 80 4718 2200",
-  address: "4th Floor, Ekam House, 27 Residency Road, Bengaluru 560025",
-  gstin: "29AABCM1234K1ZP",
+  name: BUSINESS.brandName,
+  legalName: BUSINESS.legalName,
+  tagline: BUSINESS.tagline,
+  supportEmail: BUSINESS.supportEmail,
+  supportPhone: BUSINESS.supportPhone,
+  address: formatAddress(),
+  // Empty until the shop is actually GST-registered. The invoice builder reads
+  // this: with no GSTIN it prints a bill of supply and charges no tax, which is
+  // the only lawful document an unregistered seller can issue.
+  gstin: isGstRegistered ? BUSINESS.gstin : "",
   currency: "INR",
 };
 
@@ -604,8 +608,8 @@ async function seedAdmin() {
     log("admin users", count);
     return;
   }
-  const email = process.env.ADMIN_SEED_EMAIL ?? "admin@mayura.in";
-  const password = process.env.ADMIN_SEED_PASSWORD ?? "Mayura@2026";
+  const email = process.env.ADMIN_SEED_EMAIL ?? "admin@weekendcart.com";
+  const password = process.env.ADMIN_SEED_PASSWORD ?? "WeekendCart@2026";
   await db.adminUser.create({
     data: {
       email,
@@ -651,7 +655,7 @@ async function seedSettings() {
 }
 
 async function main() {
-  console.log("Seeding Mayura …\n");
+  console.log("Seeding " + BUSINESS.brandName + "\n");
   await seedBrands();
   await seedCategories();
   await seedProducts();

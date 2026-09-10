@@ -56,17 +56,17 @@ export interface PlaceOrderInput {
   couponCode?: string | null;
 }
 
-const INVOICE_PREFIX = "MYR";
+const INVOICE_PREFIX = "WKC";
 
 /** Delivery is SAC 9968, taxed at 18% — the invoice bills it the same way. */
 const DELIVERY_TAX_RATE = 18;
 
 async function nextOrderNumber(tx: Prisma.TransactionClient) {
   const year = new Date().getFullYear();
-  const count = await tx.order.count({ where: { number: { startsWith: `MYR-${year}-` } } });
+  const count = await tx.order.count({ where: { number: { startsWith: `WKC-${year}-` } } });
   // Sequential and human-readable; a collision under concurrent checkouts is
   // caught by the unique index and retried by the caller.
-  return `MYR-${year}-${String(5000 + count + 1).padStart(6, "0")}`;
+  return `WKC-${year}-${String(5000 + count + 1).padStart(6, "0")}`;
 }
 
 async function nextInvoiceNumber(tx: Prisma.TransactionClient, at: Date) {
@@ -281,7 +281,7 @@ export async function placeOrder(
             placeOfSupply: input.address.state,
             placeOfSupplyCode: placeCode,
             courier: speed === "express" ? "WeekendCart Express" : "WeekendCart Fleet",
-            awb: `MYRX${Date.now().toString().slice(-9)}`,
+            awb: `WKCX${Date.now().toString().slice(-9)}`,
             estimatedDelivery,
             lines: {
               create: priced.map((l) => ({

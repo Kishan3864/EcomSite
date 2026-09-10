@@ -1,4 +1,12 @@
-# Deploying Mayura to ecom.flexypdf.com
+# Deploying WeekendCart
+
+Primary domain **weekendcart.com**, with **ecom.flexypdf.com** kept live on the
+same process as a secondary hostname.
+
+> The Postgres role and database are still named `mayura`, from before the
+> rebrand. They stay that way on purpose: renaming a live database is a
+> migration with downtime, not a rename, and the name is internal — it appears
+> in `DATABASE_URL` and nowhere a customer or reviewer can see.
 
 Target: the existing VPS (`flexyuser@srv1545707`, 187.127.141.107) that already hosts
 other sites via nginx + PM2. This runbook adds **one** app directory, **one** PM2 process
@@ -38,8 +46,8 @@ Set in `.env`:
 ```
 DATABASE_URL="postgresql://mayura:CHANGE-ME-strong-password@localhost:5432/mayura?schema=public"
 AUTH_SECRET="<64 random chars>"        # node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
-NEXT_PUBLIC_SITE_URL="https://ecom.flexypdf.com"
-ADMIN_SEED_EMAIL="you@yourdomain.in"     # first admin (OWNER) — created only if no admin exists
+NEXT_PUBLIC_SITE_URL="https://weekendcart.com"
+ADMIN_SEED_EMAIL="weekendscart@gmail.com"     # first admin (OWNER) — created only if no admin exists
 ADMIN_SEED_PASSWORD="<strong password>"  # change it from Settings → Profile after first login
 ```
 
@@ -75,7 +83,7 @@ https://ecom.flexypdf.com/api/auth/facebook/callback
 
 Both callbacks are built from `NEXT_PUBLIC_SITE_URL`: leave it unset and the buttons stay
 hidden, set it wrong and the provider rejects the sign-in — keep it in step with the domain.
-Run `pm2 reload mayura` after editing `.env`.
+Run `pm2 reload weekendcart` after editing `.env`.
 
 Google confirms whether an address is verified, so someone who signed up with a password
 and later uses Google lands in the same account. Facebook does not confirm it, so a
@@ -89,7 +97,7 @@ cd ~/ecom.flexypdf.com && bash deploy/deploy.sh
 ```
 
 The script pulls `main`, installs, runs `prisma migrate deploy`, seeds the catalogue only
-if it is empty, builds, and starts/reloads PM2 (`pm2 logs mayura` to watch).
+if it is empty, builds, and starts/reloads PM2 (`pm2 logs weekendcart` to watch).
 
 ## 4. nginx + TLS (once)
 
@@ -106,8 +114,8 @@ Then open https://ecom.flexypdf.com and https://ecom.flexypdf.com/admin.
 
 ```bash
 pm2 save && pm2 startup        # once — prints a command to run with sudo so PM2 survives reboots
-pm2 ls                         # "mayura" should be online
-pm2 logs mayura --lines 100
+pm2 ls                         # "weekendcart" should be online
+pm2 logs weekendcart --lines 100
 ```
 
 ## Updating later
@@ -125,7 +133,7 @@ pg_dump -U mayura -h localhost mayura -Fc > ~/backups/mayura-$(date +%F).dump
 ## Rollback
 
 ```bash
-cd ~/ecom.flexypdf.com && git checkout <previous-sha> && npm ci && npm run build && pm2 reload mayura
+cd ~/ecom.flexypdf.com && git checkout <previous-sha> && npm ci && npm run build && pm2 reload weekendcart
 ```
 
 ## Ports and names used
@@ -133,7 +141,7 @@ cd ~/ecom.flexypdf.com && git checkout <previous-sha> && npm ci && npm run build
 | Thing | Value |
 | --- | --- |
 | App directory | `~/ecom.flexypdf.com` |
-| PM2 process | `mayura` |
+| PM2 process | `weekendcart` |
 | Port | `3040` |
 | nginx vhost | `/etc/nginx/sites-available/ecom.flexypdf.com` |
 | Database | `mayura` (role `mayura`) |

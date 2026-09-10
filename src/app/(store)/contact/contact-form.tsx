@@ -147,7 +147,7 @@ export function ContactForm() {
             id="c-order"
             value={form.orderNumber}
             onChange={(e) => setForm((f) => ({ ...f, orderNumber: e.target.value }))}
-            placeholder="MYR-2026-004691"
+            placeholder="WKC-2026-005001"
           />
         </Field>
 

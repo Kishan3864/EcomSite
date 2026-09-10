@@ -218,7 +218,7 @@ export const INDIAN_STATES = [
 export const returnRequests: ReturnRequest[] = [
   {
     id: "ret_1",
-    orderNumber: "MYR-2026-004182",
+    orderNumber: "WKC-2026-004182",
     productTitle: "Saanjh Linen Co-ord Set",
     image: img(POOL.womenwear[4], { fit: "square", w: 240 }),
     reason: "Size too large",
@@ -229,7 +229,7 @@ export const returnRequests: ReturnRequest[] = [
   },
   {
     id: "ret_2",
-    orderNumber: "MYR-2026-004691",
+    orderNumber: "WKC-2026-004691",
     productTitle: "Novair Drift Buds",
     image: img(POOL.audio[2], { fit: "square", w: 240 }),
     reason: "Left bud not charging",

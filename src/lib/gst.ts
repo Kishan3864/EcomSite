@@ -94,7 +94,7 @@ export function financialYear(date: Date): { start: number; label: string } {
   return { start, label: `${start}-${String((start + 1) % 100).padStart(2, "0")}` };
 }
 
-export function invoiceNumberFor(date: Date, sequence: number, prefix = "MYR") {
+export function invoiceNumberFor(date: Date, sequence: number, prefix = "WKC") {
   return `${prefix}/${financialYear(date).label}/${String(sequence).padStart(6, "0")}`;
 }
 

@@ -1,4 +1,4 @@
-# Mayura — storefront + admin
+# WeekendCart — storefront + admin
 
 A production-quality Indian e-commerce storefront with a full admin panel, on
 Next.js 16 (App Router), TypeScript, Tailwind v4, Motion, and **Prisma 7 +
@@ -16,7 +16,7 @@ Local logins after seeding:
 
 | Where | Email | Password |
 | --- | --- | --- |
-| `/admin` | `admin@mayura.in` (owner) | `Mayura@2026` |
+| `/admin` | `admin@weekendcart.com` (owner) | `WeekendCart@2026` |
 | `/login` (storefront) | `ananya.iyer@example.in` | `Ananya@2026` |
 
 Change both from the admin **Settings → Profile** / storefront account before going live.

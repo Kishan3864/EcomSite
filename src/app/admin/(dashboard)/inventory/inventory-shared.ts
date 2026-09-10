@@ -41,4 +41,4 @@ export const SORT_OPTIONS = [
 ] as const;
 
 /** Order numbers are the only references the storefront writes; link those. */
-export const ORDER_NUMBER_RE = /^MYR-\d{4}-\d{6}$/;
+export const ORDER_NUMBER_RE = /^WKC-\d{4}-\d{6}$/;

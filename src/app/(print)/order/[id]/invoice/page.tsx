@@ -42,7 +42,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const taxHeads = invoice.interState ? 1 : 2;
 
   return (
-    <div className="mx-auto max-w-[860px] px-4 py-6 sm:px-8 sm:py-10 print:max-w-none print:p-0">
+    <div
+      id="invoice-sheet"
+      className="mx-auto max-w-[860px] px-4 py-6 sm:px-8 sm:py-10 print:max-w-none print:p-0"
+    >
       <PrintToolbar backHref={`/order/${invoice.orderId}`} />
 
       <header className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-ink-800 pb-4">
@@ -72,7 +75,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
       </header>
 
-      <dl className="grid gap-x-6 gap-y-2.5 border-b border-ink-300 py-4 text-[11.5px] sm:grid-cols-3">
+      <dl className="grid gap-x-6 gap-y-2.5 border-b border-ink-300 py-4 text-[11.5px] sm:grid-cols-3 print:gap-y-1.5 print:py-2.5 print:text-[10px]">
         <MetaField label="Invoice date" value={formatDate(invoice.invoiceDate, "short")} />
         <MetaField label="Order number" value={invoice.orderNumber} mono />
         <MetaField label="Order date" value={formatDate(invoice.orderDate, "short")} />
@@ -103,8 +106,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </Party>
       </section>
 
-      <div className="mt-5 overflow-x-auto print:overflow-visible">
-        <table className="w-full min-w-[720px] border-collapse text-[11px] print:min-w-0">
+      <div className="mt-5 overflow-x-auto print:mt-3 print:overflow-visible">
+        <table className="w-full min-w-[720px] border-collapse text-[11px] print:min-w-0 print:text-[9.5px]">
           <thead>
             <tr>
               <Th rowSpan={2} className="w-8">
@@ -188,7 +191,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </table>
       </div>
 
-      <div className="mt-4 flex justify-end break-inside-avoid">
+      <div className="mt-4 flex justify-end break-inside-avoid print:mt-2.5">
         <dl className="w-full max-w-[300px] border border-ink-400 py-1 text-[11.5px]">
           {totals.discount > 0 && (
             <>
@@ -224,16 +227,16 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </dl>
       </div>
 
-      <p className="mt-4 break-inside-avoid border border-ink-400 px-3 py-2 text-[11.5px] leading-relaxed">
+      <p className="mt-4 break-inside-avoid border border-ink-400 px-3 py-2 text-[11.5px] leading-relaxed print:mt-2.5 print:text-[10px]">
         <span className="text-ink-600">Amount chargeable in words: </span>
         <span className="font-semibold text-ink-950">{invoice.amountInWords}</span>
       </p>
 
-      <section className="mt-6 break-inside-avoid">
+      <section className="mt-6 break-inside-avoid print:mt-3.5">
         <h2 className="text-[10px] font-semibold tracking-[0.14em] text-ink-500 uppercase">
           Tax summary by HSN / SAC
         </h2>
-        <table className="mt-2 w-full border-collapse text-[11px]">
+        <table className="mt-2 w-full border-collapse text-[11px] print:text-[9.5px]">
           <thead>
             <tr>
               <Th rowSpan={2}>HSN / SAC</Th>
@@ -288,7 +291,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </table>
       </section>
 
-      <section className="mt-6 grid gap-6 break-inside-avoid border-t border-ink-300 pt-4 text-[11.5px] sm:grid-cols-2">
+      <section className="mt-6 grid gap-6 break-inside-avoid border-t border-ink-300 pt-4 text-[11.5px] sm:grid-cols-2 print:mt-3.5 print:gap-4 print:pt-2.5 print:text-[10px]">
         <div>
           <h2 className="text-[10px] font-semibold tracking-[0.14em] text-ink-500 uppercase">
             Payment
@@ -303,13 +306,13 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
         <div className="sm:text-right">
           <p className="text-ink-700">For {seller.legalName}</p>
-          <p className="mt-12 border-t border-ink-400 pt-1.5 text-[11px] text-ink-600 sm:ml-auto sm:w-56">
+          <p className="mt-12 border-t border-ink-400 pt-1.5 text-[11px] text-ink-600 sm:ml-auto sm:w-56 print:mt-8">
             Authorised signatory
           </p>
         </div>
       </section>
 
-      <footer className="mt-6 break-inside-avoid border-t border-ink-300 pt-3 text-[10.5px] leading-relaxed text-ink-600">
+      <footer className="mt-6 break-inside-avoid border-t border-ink-300 pt-3 text-[10.5px] leading-relaxed text-ink-600 print:mt-3.5 print:text-[9px]">
         <p>
           Declaration: the goods sold are intended for end user consumption and are not for resale.
           The particulars given above are true and correct, and the amount shown is the actual price
@@ -358,7 +361,7 @@ function Party({
   children: React.ReactNode;
 }) {
   return (
-    <div className={`py-4 ${className ?? ""}`}>
+    <div className={`py-4 print:py-2.5 ${className ?? ""}`}>
       <h2 className="text-[10px] font-semibold tracking-[0.14em] text-ink-500 uppercase">
         {title}
       </h2>

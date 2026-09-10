@@ -56,7 +56,7 @@ export function ShipmentForm({
             defaultValue={awb}
             className={inputCls}
             disabled={readOnly}
-            placeholder="MYRX…"
+            placeholder="WKCX…"
           />
           <FieldError>{err("awb")}</FieldError>
         </div>
