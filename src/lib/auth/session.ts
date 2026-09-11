@@ -11,10 +11,12 @@ import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 export const ADMIN_COOKIE = "weekendcart_admin";
 export const CUSTOMER_COOKIE = "weekendcart_customer";
 export const GUEST_ORDERS_COOKIE = "weekendcart_guest_orders";
+export const PHONE_TICKET_COOKIE = "weekendcart_phone_ticket";
 
 const ADMIN_TTL_SECONDS = 60 * 60 * 12; // 12 hours
 const CUSTOMER_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const GUEST_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 days
+const PHONE_TICKET_TTL_SECONDS = 60 * 15; // 15 minutes
 
 export interface AdminClaims extends JWTPayload {
   kind: "admin";
@@ -37,6 +39,16 @@ export interface GuestOrderClaims extends JWTPayload {
   kind: "guest";
   /** Order ids placed from this browser without an account. */
   orders: string[];
+}
+
+/**
+ * A number that has just been proved by SMS but has no account yet, carried
+ * from the code step to the "your name and email" step.
+ */
+export interface PhoneTicketClaims extends JWTPayload {
+  kind: "phone";
+  /** E.164. */
+  phone: string;
 }
 
 function secret() {
@@ -84,6 +96,12 @@ export const guestOrdersToken = {
   ttl: GUEST_TTL_SECONDS,
   sign: (orders: string[]) => sign({ kind: "guest", orders }, GUEST_TTL_SECONDS),
   verify: (token?: string) => verify<GuestOrderClaims>(token, "guest"),
+};
+
+export const phoneTicketToken = {
+  ttl: PHONE_TICKET_TTL_SECONDS,
+  sign: (phone: string) => sign({ kind: "phone", phone }, PHONE_TICKET_TTL_SECONDS),
+  verify: (token?: string) => verify<PhoneTicketClaims>(token, "phone"),
 };
 
 /** Cookie attributes shared by every session cookie. */

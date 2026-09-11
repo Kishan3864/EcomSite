@@ -4,7 +4,10 @@ import { AlertTriangle } from "lucide-react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
+import { LoginMethods } from "./login-methods";
 import { SocialSignIn } from "@/components/auth/social-sign-in";
+import { PhoneOtpLogin } from "@/components/auth/phone-otp";
+import { smsConfigured } from "@/lib/sms";
 import { getCustomerSession } from "@/lib/auth/customer";
 import { safeNextPath } from "@/lib/auth/oauth";
 
@@ -48,6 +51,9 @@ export default async function LoginPage({
   if (session) redirect(next ?? "/account");
 
   const oauthError = oauthMessage(params.error);
+  // Offered only once an SMS provider is configured: a "we sent you a code"
+  // screen that sends nothing would be worse than no option at all.
+  const otp = smsConfigured();
 
   return (
     <AuthShell
@@ -79,8 +85,17 @@ export default async function LoginPage({
         </p>
       )}
 
-      <SocialSignIn next={next} />
-      <LoginForm next={next} />
+      {otp ? (
+        <>
+          <SocialSignIn next={next} divider="or sign in with" />
+          <LoginMethods phone={<PhoneOtpLogin next={next} />} email={<LoginForm next={next} />} />
+        </>
+      ) : (
+        <>
+          <SocialSignIn next={next} />
+          <LoginForm next={next} />
+        </>
+      )}
     </AuthShell>
   );
 }

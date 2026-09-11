@@ -18,10 +18,7 @@ function SignInButton() {
   );
 }
 
-/**
- * Email and password only. There is no SMS provider wired up, so no OTP tab —
- * a "we sent you a code" screen that sends nothing would be worse than none.
- */
+/** Email and password. Mobile OTP sits beside it (see login-methods.tsx). */
 export function LoginForm({ next }: { next?: string }) {
   const [state, action] = useActionState(loginAction, {});
   const [showPassword, setShowPassword] = useState(false);

@@ -92,6 +92,10 @@ export async function registerCustomer(input: {
   if (provider) {
     return { ok: false, reason: `That email already signs in with ${provider}. Use that button instead.` };
   }
+  // Nor is an account opened with a mobile number up for grabs.
+  if (existing?.verifiedPhone) {
+    return { ok: false, reason: "That email already signs in with a mobile number. Use the OTP option instead." };
+  }
 
   const passwordHash = await hashPassword(input.password);
   const customer = existing
@@ -174,6 +178,86 @@ export async function signInWithProvider(
     },
   });
   return startSession(customer);
+}
+
+/* ------------------------------ Mobile OTP ------------------------------ */
+
+/**
+ * Signs in the account a number has been verified for. Only `verifiedPhone`
+ * counts: a number typed into a profile was never proved, and opening that
+ * account to whoever holds the SIM would hand over someone else's orders.
+ */
+export async function signInWithPhone(
+  phone: string,
+): Promise<{ ok: true; session: CustomerSession } | { ok: false; reason: "no_account" | "disabled" }> {
+  const customer = await db.customer.findUnique({ where: { verifiedPhone: phone } });
+  if (!customer) return { ok: false, reason: "no_account" };
+  if (!customer.isActive) return { ok: false, reason: "disabled" };
+  await db.customer.update({ where: { id: customer.id }, data: { lastLoginAt: new Date() } });
+  return startSession(customer);
+}
+
+/** A new account for a number that has just been proved by SMS. */
+export async function createPhoneCustomer(input: {
+  phone: string;
+  displayPhone: string;
+  name: string;
+  email: string;
+}): Promise<{ ok: true; session: CustomerSession } | { ok: false; reason: string; field?: "email" }> {
+  const email = input.email.toLowerCase().trim();
+
+  // The email is the customer's word, not proven. Attaching this number to an
+  // existing account on that word alone would be a takeover, so the owner has
+  // to sign in to it first and add the number from their settings.
+  const existing = await db.customer.findUnique({ where: { email }, select: { id: true, passwordHash: true, providerId: true } });
+  if (existing) {
+    return {
+      ok: false,
+      field: "email",
+      reason:
+        existing.passwordHash || existing.providerId
+          ? "An account already uses this email. Sign in to it, then add this number under Account → Settings."
+          : "This email was used for an earlier order. Create a password for it from “Create an account”, then add this number in Settings.",
+    };
+  }
+
+  try {
+    const customer = await db.customer.create({
+      data: {
+        email,
+        name: input.name.trim(),
+        phone: input.displayPhone,
+        verifiedPhone: input.phone,
+        phoneVerifiedAt: new Date(),
+        lastLoginAt: new Date(),
+      },
+    });
+    return startSession(customer);
+  } catch {
+    // Unique clash: the same number or email was registered a moment ago.
+    return { ok: false, reason: "This number or email was just registered. Please sign in instead." };
+  }
+}
+
+/** Adds a verified number to a signed-in account. */
+export async function linkPhoneToCustomer(
+  customerId: string,
+  phone: string,
+  displayPhone: string,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const holder = await db.customer.findUnique({ where: { verifiedPhone: phone }, select: { id: true } });
+  if (holder && holder.id !== customerId) {
+    return { ok: false, reason: "This number is already linked to another WeekendCart account." };
+  }
+  try {
+    await db.customer.update({
+      where: { id: customerId },
+      data: { phone: displayPhone, verifiedPhone: phone, phoneVerifiedAt: new Date() },
+    });
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "This number is already linked to another WeekendCart account." };
+  }
 }
 
 export async function signOutCustomer() {

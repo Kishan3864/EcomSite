@@ -252,6 +252,7 @@ export async function getCustomerProfile() {
       name: true,
       email: true,
       phone: true,
+      verifiedPhone: true,
       tier: true,
       loyaltyPoints: true,
       createdAt: true,
@@ -266,6 +267,8 @@ export async function getCustomerProfile() {
     name: c.name,
     email: c.email,
     phone: c.phone ?? "",
+    /** The number OTP sign-in uses, if one has been proved; E.164. */
+    verifiedPhone: c.verifiedPhone,
     tier: c.tier === "PEACOCK_CLUB" ? "WeekendCart Club" : c.tier === "GOLD" ? "Gold" : "Silver",
     loyaltyPoints: c.loyaltyPoints,
     memberSince: c.createdAt.toISOString(),

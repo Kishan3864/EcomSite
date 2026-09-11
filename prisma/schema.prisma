@@ -465,6 +465,10 @@ model Customer {
   id            String       @id @default(cuid())
   email         String       @unique
   phone         String?
+  /// Set only once the customer has proved the number with an SMS code, so an
+  /// OTP sign-in never opens an account someone typed a number into. E.164.
+  verifiedPhone   String?    @unique
+  phoneVerifiedAt DateTime?
   name          String
   /// Null for accounts that only ever signed in through a provider.
   passwordHash  String?
@@ -496,6 +500,34 @@ model Customer {
 
   @@unique([authProvider, providerId])
   @@index([createdAt])
+}
+
+/// One-time codes sent by SMS. Only a keyed hash of the code is stored, and
+/// rows are pruned after two days; they also back the per-number send limits.
+model PhoneOtp {
+  id         String     @id @default(cuid())
+  /// E.164, e.g. +919876543210.
+  phone      String
+  purpose    OtpPurpose
+  /// For LINK: the signed-in customer the number is being added to.
+  customerId String?
+  codeHash   String
+  attempts   Int        @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  ip         String?
+  createdAt  DateTime   @default(now())
+
+  @@index([phone, createdAt])
+  @@index([ip, createdAt])
+  @@index([createdAt])
+}
+
+enum OtpPurpose {
+  /// Sign in, or start an account, with a mobile number.
+  LOGIN
+  /// Add a verified number to an account that is already signed in.
+  LINK
 }
 
 enum AuthProvider {

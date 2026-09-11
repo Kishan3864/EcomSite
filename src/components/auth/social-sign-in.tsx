@@ -40,7 +40,13 @@ const MARKS: Record<ProviderId, () => ReactElement> = {
  * them. Renders nothing at all until credentials are configured, so the store
  * never shows a sign-in route that cannot complete.
  */
-export function SocialSignIn({ next }: { next?: string }) {
+export function SocialSignIn({
+  next,
+  divider = "or continue with email",
+}: {
+  next?: string;
+  divider?: string;
+}) {
   const providers = configuredProviders();
   if (providers.length === 0) return null;
 
@@ -88,7 +94,7 @@ export function SocialSignIn({ next }: { next?: string }) {
 
       <div className="mt-6 flex items-center gap-3 text-[12px] text-ink-400">
         <span className="h-px flex-1 bg-hairline" />
-        or continue with email
+        {divider}
         <span className="h-px flex-1 bg-hairline" />
       </div>
     </div>

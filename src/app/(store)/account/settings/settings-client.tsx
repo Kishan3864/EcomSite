@@ -33,6 +33,7 @@ import { useStore } from "@/store/store";
 import { Form } from "@/components/ui/form";
 import { Avatar } from "@/components/account/avatar";
 import { removeAvatar, uploadAvatar, type AvatarState } from "@/services/avatar-actions";
+import { PhoneLinkCard } from "@/components/auth/phone-otp";
 
 const ICONS: Record<PaymentMethodId, typeof Wallet> = {
   online: ShieldCheck,
@@ -52,9 +53,12 @@ export interface SettingsProfile {
 export function SettingsClient({
   profile,
   addresses,
+  signInPhone,
 }: {
   profile: SettingsProfile;
   addresses: Address[];
+  /** Undefined when SMS is not configured; null when no number is verified yet. */
+  signInPhone?: string | null;
 }) {
   return (
     <div className="space-y-5">
@@ -69,6 +73,15 @@ export function SettingsClient({
 
       <PhotoSection />
       <DetailsSection profile={profile} />
+      {signInPhone !== undefined && (
+        <Section
+          id="mobile"
+          title="Mobile number for sign-in"
+          description="Verify your number once, then sign in any time with a one-time code sent by SMS."
+        >
+          <PhoneLinkCard verifiedPhone={signInPhone} />
+        </Section>
+      )}
       <DefaultAddressSection addresses={addresses} />
       <PaymentSection />
       <MoreSection />

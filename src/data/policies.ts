@@ -87,6 +87,10 @@ export const policies: Policy[] = [
           head: ["Data", "Why we collect it"],
           rows: [
             ["Name, email address, phone number", "To create your account, confirm your order and contact you about it"],
+            [
+              "Mobile number and one-time codes",
+              "To sign you in by SMS code when you choose to. We store only a scrambled (hashed) form of each code, and delete it within two days",
+            ],
             ["Delivery and billing addresses", "To deliver your order and raise a correct invoice"],
             ["Order history and cart contents", "To fulfil orders, handle returns and show you your own orders"],
             ["Payment status and reference number", "To confirm payment and process refunds"],
@@ -114,7 +118,7 @@ export const policies: Policy[] = [
         bullets: [
           `Courier partners — your name, delivery address and phone number, so the parcel reaches you.${isFilled(O.courierPartners[0] ?? "") ? ` We currently work with ${O.courierPartners.join(", ")}.` : ""}`,
           "Our payment aggregator — the order amount and reference. Card, UPI and bank credentials are collected directly by them on their own secure page and are never transmitted to or stored by us.",
-          "Communication providers — your email address and phone number, to send order confirmations, dispatch alerts and delivery updates.",
+          "Communication providers — your email address and phone number, to send order confirmations, dispatch alerts and delivery updates, and the one-time sign-in codes you ask for by SMS.",
           "Government authorities, courts and law-enforcement agencies, where we are legally required to disclose.",
           "A prospective buyer of the business, if it is ever sold, subject to the same obligations set out in this policy.",
         ],
