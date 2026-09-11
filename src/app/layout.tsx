@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-import { BRAND } from "@/components/brand/logo";
+import { BRAND, BrandDefs } from "@/components/brand/logo";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -85,6 +85,7 @@ export default function RootLayout({
       className={`${jakarta.variable} ${fraunces.variable}`}
     >
       <body className="min-h-dvh antialiased">
+        <BrandDefs />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-brand-900 focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white"

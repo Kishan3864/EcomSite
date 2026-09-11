@@ -44,7 +44,7 @@ export function UpiMark({ className }: { className?: string }) {
       <text
         x="19"
         y="15"
-        fontFamily="system-ui, sans-serif"
+        fontFamily="var(--font-jakarta), sans-serif"
         fontSize="11"
         fontWeight="700"
         fill="currentColor"

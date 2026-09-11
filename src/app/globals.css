@@ -73,6 +73,11 @@
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  /* Codes — order numbers, coupons, GSTINs, AWBs — in the UI face with
+     tabular figures. Tailwind's default mono stack meant Consolas on Windows,
+     Menlo on a Mac and something else again on Android: a third and fourth
+     typeface nobody chose, different on every device. */
+  --font-mono: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 
   /* Radius — square by policy. Every step is the same 2px so no component
      can quietly reintroduce a soft corner by reaching for a bigger name. */
@@ -161,6 +166,12 @@
 
   h1, h2, h3, h4 {
     text-wrap: balance;
+  }
+
+  /* Every digit the same width, so codes and amounts line up in columns. */
+  .font-mono {
+    font-variant-numeric: tabular-nums lining-nums;
+    letter-spacing: 0.01em;
   }
 
   /* Fraunces defaults to old-style figures; product names need lining ones. */

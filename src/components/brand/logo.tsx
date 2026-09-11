@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BUSINESS, isFilled } from "@/config/business";
+import { BAG, HANDLE, SMILE, SPEED, WHEELS, markColours, type MarkTone } from "./mark-geometry";
+import { WORDMARK } from "./wordmark";
 
 /**
  * Brand identity, derived from the one place real business facts live.
  *
- * Nothing here is hardcoded — edit `@/config/business` and the logo, metadata,
- * footer, structured data and every policy page follow. That is what keeps the
- * site's legal name, address and contact details consistent, which is exactly
- * what a payment aggregator checks.
+ * Edit `@/config/business` and the logo, metadata, footer, structured data and
+ * every policy page follow. That is what keeps the site's legal name, address
+ * and contact details consistent, which is exactly what a payment aggregator
+ * checks.
  */
 
 /** Until a real domain is configured, keep URLs valid so builds do not fail. */
@@ -30,61 +32,78 @@ export const BRAND = {
 } as const;
 
 /**
- * The WeekendCart mark: a shopping bag whose body is a brass W.
- *
- * Built as geometry rather than lettering so it stays legible at a 16px
- * favicon, survives a single-colour print, and needs no font to render. The
- * square tile matches the storefront's 2px corner policy — a pill-shaped mark
- * would be the one rounded thing left on the page.
+ * The bag gradients, defined once for the whole document and referenced by
+ * every mark on the page. Defining them inside each mark would put the same id
+ * in the DOM several times — the header, the footer and the menu all show the
+ * logo — which is invalid HTML.
  */
+export function BrandDefs() {
+  const light = markColours("light");
+  const dark = markColours("dark");
+  return (
+    <svg width="0" height="0" aria-hidden="true" focusable="false" className="absolute">
+      <defs>
+        <linearGradient id="wc-bag-light" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={light.bagTop} />
+          <stop offset="1" stopColor={light.bagBottom} />
+        </linearGradient>
+        <linearGradient id="wc-bag-dark" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={dark.bagTop} />
+          <stop offset="1" stopColor={dark.bagBottom} />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+/** The mark's artwork, on the shared 64-unit grid. */
+function MarkArt({ tone, speed = true }: { tone: MarkTone; speed?: boolean }) {
+  const c = markColours(tone);
+  return (
+    <>
+      {speed &&
+        SPEED.map((d) => (
+          <path key={d} d={d} fill="none" stroke={c.speed} strokeWidth="2.6" strokeLinecap="round" />
+        ))}
+      <path d={HANDLE} fill="none" stroke={c.handle} strokeWidth="4.2" strokeLinecap="round" />
+      <path d={BAG} fill={`url(#wc-bag-${tone})`} />
+      <path
+        d={SMILE}
+        fill="none"
+        stroke={c.smile}
+        strokeWidth="3.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {WHEELS.map((w) => (
+        <circle key={w.cx} cx={w.cx} cy={w.cy} r={w.r} fill={c.wheels} />
+      ))}
+    </>
+  );
+}
+
+/** The mark on its own — a bag on two wheels. */
 export function BagMark({
   className,
   size = 28,
-  tile = "var(--color-brand-950)",
-  bag = "var(--color-brand-300)",
-  letter = "var(--color-gold-400)",
+  tone = "light",
+  speed = true,
 }: {
   className?: string;
   size?: number;
-  tile?: string;
-  bag?: string;
-  letter?: string;
+  tone?: MarkTone;
+  speed?: boolean;
 }) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
-      fill="none"
+      viewBox="0 0 64 64"
       aria-hidden="true"
+      focusable="false"
       className={className}
     >
-      <rect width="32" height="32" rx="2" fill={tile} />
-      {/* Handle */}
-      <path
-        d="M12 11.5V9.6a4 4 0 0 1 8 0v1.9"
-        stroke={bag}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        fill="none"
-      />
-      {/* Bag body */}
-      <path
-        d="M7.6 11.5h16.8l-1.15 13.1a1.6 1.6 0 0 1-1.6 1.4H10.35a1.6 1.6 0 0 1-1.6-1.4L7.6 11.5Z"
-        stroke={bag}
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-        fill="none"
-      />
-      {/* The W */}
-      <path
-        d="M11 15.6l2.4 5.4 2.6-3.7 2.6 3.7 2.4-5.4"
-        stroke={letter}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
+      <MarkArt tone={tone} speed={speed} />
     </svg>
   );
 }
@@ -92,52 +111,64 @@ export function BagMark({
 /** Kept as an alias so older imports of the previous mark keep resolving. */
 export const FeatherMark = BagMark;
 
+const HEIGHTS = { sm: 26, md: 34, lg: 46 } as const;
+
+/**
+ * The lockup: mark and wordmark in one SVG. The wordmark is outlined Plus
+ * Jakarta Sans ExtraBold (see scripts/build-brand.ts), so it renders
+ * identically on every device with no font request and no reflow.
+ */
+function Lockup({
+  tone,
+  size,
+  className,
+}: {
+  tone: MarkTone;
+  size: keyof typeof HEIGHTS;
+  className?: string;
+}) {
+  const height = HEIGHTS[size];
+  const width = Math.round((height * WORDMARK.width) / WORDMARK.height);
+  const light = tone === "light";
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox={WORDMARK.viewBox}
+      role="img"
+      aria-label={BRAND.name}
+      className={cn("shrink-0", className)}
+    >
+      <MarkArt tone={tone} />
+      <g transform={`translate(${WORDMARK.x} ${WORDMARK.baseline})`}>
+        <path d={WORDMARK.weekend} fill={light ? "#0d0c0a" : "#ffffff"} />
+        <path d={WORDMARK.cart} fill={light ? "#9a6926" : "#dfb96f"} />
+      </g>
+    </svg>
+  );
+}
+
 export function Logo({
   className,
   size = "md",
   href = "/",
-  showTagline = false,
 }: {
   className?: string;
   size?: "sm" | "md" | "lg";
   href?: string | null;
-  showTagline?: boolean;
 }) {
-  const dims = {
-    sm: { mark: 22, text: "text-[16px]" },
-    md: { mark: 28, text: "text-[20px]" },
-    lg: { mark: 38, text: "text-[27px]" },
-  }[size];
-
-  const inner = (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <BagMark size={dims.mark} className="shrink-0" />
-      <span className="flex flex-col leading-none">
-        {/* "Weekend" light, "Cart" heavy — the join carries the wordmark, so it
-            stays recognisable even when the tile is cropped off. */}
-        <span className={cn("font-display tracking-[-0.03em] text-ink-950", dims.text)}>
-          <span className="font-normal">Weekend</span>
-          <span className="font-semibold">Cart</span>
-        </span>
-        {showTagline && (
-          <span className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.22em] text-gold-700">
-            {BUSINESS.tagline.replace(/\.$/, "")}
-          </span>
-        )}
-      </span>
-    </span>
-  );
-
+  const inner = <Lockup tone="light" size={size} className={className} />;
   if (!href) return inner;
 
   return (
-    <Link href={href} aria-label={`${BRAND.name} — home`} className="shrink-0">
+    <Link href={href} aria-label={`${BRAND.name} — home`} className="inline-flex shrink-0">
       {inner}
     </Link>
   );
 }
 
-/** Inverted variant for dark surfaces (footer, hero overlays). */
+/** Reversed lockup for dark surfaces (footer, hero overlays). */
 export function LogoLight({
   className,
   size = "md",
@@ -145,22 +176,5 @@ export function LogoLight({
   className?: string;
   size?: "sm" | "md" | "lg";
 }) {
-  const mark = { sm: 22, md: 28, lg: 38 }[size];
-  const text = { sm: "text-[16px]", md: "text-[20px]", lg: "text-[27px]" }[size];
-
-  return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <BagMark
-        size={mark}
-        className="shrink-0"
-        tile="rgba(255,255,255,0.10)"
-        bag="rgba(255,255,255,0.72)"
-        letter="var(--color-gold-300)"
-      />
-      <span className={cn("font-display tracking-[-0.03em] text-white", text)}>
-        <span className="font-normal">Weekend</span>
-        <span className="font-semibold">Cart</span>
-      </span>
-    </span>
-  );
+  return <Lockup tone="dark" size={size} className={className} />;
 }
