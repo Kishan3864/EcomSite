@@ -152,7 +152,7 @@ function markFile(tone: MarkTone) {
 }
 
 const iconFile = (rounded: boolean) => {
-  const body = ACTIVE.icon();
+  const body = ACTIVE.icon({ opaque: !rounded });
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">${
     rounded ? body : body.replace(/rx="\d+(?:\.\d+)?"/, 'rx="0"')
   }</svg>`;

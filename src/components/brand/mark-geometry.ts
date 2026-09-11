@@ -18,6 +18,7 @@ export const PALETTE = {
   brass300: "#dfb96f",
   brass400: "#d0a04b",
   brass600: "#9a6926",
+  amber: "#c4782a",
   cream: "#fbf7ee",
   ink: "#0d0c0a",
 } as const;
@@ -36,8 +37,11 @@ export interface Concept {
   body(tone: MarkTone): string;
   /** Bounding box of the mark's ink, strokes included, on the 64-unit grid. */
   ink: { x0: number; y0: number; x1: number; y1: number };
-  /** The favicon / app icon, self-contained, on a 64-unit square. */
-  icon(): string;
+  /**
+   * The favicon / app icon, self-contained, on a 64-unit square. `opaque`
+   * asks for a solid background — iOS paints a transparent icon black.
+   */
+  icon(opts?: { opaque?: boolean }): string;
   word: {
     text: string;
     /** Glyphs before this index take the first colour, the rest the second. */
@@ -157,7 +161,54 @@ const wcart: Concept = {
   },
 };
 
-export const CONCEPTS = { classic, wcart } as const;
+/* ------------------------------------------------ B: Folded bag */
+
+/**
+ * A bag folded from two panels — the right one in shadow — with a W cut clean
+ * through its front. Brass-to-amber, the warmest of the directions.
+ */
+function foldedBody(tone: MarkTone, handle?: string) {
+  const handleColour = handle ?? (tone === "light" ? PALETTE.evergreen900 : PALETTE.brass300);
+  const cut = tone === "light" ? PALETTE.cream : PALETTE.evergreen950;
+  return [
+    `<path d="M24 20V16a8 8 0 0 1 16 0V20" fill="none" stroke="${handleColour}" stroke-width="4.4" stroke-linecap="round"/>`,
+    `<path d="M13 20H51L55 55a3.5 3.5 0 0 1-3.5 3.8H12.5A3.5 3.5 0 0 1 9 55Z" fill="url(#${gid("folded", tone)})"/>`,
+    `<path d="M40 20H51L55 55a3.5 3.5 0 0 1-3.5 3.8H48Z" fill="#000" opacity=".12"/>`,
+    `<path d="M17 31L24.5 47L32 35L39.5 47L47 31" fill="none" stroke="${cut}" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  ].join("");
+}
+
+const folded: Concept = {
+  name: "B — Folded bag",
+  defs: (tone) =>
+    `<linearGradient id="${gid("folded", tone)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${PALETTE.brass300}"/><stop offset="1" stop-color="${PALETTE.amber}"/></linearGradient>`,
+  body: (tone) => foldedBody(tone),
+  ink: { x0: 9, y0: 5.8, x1: 55, y1: 58.8 },
+  icon: (opts) =>
+    [
+      `<defs>${folded.defs("light")}</defs>`,
+      opts?.opaque ? `<rect width="64" height="64" fill="${PALETTE.cream}"/>` : "",
+      // No tile: the brass bag holds its own on light and dark tabs alike. The
+      // handle goes brass rather than evergreen, which would vanish on a dark tab.
+      `<g transform="translate(32 32) scale(${opts?.opaque ? 0.84 : 0.98}) translate(-32 -32.3)">${foldedBody("light", PALETTE.brass600)}</g>`,
+    ].join(""),
+  word: {
+    text: "WeekendCart",
+    splitAt: 7,
+    weight: 800,
+    secondWeight: 500,
+    size: 40,
+    tracking: -0.03,
+    baseline: 48,
+    gap: 12.6,
+    colours: {
+      light: { first: PALETTE.ink, second: PALETTE.amber },
+      dark: { first: "#ffffff", second: PALETTE.brass300 },
+    },
+  },
+};
+
+export const CONCEPTS = { classic, wcart, folded } as const;
 
 /** The direction the site uses. Change it, then run `npm run brand:build`. */
-export const ACTIVE: Concept = CONCEPTS.wcart;
+export const ACTIVE: Concept = CONCEPTS.folded;
