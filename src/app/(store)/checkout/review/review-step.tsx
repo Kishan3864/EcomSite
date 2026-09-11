@@ -173,19 +173,45 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
           />
         </>
       }
+      action={
+        needsAccount ? (
+          <Link
+            href={REGISTER_HREF}
+            className={buttonClasses(
+              "primary",
+              "lg",
+              "w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8",
+            )}
+          >
+            <UserRound size={16} />
+            Create an account to pay
+          </Link>
+        ) : (
+          <Button
+            size="lg"
+            className="w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8"
+            loading={placing || !sessionChecked}
+            onClick={pay}
+            disabled={!address || !payment}
+          >
+            <Lock size={16} />
+            Pay {formatINR(totals.total)}
+          </Button>
+        )
+      }
     >
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {needsAccount && (
-          <section className="rounded-xl border border-brand-200 bg-brand-50 p-5">
-            <h2 className="flex items-center gap-2 text-[14px] font-semibold text-ink-950">
-              <UserRound size={16} className="text-brand-700" />
+          <section className="rounded-xl border border-brand-200 bg-brand-50 p-4 sm:p-5">
+            <h2 className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">
+              <UserRound size={16} className="shrink-0 text-brand-700" />
               You need an account to place this order
             </h2>
-            <p className="mt-2 text-[13px] leading-relaxed text-ink-700">
+            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-700 sm:text-[13px]">
               Your order history, tracking and returns all live in your account, so we ask for one
               before the payment goes through. Creating it takes a minute.
             </p>
-            <p className="mt-2 text-[13px] leading-relaxed text-ink-600">
+            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-600 sm:text-[13px]">
               Nothing here is lost. Your bag, address, delivery and payment choices stay exactly as
               they are and we bring you back to this page.
             </p>
@@ -195,7 +221,7 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
               </Link>
               <Link
                 href={SIGN_IN_HREF}
-                className="text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+                className="-my-2.5 py-2.5 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline lg:my-0 lg:py-0"
               >
                 I already have one
               </Link>
@@ -203,34 +229,38 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
           </section>
         )}
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
           {summaryRows.map((row) => (
-            <section key={row.title} className="rounded-xl border border-hairline bg-surface p-4">
-              <div className="mb-2 flex items-center justify-between gap-2">
+            <section
+              key={row.title}
+              className="min-w-0 rounded-xl border border-hairline bg-surface p-3.5 sm:p-4"
+            >
+              <div className="mb-1.5 flex items-center justify-between gap-2 sm:mb-2">
                 <h2 className="flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">
                   <row.icon size={13} className="text-brand-600" />
                   {row.title}
                 </h2>
+                {/* A 40px target on phones; the negative margin keeps the row height. */}
                 <Link
                   href={row.href}
                   aria-label={`Change ${row.title.toLowerCase()}`}
-                  className="rounded-md p-1 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700"
+                  className="tap -m-2.5 rounded-md p-3.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700 sm:m-0 sm:p-1"
                 >
                   <Pencil size={12} />
                 </Link>
               </div>
-              <p className="text-[12.5px] leading-relaxed text-ink-600">{row.body}</p>
+              <p className="text-[12.5px] leading-relaxed text-ink-600 wrap-break-word">{row.body}</p>
             </section>
           ))}
         </div>
 
         <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
-          <h2 className="border-b border-hairline px-5 py-4 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+          <h2 className="border-b border-hairline px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:px-5 sm:py-4">
             {cart.length} item{cart.length > 1 ? "s" : ""} in this order
           </h2>
           <ul className="divide-y divide-hairline">
             {cart.map((line) => (
-              <li key={line.id} className="flex gap-4 px-5 py-4">
+              <li key={line.id} className="flex gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
                 <Link
                   href={`/p/${line.slug}`}
                   className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-ink-100"
@@ -243,16 +273,16 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
                   </p>
                   <Link
                     href={`/p/${line.slug}`}
-                    className="line-clamp-2 text-[13.5px] font-medium text-ink-950 hover:text-brand-700"
+                    className="line-clamp-2 text-[13px] font-medium text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
                   >
                     {line.title}
                   </Link>
-                  <p className="mt-0.5 text-[12px] text-ink-500">
+                  <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
                     {line.variantLabel ? `${line.variantLabel} · ` : ""}Quantity {line.quantity}
                   </p>
-                  <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1.5" />
+                  <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1 sm:mt-1.5" />
                 </div>
-                <p className="shrink-0 text-[14px] font-semibold tabular-nums text-ink-950">
+                <p className="shrink-0 text-[13.5px] font-semibold tabular-nums text-ink-950 sm:text-[14px]">
                   {formatINR(line.price * line.quantity)}
                 </p>
               </li>
@@ -260,7 +290,8 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
           </ul>
         </section>
 
-        <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Below lg the pay button lives in the pinned bar, so this keeps only the terms. */}
+        <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
           <p className="text-[12.5px] leading-relaxed text-ink-500">
             By placing this order you agree to our{" "}
             <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
@@ -273,14 +304,17 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
             .
           </p>
           {needsAccount ? (
-            <Link href={REGISTER_HREF} className={buttonClasses("primary", "lg", "shrink-0")}>
+            <Link
+              href={REGISTER_HREF}
+              className={buttonClasses("primary", "lg", "hidden shrink-0 lg:inline-flex")}
+            >
               <UserRound size={16} />
               Create an account to pay
             </Link>
           ) : (
             <Button
               size="lg"
-              className="shrink-0"
+              className="hidden shrink-0 lg:inline-flex"
               loading={placing || !sessionChecked}
               onClick={pay}
               disabled={!address || !payment}
@@ -291,9 +325,10 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
           )}
         </div>
 
+        {/* A 40px touch target on phones; the negative margin keeps the line. */}
         <Link
           href="/checkout/payment"
-          className="inline-block text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline"
+          className="-my-2.5 inline-block py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
         >
           Back to payment
         </Link>

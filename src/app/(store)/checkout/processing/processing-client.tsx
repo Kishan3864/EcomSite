@@ -253,24 +253,24 @@ export function ProcessingClient() {
 
   if (phase === "failed" && failure) {
     return (
-      <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
-        <div className="w-full max-w-md border border-hairline bg-surface p-7 text-center">
+      <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
+        <div className="w-full max-w-md border border-hairline bg-surface p-5 text-center sm:p-7">
           <span
             className={cn(
-              "mx-auto flex h-14 w-14 items-center justify-center",
+              "mx-auto flex h-12 w-12 items-center justify-center sm:h-14 sm:w-14",
               failure.needsAccount ? "bg-brand-50 text-brand-700" : "bg-sale-50 text-sale-600",
             )}
           >
             {failure.needsAccount ? <UserRound size={26} /> : <AlertTriangle size={26} />}
           </span>
-          <h1 className="mt-5 font-display text-2xl tracking-[-0.02em] text-ink-950">
+          <h1 className="mt-4 font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:mt-5 sm:text-2xl">
             {failure.needsAccount ? "An account is needed first" : "Payment not completed"}
           </h1>
-          <p className="mx-auto mt-2 max-w-sm text-[13.5px] leading-relaxed text-ink-600">
+          <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-ink-600 wrap-break-word sm:text-[13.5px]">
             {failure.message}
           </p>
 
-          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+          <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:justify-center">
             {failure.needsAccount ? (
               <>
                 <Link href="/register?next=/checkout/review" className={buttonClasses("primary")}>
@@ -292,7 +292,7 @@ export function ProcessingClient() {
             )}
           </div>
 
-          <p className="mt-6 text-[12px] leading-relaxed text-ink-500">
+          <p className="mt-5 text-[12.5px] leading-relaxed text-ink-500 sm:mt-6 sm:text-[12px]">
             If money left your account, it is a bank-side hold and reverses on its own within 5 to 7
             business days. Send us the reference and we will chase it.
           </p>
@@ -319,18 +319,18 @@ export function ProcessingClient() {
         }}
       />
 
-      <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-4 py-16">
+      <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
         <div className="w-full max-w-md">
-          <div className="mb-8 flex justify-center">
+          <div className="mb-5 flex justify-center sm:mb-8">
             <Logo href={null} />
           </div>
 
           <div className="overflow-hidden border border-hairline bg-surface">
-            <div className="peacock-surface px-6 py-8 text-center">
+            <div className="peacock-surface px-4 py-6 text-center sm:px-6 sm:py-8">
               <motion.div
                 initial={reduce ? false : { scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="mx-auto flex h-16 w-16 items-center justify-center border border-white/20 bg-white/10"
+                className="mx-auto flex h-14 w-14 items-center justify-center border border-white/20 bg-white/10 sm:h-16 sm:w-16"
               >
                 <AnimatePresence mode="wait" initial={false}>
                   {complete ? (
@@ -349,19 +349,19 @@ export function ProcessingClient() {
                 </AnimatePresence>
               </motion.div>
 
-              <h1 className="mt-5 font-display text-[22px] tracking-[-0.02em] text-white">
+              <h1 className="mt-4 font-display text-[18px] tracking-[-0.02em] text-white sm:mt-5 sm:text-[22px]">
                 {stage.title}
               </h1>
-              <p className="mt-1.5 text-[13px] text-white/60">{stage.detail}</p>
+              <p className="mt-1.5 text-[12.5px] text-white/60 sm:text-[13px]">{stage.detail}</p>
 
               {amount !== null && (
-                <p className="mt-4 font-display text-[26px] leading-none text-white">
+                <p className="mt-3 font-display text-[22px] leading-none text-white sm:mt-4 sm:text-[26px]">
                   {formatINR(amount)}
                 </p>
               )}
             </div>
 
-            <div className="space-y-3 px-6 py-6">
+            <div className="space-y-3 px-4 py-5 sm:px-6 sm:py-6">
               <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">
                 <Lock size={14} className="mt-0.5 shrink-0 text-brand-600" />
                 Your card and UPI details are entered on Razorpay&apos;s secure page. They never

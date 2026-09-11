@@ -78,7 +78,7 @@ export default async function LoginPage({
       {oauthError && (
         <p
           role="alert"
-          className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700"
+          className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
         >
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           {oauthError}

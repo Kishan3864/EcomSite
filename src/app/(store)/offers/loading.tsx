@@ -2,7 +2,7 @@ import { BandHeaderSkeleton, ProductGridSkeleton } from "@/components/ui/skeleto
 
 export default function Loading() {
   return (
-    <div className="container-page py-14 sm:py-20">
+    <div className="container-page py-7 sm:py-20">
       <BandHeaderSkeleton />
       <ProductGridSkeleton count={10} columns={5} />
     </div>

@@ -44,64 +44,78 @@ export function AccountOverview({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <header>
-        <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
           Hello, {name.split(" ")[0]}
         </h1>
-        <p className="mt-2 text-[14px] text-ink-600">
+        <p className="mt-1.5 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
           Everything about your orders, returns and saved details lives here.
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Phones lay each tile out sideways, icon beside the figure, so the four
+          fit in two short rows; from sm up they stand as four columns. */}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
         {stats.map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}
-            className="group rounded-xl border border-hairline bg-surface p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md"
+            className="tap group flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md sm:block sm:p-4"
           >
-            <stat.icon size={17} className="text-brand-600" />
-            <p className="mt-3 font-display text-[26px] leading-none tabular-nums text-ink-950">
-              {stat.value}
-            </p>
-            <p className="mt-1.5 text-[12px] text-ink-500">{stat.label}</p>
+            <stat.icon size={17} className="shrink-0 text-brand-600" />
+            <div className="min-w-0 sm:mt-3">
+              <p className="font-display text-[20px] leading-none tabular-nums text-ink-950 sm:text-[26px]">
+                {stat.value}
+              </p>
+              <p className="mt-1 text-[11.5px] text-ink-500 sm:mt-1.5 sm:text-[12px]">
+                {stat.label}
+              </p>
+            </div>
           </Link>
         ))}
       </div>
 
       {latest && (
         <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
-          <header className="flex items-center justify-between gap-3 border-b border-hairline px-5 py-4">
-            <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+          <header className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
+            <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
               Latest order
             </h2>
             <Link
               href="/account/orders"
-              className="inline-flex items-center gap-1 text-[12.5px] font-semibold text-brand-700 hover:underline"
+              className="-my-2 inline-flex items-center gap-1 py-2 text-[12px] font-semibold text-brand-700 hover:underline sm:my-0 sm:py-0 sm:text-[12.5px]"
             >
               All orders <ArrowRight size={13} />
             </Link>
           </header>
 
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-hairline bg-brand-50 px-5 py-3.5">
-            <div>
-              <p className="font-mono text-[13px] font-semibold text-ink-950">{latest.number}</p>
-              <p className="text-[12px] text-ink-600">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline bg-brand-50 px-4 py-3 sm:gap-4 sm:px-5 sm:py-3.5">
+            <div className="min-w-0">
+              <p className="font-mono text-[12.5px] font-semibold text-ink-950 sm:text-[13px]">
+                {latest.number}
+              </p>
+              <p className="text-[11.5px] text-ink-600 sm:text-[12px]">
                 Placed {formatDate(latest.placedAt, "short")} ·{" "}
                 <span className="font-semibold text-brand-800">
                   {statusLabel(latest.status)}
                 </span>
               </p>
             </div>
-            <Link href={`/track/${latest.id}`} className={buttonClasses("primary", "sm")}>
+            <Link
+              href={`/track/${latest.id}`}
+              className={buttonClasses("primary", "sm", "h-10 sm:h-9")}
+            >
               Track order
             </Link>
           </div>
 
           <ul className="divide-y divide-hairline">
             {latest.lines.map((line) => (
-              <li key={line.id} className="flex items-center gap-3.5 px-5 py-3.5">
+              <li
+                key={line.id}
+                className="flex items-center gap-3 px-4 py-3 sm:gap-3.5 sm:px-5 sm:py-3.5"
+              >
                 <Link
                   href={`/p/${line.slug}`}
                   className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-ink-100"
@@ -111,15 +125,15 @@ export function AccountOverview({
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/p/${line.slug}`}
-                    className="line-clamp-1 text-[13.5px] font-medium text-ink-950 hover:text-brand-700"
+                    className="line-clamp-1 text-[13px] font-medium text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
                   >
                     {line.title}
                   </Link>
-                  <p className="text-[12px] text-ink-500">
+                  <p className="text-[11.5px] text-ink-500 sm:text-[12px]">
                     {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty {line.quantity}
                   </p>
                 </div>
-                <p className="shrink-0 text-[13.5px] font-semibold tabular-nums text-ink-950">
+                <p className="shrink-0 text-[13px] font-semibold tabular-nums text-ink-950 sm:text-[13.5px]">
                   {formatINR(line.price * line.quantity)}
                 </p>
               </li>
@@ -128,14 +142,15 @@ export function AccountOverview({
         </section>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <section className="rounded-xl border border-hairline bg-surface p-5">
-          <h2 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+      {/* grid-cols-1 so an unbroken address line wraps rather than widening the page. */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+        <section className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
+          <h2 className="mb-2.5 flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-3 sm:text-[12px]">
             <MapPin size={14} className="text-brand-600" />
             Default address
           </h2>
           {addresses[0] ? (
-            <p className="text-[13px] leading-relaxed text-ink-600">
+            <p className="break-words text-[12.5px] leading-relaxed text-ink-600 sm:text-[13px]">
               <strong className="font-semibold text-ink-900">{addresses[0].fullName}</strong>
               <br />
               {addresses[0].line1}
@@ -144,38 +159,38 @@ export function AccountOverview({
               {addresses[0].city}, {addresses[0].state} {addresses[0].pincode}
             </p>
           ) : (
-            <p className="text-[13px] text-ink-500">No address saved yet.</p>
+            <p className="text-[12.5px] text-ink-500 sm:text-[13px]">No address saved yet.</p>
           )}
           <Link
             href="/account/addresses"
-            className="mt-3 inline-block text-[12.5px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+            className="mt-1 inline-block py-2 text-[12px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:mt-3 sm:py-0 sm:text-[12.5px]"
           >
             Manage addresses
           </Link>
         </section>
 
-        <section className="rounded-xl border border-hairline bg-surface p-5">
-          <h2 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+        <section className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
+          <h2 className="mb-2.5 flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-3 sm:text-[12px]">
             <RotateCcw size={14} className="text-brand-600" />
             Recent returns
           </h2>
           {returns.length > 0 ? (
             <ul className="space-y-2">
               {returns.slice(0, 2).map((r) => (
-                <li key={r.id} className="text-[13px] text-ink-600">
+                <li key={r.id} className="text-[12.5px] text-ink-600 sm:text-[13px]">
                   <span className="font-medium text-ink-900">{r.productTitle}</span>
-                  <span className="block text-[12px] text-ink-500">
+                  <span className="block text-[11.5px] text-ink-500 sm:text-[12px]">
                     {statusLabel(r.status)} · {formatINR(r.refundAmount)}
                   </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-[13px] text-ink-500">No returns in progress.</p>
+            <p className="text-[12.5px] text-ink-500 sm:text-[13px]">No returns in progress.</p>
           )}
           <Link
             href="/account/returns"
-            className="mt-3 inline-block text-[12.5px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+            className="mt-1 inline-block py-2 text-[12px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:mt-3 sm:py-0 sm:text-[12.5px]"
           >
             View all returns
           </Link>

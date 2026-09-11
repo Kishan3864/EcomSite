@@ -67,17 +67,19 @@ export default async function SearchPage({
       emptyVariant="no-results"
     >
       {!term && (
-        <div className="mb-8 space-y-7">
+        // Each list is one swipeable row on phones instead of a tall wrapped
+        // stack, bleeding to the screen edge by exactly the page gutter.
+        <div className="mb-5 space-y-4 sm:mb-8 sm:space-y-7">
           <section>
-            <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3">
               Popular searches
             </h2>
-            <ul className="flex flex-wrap gap-2">
+            <ul className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
               {popularSearches.map((s) => (
-                <li key={s}>
+                <li key={s} className="shrink-0">
                   <Link
                     href={`/search?q=${encodeURIComponent(s)}`}
-                    className="inline-block rounded-full border border-ink-200 bg-surface px-3.5 py-2 text-[12.5px] text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700"
+                    className="tap inline-block whitespace-nowrap rounded-full border border-ink-200 bg-surface px-3 py-2 text-[12px] text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700 sm:px-3.5 sm:text-[12.5px]"
                   >
                     {s}
                   </Link>
@@ -87,15 +89,15 @@ export default async function SearchPage({
           </section>
 
           <section>
-            <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3">
               Or browse a department
             </h2>
-            <ul className="flex flex-wrap gap-2">
+            <ul className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
               {categories.map((c) => (
-                <li key={c.slug}>
+                <li key={c.slug} className="shrink-0">
                   <Link
                     href={`/c/${c.slug}`}
-                    className="inline-block rounded-full bg-ink-100 px-3.5 py-2 text-[12.5px] font-medium text-ink-800 transition-colors hover:bg-brand-100 hover:text-brand-800"
+                    className="tap inline-block whitespace-nowrap rounded-full bg-ink-100 px-3 py-2 text-[12px] font-medium text-ink-800 transition-colors hover:bg-brand-100 hover:text-brand-800 sm:px-3.5 sm:text-[12.5px]"
                   >
                     {c.name}
                   </Link>

@@ -36,7 +36,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Form action={action} className="rounded-2xl border border-hairline bg-surface p-6">
+      <Form action={action} className="rounded-2xl border border-hairline bg-surface p-4 sm:p-6">
         <Field
           label="Order number"
           htmlFor="order-number"
@@ -72,8 +72,8 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
       </Form>
 
       {orders.length > 0 && (
-        <section className="mt-8">
-          <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+        <section className="mt-6 sm:mt-8">
+          <h2 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3">
             Your recent orders
           </h2>
           <ul className="space-y-2">
@@ -81,7 +81,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
               <li key={order.id}>
                 <Link
                   href={`/track/${order.id}`}
-                  className="flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3.5 transition-colors hover:border-brand-400"
+                  className="tap flex items-center gap-3 rounded-xl border border-hairline bg-surface p-3 transition-colors hover:border-brand-400 sm:p-3.5"
                 >
                   <span className="relative h-12 w-11 shrink-0 overflow-hidden rounded-lg bg-ink-100">
                     <Image
@@ -93,7 +93,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
                     />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-mono text-[12.5px] font-semibold text-ink-950">
+                    <span className="block font-mono text-[12.5px] font-semibold text-ink-950 wrap-anywhere">
                       {order.number}
                     </span>
                     <span className="block truncate text-[12px] text-ink-500">
@@ -160,16 +160,18 @@ export function TrackDetail({ order }: { order: Order | null }) {
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         className="overflow-hidden rounded-2xl border border-hairline bg-surface"
       >
-        <div className="peacock-surface p-6 sm:p-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-300">
+        <div className="peacock-surface p-4 sm:p-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-gold-300 wrap-anywhere">
             {order.number}
           </p>
-          <h1 className="mt-2 font-display text-[28px] leading-tight tracking-[-0.025em] text-white sm:text-[34px]">
+          <h1 className="mt-1.5 font-display text-[22px] leading-tight tracking-[-0.025em] text-white sm:mt-2 sm:text-[34px]">
             {copy.title}
           </h1>
-          <p className="mt-2 max-w-lg text-[14px] leading-relaxed text-white/65">{copy.body}</p>
+          <p className="mt-1.5 max-w-lg text-[13.5px] leading-relaxed text-white/65 sm:mt-2 sm:text-[14px]">
+            {copy.body}
+          </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="mt-4 grid gap-2 sm:mt-6 sm:grid-cols-3 sm:gap-4">
             {[
               {
                 icon: Truck,
@@ -183,26 +185,29 @@ export function TrackDetail({ order }: { order: Order | null }) {
                 value: `${order.address.city} ${order.address.pincode}`,
               },
             ].map((item) => (
-              <div key={item.label} className="rounded-xl bg-white/10 p-3.5 backdrop-blur">
+              <div key={item.label} className="min-w-0 rounded-xl bg-white/10 p-3 backdrop-blur sm:p-3.5">
                 <p className="flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-white/50">
                   <item.icon size={12} /> {item.label}
                 </p>
-                <p className="mt-1 text-[13.5px] font-semibold text-white">{item.value}</p>
+                {/* The courier line carries the AWB, one long unbroken code. */}
+                <p className="mt-1 text-[13px] font-semibold text-white wrap-anywhere sm:text-[13.5px]">
+                  {item.value}
+                </p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <section>
-            <h2 className="mb-5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+        <div className="grid gap-6 p-4 sm:gap-8 sm:p-8 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="min-w-0">
+            <h2 className="mb-4 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-5">
               Shipment progress
             </h2>
             <TrackingTimeline events={order.tracking} />
           </section>
 
-          <aside className="space-y-4">
-            <section className="rounded-xl border border-hairline p-4">
+          <aside className="min-w-0 space-y-3 sm:space-y-4">
+            <section className="rounded-xl border border-hairline p-3.5 sm:p-4">
               <h2 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">
                 In this shipment
               </h2>
@@ -231,11 +236,11 @@ export function TrackDetail({ order }: { order: Order | null }) {
               </ul>
             </section>
 
-            <section className="rounded-xl border border-hairline p-4">
+            <section className="rounded-xl border border-hairline p-3.5 sm:p-4">
               <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">
                 Delivery address
               </h2>
-              <p className="text-[12.5px] leading-relaxed text-ink-600">
+              <p className="text-[12.5px] leading-relaxed text-ink-600 wrap-break-word">
                 <strong className="font-semibold text-ink-900">{order.address.fullName}</strong>
                 <br />
                 {order.address.line1}
@@ -249,13 +254,18 @@ export function TrackDetail({ order }: { order: Order | null }) {
             </section>
 
             <div className="flex flex-col gap-2">
+              {/* Narrower padding on phones: the help label is about as wide as
+                  the column at 320px and these buttons never wrap. */}
               <Link
                 href={`/account/orders/${order.id}`}
-                className={buttonClasses("outline", "md", "w-full")}
+                className={buttonClasses("outline", "md", "w-full px-4 sm:px-6")}
               >
                 Order details
               </Link>
-              <Link href="/contact" className={buttonClasses("ghost", "md", "w-full")}>
+              <Link
+                href="/contact"
+                className={buttonClasses("ghost", "md", "w-full px-4 sm:px-6")}
+              >
                 Need help with this order?
               </Link>
             </div>

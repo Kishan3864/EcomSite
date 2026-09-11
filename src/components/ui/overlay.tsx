@@ -141,8 +141,10 @@ export function Drawer({
               className={cn(
                 "absolute flex flex-col bg-canvas shadow-xl",
                 meta.class,
+                // Side drawers already fill a phone edge to edge (w-full up to
+                // 28rem); a bottom sheet stops short of the top edge.
                 side !== "bottom" && "w-full max-w-md",
-                side === "bottom" && "max-h-[88vh]",
+                side === "bottom" && "max-h-[90dvh]",
                 className,
               )}
             >
@@ -150,25 +152,38 @@ export function Drawer({
                 <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-ink-300" />
               )}
               {title && (
-                <header className="flex shrink-0 items-start justify-between gap-4 border-b border-hairline px-5 py-4">
-                  <div>
-                    <h2 className="font-display text-lg tracking-[-0.01em] text-ink-950">{title}</h2>
+                <header className="flex shrink-0 items-start justify-between gap-4 border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
+                  <div className="min-w-0">
+                    <h2 className="font-display text-[16px] tracking-[-0.01em] text-ink-950 sm:text-lg">
+                      {title}
+                    </h2>
                     {description && (
-                      <p className="mt-0.5 text-xs text-ink-500">{description}</p>
+                      <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-xs">{description}</p>
                     )}
                   </div>
+                  {/* The negative margin cancels the padding, so the icon sits where
+                      it always did while a thumb gets a 40px-plus target. */}
                   <button
                     onClick={onClose}
                     aria-label="Close"
-                    className="-m-1.5 rounded-lg p-1.5 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900"
+                    className="tap -m-3 shrink-0 rounded-lg p-3 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900 sm:-m-1.5 sm:p-1.5"
                   >
                     <X size={18} />
                   </button>
                 </header>
               )}
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+              {/* Without a footer the content runs to the bottom edge, so it
+                  takes the home-indicator clearance itself. */}
+              <div
+                className={cn(
+                  "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+                  !footer && "pb-safe",
+                )}
+              >
+                {children}
+              </div>
               {footer && (
-                <div className="shrink-0 border-t border-hairline bg-surface px-5 py-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+                <div className="shrink-0 border-t border-hairline bg-surface px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:px-5 sm:py-4 sm:pb-[calc(env(safe-area-inset-bottom)+1rem)]">
                   {footer}
                 </div>
               )}
@@ -224,15 +239,17 @@ export function Modal({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 380, damping: 34 }}
+              // A bottom sheet on phones, clear of the home indicator; a centred
+              // dialog from sm up.
               className={cn(
-                "relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl bg-canvas shadow-xl sm:max-w-2xl sm:rounded-2xl",
+                "relative flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-canvas pb-safe shadow-xl sm:max-h-[92vh] sm:max-w-2xl sm:rounded-2xl sm:pb-0",
                 className,
               )}
             >
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="absolute right-3 top-3 z-10 rounded-full bg-surface/90 p-2 text-ink-600 shadow-sm backdrop-blur transition-colors hover:text-ink-950"
+                className="tap absolute right-2 top-2 z-10 rounded-full bg-surface/90 p-3 text-ink-600 shadow-sm backdrop-blur transition-colors hover:text-ink-950 sm:right-3 sm:top-3 sm:p-2"
               >
                 <X size={16} />
               </button>

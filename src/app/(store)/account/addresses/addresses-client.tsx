@@ -60,27 +60,27 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <header>
-        <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
           Saved addresses
         </h1>
-        <p className="mt-2 text-[14px] text-ink-600">
+        <p className="mt-1.5 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
           Add the places you order to most. You can pick any of them at checkout.
         </p>
         {error && (
-          <p role="alert" className="mt-3 text-[13px] font-medium text-sale-600">
+          <p role="alert" className="mt-3 text-[12.5px] font-medium text-sale-600 sm:text-[13px]">
             {error}
           </p>
         )}
       </header>
 
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
         {addresses.map((address) => (
-          <li key={address.id}>
+          <li key={address.id} className="min-w-0">
             {editing?.id === address.id ? (
-              <div className="rounded-xl border border-brand-700 bg-surface p-5">
-                <h2 className="mb-4 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+              <div className="rounded-xl border border-brand-700 bg-surface p-4 sm:p-5">
+                <h2 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-4 sm:text-[12px]">
                   Edit address
                 </h2>
                 <AddressForm
@@ -91,15 +91,17 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
                 />
               </div>
             ) : (
-              <div className="flex h-full flex-col rounded-xl border border-hairline bg-surface p-4">
+              <div className="flex h-full flex-col rounded-xl border border-hairline bg-surface p-3.5 sm:p-4">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="rounded-md bg-ink-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-600">
                     {address.label}
                   </span>
                   {address.isDefault && <Badge tone="success">Default</Badge>}
                 </div>
-                <p className="text-[13.5px] font-semibold text-ink-950">{address.fullName}</p>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-ink-600">
+                <p className="break-words text-[13px] font-semibold text-ink-950 sm:text-[13.5px]">
+                  {address.fullName}
+                </p>
+                <p className="mt-1 break-words text-[12.5px] leading-relaxed text-ink-600">
                   {address.line1}
                   {address.line2 ? `, ${address.line2}` : ""}
                   {address.landmark ? `, ${address.landmark}` : ""}
@@ -108,8 +110,14 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
                   <br />
                   {address.phone}
                 </p>
-                <div className="mt-auto flex flex-wrap gap-2 pt-3">
-                  <Button size="xs" variant="outline" onClick={() => setEditing(address)}>
+                {/* Taller on a phone so each action is a comfortable tap. */}
+                <div className="mt-auto flex flex-wrap gap-2 pt-2.5 sm:pt-3">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    onClick={() => setEditing(address)}
+                    className="h-10 sm:h-8"
+                  >
                     <Pencil size={12} /> Edit
                   </Button>
                   {!address.isDefault && (
@@ -117,6 +125,7 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
                       size="xs"
                       variant="ghost"
                       onClick={() => persist({ ...address, isDefault: true }, "Default address updated")}
+                      className="h-10 sm:h-8"
                     >
                       <Star size={12} /> Make default
                     </Button>
@@ -125,7 +134,7 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
                     <Button
                       size="xs"
                       variant="ghost"
-                      className="text-sale-600"
+                      className="h-10 text-sale-600 sm:h-8"
                       onClick={() => drop(address)}
                     >
                       <Trash2 size={12} /> Remove
@@ -147,8 +156,8 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="rounded-xl border border-brand-700 bg-surface p-5">
-              <h2 className="mb-4 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+            <div className="rounded-xl border border-brand-700 bg-surface p-4 sm:p-5">
+              <h2 className="mb-3 flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-4 sm:text-[12px]">
                 <MapPin size={14} className="text-brand-600" /> New address
               </h2>
               <AddressForm
@@ -160,7 +169,7 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-ink-300 bg-surface/60 py-4 text-[13.5px] font-semibold text-brand-700 transition-colors hover:border-brand-500 hover:bg-brand-50"
+            className="tap flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-ink-300 bg-surface/60 py-3.5 text-[13px] font-semibold text-brand-700 transition-colors hover:border-brand-500 hover:bg-brand-50 sm:py-4 sm:text-[13.5px]"
           >
             <Plus size={16} /> Add a new address
           </button>

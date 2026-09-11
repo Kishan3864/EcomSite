@@ -42,17 +42,21 @@ export function CouponCodeCard({ offer }: { offer: Offer }) {
       <span className="absolute -left-2 top-1/2 h-4 w-4 rounded-full bg-canvas" aria-hidden />
       <span className="absolute -right-2 top-1/2 h-4 w-4 rounded-full bg-canvas" aria-hidden />
 
-      <div className="flex-1 p-5">
+      <div className="min-w-0 flex-1 p-4 sm:p-5">
         <span
           className="inline-block rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-white"
           style={{ backgroundColor: offer.accent }}
         >
           {TYPE_LABEL[offer.type]}
         </span>
-        <h3 className="mt-3 text-[16px] font-semibold leading-snug text-ink-950">{offer.title}</h3>
-        <p className="mt-2 text-[13px] leading-relaxed text-ink-600">{offer.description}</p>
+        <h3 className="mt-2.5 text-[15px] font-semibold leading-snug text-ink-950 sm:mt-3 sm:text-[16px]">
+          {offer.title}
+        </h3>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[13px]">
+          {offer.description}
+        </p>
 
-        <ul className="mt-4 space-y-1 text-[12px] text-ink-500">
+        <ul className="mt-3 space-y-1 text-[11.5px] text-ink-500 sm:mt-4 sm:text-[12px]">
           <li>Minimum order {formatINR(offer.minSpend)}</li>
           {offer.maxDiscount && <li>Maximum discount {formatINR(offer.maxDiscount)}</li>}
           <li>Valid until {formatDate(offer.expiresAt, "short")}</li>
@@ -71,15 +75,15 @@ export function CouponCodeCard({ offer }: { offer: Offer }) {
         </ul>
       </div>
 
-      <div className="border-t border-dashed border-ink-300 p-4">
+      <div className="border-t border-dashed border-ink-300 p-3 sm:p-4">
         <button
           onClick={copy}
-          className="flex w-full items-center justify-between gap-3 rounded-lg bg-ink-50 px-4 py-3 transition-colors hover:bg-ink-100"
+          className="tap flex min-h-11 w-full items-center justify-between gap-3 rounded-lg bg-ink-50 px-3.5 py-2.5 transition-colors hover:bg-ink-100 sm:px-4 sm:py-3"
         >
-          <code className="font-mono text-[14px] font-bold tracking-[0.08em] text-ink-950">
+          <code className="min-w-0 break-all text-left font-mono text-[13.5px] font-bold tracking-[0.08em] text-ink-950 sm:text-[14px]">
             {offer.code}
           </code>
-          <span className="flex items-center gap-1.5 text-[12px] font-semibold text-brand-700">
+          <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-semibold text-brand-700">
             {copied ? (
               <>
                 <Check size={13} /> Copied

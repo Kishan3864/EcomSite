@@ -40,23 +40,25 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
   }, [orders, filter]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <header>
-        <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
           My orders
         </h1>
-        <p className="mt-2 text-[14px] text-ink-600">
+        <p className="mt-1.5 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
           Every order on your account, newest first.
         </p>
       </header>
 
-      <div className="rail gap-2">
+      {/* Edge to edge on phones, so a chip scrolls off the screen rather than
+          being clipped at the gutter. */}
+      <div className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:px-0">
         {FILTERS.map((f) => (
           <button
             key={f.id}
             onClick={() => setFilter(f.id)}
             className={cn(
-              "rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors",
+              "tap h-10 whitespace-nowrap rounded-full border px-3.5 py-2 text-[12px] font-medium transition-colors sm:h-auto sm:text-[12.5px]",
               filter === f.id
                 ? "border-brand-900 bg-brand-900 text-white"
                 : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
@@ -72,6 +74,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
           icon={<Package size={26} />}
           title="No orders here yet"
           body="When you place an order it will appear here with live tracking and your invoice."
+          className="px-4 py-8 sm:px-6 sm:py-16"
           action={
             <Link href="/products" className={buttonClasses("primary", "md")}>
               Start shopping
@@ -79,7 +82,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
           }
         />
       ) : (
-        <ul className="space-y-4">
+        <ul className="space-y-3 sm:space-y-4">
           {filtered.map((order, i) => (
             <motion.li
               key={order.id}
@@ -88,30 +91,33 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
               transition={{ duration: 0.35, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden rounded-xl border border-hairline bg-surface"
             >
-              <header className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline bg-canvas px-5 py-3.5">
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+              {/* On a phone the status holds the top-right corner and the figures
+                  wrap beside it. min-w-min keeps the order number whole: at 320px a
+                  long status cannot share its line, so the badge drops below. */}
+              <header className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5 border-b border-hairline bg-canvas px-4 py-2.5 sm:items-center sm:gap-3 sm:px-5 sm:py-3.5">
+                <div className="flex min-w-min flex-1 flex-wrap items-center gap-x-4 gap-y-1 sm:flex-initial sm:gap-x-5">
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Order</p>
-                    <p className="font-mono text-[12.5px] font-semibold text-ink-950">
+                    <p className="font-mono text-[12px] font-semibold text-ink-950 sm:text-[12.5px]">
                       {order.number}
                     </p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Placed</p>
-                    <p className="text-[12.5px] text-ink-800">
+                    <p className="text-[12px] text-ink-800 sm:text-[12.5px]">
                       {formatDate(order.placedAt, "short")}
                     </p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Total</p>
-                    <p className="text-[12.5px] font-semibold tabular-nums text-ink-950">
+                    <p className="text-[12px] font-semibold tabular-nums text-ink-950 sm:text-[12.5px]">
                       {formatINR(order.totals.total)}
                     </p>
                   </div>
                 </div>
                 <span
                   className={cn(
-                    "rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.06em]",
+                    "shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.06em]",
                     STATUS_TONE[order.status] ?? "bg-ink-100 text-ink-600",
                   )}
                 >
@@ -121,12 +127,21 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
 
               <ul className="divide-y divide-hairline">
                 {order.lines.map((line) => (
-                  <li key={line.id} className="flex items-center gap-3.5 px-5 py-4">
+                  <li
+                    key={line.id}
+                    className="flex items-center gap-3 px-4 py-3 sm:gap-3.5 sm:px-5 sm:py-4"
+                  >
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-[68px] w-[58px] shrink-0 overflow-hidden rounded-lg bg-ink-100"
+                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-[68px] sm:w-[58px]"
                     >
-                      <Image src={line.image} alt="" fill sizes="58px" className="object-cover" />
+                      <Image
+                        src={line.image}
+                        alt=""
+                        fill
+                        sizes="(min-width: 640px) 58px, 52px"
+                        className="object-cover"
+                      />
                     </Link>
                     <div className="min-w-0 flex-1">
                       <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
@@ -134,11 +149,11 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                       </p>
                       <Link
                         href={`/p/${line.slug}`}
-                        className="line-clamp-1 text-[13.5px] font-medium text-ink-950 hover:text-brand-700"
+                        className="line-clamp-1 text-[13px] font-medium text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
                       >
                         {line.title}
                       </Link>
-                      <p className="text-[12px] text-ink-500">
+                      <p className="text-[11.5px] text-ink-500 sm:text-[12px]">
                         {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty {line.quantity} ·{" "}
                         {formatINR(line.price * line.quantity)}
                       </p>
@@ -160,20 +175,24 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                 ))}
               </ul>
 
-              <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline px-5 py-3.5">
-                <p className="text-[12.5px] text-ink-600">
+              {/* Phones give the two actions a full-width row of their own. */}
+              <footer className="flex flex-wrap items-center justify-between gap-2.5 border-t border-hairline px-4 py-3 sm:gap-3 sm:px-5 sm:py-3.5">
+                <p className="text-[12px] text-ink-600 sm:text-[12.5px]">
                   {order.status === "delivered"
                     ? `Delivered on ${formatDate(order.estimatedDelivery, "short")}`
                     : `Arriving by ${formatDate(order.estimatedDelivery, "day")}`}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex w-full gap-2 sm:w-auto sm:flex-wrap">
                   <Link
                     href={`/account/orders/${order.id}`}
-                    className={buttonClasses("outline", "sm")}
+                    className={buttonClasses("outline", "sm", "h-10 flex-1 sm:h-9 sm:flex-initial")}
                   >
                     View details
                   </Link>
-                  <Link href={`/track/${order.id}`} className={buttonClasses("primary", "sm")}>
+                  <Link
+                    href={`/track/${order.id}`}
+                    className={buttonClasses("primary", "sm", "h-10 flex-1 sm:h-9 sm:flex-initial")}
+                  >
                     Track <ArrowRight size={14} />
                   </Link>
                 </div>

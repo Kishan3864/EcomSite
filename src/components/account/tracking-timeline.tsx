@@ -29,7 +29,7 @@ export function TrackingTimeline({ events }: { events: OrderTrackingEvent[] }) {
       {events.map((event, i) => {
         const isCurrent = event.done && !events[i + 1]?.done;
         return (
-          <li key={event.status} className="relative pb-7 last:pb-0">
+          <li key={event.status} className="relative pb-5 last:pb-0 sm:pb-7">
             <motion.span
               initial={reduce ? false : { scale: 0.5, opacity: 0 }}
               whileInView={{ scale: 1, opacity: 1 }}
@@ -53,7 +53,7 @@ export function TrackingTimeline({ events }: { events: OrderTrackingEvent[] }) {
             <div>
               <p
                 className={cn(
-                  "text-[14px] font-semibold",
+                  "text-[13.5px] font-semibold sm:text-[14px]",
                   event.done ? "text-ink-950" : "text-ink-400",
                 )}
               >

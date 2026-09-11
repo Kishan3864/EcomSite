@@ -26,7 +26,7 @@ export function ProductCard({
   priority = false,
   layout = "grid",
   className,
-  sizes = "(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 45vw",
+  sizes = "(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw",
 }: {
   product: ProductCardModel;
   priority?: boolean;
@@ -58,13 +58,14 @@ export function ProductCard({
         className={cn(
           "group relative flex flex-col bg-surface transition-colors duration-300",
           "hover:bg-ink-50/60",
-          layout === "rail" && "w-[190px] sm:w-[236px]",
+          // About 2.4 cards across a 390px phone, so the rail reads as scrollable.
+          layout === "rail" && "w-[152px] sm:w-[236px]",
           className,
         )}
       >
         <Link
           href={`/p/${product.slug}`}
-          className="relative block aspect-[3/4] overflow-hidden bg-ink-100"
+          className="tap relative block aspect-[3/4] overflow-hidden bg-ink-100"
         >
           <Image
             src={product.image}
@@ -91,7 +92,7 @@ export function ProductCard({
 
           {/* Discount reads as a typographic mark in the corner, not a sticker. */}
           {off > 0 && !outOfStock && (
-            <span className="absolute left-0 top-0 bg-ink-950 px-2.5 py-1.5 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-white">
+            <span className="absolute left-0 top-0 bg-ink-950 px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-white sm:px-2.5 sm:py-1.5">
               {off}% off
             </span>
           )}
@@ -104,7 +105,8 @@ export function ProductCard({
             </div>
           )}
 
-          {/* Utilities stay square and appear only on intent. */}
+          {/* Utilities stay square and appear only on intent where a pointer
+              can hover; a touch screen has no hover, so there they stay put. */}
           <div className="absolute right-0 top-0 flex flex-col">
             <button
               type="button"
@@ -116,10 +118,12 @@ export function ProductCard({
                 toggleWishlist(fromCard(product));
               }}
               className={cn(
-                "flex h-9 w-9 items-center justify-center transition-colors duration-200",
+                // Phones: a 40px target around a 32px square kept flush in the
+                // corner; the padding sits on the inner sides, outside the paint.
+                "flex h-10 w-10 items-center justify-center bg-clip-content pb-2 pl-2 transition-colors duration-200 sm:h-9 sm:w-9 sm:p-0",
                 wished
                   ? "bg-sale-600 text-white"
-                  : "bg-surface/85 text-ink-600 opacity-0 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100",
+                  : "bg-surface/85 text-ink-600 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0",
               )}
             >
               <Heart size={15} className={wished ? "fill-current" : undefined} />
@@ -132,14 +136,14 @@ export function ProductCard({
                 e.stopPropagation();
                 setQuickView(true);
               }}
-              className="hidden h-9 w-9 items-center justify-center bg-surface/85 text-ink-600 opacity-0 transition-colors duration-200 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:flex"
+              className="hidden h-9 w-9 items-center justify-center bg-surface/85 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:flex [@media(hover:hover)]:opacity-0"
             >
               <Eye size={15} />
             </button>
           </div>
 
           {product.colors && product.colors.length > 0 && (
-            <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
+            <div className="absolute bottom-2 left-2 flex items-center gap-1.5 sm:bottom-2.5 sm:left-2.5">
               {product.colors.slice(0, 4).map(({ name, hex }) => (
                 <span
                   key={name}
@@ -151,31 +155,36 @@ export function ProductCard({
           )}
         </Link>
 
-        <div className="flex flex-1 flex-col px-3.5 pb-3.5 pt-4">
-          <p className="mb-1.5 truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-700">
+        <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-4">
+          <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-700 sm:mb-1.5">
             {product.brand}
           </p>
 
-          <h3 className="text-[13.5px] font-medium leading-[1.4] tracking-[-0.005em] text-ink-900">
+          <h3 className="text-[12.5px] font-medium leading-[1.35] tracking-[-0.005em] text-ink-900 sm:text-[13.5px] sm:leading-[1.4]">
             <Link href={`/p/${product.slug}`} className="line-clamp-2 hover:text-brand-700">
               {product.title}
             </Link>
           </h3>
 
           {/* Price in the display face — the one place the card raises its voice. */}
-          <div className="mt-2.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="font-display text-[19px] leading-none tracking-[-0.02em] text-ink-950">
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 sm:mt-2.5 sm:gap-x-2">
+            <span className="font-display text-[16px] leading-none tracking-[-0.02em] text-ink-950 sm:text-[19px]">
               {formatINR(product.price)}
             </span>
             {product.mrp > product.price && (
-              <span className="text-[12px] leading-none text-ink-400 line-through">
+              <span className="text-[11.5px] leading-none text-ink-400 line-through sm:text-[12px]">
                 {formatINR(product.mrp)}
               </span>
             )}
           </div>
 
-          <div className="mt-2.5 flex items-center gap-2.5">
-            <RatingChip value={product.rating} count={product.reviewCount} />
+          {/* Wraps on a narrow tile rather than pushing past its edge. */}
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:mt-2.5 sm:gap-x-2.5 lg:flex-nowrap">
+            <RatingChip
+              value={product.rating}
+              count={product.reviewCount}
+              className="text-[11px]/[14px] sm:text-xs"
+            />
             {product.soldCount ? (
               <span className="text-[11px] text-ink-400">
                 {formatCompact(product.soldCount)} sold
@@ -184,20 +193,20 @@ export function ProductCard({
           </div>
 
           {lowStock && (
-            <p className="mt-2 text-[11px] font-medium text-sale-600">
+            <p className="mt-1.5 text-[11px] font-medium text-sale-600 sm:mt-2">
               Only {product.stock} left
             </p>
           )}
 
           {/* One action, full width, square. It slides up on hover on desktop
               and is simply always there on touch. */}
-          <div className="mt-auto pt-3.5">
+          <div className="mt-auto pt-2.5 sm:pt-3.5">
             <button
               type="button"
               onClick={handleAdd}
               disabled={outOfStock}
               className={cn(
-                "relative flex h-10 w-full items-center justify-center gap-2 border text-[12px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
+                "tap relative flex h-10 w-full items-center justify-center gap-2 border text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[12px]",
                 outOfStock
                   ? "cursor-not-allowed border-ink-200 text-ink-400"
                   : added
@@ -213,7 +222,7 @@ export function ProductCard({
                     animate={{ opacity: 1, y: 0 }}
                     exit={reduce ? undefined : { opacity: 0, y: -4 }}
                     transition={{ duration: 0.18 }}
-                    className="inline-flex items-center gap-2"
+                    className="inline-flex items-center gap-1.5 sm:gap-2"
                   >
                     <Check size={14} /> Added
                   </motion.span>
@@ -224,7 +233,7 @@ export function ProductCard({
                     animate={{ opacity: 1, y: 0 }}
                     exit={reduce ? undefined : { opacity: 0, y: -4 }}
                     transition={{ duration: 0.18 }}
-                    className="inline-flex items-center gap-2"
+                    className="inline-flex items-center gap-1.5 sm:gap-2"
                   >
                     <ShoppingBag size={14} />
                     {outOfStock ? "Sold out" : "Add to bag"}

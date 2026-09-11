@@ -31,8 +31,12 @@ function SubscribeButton() {
   );
 }
 
-/** Writes a real subscriber row, which the admin inbox lists and exports. */
-export function NewsletterForm() {
+/**
+ * Writes a real subscriber row, which the admin inbox lists and exports.
+ * `welcomeEmail` says whether email is configured, so the thank-you line never
+ * promises a welcome note the server cannot send.
+ */
+export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolean }) {
   const [state, action] = useActionState(subscribe, {});
 
   if (state.ok) {
@@ -40,7 +44,9 @@ export function NewsletterForm() {
       <div className="w-full">
         <p className="flex items-center gap-2.5 rounded-xl border border-gold-400/40 bg-white/10 px-4 py-3.5 text-sm text-white">
           <Check size={17} className="shrink-0 text-gold-300" />
-          You are on the list. The next Dispatch goes out on Thursday.
+          {welcomeEmail
+            ? "Thank you for subscribing! If you are new here, a welcome note is on its way to your inbox."
+            : "Thank you for subscribing! You are on the list."}
         </p>
       </div>
     );

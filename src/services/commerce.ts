@@ -30,6 +30,9 @@ import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
 import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
 import { expireStalePendingOrders } from "./payment-core";
+import { after } from "next/server";
+import { mailConfigured, sendMail } from "@/lib/mail";
+import { buildWelcomeEmail } from "@/lib/emails/welcome";
 
 /**
  * Everything the storefront writes goes through here. Prices, stock and coupon
@@ -502,14 +505,54 @@ export async function submitContact(input: {
   return { ok: true };
 }
 
+/**
+ * Adds an address to the newsletter and, the first time only, sends it the
+ * welcome email. The answer is the same `{ ok: true }` whether the address was
+ * new or already subscribed, so the form cannot be used to find out who is on
+ * the list.
+ */
 export async function subscribeNewsletter(email: string, source = "footer"): Promise<ActionResult> {
   if (!rateLimit("newsletter:ip", await clientIp(), 5, 10 * 60_000)) return { ok: false, error: TOO_MANY };
-  if (!EMAIL.test(email)) return { ok: false, error: "Enter a valid email address." };
-  await db.newsletterSubscriber.upsert({
-    where: { email: email.toLowerCase().trim() },
-    create: { email: email.toLowerCase().trim(), source },
-    update: {},
-  });
+  const address = String(email ?? "").trim().toLowerCase();
+  if (!EMAIL.test(address) || address.length > 254) return { ok: false, error: "Enter a valid email address." };
+  // A public endpoint: the label is stored and listed in admin, so only a short tag is kept.
+  const origin = typeof source === "string" && /^[a-z0-9_-]{1,32}$/i.test(source) ? source : "footer";
+
+  const existing = await db.newsletterSubscriber.findUnique({ where: { email: address }, select: { id: true } });
+  if (existing) return { ok: true };
+
+  let created: { id: string };
+  try {
+    created = await db.newsletterSubscriber.create({
+      data: { email: address, source: origin },
+      select: { id: true },
+    });
+  } catch (error) {
+    // Two submissions racing for one address: the unique index keeps a single
+    // row, and whoever lost is simply already subscribed.
+    if ((error as { code?: string }).code === "P2002") return { ok: true };
+    throw error;
+  }
+
+  if (mailConfigured()) {
+    // After the response, so the form answers at once and a slow or failing
+    // SMTP server never holds it up. welcomedAt is set only once Gmail has
+    // accepted the message.
+    after(async () => {
+      try {
+        const sent = await sendMail({ to: address, ...buildWelcomeEmail(address) });
+        if (sent) {
+          await db.newsletterSubscriber.updateMany({
+            where: { id: created.id, welcomedAt: null },
+            data: { welcomedAt: new Date() },
+          });
+        }
+      } catch (error) {
+        console.error("[newsletter] welcome email failed", error instanceof Error ? error.message : error);
+      }
+    });
+  }
+
   return { ok: true };
 }
 

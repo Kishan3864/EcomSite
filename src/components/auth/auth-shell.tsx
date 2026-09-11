@@ -34,28 +34,33 @@ export function AuthShell({
 }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1fr_1.05fr]">
-      <div className="flex flex-col px-5 py-7 sm:px-10 lg:px-14">
-        <header className="flex items-center justify-between gap-4">
+      {/* The bottom inset keeps the support line clear of a phone's home bar. */}
+      <div className="flex flex-col px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-10 sm:py-7 lg:px-14">
+        <header className="flex items-center justify-between gap-3 sm:gap-4">
           <Logo href={null} size="sm" />
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-600 transition-colors hover:text-brand-700"
+            className="tap -mr-2 inline-flex h-10 items-center gap-1.5 px-2 text-[12.5px] font-medium text-ink-600 transition-colors hover:text-brand-700 sm:mr-0 sm:h-auto sm:px-0 sm:text-[13px]"
           >
             <ArrowLeft size={14} /> Back to the shop
           </Link>
         </header>
 
-        {/* The skip link lands here, past the mark and the way back out. */}
-        <main id="main" className="flex flex-1 items-center py-10 sm:py-14">
+        {/* The skip link lands here, past the mark and the way back out. On a
+            phone the form starts just under the header rather than floating in
+            the middle of a tall screen. */}
+        <main id="main" className="flex flex-1 items-start pt-6 pb-8 sm:items-center sm:py-14">
           <div className="mx-auto w-full max-w-md">
-            <h1 className="font-display text-[30px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:text-[36px]">
+            <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:text-[36px]">
               {title}
             </h1>
-            <p className="mt-2.5 text-[14.5px] leading-relaxed text-ink-600">{subtitle}</p>
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-600 sm:mt-2.5 sm:text-[14.5px]">
+              {subtitle}
+            </p>
 
-            <div className="mt-8 space-y-5">{children}</div>
+            <div className="mt-5 space-y-4 sm:mt-8 sm:space-y-5">{children}</div>
 
-            <div className="mt-7 border-t border-hairline pt-5 text-[13.5px] text-ink-600">
+            <div className="mt-5 border-t border-hairline pt-4 text-[13px] text-ink-600 sm:mt-7 sm:pt-5 sm:text-[13.5px]">
               {footer}
             </div>
           </div>

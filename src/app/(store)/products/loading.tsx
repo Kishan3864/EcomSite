@@ -1,5 +1,5 @@
-import { ListingSkeleton } from "@/components/ui/skeleton";
+import { ListingShellSkeleton } from "@/components/listing/listing-shell";
 
 export default function Loading() {
-  return <ListingSkeleton columns={4} />;
+  return <ListingShellSkeleton />;
 }

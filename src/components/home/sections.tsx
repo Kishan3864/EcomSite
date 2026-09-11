@@ -12,7 +12,7 @@ import { cn, formatINR } from "@/lib/utils";
 
 export function CategoryStrip({ categories }: { categories: Category[] }) {
   return (
-    <section className="container-page py-10 sm:py-14">
+    <section className="container-page py-6 sm:py-14">
       <Reveal>
         <SectionHeader
           eyebrow="Start here"
@@ -20,23 +20,24 @@ export function CategoryStrip({ categories }: { categories: Category[] }) {
           description="Eight departments, 120 products, every one of them stocked because someone on the team uses it."
           href="/products"
           linkLabel="All products"
-          className="mb-6"
+          className="mb-4 sm:mb-6"
         />
       </Reveal>
 
-      <StaggerGroup className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 lg:grid-cols-8">
+      {/* A swipe row of tiles on phones rather than four rows of two. */}
+      <StaggerGroup className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:grid sm:grid-cols-4 sm:gap-4 sm:overflow-visible sm:px-0 lg:grid-cols-8">
         {categories.map((category) => (
-          <StaggerItem key={category.slug}>
+          <StaggerItem key={category.slug} className="w-[96px] sm:w-auto">
             <Link
               href={`/c/${category.slug}`}
-              className="group flex flex-col items-center gap-3 rounded-xl border border-hairline bg-surface p-3 text-center transition-all duration-300 hover:-translate-y-1 hover:border-ink-200 hover:shadow-md sm:p-4"
+              className="tap group flex flex-col items-center gap-2 rounded-xl border border-hairline bg-surface p-2 text-center transition-all duration-300 hover:-translate-y-1 hover:border-ink-200 hover:shadow-md sm:gap-3 sm:p-4"
             >
               <span className="relative aspect-square w-full overflow-hidden rounded-lg bg-ink-100">
                 <Image
                   src={category.image.url}
                   alt=""
                   fill
-                  sizes="(min-width:1024px) 12vw, (min-width:640px) 22vw, 44vw"
+                  sizes="(min-width:1024px) 12vw, (min-width:640px) 22vw, 80px"
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <span
@@ -46,7 +47,7 @@ export function CategoryStrip({ categories }: { categories: Category[] }) {
                   }}
                 />
               </span>
-              <span className="text-[12.5px] font-semibold leading-tight text-ink-900 group-hover:text-brand-700 sm:text-[13px]">
+              <span className="text-[12px] font-semibold leading-tight text-ink-900 group-hover:text-brand-700 sm:text-[13px]">
                 {category.name}
               </span>
             </Link>
@@ -61,13 +62,13 @@ export function CategoryStrip({ categories }: { categories: Category[] }) {
 
 export function PromoTiles({ tiles }: { tiles: PromoTile[] }) {
   return (
-    <section className="container-page py-10 sm:py-14">
-      <StaggerGroup className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+    <section className="container-page py-6 sm:py-14">
+      <StaggerGroup className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
         {tiles.map((tile) => (
           <StaggerItem key={tile.id}>
             <Link
               href={tile.href}
-              className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-xl bg-ink-950 sm:aspect-square"
+              className="tap group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-xl bg-ink-950 sm:aspect-square"
             >
               <Image
                 src={tile.image.url}
@@ -77,12 +78,12 @@ export function PromoTiles({ tiles }: { tiles: PromoTile[] }) {
                 className="object-cover opacity-85 transition-transform duration-[800ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
               />
               <span className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/35 to-transparent" />
-              <span className="relative p-4 sm:p-5">
-                <span className="block font-display text-lg leading-tight tracking-[-0.01em] text-white sm:text-xl">
+              <span className="relative p-3 sm:p-5">
+                <span className="block font-display text-[16px] leading-tight tracking-[-0.01em] text-white sm:text-xl">
                   {tile.title}
                 </span>
-                <span className="mt-1 block text-[12px] text-white/65">{tile.subtitle}</span>
-                <span className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-gold-300">
+                <span className="mt-1 block text-[11.5px] text-white/65 sm:text-[12px]">{tile.subtitle}</span>
+                <span className="mt-2 inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-gold-300 sm:mt-3 sm:text-[12px]">
                   {tile.cta}
                   <ArrowRight
                     size={13}
@@ -104,7 +105,7 @@ export function FeatureBanner({ banner }: { banner: Banner }) {
   const dark = banner.theme === "dark";
 
   return (
-    <section className="container-page py-10 sm:py-14">
+    <section className="container-page py-6 sm:py-14">
       <Reveal>
         <div
           className={cn(
@@ -123,7 +124,7 @@ export function FeatureBanner({ banner }: { banner: Banner }) {
             />
           </div>
 
-          <div className="flex flex-col justify-center gap-4 p-7 sm:p-10 lg:p-14">
+          <div className="flex flex-col justify-center gap-3 p-4 sm:gap-4 sm:p-10 lg:p-14">
             <span
               className={cn(
                 "inline-flex w-fit items-center rounded-full px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em]",
@@ -134,7 +135,7 @@ export function FeatureBanner({ banner }: { banner: Banner }) {
             </span>
             <h2
               className={cn(
-                "font-display text-[28px] leading-[1.08] tracking-[-0.025em] sm:text-[38px]",
+                "font-display text-[21px] leading-[1.08] tracking-[-0.025em] sm:text-[38px]",
                 dark ? "text-white" : "text-ink-950",
               )}
             >
@@ -142,7 +143,7 @@ export function FeatureBanner({ banner }: { banner: Banner }) {
             </h2>
             <p
               className={cn(
-                "max-w-md text-[14.5px] leading-relaxed",
+                "max-w-md text-[13.5px] leading-relaxed sm:text-[14.5px]",
                 dark ? "text-white/65" : "text-ink-600",
               )}
             >
@@ -152,7 +153,7 @@ export function FeatureBanner({ banner }: { banner: Banner }) {
               href={banner.href}
               className={cn(
                 buttonClasses(dark ? "accent" : "primary", "lg"),
-                "mt-2 w-fit",
+                "mt-1 h-11 w-fit px-6 text-[11.5px] sm:mt-2 sm:h-12 sm:px-8 sm:text-[12px]",
               )}
             >
               {banner.cta}
@@ -169,10 +170,10 @@ export function FeatureBanner({ banner }: { banner: Banner }) {
 
 export function OfferCards({ offers }: { offers: Offer[] }) {
   return (
-    <section className="container-page py-10 sm:py-14">
+    <section className="container-page py-6 sm:py-14">
       <RailScroller
         label="offers"
-        railClassName="-mx-4 px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        railClassName="-mx-3 gap-2 px-3 pb-2 sm:-mx-6 sm:gap-px sm:px-6 lg:-mx-8 lg:px-8"
         header={
           <Reveal>
             <SectionHeader
@@ -188,7 +189,7 @@ export function OfferCards({ offers }: { offers: Offer[] }) {
         {offers.map((offer) => (
           <article
             key={offer.id}
-            className="relative w-[268px] overflow-hidden rounded-xl border border-hairline bg-surface p-5 transition-shadow duration-300 hover:shadow-md"
+            className="relative w-[240px] overflow-hidden rounded-xl border border-hairline bg-surface p-4 transition-shadow duration-300 hover:shadow-md sm:w-[268px] sm:p-5"
           >
             <span
               className="absolute inset-x-0 top-0 h-1"
@@ -200,14 +201,14 @@ export function OfferCards({ offers }: { offers: Offer[] }) {
                 {offer.type === "bank" ? "Bank offer" : offer.type === "shipping" ? "Shipping" : "Coupon"}
               </span>
             </div>
-            <h3 className="mt-3 text-[15px] font-semibold leading-snug text-ink-950">
+            <h3 className="mt-2.5 text-[14px] font-semibold leading-snug text-ink-950 sm:mt-3 sm:text-[15px]">
               {offer.title}
             </h3>
             <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-ink-500">
               {offer.description}
             </p>
-            <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border border-dashed border-ink-300 bg-ink-50 px-3 py-2.5">
-              <code className="font-mono text-[13px] font-bold tracking-[0.06em] text-ink-950">
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-dashed border-ink-300 bg-ink-50 px-3 py-2.5 sm:mt-4">
+              <code className="min-w-0 break-all font-mono text-[12.5px] font-bold tracking-[0.06em] text-ink-950 sm:text-[13px]">
                 {offer.code}
               </code>
               <Copy size={14} className="text-ink-400" />
@@ -227,18 +228,19 @@ export function OfferCards({ offers }: { offers: Offer[] }) {
 export function BrandStrip({ brands }: { brands: Brand[] }) {
   return (
     <section className="border-y border-hairline bg-surface">
-      <div className="container-page py-10 sm:py-12">
-        <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-400">
+      <div className="container-page py-6 sm:py-12">
+        <p className="mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-400 sm:mb-6">
           Sixteen studios. One storefront.
         </p>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4 lg:grid-cols-8">
+        {/* One swipe row on phones; eight rows of two was most of a screen. */}
+        <div className="rail -mx-3 gap-x-6 gap-y-5 px-3 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 lg:grid-cols-8">
           {brands.map((brand) => (
             <Link
               key={brand.slug}
               href={`/products?brands=${brand.slug}`}
-              className="group flex flex-col items-center gap-1 text-center"
+              className="tap group flex flex-col items-center gap-1 text-center"
             >
-              <span className="font-display text-[15px] font-semibold tracking-[-0.01em] text-ink-500 transition-colors duration-200 group-hover:text-brand-700">
+              <span className="whitespace-nowrap font-display text-[14px] font-semibold tracking-[-0.01em] text-ink-500 transition-colors duration-200 group-hover:text-brand-700 sm:whitespace-normal sm:text-[15px]">
                 {brand.name}
               </span>
               <span className="text-[10px] uppercase tracking-[0.1em] text-ink-300 transition-colors group-hover:text-ink-400">
@@ -271,18 +273,20 @@ export function ValueProps() {
   ];
 
   return (
-    <section className="container-page py-12 sm:py-16">
-      <StaggerGroup className="grid gap-6 sm:grid-cols-3 sm:gap-8">
+    <section className="container-page py-7 sm:py-16">
+      <StaggerGroup className="grid gap-4 sm:grid-cols-3 sm:gap-8">
         {items.map((item, i) => (
           <StaggerItem key={item.title}>
-            <div className="border-t-2 border-brand-800 pt-5">
-              <span className="font-display text-[13px] font-semibold tabular-nums text-brand-600">
+            <div className="border-t-2 border-brand-800 pt-3 sm:pt-5">
+              <span className="font-display text-[12.5px] font-semibold tabular-nums text-brand-600 sm:text-[13px]">
                 0{i + 1}
               </span>
-              <h3 className="mt-2 font-display text-xl tracking-[-0.015em] text-ink-950">
+              <h3 className="mt-1.5 font-display text-[17px] tracking-[-0.015em] text-ink-950 sm:mt-2 sm:text-xl">
                 {item.title}
               </h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-600">{item.body}</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[13.5px]">
+                {item.body}
+              </p>
             </div>
           </StaggerItem>
         ))}

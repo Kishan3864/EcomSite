@@ -29,10 +29,13 @@ export function ProductRail({
   if (products.length === 0) return null;
 
   return (
-    <section className={cn("container-page py-10 sm:py-14", className)}>
+    <section className={cn("container-page py-6 sm:py-14", className)}>
+      {/* The rail bleeds to the screen edge by exactly the page gutter — 12px
+          on phones — so it scrolls edge to edge without widening the page. */}
       <RailScroller
         label="products"
-        railClassName="-mx-4 px-4 pb-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        headerClassName="mb-4 sm:mb-6"
+        railClassName="-mx-3 px-3 pb-2 sm:-mx-6 sm:px-6 sm:pb-3 lg:-mx-8 lg:px-8"
         header={
           <Reveal>
             <SectionHeader
@@ -51,18 +54,18 @@ export function ProductRail({
             product={product}
             layout="rail"
             priority={priority && i < 3}
-            sizes="(min-width:640px) 212px, 172px"
+            sizes="(min-width:640px) 212px, 152px"
           />
         ))}
         {href && (
           <Link
             href={href}
-            className="group flex w-[172px] flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-ink-200 bg-surface/50 p-6 text-center transition-colors hover:border-brand-500 hover:bg-brand-50 sm:w-[212px]"
+            className="tap group flex w-[152px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-ink-200 bg-surface/50 p-4 text-center transition-colors hover:border-brand-500 hover:bg-brand-50 sm:w-[212px] sm:gap-3 sm:p-6"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-brand-700 transition-transform duration-300 group-hover:translate-x-1">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-brand-700 transition-transform duration-300 group-hover:translate-x-1 sm:h-11 sm:w-11">
               <ArrowRight size={18} />
             </span>
-            <span className="text-[13px] font-semibold text-ink-900">
+            <span className="text-[12.5px] font-semibold text-ink-900 sm:text-[13px]">
               {linkLabel ?? "View all"}
             </span>
           </Link>
@@ -84,7 +87,7 @@ export function ProductGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5",
+        "grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5",
         className,
       )}
     >

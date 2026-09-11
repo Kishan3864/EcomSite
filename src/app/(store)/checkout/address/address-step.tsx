@@ -62,14 +62,25 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
           <OrderSummary totals={totals} lines={cart} delivery={null} showDeliveryEstimate={false} />
         </>
       }
+      total={totals.total}
+      action={
+        <Button
+          size="lg"
+          className="w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8"
+          onClick={next}
+        >
+          Continue to delivery
+          <ArrowRight size={17} />
+        </Button>
+      }
     >
-      <div className="space-y-4">
-        <ul className="space-y-3">
+      <div className="space-y-3 sm:space-y-4">
+        <ul className="space-y-2 sm:space-y-3">
           {addresses.map((address) => (
             <li key={address.id}>
               {editing?.id === address.id ? (
-                <div className="rounded-xl border border-brand-700 bg-surface p-5">
-                  <h3 className="mb-4 text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+                <div className="rounded-xl border border-brand-700 bg-surface p-4 sm:p-5">
+                  <h3 className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-4 sm:text-[13px]">
                     Edit address
                   </h3>
                   <AddressForm
@@ -91,7 +102,7 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
                     setError(null);
                   }}
                   title={
-                    <span className="flex items-center gap-2">
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1 lg:flex-nowrap">
                       {address.fullName}
                       <span className="rounded-md bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-600">
                         {address.label}
@@ -112,13 +123,19 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
                   }
                 >
                   <div className="flex flex-wrap gap-2">
-                    <Button size="xs" variant="outline" onClick={() => setEditing(address)}>
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      className="h-10 sm:h-8"
+                      onClick={() => setEditing(address)}
+                    >
                       <Pencil size={12} /> Edit
                     </Button>
                     {addresses.length > 1 && (
                       <Button
                         size="xs"
                         variant="ghost"
+                        className="h-10 sm:h-8"
                         onClick={() => {
                           setError(null);
                           if (!customer) {
@@ -157,8 +174,8 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden"
             >
-              <div className="rounded-xl border border-brand-700 bg-surface p-5">
-                <h3 className="mb-4 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+              <div className="rounded-xl border border-brand-700 bg-surface p-4 sm:p-5">
+                <h3 className="mb-3 flex items-center gap-2 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-4 sm:text-[13px]">
                   <MapPin size={15} className="text-brand-600" />
                   New delivery address
                 </h3>
@@ -179,7 +196,7 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setAdding(true)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-ink-300 bg-surface/60 py-4 text-[13.5px] font-semibold text-brand-700 transition-colors hover:border-brand-500 hover:bg-brand-50"
+              className="tap flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-ink-300 bg-surface/60 py-3 text-[13px] font-semibold text-brand-700 transition-colors hover:border-brand-500 hover:bg-brand-50 sm:py-4 sm:text-[13.5px]"
             >
               <Plus size={16} />
               Add a new address
@@ -190,13 +207,14 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
         {error && <p className="text-[13px] font-medium text-sale-600">{error}</p>}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
             href="/checkout/contact"
-            className="text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline"
+            className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
           >
             Back to contact
           </Link>
-          <Button size="lg" className="min-w-[200px]" onClick={next}>
+          <Button size="lg" className="hidden min-w-[200px] lg:inline-flex" onClick={next}>
             Continue to delivery
             <ArrowRight size={17} />
           </Button>

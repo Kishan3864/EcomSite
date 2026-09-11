@@ -76,7 +76,11 @@ export function RailScroller({
 
   return (
     <>
-      <div className={cn("mb-6 flex items-end justify-between gap-4", headerClassName)}>
+      {/* ~16px under the header on a phone, 1.5rem from 600px up — as one class,
+          so a caller's own mb-* still replaces it outright. */}
+      <div
+        className={cn("mb-[min(1.5rem,4vw)] flex items-end justify-between gap-4", headerClassName)}
+      >
         <div className="min-w-0 flex-1">{header}</div>
         {overflowing && (
           <div className="hidden shrink-0 items-center gap-2 sm:flex">

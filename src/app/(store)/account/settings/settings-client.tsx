@@ -61,12 +61,12 @@ export function SettingsClient({
   signInPhone?: string | null;
 }) {
   return (
-    <div className="space-y-5">
-      <header>
-        <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+    <div className="space-y-3 sm:space-y-5">
+      <header className="pb-1 sm:pb-0">
+        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
           Settings
         </h1>
-        <p className="mt-2 text-[14px] text-ink-600">
+        <p className="mt-1.5 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
           Your details, where we deliver by default, and how you prefer to pay.
         </p>
       </header>
@@ -105,13 +105,13 @@ function Section({
       id={id}
       className="scroll-mt-32 overflow-hidden rounded-xl border border-hairline bg-surface"
     >
-      <header className="border-b border-hairline px-5 py-4">
-        <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+      <header className="border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
+        <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
           {title}
         </h2>
-        <p className="mt-1 text-[12.5px] leading-relaxed text-ink-500">{description}</p>
+        <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink-500 sm:mt-1">{description}</p>
       </header>
-      <div className="p-5">{children}</div>
+      <div className="p-4 sm:p-5">{children}</div>
     </section>
   );
 }
@@ -121,7 +121,7 @@ function Feedback({ state }: { state: AccountFormState }) {
     return (
       <p
         role="alert"
-        className="flex items-start gap-2 rounded-lg border border-sale-100 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700"
+        className="flex items-start gap-2 rounded-lg border border-sale-100 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
       >
         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
         {state.error}
@@ -132,7 +132,7 @@ function Feedback({ state }: { state: AccountFormState }) {
     return (
       <p
         role="status"
-        className="flex items-start gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3.5 py-2.5 text-[13px] text-brand-800"
+        className="flex items-start gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-[12.5px] text-brand-800 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
       >
         <Check size={14} className="mt-0.5 shrink-0" />
         {state.message}
@@ -144,8 +144,9 @@ function Feedback({ state }: { state: AccountFormState }) {
 
 function SaveButton({ children, disabled }: { children: string; disabled?: boolean }) {
   const { pending } = useFormStatus();
+  // Full width on a phone, where the primary action spans the screen.
   return (
-    <Button type="submit" loading={pending} disabled={disabled}>
+    <Button type="submit" loading={pending} disabled={disabled} className="w-full sm:w-auto">
       {pending ? "Saving" : children}
     </Button>
   );
@@ -237,9 +238,11 @@ function PhotoSection() {
       title="Profile photo"
       description="Shown in your account menu. Without one, we use your Google photo, or a drawn avatar."
     >
-      <div className="flex flex-wrap items-center gap-5">
+      {/* Phones keep the controls beside the photo rather than wrapping them
+          underneath it. */}
+      <div className="flex items-center gap-4 sm:flex-wrap sm:gap-5">
         <Avatar src={shown} seed={customer?.email ?? ""} size={72} />
-        <div className="space-y-2.5">
+        <div className="min-w-0 flex-1 space-y-2.5 sm:flex-initial">
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
@@ -247,12 +250,20 @@ function PhotoSection() {
               onClick={() => inputRef.current?.click()}
               disabled={!sessionChecked || pending}
               loading={pending}
+              className="h-10 sm:h-9"
             >
               <Camera size={14} />
               {hasUpload ? "Change photo" : "Upload photo"}
             </Button>
             {hasUpload && (
-              <Button type="button" size="sm" variant="outline" onClick={onRemove} disabled={pending}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={onRemove}
+                disabled={pending}
+                className="h-10 sm:h-9"
+              >
                 Remove
               </Button>
             )}
@@ -397,8 +408,8 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
         title="Default delivery address"
         description="Save one address as the default and checkout will start there every time."
       >
-        <p className="text-[13.5px] text-ink-600">You have not saved an address yet.</p>
-        <Link href="/account/addresses" className={buttonClasses("outline", "sm", "mt-3")}>
+        <p className="text-[13px] text-ink-600 sm:text-[13.5px]">You have not saved an address yet.</p>
+        <Link href="/account/addresses" className={buttonClasses("outline", "sm", "mt-3 h-10 sm:h-9")}>
           <MapPin size={14} /> Add an address
         </Link>
       </Section>
@@ -410,14 +421,14 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
       description="Checkout starts here. You can still pick a different address at the time."
     >
       <Form action={setDefaultAddress} className="space-y-4">
-        <ul className="space-y-3">
+        <ul className="space-y-2 sm:space-y-3">
           {addresses.map((address) => (
             <li key={address.id}>
               <OptionCard
                 selected={selected === address.id}
                 onSelect={() => setSelected(address.id)}
                 title={
-                  <span className="flex items-center gap-2">
+                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     {address.fullName}
                     <span className="rounded-md bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-600">
                       {address.label}
@@ -440,11 +451,11 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
 
         <input type="hidden" name="addressId" value={selected} />
 
-        <div className="flex flex-wrap items-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-1 sm:justify-start sm:gap-4">
           <SaveButton disabled={!selected}>Set as default</SaveButton>
           <Link
             href="/account/addresses"
-            className="text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+            className="py-2 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:py-0"
           >
             Add or edit addresses
           </Link>
@@ -479,7 +490,7 @@ function PaymentSection() {
         <Feedback state={state} />
 
         {sessionChecked ? (
-          <ul className="space-y-3">
+          <ul className="space-y-2 sm:space-y-3">
             {config.paymentMethods.map((option) => {
               const Icon = ICONS[option.id];
               return (
@@ -509,7 +520,7 @@ function PaymentSection() {
             </li>
           </ul>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {config.paymentMethods.map((option) => (
               <Skeleton key={option.id} className="h-[78px] rounded-xl" />
             ))}
@@ -550,16 +561,18 @@ function MoreSection() {
 
   return (
     <Section title="More" description="The rest of what you might be looking for.">
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="flex h-full items-start gap-3 rounded-lg border border-hairline p-4 transition-colors hover:border-ink-200 hover:bg-ink-50"
+              className="tap flex h-full items-start gap-3 rounded-lg border border-hairline p-3.5 transition-colors hover:border-ink-200 hover:bg-ink-50 sm:p-4"
             >
               <link.icon size={17} className="mt-0.5 shrink-0 text-brand-600" />
               <span className="min-w-0">
-                <span className="block text-[13.5px] font-semibold text-ink-950">{link.label}</span>
+                <span className="block text-[13px] font-semibold text-ink-950 sm:text-[13.5px]">
+                  {link.label}
+                </span>
                 <span className="mt-0.5 block text-[12.5px] text-ink-500">{link.description}</span>
               </span>
             </Link>

@@ -20,28 +20,31 @@ export function RecentlyViewed({
   if (!hydrated || items.length === 0) return null;
 
   return (
-    <section className="container-page py-10 sm:py-14">
+    <section className="container-page py-6 sm:py-14">
+      {/* Bleeds by exactly the page gutter; these are bare thumbnails rather
+          than tiles, so phones get a real gap instead of the rail's 1px rule. */}
       <RailScroller
         label="products"
-        railClassName="-mx-4 px-4 pb-2 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        headerClassName="mb-4 sm:mb-6"
+        railClassName="-mx-3 gap-2 px-3 pb-2 sm:-mx-6 sm:gap-px sm:px-6 lg:-mx-8 lg:px-8"
         header={<SectionHeader eyebrow="Pick up where you left off" title={title} />}
       >
         {items.map((item) => (
           <Link
             key={item.productId}
             href={`/p/${item.slug}`}
-            className="group w-[140px] sm:w-[160px]"
+            className="tap group w-[128px] sm:w-[160px]"
           >
             <div className="relative aspect-[4/5] overflow-hidden rounded-xl border border-hairline bg-ink-100">
               <Image
                 src={item.image}
                 alt=""
                 fill
-                sizes="160px"
+                sizes="(min-width:640px) 160px, 128px"
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
-            <p className="mt-2 line-clamp-2 text-[12.5px] font-medium leading-snug text-ink-900 group-hover:text-brand-700">
+            <p className="mt-1.5 line-clamp-2 text-[12px] font-medium leading-snug text-ink-900 group-hover:text-brand-700 sm:mt-2 sm:text-[12.5px]">
               {item.title}
             </p>
             <Price price={item.price} mrp={item.mrp} size="sm" className="mt-1" />

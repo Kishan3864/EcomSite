@@ -12,17 +12,19 @@ export default async function AccountLayout({ children }: { children: React.Reac
   const [profile, orders] = await Promise.all([getCustomerProfile(), getCustomerOrders()]);
 
   return (
-    <div className="container-page py-5 sm:py-7">
+    <div className="container-page py-3 sm:py-7">
+      {/* Phones skip the trail: the account tabs already say where you are. */}
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },
           { name: "My account", href: "/account" },
         ]}
-        className="mb-5"
+        className="mb-5 hidden sm:block"
       />
 
-      <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
-        <aside className="lg:sticky lg:top-[132px] lg:h-fit">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
+        {/* min-w-0 so the sideways tab row scrolls instead of widening the page. */}
+        <aside className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
           <AccountNav profile={profile} orderCount={orders.length} />
         </aside>
         <div className="min-w-0">{children}</div>

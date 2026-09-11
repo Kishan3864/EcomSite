@@ -15,20 +15,20 @@ export default async function TrackPage() {
   const orders = await getCustomerOrders();
 
   return (
-    <div className="container-page py-5 sm:py-7">
+    <div className="container-page py-4 sm:py-7">
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },
           { name: "Track order", href: "/track" },
         ]}
-        className="mb-5"
+        className="mb-3 sm:mb-5"
       />
 
-      <header className="mb-8 text-center">
-        <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[36px]">
+      <header className="mb-5 text-center sm:mb-8">
+        <h1 className="font-display text-[24px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[36px]">
           Track your order
         </h1>
-        <p className="mx-auto mt-2 max-w-lg text-[14px] leading-relaxed text-ink-600">
+        <p className="mx-auto mt-1.5 max-w-lg text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[14px]">
           Enter your order number and we will show you exactly where the parcel is right now.
         </p>
       </header>

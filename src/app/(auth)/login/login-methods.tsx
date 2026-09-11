@@ -14,7 +14,7 @@ export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactN
 
   return (
     <div>
-      <div role="tablist" aria-label="Sign-in method" className="mb-6 grid grid-cols-2 border border-hairline bg-ink-50 p-1">
+      <div role="tablist" aria-label="Sign-in method" className="mb-4 grid grid-cols-2 border border-hairline bg-ink-50 p-1 sm:mb-6">
         {tabs.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -25,7 +25,7 @@ export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactN
             aria-controls={`login-panel-${id}`}
             onClick={() => setMethod(id)}
             className={cn(
-              "inline-flex h-10 items-center justify-center gap-2 text-[13.5px] font-semibold transition-colors",
+              "tap inline-flex h-10 items-center justify-center gap-2 text-[13px] font-semibold transition-colors sm:text-[13.5px]",
               method === id ? "bg-surface text-ink-950 shadow-sm" : "text-ink-500 hover:text-ink-800",
             )}
           >

@@ -37,8 +37,11 @@ export function Gallery({
   const [lightbox, setLightbox] = useState(false);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const track = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDivElement>(null);
   const touchStart = useRef<number | null>(null);
+  // The slide the phone track says it is over; -1 while the gallery moves it.
+  const reported = useRef(0);
   const reduce = usePrefersReducedMotion();
 
   const slide = slides[index];
@@ -48,6 +51,40 @@ export function Gallery({
 
   useLockScroll(lightbox);
   useDialogFocus(lightbox, dialog);
+
+  // Phones swipe a native snap track, which reports the slide it is over. When
+  // the index moves any other way — a dot, the lightbox — bring the track
+  // along. An index the track itself reported is left alone, or the nudge would
+  // fight the scroll that produced it.
+  useEffect(() => {
+    const el = track.current;
+    if (!el || !el.clientWidth || reported.current === index) return;
+    reported.current = -1;
+    el.scrollTo({ left: index * el.clientWidth, behavior: reduce ? "auto" : "smooth" });
+  }, [index, reduce]);
+
+  function onTrackScroll() {
+    const el = track.current;
+    if (!el || !el.clientWidth) return;
+    const i = Math.min(count - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth)));
+    if (i === reported.current) return;
+    reported.current = i;
+    setIndex(i);
+  }
+
+  // A one-finger flick past 45px steps a slide, on the stage and in the
+  // lightbox alike. A second finger is a pinch, not a swipe.
+  const swipe = {
+    onTouchStart: (e: React.TouchEvent) => {
+      touchStart.current = e.touches.length === 1 ? e.touches[0].clientX : null;
+    },
+    onTouchEnd: (e: React.TouchEvent) => {
+      if (touchStart.current == null) return;
+      const dx = e.changedTouches[0].clientX - touchStart.current;
+      if (Math.abs(dx) > 45) step(dx < 0 ? 1 : -1);
+      touchStart.current = null;
+    },
+  };
 
   useEffect(() => {
     if (!lightbox) return;
@@ -73,8 +110,8 @@ export function Gallery({
   return (
     <>
       <div className="flex flex-col-reverse gap-3 md:flex-row md:gap-4">
-        {/* Thumbnails */}
-        <div className="rail gap-2 md:w-[74px] md:flex-col md:overflow-visible">
+        {/* Thumbnails — phones swipe the photos themselves instead */}
+        <div className="rail hidden gap-2 sm:flex md:w-[74px] md:flex-col md:overflow-visible">
           {slides.map((s, i) => (
             <button
               key={s.url + i}
@@ -99,20 +136,51 @@ export function Gallery({
           ))}
         </div>
 
-        {/* Stage */}
         <div className="relative min-w-0 flex-1">
+          {/* Phones: every photo on a snap track that runs edge to edge and
+              follows the thumb, the way a shopping app's gallery does. The
+              sizes match the stage's, so the first photo is fetched once. */}
+          <div className="relative -mx-3 sm:hidden">
+            <div
+              ref={track}
+              onScroll={onTrackScroll}
+              className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-surface"
+            >
+              {slides.map((s, i) => (
+                <div
+                  key={s.url + i}
+                  className="relative aspect-[4/5] w-full shrink-0 snap-center snap-always"
+                >
+                  <Image
+                    src={s.url}
+                    alt={s.alt}
+                    fill
+                    loading={i === 0 ? "eager" : "lazy"}
+                    fetchPriority={i === 0 ? "high" : "auto"}
+                    sizes="(min-width:1024px) 42vw, 100vw"
+                    className="object-cover"
+                  />
+                  {s.kind === "video" && <VideoNotice />}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setLightbox(true)}
+              aria-label="Open full screen"
+              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-ink-600 shadow-sm backdrop-blur"
+            >
+              <Expand size={16} />
+            </button>
+          </div>
+
+          {/* Stage */}
           <div
             ref={stage}
             onMouseMove={onMove}
             onMouseLeave={() => setZoom(null)}
-            onTouchStart={(e) => (touchStart.current = e.touches[0].clientX)}
-            onTouchEnd={(e) => {
-              if (touchStart.current == null) return;
-              const dx = e.changedTouches[0].clientX - touchStart.current;
-              if (Math.abs(dx) > 45) step(dx < 0 ? 1 : -1);
-              touchStart.current = null;
-            }}
-            className="group relative aspect-[4/5] overflow-hidden rounded-2xl border border-hairline bg-surface"
+            {...swipe}
+            className="group relative hidden aspect-[4/5] overflow-hidden rounded-2xl border border-hairline bg-surface sm:block"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -143,16 +211,7 @@ export function Gallery({
               </motion.div>
             </AnimatePresence>
 
-            {slide.kind === "video" && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/45 backdrop-blur-[1px]">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-ink-950 shadow-lg transition-transform duration-300 group-hover:scale-105">
-                  <Play size={24} fill="currentColor" className="ml-1" />
-                </span>
-                <p className="text-[12.5px] font-medium text-white/85">
-                  Product video — coming soon
-                </p>
-              </div>
-            )}
+            {slide.kind === "video" && <VideoNotice />}
 
             {/* Zoom affordance */}
             {slide.kind === "image" && (
@@ -169,19 +228,21 @@ export function Gallery({
               <Expand size={15} />
             </button>
 
+            {/* Hover reveals the arrows; a touch screen has no hover, so there
+                they simply show. */}
             {count > 1 && (
               <>
                 <button
                   onClick={() => step(-1)}
                   aria-label="Previous image"
-                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink-700 opacity-0 shadow-sm backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100"
+                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink-700 opacity-0 shadow-sm backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={() => step(1)}
                   aria-label="Next image"
-                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink-700 opacity-0 shadow-sm backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100"
+                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink-700 opacity-0 shadow-sm backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -189,20 +250,25 @@ export function Gallery({
             )}
           </div>
 
-          {/* Mobile dots */}
-          <div className="mt-3 flex justify-center gap-1.5 md:hidden">
-            {slides.map((s, i) => (
-              <button
-                key={s.url + i}
-                onClick={() => setIndex(i)}
-                aria-label={`Go to image ${i + 1}`}
-                className={cn(
-                  "h-1.5 rounded-full transition-all duration-300",
-                  i === index ? "w-6 bg-brand-700" : "w-1.5 bg-ink-300",
-                )}
-              />
-            ))}
-          </div>
+          {/* Position dots: over the photo on phones, where they cost no
+              height, and under the stage on small tablets. */}
+          {count > 1 && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center sm:pointer-events-auto sm:static sm:mt-3 md:hidden">
+              <div className="pointer-events-auto flex gap-1.5 bg-surface/85 px-2 py-1.5 sm:bg-transparent sm:p-0">
+                {slides.map((s, i) => (
+                  <button
+                    key={s.url + i}
+                    onClick={() => setIndex(i)}
+                    aria-label={`Go to image ${i + 1}`}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-300",
+                      i === index ? "w-6 bg-brand-700" : "w-1.5 bg-ink-300",
+                    )}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -222,7 +288,8 @@ export function Gallery({
               aria-modal="true"
               aria-label={`${title} images`}
             >
-              <div className="flex shrink-0 items-center justify-between px-4 py-3 sm:px-5">
+              {/* Full screen, so clear of the notch and the home indicator. */}
+              <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
                 <p className="text-[13px] tabular-nums text-white/70">
                   {index + 1} of {count}
                 </p>
@@ -235,7 +302,7 @@ export function Gallery({
                 </button>
               </div>
 
-              <div className="relative min-h-0 flex-1 px-4 pb-5 sm:px-16">
+              <div {...swipe} className="relative min-h-0 flex-1 pb-3 sm:px-16 sm:pb-5">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={slide.url + index}
@@ -286,7 +353,7 @@ export function Gallery({
                   last one is why the thumbnails belong here too. */}
               {count > 1 && (
                 <div
-                  className="flex shrink-0 justify-center gap-2 overflow-x-auto px-4 pb-5"
+                  className="flex shrink-0 justify-center-safe gap-2 overflow-x-auto px-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:justify-center sm:px-4 sm:pb-5"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {slides.map((s, i) => (
@@ -312,5 +379,17 @@ export function Gallery({
         </AnimatePresence>
       </Portal>
     </>
+  );
+}
+
+/** The video slide is only a poster for now, and says so. */
+function VideoNotice() {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/45 backdrop-blur-[1px]">
+      <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-ink-950 shadow-lg transition-transform duration-300 group-hover:scale-105">
+        <Play size={24} fill="currentColor" className="ml-1" />
+      </span>
+      <p className="text-[12.5px] font-medium text-white/85">Product video — coming soon</p>
+    </div>
   );
 }

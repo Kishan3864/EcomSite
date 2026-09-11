@@ -27,8 +27,10 @@ export function QuickView({
 
   return (
     <Modal open={open} onClose={onClose} title={product.title}>
+      {/* The card only offers quick view from sm up; below that this is a
+          bottom sheet, so the photo is kept short and the type at app scale. */}
       <div className="grid gap-0 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
-        <div className="relative aspect-[4/5] bg-ink-100 sm:aspect-auto sm:min-h-[420px]">
+        <div className="relative aspect-square bg-ink-100 sm:aspect-auto sm:min-h-[420px]">
           <Image
             src={product.image}
             alt={product.imageAlt}
@@ -38,15 +40,17 @@ export function QuickView({
           />
         </div>
 
-        <div className="flex flex-col gap-4 p-5 sm:p-7">
+        <div className="flex flex-col gap-3 p-4 sm:gap-4 sm:p-7">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
               {product.brand}
             </p>
-            <h2 className="mt-1.5 font-display text-2xl leading-tight tracking-[-0.02em] text-ink-950">
+            <h2 className="mt-1 font-display text-[18px] leading-tight tracking-[-0.02em] text-ink-950 sm:mt-1.5 sm:text-2xl">
               {product.title}
             </h2>
-            <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{product.subtitle}</p>
+            <p className="mt-1 text-[13px] leading-relaxed text-ink-600 sm:mt-1.5 sm:text-sm">
+              {product.subtitle}
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -69,7 +73,7 @@ export function QuickView({
                     aria-label={c.name}
                     aria-pressed={color === c.name}
                     className={cn(
-                      "h-8 w-8 rounded-full border-2 transition-all duration-200",
+                      "tap h-10 w-10 rounded-full border-2 transition-all duration-200 sm:h-8 sm:w-8",
                       color === c.name
                         ? "border-brand-700 ring-2 ring-brand-700/20 ring-offset-1"
                         : "border-ink-200 hover:border-ink-400",
@@ -144,7 +148,7 @@ export function QuickView({
             </Button>
           </div>
 
-          <div className="space-y-2 rounded-lg bg-ink-50 p-3.5 text-xs text-ink-600">
+          <div className="space-y-2 rounded-lg bg-ink-50 p-3 text-xs text-ink-600 sm:p-3.5">
             <p className="flex items-center gap-2">
               <Truck size={14} className="text-brand-600" />
               {product.deliveryDays <= 2

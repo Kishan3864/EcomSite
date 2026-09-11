@@ -17,14 +17,14 @@ export default async function TrackDetailPage({
   const order = await getOrderForViewer(id);
 
   return (
-    <div className="container-page py-5 sm:py-7">
+    <div className="container-page py-4 sm:py-7">
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },
           { name: "Track order", href: "/track" },
           { name: "Shipment", href: `/track/${id}` },
         ]}
-        className="mb-5"
+        className="mb-3 sm:mb-5"
       />
       <TrackDetail order={order} />
     </div>

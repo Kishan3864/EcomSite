@@ -26,12 +26,16 @@ export async function StoreChrome({ children }: { children: React.ReactNode }) {
       <ToastProvider>
         <div className="flex min-h-dvh flex-col">
           <Header />
-          <main id="main" className="flex-1 pb-16 lg:pb-0">
+          {/* The bottom nav reserves its own height after the footer, so this is
+              only the breathing room between the page and the footer. */}
+          <main id="main" className="flex-1 pb-8 lg:pb-0">
             <PageTransition>{children}</PageTransition>
           </main>
           <Footer />
+          {/* Inside the column, after the footer: the nav keeps its own height
+              free at the foot of the page so the footer's last row clears it. */}
+          <BottomNav />
         </div>
-        <BottomNav />
         <CartDrawer />
         {/* Only when Google sign-in is configured, so an unconfigured store never
             loads Google's script or makes a request that is bound to fail. */}

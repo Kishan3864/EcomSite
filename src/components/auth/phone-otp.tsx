@@ -20,7 +20,7 @@ function Alert({ children }: { children: ReactNode }) {
   return (
     <p
       role="alert"
-      className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700"
+      className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
     >
       <AlertTriangle size={14} className="mt-0.5 shrink-0" />
       {children}
@@ -42,7 +42,10 @@ function MobileInput({
 }) {
   return (
     <div className="relative">
-      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] font-semibold text-ink-700">
+      {/* Sized with the field's own text — 16px on phones, 14px from sm up —
+          so the prefix and the digits sit on one line. The field's left padding
+          grows with it on phones so the larger +91 keeps clear of the digits. */}
+      <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[16px] font-semibold text-ink-700 sm:text-[14px]">
         +91
       </span>
       <Input
@@ -56,7 +59,7 @@ function MobileInput({
         onChange={(event) => onChange(event.target.value.replace(/\D/g, "").replace(/^(91|0)(?=\d{10})/, "").slice(0, 10))}
         invalid={invalid}
         placeholder="98765 43210"
-        className="pl-12 tracking-[0.04em]"
+        className="pl-[3.25rem] tracking-[0.04em] sm:pl-12"
       />
     </div>
   );
@@ -89,7 +92,7 @@ function CodeInput({
       onChange={(event) => onChange(event.target.value.replace(/\D/g, "").slice(0, 6))}
       invalid={invalid}
       placeholder="••••••"
-      className="text-center text-[22px] font-semibold tabular-nums tracking-[0.55em]"
+      className="text-center text-[22px] font-semibold tabular-nums tracking-[0.55em] sm:text-[20px]"
     />
   );
 }
@@ -215,7 +218,7 @@ function OtpSteps({
   if (step === "phone") {
     return (
       <form
-        className="space-y-5"
+        className="space-y-4 sm:space-y-5"
         onSubmit={(event) => {
           event.preventDefault();
           send();
@@ -240,7 +243,7 @@ function OtpSteps({
 
   return (
     <form
-      className="space-y-5"
+      className="space-y-4 sm:space-y-5"
       onSubmit={(event) => {
         event.preventDefault();
         check(code);
@@ -248,16 +251,17 @@ function OtpSteps({
       noValidate
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[13.5px] leading-relaxed text-ink-600">
+        <p className="min-w-0 text-[13px] leading-relaxed text-ink-600 sm:text-[13.5px]">
           Enter the code sent to <strong className="font-semibold text-ink-900">{display}</strong>
         </p>
+        {/* The padding only widens the tap area on a phone; the margin cancels it. */}
         <button
           type="button"
           onClick={() => {
             setStep("phone");
             setError(null);
           }}
-          className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+          className="-m-2 inline-flex shrink-0 items-center gap-1 p-2 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:m-0 sm:p-0"
         >
           <ArrowLeft size={13} /> Change
         </button>
@@ -281,7 +285,7 @@ function OtpSteps({
         {pending ? "Checking…" : submitLabel}
       </Button>
 
-      <p className="flex flex-wrap items-center justify-between gap-2 text-[12.5px] text-ink-500">
+      <p className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-ink-500 sm:text-[12.5px]">
         <span className="inline-flex items-center gap-1.5">
           <ShieldCheck size={13} className="text-brand-600" /> Never share this code with anyone.
         </span>
@@ -292,7 +296,7 @@ function OtpSteps({
             type="button"
             onClick={send}
             disabled={pending}
-            className="font-semibold text-brand-700 underline-offset-4 hover:underline disabled:opacity-50"
+            className="-my-2 py-2 font-semibold text-brand-700 underline-offset-4 hover:underline disabled:opacity-50 sm:my-0 sm:py-0"
           >
             Resend code
           </button>
@@ -353,7 +357,7 @@ function PhoneProfileStep({ next }: { next?: string }) {
 
   return (
     <form
-      className="space-y-5"
+      className="space-y-4 sm:space-y-5"
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
@@ -368,7 +372,7 @@ function PhoneProfileStep({ next }: { next?: string }) {
         });
       }}
     >
-      <p className="flex items-start gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3.5 py-2.5 text-[13px] text-brand-800">
+      <p className="flex items-start gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-[12.5px] text-brand-800 sm:px-3.5 sm:py-2.5 sm:text-[13px]">
         <Check size={14} className="mt-0.5 shrink-0" />
         Number verified. Tell us who you are to finish creating your account.
       </p>
@@ -417,12 +421,20 @@ export function PhoneLinkCard({ verifiedPhone }: { verifiedPhone: string | null 
   if (linked && !editing) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="inline-flex items-center gap-2 text-[14px] text-ink-800">
-          <ShieldCheck size={16} className="text-brand-600" />
-          <span className="font-semibold">{linked}</span>
+        {/* On a phone the note wraps under the number instead of squeezing it
+            onto two lines. */}
+        <p className="inline-flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5 text-[13.5px] text-ink-800 sm:flex-nowrap sm:gap-2 sm:text-[14px]">
+          <ShieldCheck size={16} className="shrink-0 text-brand-600" />
+          <span className="whitespace-nowrap font-semibold">{linked}</span>
           <span className="text-[12px] text-ink-500">Verified — you can sign in with an OTP</span>
         </p>
-        <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setEditing(true)}
+          className="h-10 sm:h-9"
+        >
           Change number
         </Button>
       </div>

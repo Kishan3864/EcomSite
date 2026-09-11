@@ -33,15 +33,15 @@ export function ForgotForm() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-xl border border-brand-200 bg-brand-50 p-6"
+        className="rounded-xl border border-brand-200 bg-brand-50 p-4 sm:p-6"
       >
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
           <Headset size={20} />
         </span>
-        <h2 className="mt-4 font-display text-xl tracking-[-0.015em] text-ink-950">
+        <h2 className="mt-3 font-display text-[17px] tracking-[-0.015em] text-ink-950 sm:mt-4 sm:text-xl">
           Our team will get back to you
         </h2>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-ink-700">
+        <p className="mt-1.5 text-[13px] leading-relaxed text-ink-700 sm:mt-2 sm:text-[13.5px]">
           If there is an account for that address, your request is with support now. They will
           verify who you are and set a new password with you, usually within a few working hours.
         </p>
@@ -52,7 +52,7 @@ export function ForgotForm() {
           </a>{" "}
           between 8am and 10pm, any day.
         </p>
-        <Link href="/login" className={buttonClasses("outline", "md", "mt-5")}>
+        <Link href="/login" className={buttonClasses("outline", "md", "mt-4 w-full sm:mt-5 sm:w-auto")}>
           <ArrowLeft size={15} /> Back to sign in
         </Link>
       </motion.div>
@@ -60,7 +60,7 @@ export function ForgotForm() {
   }
 
   return (
-    <Form action={action} className="space-y-5">
+    <Form action={action} className="space-y-4 sm:space-y-5">
       <Field
         label="Email address"
         htmlFor="forgot-email"
@@ -79,7 +79,7 @@ export function ForgotForm() {
         />
       </Field>
 
-      <p className="rounded-lg bg-ink-50 p-3 text-[12px] leading-relaxed text-ink-600">
+      <p className="rounded-lg bg-ink-50 p-3 text-[12.5px] leading-relaxed text-ink-600 sm:text-[12px]">
         Automatic reset emails are not switched on yet, so a person handles this rather than a
         link landing in your inbox.
       </p>
@@ -88,7 +88,7 @@ export function ForgotForm() {
 
       <Link
         href="/login"
-        className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-600 transition-colors hover:text-brand-700"
+        className="-my-2 inline-flex items-center gap-1.5 py-2 text-[13px] font-medium text-ink-600 transition-colors hover:text-brand-700 sm:my-0 sm:py-0"
       >
         <ArrowLeft size={14} /> Back to sign in
       </Link>

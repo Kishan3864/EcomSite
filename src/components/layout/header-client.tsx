@@ -30,6 +30,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 import { MegaMenu } from "./mega-menu";
 import { SearchBar } from "./search-bar";
+import { isFunnelRoute } from "./bottom-nav";
 import type { SearchDoc } from "@/lib/search-index";
 import type { Category } from "@/lib/types";
 import { Drawer } from "@/components/ui/overlay";
@@ -159,52 +160,75 @@ export function HeaderClient({
           </div>
 
           {/* ---------------------------- Mobile ---------------------------- */}
-          <div className="flex items-center gap-2 py-2.5 lg:hidden">
+          {/* 57px exactly: the listing toolbar sticks at top-[57px], its top
+              rule tucked under this bar's. */}
+          <div className="flex h-[57px] items-center gap-0.5 lg:hidden">
             <button
               onClick={() => setMenuOpenAt(pathname)}
               aria-label="Open menu"
-              className="-ml-1 rounded-lg p-2 text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap -ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
             >
               <Menu size={21} />
             </button>
-            <Logo size="sm" className="mr-auto" />
+            <Logo size="sm" className="h-[34px] w-[126px] sm:h-[38px] sm:w-[141px]" />
+            {/* Tablets have the width for the field itself. */}
+            <SearchField
+              onOpen={() => setSearchOpenAt(pathname)}
+              className="mx-3 hidden flex-1 sm:flex"
+            />
             <button
               onClick={() => setSearchOpenAt(pathname)}
               aria-label="Search"
-              className="rounded-lg p-2 text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100 sm:hidden"
             >
               <Search size={20} />
             </button>
             <Link
               href="/wishlist"
               aria-label="Wishlist"
-              className="relative rounded-lg p-2 text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
             >
-              <Heart size={20} />
-              <CountBubble count={wishCount} />
+              <span className="relative">
+                <Heart size={20} />
+                <CountBubble count={wishCount} />
+              </span>
             </Link>
             <button
               onClick={openCartDrawer}
               aria-label="Open bag"
-              className="relative -mr-1 rounded-lg p-2 text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
             >
-              <ShoppingBag size={20} />
-              <CountBubble count={count} />
+              <span className="relative">
+                <ShoppingBag size={20} />
+                <CountBubble count={count} />
+              </span>
             </button>
           </div>
         </div>
       </header>
 
+      {/* Phones lead with a full-width search field, as shopping apps do. It
+          sits outside the sticky bar so it scrolls away with the page; the
+          magnifier in the bar takes over from there. */}
+      {!isFunnelRoute(pathname) && (
+        <div className="container-page pb-2.5 sm:hidden">
+          <SearchField onOpen={() => setSearchOpenAt(pathname)} className="w-full" />
+        </div>
+      )}
+
       <MobileMenu open={menuOpen} onClose={() => setMenuOpenAt(null)} categories={categories} />
 
+      {/* A fixed height rather than one that follows the results, so the field
+          holds its place above the keyboard as suggestions come and go. */}
       <Drawer
         open={searchOpen}
         onClose={() => setSearchOpenAt(null)}
         side="bottom"
         title="Search WeekendCart"
-        className="max-h-[92vh]"
+        className="h-[90dvh] max-h-[90dvh]"
       >
-        <div className="p-4">
+        {/* The Drawer's scroll area already clears the home indicator. */}
+        <div className="h-full p-4">
           <SearchBar
             docs={searchDocs}
             variant="sheet"
@@ -214,6 +238,27 @@ export function HeaderClient({
         </div>
       </Drawer>
     </>
+  );
+}
+
+/**
+ * Stands in for the search input below desktop: it looks like the field and
+ * opens the search sheet, which is where typing happens on a touch screen.
+ */
+function SearchField({ onOpen, className }: { onOpen: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-haspopup="dialog"
+      className={cn(
+        "tap flex h-10 min-w-0 items-center gap-2.5 rounded-xl border border-ink-200 bg-surface px-3.5 text-left transition-colors hover:border-ink-300",
+        className,
+      )}
+    >
+      <Search size={16} className="shrink-0 text-ink-400" />
+      <span className="truncate text-[13.5px] text-ink-500">Search WeekendCart</span>
+    </button>
   );
 }
 
@@ -507,14 +552,14 @@ function AnnouncementBar({ offerCount }: { offerCount: number }) {
   ];
 
   return (
-    <div className="overflow-hidden bg-brand-950 py-2 text-white">
+    <div className="overflow-hidden bg-brand-950 py-1.5 text-white sm:py-2">
       <div className="flex w-max animate-[marquee_38s_linear_infinite] motion-reduce:animate-none">
         {[0, 1].map((dup) => (
           <ul key={dup} className="flex shrink-0 items-center" aria-hidden={dup === 1}>
             {items.map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-3 whitespace-nowrap px-6 text-[11.5px] font-medium tracking-[0.02em] text-white/80"
+                className="flex items-center gap-3 whitespace-nowrap px-4 text-[11.5px] font-medium tracking-[0.02em] text-white/80 sm:px-6"
               >
                 <span className="h-1 w-1 rounded-full bg-gold-400" />
                 {item}
@@ -559,40 +604,48 @@ function MobileMenu({
     { href: "/faq", label: "FAQ" },
   ];
 
+  // Only reachable below lg, and never wider than 330px, so one compact scale
+  // serves phones and tablets alike. The width leaves a strip of page showing
+  // on small phones, to tap away as in a native drawer.
   return (
-    <Drawer open={open} onClose={onClose} side="left" className="max-w-[330px]">
-      <div className="flex items-center justify-between border-b border-hairline px-5 py-4">
+    <Drawer
+      open={open}
+      onClose={onClose}
+      side="left"
+      className="max-w-[min(330px,calc(100vw-3rem))]"
+    >
+      <div className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
         <Logo size="sm" />
         <button
           onClick={onClose}
           aria-label="Close menu"
-          className="-mr-1.5 rounded-lg p-1.5 text-ink-500 hover:bg-ink-100"
+          className="tap -mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100"
         >
           <X size={18} />
         </button>
       </div>
 
-      <div className="border-b border-hairline bg-brand-950 px-5 py-5 text-white">
-        <p className="font-display text-lg tracking-[-0.01em]">
+      <div className="border-b border-hairline bg-brand-950 px-4 py-4 text-white">
+        <p className="font-display text-base tracking-[-0.01em]">
           {customer ? `Hello, ${customer.name.split(" ")[0]}` : "Welcome back"}
         </p>
-        <p className="mt-0.5 text-xs text-white/60">
+        <p className="mt-0.5 break-words text-[12.5px] text-white/60">
           {customer
             ? customer.email
             : "Sign in for faster checkout and order tracking."}
         </p>
-        <div className="mt-3.5 flex gap-2">
+        <div className="mt-3 flex gap-2">
           {customer ? (
             <>
               <Link
                 href="/account"
-                className="flex-1 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold text-ink-950"
+                className="tap flex h-10 flex-1 items-center justify-center rounded-lg bg-white px-3 text-center text-[12.5px] font-semibold text-ink-950"
               >
                 My account
               </Link>
               <Link
                 href="/account/settings"
-                className="flex-1 rounded-lg border border-white/25 px-3 py-2 text-center text-[13px] font-semibold text-white"
+                className="tap flex h-10 flex-1 items-center justify-center rounded-lg border border-white/25 px-3 text-center text-[12.5px] font-semibold text-white"
               >
                 Settings
               </Link>
@@ -601,13 +654,13 @@ function MobileMenu({
             <>
               <Link
                 href="/login"
-                className="flex-1 rounded-lg bg-white px-3 py-2 text-center text-[13px] font-semibold text-ink-950"
+                className="tap flex h-10 flex-1 items-center justify-center rounded-lg bg-white px-3 text-center text-[12.5px] font-semibold text-ink-950"
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="flex-1 rounded-lg border border-white/25 px-3 py-2 text-center text-[13px] font-semibold text-white"
+                className="tap flex h-10 flex-1 items-center justify-center rounded-lg border border-white/25 px-3 text-center text-[12.5px] font-semibold text-white"
               >
                 Create account
               </Link>
@@ -616,8 +669,11 @@ function MobileMenu({
         </div>
       </div>
 
-      <nav className="p-3" aria-label="Mobile navigation">
-        <p className="px-2 pb-1.5 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+      <nav
+        className="px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2"
+        aria-label="Mobile navigation"
+      >
+        <p className="px-2 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">
           Shop by category
         </p>
         <ul>
@@ -628,12 +684,14 @@ function MobileMenu({
                   setExpanded((s) => (s === category.slug ? null : category.slug))
                 }
                 aria-expanded={expanded === category.slug}
-                className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-ink-50"
+                className="tap flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-ink-50"
               >
                 <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md bg-ink-100">
                   <Image src={category.image.url} alt="" fill sizes="36px" className="object-cover" />
                 </span>
-                <span className="flex-1 text-sm font-medium text-ink-900">{category.name}</span>
+                <span className="min-w-0 flex-1 text-[13.5px] font-medium text-ink-900">
+                  {category.name}
+                </span>
                 <ChevronRight
                   size={16}
                   className={cn(
@@ -655,7 +713,7 @@ function MobileMenu({
                       <Link
                         href={`/c/${category.slug}`}
                         onClick={onClose}
-                        className="block rounded-md px-2 py-2 text-[13px] font-semibold text-brand-700 hover:bg-brand-50"
+                        className="tap flex min-h-10 items-center rounded-md px-2 py-1.5 text-[12.5px] font-semibold text-brand-700 hover:bg-brand-50"
                       >
                         All {category.name}
                       </Link>
@@ -665,7 +723,7 @@ function MobileMenu({
                         <Link
                           href={`/c/${category.slug}/${sub.slug}`}
                           onClick={onClose}
-                          className="block rounded-md px-2 py-2 text-[13px] text-ink-600 hover:bg-ink-50 hover:text-ink-900"
+                          className="tap flex min-h-10 items-center rounded-md px-2 py-1.5 text-[12.5px] text-ink-600 hover:bg-ink-50 hover:text-ink-900"
                         >
                           {sub.name}
                         </Link>
@@ -678,16 +736,16 @@ function MobileMenu({
           ))}
         </ul>
 
-        <p className="px-2 pb-1.5 pt-5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+        <p className="px-2 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">
           Your account
         </p>
-        <ul className="space-y-0.5">
+        <ul>
           {links.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
                 onClick={onClose}
-                className="block rounded-lg px-2 py-2.5 text-sm text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-950"
+                className="tap flex min-h-10 items-center rounded-lg px-2 py-1.5 text-[13.5px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-950"
               >
                 {item.label}
               </Link>
@@ -697,7 +755,7 @@ function MobileMenu({
             <li>
               <SignOutForm
                 onSignOut={onClose}
-                className="block w-full rounded-lg px-2 py-2.5 text-left text-sm text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
+                className="tap flex min-h-10 w-full items-center rounded-lg px-2 py-1.5 text-left text-[13.5px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
               >
                 Sign out
               </SignOutForm>

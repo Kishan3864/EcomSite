@@ -134,6 +134,13 @@ const nextConfig: NextConfig = {
         headers: SECURITY_HEADERS,
       },
       {
+        // Brand images are embedded by email clients from other origins (the
+        // welcome email's logo); same-origin CORP would let some of them refuse.
+        // Later rules win for the same header key, so this overrides the above.
+        source: "/brand/:path*",
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+      },
+      {
         // Content-hashed build output never changes under the same name.
         source: "/_next/static/:path*",
         headers: [

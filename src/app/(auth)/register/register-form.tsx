@@ -40,13 +40,13 @@ export function RegisterForm({ next }: { next?: string }) {
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <Form action={action} className="space-y-5">
+    <Form action={action} className="space-y-4 sm:space-y-5">
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.error && !state.field && (
         <p
           role="alert"
-          className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700"
+          className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
         >
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           {state.error}
@@ -110,7 +110,9 @@ export function RegisterForm({ next }: { next?: string }) {
             type="button"
             onClick={() => setShow((s) => !s)}
             aria-label={show ? "Hide password" : "Show password"}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-2 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
+            // 40px square on a phone, the minimum comfortable tap; from sm up
+            // it shrinks back to the icon and its padding.
+            className="absolute right-0.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700 sm:right-1.5 sm:h-auto sm:w-auto sm:p-2"
           >
             {show ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>

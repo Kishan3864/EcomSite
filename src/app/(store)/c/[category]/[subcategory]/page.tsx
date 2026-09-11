@@ -81,12 +81,13 @@ export default async function SubcategoryPage({
       hideCategoryFilter
       brandLabels={brandLabels}
     >
-      <nav aria-label="Sibling categories" className="mb-8">
-        <ul className="rail -mx-4 gap-2 px-4 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:px-0">
+      <nav aria-label="Sibling categories" className="mb-4 sm:mb-8">
+        {/* The rail bleeds to the screen edge by exactly the page gutter. */}
+        <ul className="rail -mx-3 gap-2 px-3 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:px-0">
           <li>
             <Link
               href={`/c/${category.slug}`}
-              className="inline-block rounded-full border border-ink-200 bg-surface px-3.5 py-2 text-[12.5px] font-medium text-ink-700 transition-colors hover:border-ink-400"
+              className="tap inline-block whitespace-nowrap rounded-full border border-ink-200 bg-surface px-3 py-2 text-[12px] font-medium text-ink-700 transition-colors hover:border-ink-400 sm:px-3.5 sm:text-[12.5px]"
             >
               All {category.name}
             </Link>
@@ -97,7 +98,7 @@ export default async function SubcategoryPage({
                 href={`/c/${category.slug}/${sub.slug}`}
                 aria-current={sub.slug === subcategory.slug ? "page" : undefined}
                 className={cn(
-                  "inline-block rounded-full border px-3.5 py-2 text-[12.5px] font-medium transition-colors",
+                  "tap inline-block whitespace-nowrap rounded-full border px-3 py-2 text-[12px] font-medium transition-colors sm:px-3.5 sm:text-[12.5px]",
                   sub.slug === subcategory.slug
                     ? "border-brand-900 bg-brand-900 text-white"
                     : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",

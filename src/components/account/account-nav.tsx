@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -47,16 +48,38 @@ export function AccountNav({
 }) {
   const pathname = usePathname();
   const { wishlist, hydrated } = useStore();
+  const tabs = useRef<HTMLUListElement>(null);
 
   const counts: Record<string, number> = {
     "/account/orders": orderCount,
     "/wishlist": hydrated ? wishlist.length : 0,
   };
 
+  // Below lg the links are a sideways tab row, and the later tabs start off
+  // screen on a phone. Centre the current one when it is not fully in view.
+  useEffect(() => {
+    const row = tabs.current;
+    const current = row?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!row || !current || row.scrollWidth <= row.clientWidth) return;
+    const rowBox = row.getBoundingClientRect();
+    const box = current.getBoundingClientRect();
+    if (box.left >= rowBox.left && box.right <= rowBox.right) return;
+    row.scrollLeft += box.left - rowBox.left - (rowBox.width - box.width) / 2;
+  }, [pathname]);
+
+  // On a phone the profile card is the account home's header, as in an app;
+  // the sub-pages carry their own title, so it would only push them down.
+  const home = pathname === "/account";
+
   return (
-    <div className="space-y-4">
-      <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
-        <div className="peacock-surface p-5">
+    <div className="space-y-3 lg:space-y-4">
+      <div
+        className={cn(
+          "overflow-hidden rounded-xl border border-hairline bg-surface",
+          !home && "hidden lg:block",
+        )}
+      >
+        <div className="peacock-surface p-4 lg:p-5">
           <div className="flex items-center gap-3">
             <Avatar
               src={profile?.avatarUrl}
@@ -65,11 +88,15 @@ export function AccountNav({
               className="ring-2 ring-white/20"
             />
             <div className="min-w-0">
-              <p className="truncate text-[15px] font-semibold text-white">{profile?.name}</p>
-              <p className="truncate text-[12px] text-white/60">{profile?.email}</p>
+              <p className="truncate text-[14px] font-semibold text-white sm:text-[15px]">
+                {profile?.name}
+              </p>
+              <p className="truncate text-[11.5px] text-white/60 sm:text-[12px]">
+                {profile?.email}
+              </p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2.5 backdrop-blur">
+          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 backdrop-blur lg:mt-4 lg:py-2.5">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/50">
                 Membership
@@ -85,14 +112,18 @@ export function AccountNav({
               </p>
             </div>
           </div>
-          <p className="mt-3 text-[11px] text-white/40">
+          <p className="mt-2.5 text-[11px] text-white/40 lg:mt-3">
             Member since {profile ? formatDate(profile.memberSince, "short") : "—"}
           </p>
         </div>
       </div>
 
+      {/* A scrolling tab row below lg, the sidebar list from lg up. */}
       <nav aria-label="Account" className="overflow-hidden rounded-xl border border-hairline bg-surface">
-        <ul className="divide-y divide-hairline">
+        <ul
+          ref={tabs}
+          className="no-scrollbar flex overflow-x-auto overscroll-x-contain lg:block lg:divide-y lg:divide-hairline lg:overflow-visible"
+        >
           {LINKS.map((link) => {
             const active = link.exact
               ? pathname === link.href
@@ -100,15 +131,16 @@ export function AccountNav({
             const count = counts[link.href] ?? 0;
 
             return (
-              <li key={link.href}>
+              <li key={link.href} className="shrink-0">
                 <Link
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 text-[13.5px] transition-colors",
+                    "tap flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3.5 text-[13px] transition-colors",
+                    "lg:h-auto lg:gap-3 lg:whitespace-normal lg:border-b-0 lg:px-4 lg:py-3 lg:text-[13.5px]",
                     active
-                      ? "bg-brand-50 font-semibold text-brand-800"
-                      : "text-ink-700 hover:bg-ink-50",
+                      ? "border-brand-700 bg-brand-50 font-semibold text-brand-800"
+                      : "border-transparent text-ink-700 hover:bg-ink-50",
                   )}
                 >
                   <link.icon size={16} className={active ? "text-brand-700" : "text-ink-400"} />
@@ -122,11 +154,11 @@ export function AccountNav({
               </li>
             );
           })}
-          <li>
+          <li className="shrink-0">
             <Form action={logoutAction}>
               <button
                 type="submit"
-                className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13.5px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
+                className="tap flex h-11 w-full items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3.5 text-left text-[13px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600 lg:h-auto lg:gap-3 lg:whitespace-normal lg:border-b-0 lg:px-4 lg:py-3 lg:text-[13.5px]"
               >
                 <LogOut size={16} className="text-ink-400" />
                 Sign out

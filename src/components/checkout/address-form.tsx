@@ -57,9 +57,11 @@ export function AddressForm({
   }
 
   return (
-    <Form onSubmit={submit} className="space-y-4">
+    <Form onSubmit={submit} className="space-y-3 sm:space-y-4">
       <div>
-        <span className="mb-2 block text-[12.5px] font-medium text-ink-800">Address type</span>
+        <span className="mb-1.5 block text-[12.5px] font-medium text-ink-800 sm:mb-2">
+          Address type
+        </span>
         <div className="flex gap-2">
           {(["Home", "Work", "Other"] as const).map((label) => (
             <button
@@ -68,7 +70,7 @@ export function AddressForm({
               onClick={() => set("label", label)}
               aria-pressed={form.label === label}
               className={cn(
-                "rounded-lg border px-4 py-2 text-[13px] font-medium transition-colors",
+                "tap min-h-10 rounded-lg border px-4 py-2 text-[12.5px] font-medium transition-colors sm:min-h-0 sm:text-[13px]",
                 form.label === label
                   ? "border-brand-900 bg-brand-900 text-white"
                   : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
@@ -80,7 +82,7 @@ export function AddressForm({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
         <Field label="Full name" htmlFor="fullName" error={errors.fullName}>
           <Input
             id="fullName"
@@ -184,18 +186,20 @@ export function AddressForm({
         </Field>
       </div>
 
-      <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-ink-700">
+      <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-[12.5px] text-ink-700 sm:min-h-0 sm:text-[13px]">
         <input
           type="checkbox"
           checked={form.isDefault}
           onChange={(e) => set("isDefault", e.target.checked)}
-          className="h-4 w-4 accent-[var(--color-brand-700)]"
+          className="h-4 w-4 shrink-0 accent-[var(--color-brand-700)]"
         />
         Make this my default delivery address
       </label>
 
       <div className="flex flex-wrap gap-2 pt-1">
-        <Button type="submit">{submitLabel}</Button>
+        <Button type="submit" className="flex-1 sm:flex-initial">
+          {submitLabel}
+        </Button>
         {onCancel && (
           <Button type="button" variant="ghost" onClick={onCancel}>
             Cancel

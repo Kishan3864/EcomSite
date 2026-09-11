@@ -40,8 +40,8 @@ export function CouponBox({
   }
 
   return (
-    <section className="rounded-xl border border-hairline bg-surface p-4">
-      <h2 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+    <section className="rounded-xl border border-hairline bg-surface p-3 sm:p-4">
+      <h2 className="mb-2.5 flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-3 sm:text-[12px]">
         <Tag size={14} className="text-brand-600" />
         Coupons and offers
       </h2>
@@ -56,16 +56,17 @@ export function CouponBox({
             className="flex items-start justify-between gap-3 rounded-lg border border-dashed border-brand-400 bg-brand-50 p-3"
           >
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-[13px] font-semibold text-brand-800">
-                <Check size={14} strokeWidth={2.5} />
+              <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-800 sm:text-[13px]">
+                <Check size={14} strokeWidth={2.5} className="shrink-0" />
                 {applied.code} applied
               </p>
               <p className="mt-0.5 text-[12px] text-brand-700/80">{applied.title}</p>
             </div>
+            {/* Margin cancels padding on phones: same icon spot, 41px target. */}
             <button
               onClick={() => dispatch({ type: "coupon/set", code: null })}
               aria-label="Remove coupon"
-              className="shrink-0 rounded-md p-1 text-brand-700 transition-colors hover:bg-brand-100"
+              className="tap -m-[9px] shrink-0 rounded-md p-[13px] text-brand-700 transition-colors hover:bg-brand-100 sm:m-0 sm:p-1"
             >
               <X size={15} />
             </button>
@@ -82,6 +83,8 @@ export function CouponBox({
               <label htmlFor="coupon" className="sr-only">
                 Coupon code
               </label>
+              {/* 16px on phones so iOS does not zoom the page into the field;
+                  min-w-0 lets it give way to the Apply button at 320px. */}
               <input
                 id="coupon"
                 value={input}
@@ -90,9 +93,14 @@ export function CouponBox({
                   setError(null);
                 }}
                 placeholder="Enter a coupon code"
-                className="h-11 flex-1 rounded-lg border border-ink-200 bg-canvas px-3.5 text-sm uppercase tracking-[0.04em] text-ink-900 outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:text-ink-400 focus:border-brand-500"
+                className="h-11 min-w-0 flex-1 rounded-lg border border-ink-200 bg-canvas px-3 text-[16px] uppercase tracking-[0.04em] text-ink-900 outline-none transition-colors placeholder:normal-case placeholder:tracking-normal placeholder:text-ink-400 focus:border-brand-500 sm:px-3.5 sm:text-sm"
               />
-              <Button type="submit" variant="subtle" disabled={!input.trim()}>
+              <Button
+                type="submit"
+                variant="subtle"
+                disabled={!input.trim()}
+                className="px-4 sm:px-6"
+              >
                 Apply
               </Button>
             </Form>
@@ -108,7 +116,7 @@ export function CouponBox({
 
       <button
         onClick={() => setOpen((o) => !o)}
-        className="mt-3 text-[12.5px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+        className="tap mt-0.5 inline-flex h-10 items-center text-[12px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:mt-3 sm:inline-block sm:h-auto sm:text-[12.5px]"
       >
         {open ? "Hide available coupons" : `View ${offers.length} available coupons`}
       </button>
@@ -122,19 +130,19 @@ export function CouponBox({
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="mt-3 space-y-2">
+            <div className="mt-0.5 space-y-2 sm:mt-3">
               {offers.map((offer) => {
                 const check = evaluateCoupon(offer, itemsTotal, categories);
                 return (
                   <li
                     key={offer.id}
                     className={cn(
-                      "flex items-start justify-between gap-3 rounded-lg border border-dashed p-3",
+                      "flex items-start justify-between gap-3 rounded-lg border border-dashed p-2.5 sm:p-3",
                       check.ok ? "border-ink-300" : "border-ink-200 opacity-60",
                     )}
                   >
                     <div className="min-w-0">
-                      <p className="font-mono text-[12.5px] font-bold tracking-[0.04em] text-ink-950">
+                      <p className="font-mono text-[12px] font-bold tracking-[0.04em] text-ink-950 sm:text-[12.5px]">
                         {offer.code}
                       </p>
                       <p className="mt-0.5 text-[12.5px] text-ink-700">{offer.title}</p>
@@ -151,7 +159,7 @@ export function CouponBox({
                       variant={check.ok ? "primary" : "outline"}
                       disabled={!check.ok}
                       onClick={() => apply(offer.code)}
-                      className="shrink-0"
+                      className="h-10 shrink-0 sm:h-8"
                     >
                       Apply
                     </Button>

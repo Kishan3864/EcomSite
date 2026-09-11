@@ -100,7 +100,7 @@ export function RatingChip({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-xs", className)}>
+    <span className={cn("inline-flex items-center gap-1.5 text-[11.5px] sm:text-xs", className)}>
       <span className="inline-flex items-center gap-1 rounded-md bg-brand-700 px-1.5 py-0.5 font-semibold text-white tabular-nums">
         {value.toFixed(1)}
         <Star size={10} fill="currentColor" strokeWidth={0} />
@@ -128,11 +128,24 @@ export function Price({
   className?: string;
 }) {
   const off = mrp ? discountPercent(mrp, price) : 0;
+  // [price, mrp, percent off]. `xl` is the product page's main price.
   const sizes = {
-    sm: ["text-sm font-semibold", "text-[11px]", "text-[11px]"],
-    md: ["text-[17px] font-semibold", "text-xs", "text-xs"],
-    lg: ["text-2xl font-semibold", "text-sm", "text-sm"],
-    xl: ["text-3xl font-semibold tracking-[-0.02em]", "text-[15px]", "text-[13px]"],
+    sm: ["text-[13.5px] font-semibold sm:text-sm", "text-[11px]", "text-[11px]"],
+    md: [
+      "text-[16px] font-semibold sm:text-[17px]",
+      "text-[11.5px] sm:text-xs",
+      "text-[11.5px] sm:text-xs",
+    ],
+    lg: [
+      "text-[20px] font-semibold sm:text-2xl",
+      "text-[13.5px] sm:text-sm",
+      "text-[13.5px] sm:text-sm",
+    ],
+    xl: [
+      "text-[22px] font-semibold tracking-[-0.02em] sm:text-3xl",
+      "text-[14px] sm:text-[15px]",
+      "text-[12.5px] sm:text-[13px]",
+    ],
   }[size];
 
   return (
@@ -170,18 +183,18 @@ export function SectionHeader({
   className?: string;
 }) {
   return (
-    <div className={cn("flex items-end justify-between gap-6", className)}>
+    <div className={cn("flex items-end justify-between gap-4 sm:gap-6", className)}>
       <div className="min-w-0">
         {eyebrow && (
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
+          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600 sm:mb-2">
             {eyebrow}
           </p>
         )}
-        <h2 className="font-display text-[26px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:text-[32px]">
+        <h2 className="font-display text-[20px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:text-[32px]">
           {title}
         </h2>
         {description && (
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-600">
+          <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-sm">
             {description}
           </p>
         )}
@@ -212,7 +225,9 @@ export interface Crumb {
 export function Breadcrumbs({ items, className }: { items: Crumb[]; className?: string }) {
   return (
     <nav aria-label="Breadcrumb" className={cn("min-w-0", className)}>
-      <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-ink-500">
+      {/* One swipeable line on phones instead of a trail wrapping over three.
+          The py/-my pair keeps focus rings clear of the scroll clip. */}
+      <ol className="-my-1 flex items-center gap-x-1.5 gap-y-1 overflow-x-auto whitespace-nowrap py-1 text-[12.5px] text-ink-500 no-scrollbar sm:my-0 sm:flex-wrap sm:overflow-visible sm:whitespace-normal sm:py-0 sm:text-[13px]">
         {items.map((item, i) => {
           const last = i === items.length - 1;
           return (
@@ -277,18 +292,25 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 bg-surface px-6 py-16 text-center",
+        // Vertical padding is one fluid class (~32–40px on a phone, 4rem from
+        // 640px up) rather than py-10 sm:py-16: callers pass a plain py-*, and
+        // a surviving sm:py-16 would override theirs on desktop.
+        "flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 bg-surface px-4 py-[min(4rem,10vw)] text-center sm:px-6",
         className,
       )}
     >
       {icon && (
-        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-brand-600">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 sm:mb-5 sm:h-16 sm:w-16">
           {icon}
         </div>
       )}
-      <h3 className="font-display text-xl tracking-[-0.01em] text-ink-950">{title}</h3>
-      {body && <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-600">{body}</p>}
-      {action && <div className="mt-6">{action}</div>}
+      <h3 className="font-display text-[17px] tracking-[-0.01em] text-ink-950 sm:text-xl">{title}</h3>
+      {body && (
+        <p className="mt-1.5 max-w-sm text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-sm">
+          {body}
+        </p>
+      )}
+      {action && <div className="mt-5 sm:mt-6">{action}</div>}
     </div>
   );
 }

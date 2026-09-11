@@ -9,6 +9,11 @@ import { estimatedDelivery } from "@/lib/pricing";
 import { useStore } from "@/store/store";
 import { cn, formatDate, formatINR } from "@/lib/utils";
 
+// Labels such as "Create an account to pay" are wider than a 320px screen at
+// the lg button's padding, so on phones the padding narrows and the label may
+// take two lines inside the same 48px button rather than overflow it.
+const CTA_FIT = "w-full px-4 text-center whitespace-normal sm:px-8 sm:whitespace-nowrap";
+
 export function OrderSummary({
   totals,
   lines,
@@ -76,16 +81,19 @@ export function OrderSummary({
         className,
       )}
     >
-      <div className="border-b border-hairline px-5 py-4">
-        <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+      <div className="border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
+        <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
           Order summary
         </h2>
       </div>
 
-      <dl className="space-y-2.5 px-5 py-4">
+      <dl className="space-y-2 px-4 py-3 sm:space-y-2.5 sm:px-5 sm:py-4">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-baseline justify-between gap-4 text-[13.5px]">
-            <dt className={cn("text-ink-600", row.tone === "muted" && "text-ink-400")}>
+          <div
+            key={row.label}
+            className="flex items-baseline justify-between gap-4 text-[13px] sm:text-[13.5px]"
+          >
+            <dt className={cn("min-w-0 text-ink-600", row.tone === "muted" && "text-ink-400")}>
               {row.label}
             </dt>
             <dd
@@ -104,27 +112,27 @@ export function OrderSummary({
         ))}
       </dl>
 
-      <div className="flex items-baseline justify-between gap-4 border-t border-hairline px-5 py-4">
-        <span className="text-[15px] font-semibold text-ink-950">Total payable</span>
+      <div className="flex items-baseline justify-between gap-4 border-t border-hairline px-4 py-3 sm:px-5 sm:py-4">
+        <span className="text-[14px] font-semibold text-ink-950 sm:text-[15px]">Total payable</span>
         <motion.span
           key={totals.total}
           initial={{ opacity: 0.5, y: -3 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="text-xl font-semibold tabular-nums text-ink-950"
+          className="text-[17px] font-semibold tabular-nums text-ink-950 sm:text-xl"
         >
           {formatINR(totals.total)}
         </motion.span>
       </div>
 
       {totals.savings > 0 && (
-        <p className="mx-5 mb-4 rounded-lg bg-brand-50 px-3 py-2.5 text-center text-[12.5px] font-semibold text-brand-800">
+        <p className="mx-4 mb-3 rounded-lg bg-brand-50 px-3 py-2 text-center text-[12px] font-semibold text-brand-800 sm:mx-5 sm:mb-4 sm:py-2.5 sm:text-[12.5px]">
           You save {formatINR(totals.savings)} on this order
         </p>
       )}
 
       {showDeliveryEstimate && lines.length > 0 && (
-        <p className="mx-5 mb-4 flex items-start gap-2 text-[12.5px] text-ink-600">
+        <p className="mx-4 mb-3 flex items-start gap-2 text-[12.5px] text-ink-600 sm:mx-5 sm:mb-4">
           <Truck size={14} className="mt-0.5 shrink-0 text-brand-600" />
           Estimated delivery{" "}
           <strong className="font-semibold text-ink-900">
@@ -134,32 +142,32 @@ export function OrderSummary({
       )}
 
       {toFree > 0 && (
-        <p className="mx-5 mb-4 text-[12px] text-ink-500">
+        <p className="mx-4 mb-3 text-[12px] text-ink-500 sm:mx-5 sm:mb-4">
           Add {formatINR(toFree)} more to qualify for free standard delivery.
         </p>
       )}
 
       {cta && (
-        <div className="border-t border-hairline p-5">
+        <div className="border-t border-hairline p-4 sm:p-5">
           {ctaHref ? (
-            <Link href={ctaHref} className={buttonClasses("primary", "lg", "w-full")}>
+            <Link href={ctaHref} className={buttonClasses("primary", "lg", CTA_FIT)}>
               {cta}
               <ArrowRight size={17} />
             </Link>
           ) : (
-            <button onClick={onCta} className={buttonClasses("primary", "lg", "w-full")}>
+            <button onClick={onCta} className={buttonClasses("primary", "lg", CTA_FIT)}>
               {cta}
               <ArrowRight size={17} />
             </button>
           )}
-          <p className="mt-3 flex items-center justify-center gap-1.5 text-[11.5px] text-ink-400">
+          <p className="mt-2.5 flex items-center justify-center gap-1.5 text-[11.5px] text-ink-400 sm:mt-3">
             <Lock size={11} />
             {footnote ?? "Secure checkout. Your details are never shared."}
           </p>
         </div>
       )}
       {coupon && !cta && (
-        <p className="px-5 pb-5 text-[11.5px] text-ink-400">{coupon.description}</p>
+        <p className="px-4 pb-4 text-[11.5px] text-ink-400 sm:px-5 sm:pb-5">{coupon.description}</p>
       )}
     </div>
   );

@@ -49,29 +49,30 @@ export default async function OffersPage() {
     <>
       <BreadcrumbJsonLd items={crumbs} />
 
-      <div className="container-page py-5 sm:py-7">
-        <Breadcrumbs items={crumbs} className="mb-5" />
+      <div className="container-page py-3 sm:py-7">
+        <Breadcrumbs items={crumbs} className="mb-3 sm:mb-5" />
 
         <header className="overflow-hidden rounded-2xl sm:rounded-3xl">
-          <div className="peacock-surface px-6 py-10 sm:px-12 sm:py-14">
+          <div className="peacock-surface px-4 py-6 sm:px-12 sm:py-14">
             <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-gold-300">
               <Sparkles size={12} /> Live right now
             </p>
-            <h1 className="mt-4 max-w-2xl font-display text-[32px] leading-[1.06] tracking-[-0.03em] text-white sm:text-[46px]">
+            <h1 className="mt-3 max-w-2xl font-display text-[24px] leading-[1.06] tracking-[-0.03em] text-white sm:mt-4 sm:text-[46px]">
               Every offer running today, in plain language.
             </h1>
-            <p className="mt-3 max-w-xl text-[14.5px] leading-relaxed text-white/65">
+            <p className="mt-2 max-w-xl text-[13.5px] leading-relaxed text-white/65 sm:mt-3 sm:text-[14.5px]">
               No inflated MRP, no fine print hidden three clicks deep. Here is exactly what each
               code does, what it needs, and when it expires.
             </p>
-            <div className="mt-6 flex flex-wrap gap-6">
+            {/* Three even columns on phones so the stats sit on one line. */}
+            <div className="mt-4 grid grid-cols-3 gap-3 sm:mt-6 sm:flex sm:flex-wrap sm:gap-6">
               {[
                 { value: offers.length, label: "Coupons live" },
                 { value: `${flashDeals.length}+`, label: "Deals today" },
                 { value: "40%", label: "Biggest discount" },
               ].map((stat) => (
-                <div key={stat.label}>
-                  <p className="font-display text-[28px] leading-none text-gold-300">
+                <div key={stat.label} className="min-w-0">
+                  <p className="font-display text-[21px] leading-none text-gold-300 sm:text-[28px]">
                     {stat.value}
                   </p>
                   <p className="mt-1 text-[11.5px] uppercase tracking-[0.1em] text-white/45">
@@ -83,24 +84,24 @@ export default async function OffersPage() {
           </div>
         </header>
 
-        <section className="mt-10">
+        <section className="mt-6 sm:mt-10">
           <Reveal>
             <SectionHeader
               eyebrow="Copy and paste at checkout"
               title="Coupon codes"
               description="Tap a code to copy it. Bank offers stack with product discounts; coupons do not stack with each other."
-              className="mb-6"
+              className="mb-4 sm:mb-6"
             />
           </Reveal>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
             {offers.map((offer) => (
               <CouponCodeCard key={offer.id} offer={offer} />
             ))}
           </div>
         </section>
 
-        <section className="mt-12">
+        <section className="mt-8 sm:mt-12">
           <Reveal>
             <SectionHeader
               eyebrow="Shop the discount"
@@ -108,7 +109,7 @@ export default async function OffersPage() {
               description="Everything in the catalogue currently discounted by at least 30%."
               href="/products?discount=30&sort=discount"
               linkLabel="See all"
-              className="mb-6"
+              className="mb-4 sm:mb-6"
             />
           </Reveal>
           <ProductGrid products={toCardModels(bigDiscounts.items)} className="xl:grid-cols-5" />
@@ -133,29 +134,32 @@ export default async function OffersPage() {
         products={toCardModels(limited)}
       />
 
-      <section className="container-page py-10 sm:py-14">
+      <section className="container-page py-6 sm:py-14">
         <Reveal>
           <SectionHeader
             eyebrow="By department"
             title="Deals by category"
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           />
         </Reveal>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* A swipeable row of tiles on phones rather than a stack eight tall;
+            the grid returns from sm up. 160px leaves a third tile peeking at
+            every common phone width, so the row reads as scrollable. */}
+        <div className="no-scrollbar -mx-3 flex snap-x snap-mandatory scroll-px-3 gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
           {categories.map((category) => (
             <Link
               key={category.slug}
               href={`/c/${category.slug}?discount=20&sort=discount`}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-hairline bg-surface p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md"
+              className="tap group flex w-[160px] shrink-0 snap-start items-center justify-between gap-2 rounded-xl border border-hairline bg-surface p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md sm:w-auto sm:gap-3 sm:p-4"
             >
-              <span>
-                <span className="block text-[13.5px] font-semibold text-ink-950 group-hover:text-brand-700">
+              <span className="min-w-0">
+                <span className="block text-[13px] font-semibold leading-snug text-ink-950 group-hover:text-brand-700 sm:text-[13.5px] sm:leading-normal">
                   {category.name}
                 </span>
-                <span className="mt-0.5 block text-[12px] text-ink-500">20% off and above</span>
+                <span className="mt-0.5 block text-[11.5px] text-ink-500 sm:text-[12px]">20% off and above</span>
               </span>
               <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white sm:h-9 sm:w-9"
                 style={{ backgroundColor: category.accent }}
               >
                 <BadgePercent size={16} />
@@ -165,13 +169,13 @@ export default async function OffersPage() {
         </div>
       </section>
 
-      <section className="container-page pb-14">
-        <div className="rounded-2xl border border-hairline bg-surface p-6 sm:p-8">
-          <h2 className="flex items-center gap-2 font-display text-xl tracking-[-0.015em] text-ink-950">
+      <section className="container-page pb-8 sm:pb-14">
+        <div className="rounded-2xl border border-hairline bg-surface p-4 sm:p-8">
+          <h2 className="flex items-center gap-2 font-display text-[17px] tracking-[-0.015em] text-ink-950 sm:text-xl">
             <Clock size={18} className="text-brand-600" />
             How our offers work
           </h2>
-          <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {[
               {
                 title: "One coupon per order",
@@ -196,8 +200,8 @@ export default async function OffersPage() {
               <li key={item.title}>
                 <div className="flex items-start gap-2.5">
                   <Flame size={15} className="mt-0.5 shrink-0 text-gold-500" />
-                  <div>
-                    <p className="text-[13.5px] font-semibold text-ink-950">{item.title}</p>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-ink-950 sm:text-[13.5px]">{item.title}</p>
                     <p className="mt-1 text-[12.5px] leading-relaxed text-ink-600">{item.body}</p>
                   </div>
                 </div>

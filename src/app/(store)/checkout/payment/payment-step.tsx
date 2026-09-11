@@ -101,9 +101,20 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
           <OrderSummary totals={totals} lines={cart} delivery={selectedDelivery} />
         </>
       }
+      total={totals.total}
+      action={
+        <Button
+          size="lg"
+          className="w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8"
+          onClick={next}
+        >
+          Review order
+          <ArrowRight size={17} />
+        </Button>
+      }
     >
-      <div className="space-y-4">
-        <ul className="space-y-3">
+      <div className="space-y-3 sm:space-y-4">
+        <ul className="space-y-2 sm:space-y-3">
           {config.paymentMethods.map((method) => {
             const disabled = method.id === "cod" && !codAllowed;
             const Icon = method.id === "cod" ? Banknote : ShieldCheck;
@@ -167,13 +178,14 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
             href="/checkout/delivery"
-            className="text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline"
+            className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
           >
             Back to delivery
           </Link>
-          <Button size="lg" className="min-w-[200px]" onClick={next}>
+          <Button size="lg" className="hidden min-w-[200px] lg:inline-flex" onClick={next}>
             Review order
             <ArrowRight size={17} />
           </Button>

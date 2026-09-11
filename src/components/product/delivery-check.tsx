@@ -75,9 +75,9 @@ export function DeliveryCheck({
   }
 
   return (
-    <section className="rounded-xl border border-hairline bg-surface p-4">
-      <h2 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
-        <MapPin size={14} className="text-brand-600" />
+    <section className="rounded-xl border border-hairline bg-surface p-3.5 sm:p-4">
+      <h2 className="mb-2.5 flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-3 sm:text-[12px]">
+        <MapPin size={14} className="shrink-0 text-brand-600" />
         Check delivery to your pincode
       </h2>
 
@@ -94,7 +94,8 @@ export function DeliveryCheck({
           }}
           inputMode="numeric"
           placeholder="e.g. 560102"
-          className="h-11 flex-1 rounded-lg border border-ink-200 bg-canvas px-3.5 text-sm tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-brand-500"
+          // 16px on phones: iOS zooms the page into any smaller field.
+          className="h-11 min-w-0 flex-1 rounded-lg border border-ink-200 bg-canvas px-3.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-brand-500 sm:text-sm"
         />
         <Button type="submit" variant="subtle" loading={checking} className="shrink-0">
           Check
@@ -114,17 +115,17 @@ export function DeliveryCheck({
             <div className="pt-3">
               {result.ok ? (
                 <div className="rounded-lg bg-brand-50 p-3">
-                  <p className="flex items-center gap-2 text-[13px] font-semibold text-brand-800">
-                    <Check size={15} strokeWidth={2.5} />
+                  <p className="flex items-center gap-2 text-[12.5px] font-semibold text-brand-800 sm:text-[13px]">
+                    <Check size={15} strokeWidth={2.5} className="shrink-0" />
                     Delivery by {formatDate(result.date!, "day")}
                   </p>
-                  <p className="mt-1 pl-[23px] text-[12px] text-brand-700/80">
+                  <p className="mt-1 pl-[23px] text-[11.5px] text-brand-700/80 sm:text-[12px]">
                     {result.city} · {result.cod ? "Cash on Delivery available" : "Prepaid only"} ·
                     Free returns
                   </p>
                 </div>
               ) : (
-                <p className="flex items-start gap-2 rounded-lg bg-sale-50 p-3 text-[13px] text-sale-700">
+                <p className="flex items-start gap-2 rounded-lg bg-sale-50 p-3 text-[12.5px] text-sale-700 sm:text-[13px]">
                   <AlertCircle size={15} className="mt-px shrink-0" />
                   {result.message}
                 </p>

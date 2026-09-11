@@ -106,12 +106,12 @@ export function BuyBox({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4 sm:gap-5">
       <div>
-        <div className="mb-2 flex flex-wrap items-center gap-2">
+        <div className="mb-1.5 flex flex-wrap items-center gap-2 sm:mb-2">
           <Link
             href={`/products?brands=${product.brandSlug}`}
-            className="text-[12px] font-semibold uppercase tracking-[0.12em] text-brand-700 hover:underline underline-offset-4"
+            className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-700 hover:underline underline-offset-4 sm:text-[12px]"
           >
             {brandName}
           </Link>
@@ -125,26 +125,30 @@ export function BuyBox({
           ))}
         </div>
 
-        <h1 className="font-display text-[26px] leading-[1.12] tracking-[-0.025em] text-ink-950 sm:text-[32px]">
+        {/* App scale on a phone, so under the full-width photo the price still
+            makes the first screen. The display face stays. */}
+        <h1 className="font-display text-[17px] leading-[1.3] tracking-[-0.01em] text-ink-950 sm:text-[32px] sm:leading-[1.12] sm:tracking-[-0.025em]">
           {product.title}
         </h1>
-        <p className="mt-2 text-[14.5px] leading-relaxed text-ink-600">{product.subtitle}</p>
+        <p className="mt-1 text-[13.5px] leading-snug text-ink-600 sm:mt-2 sm:text-[14.5px] sm:leading-relaxed">
+          {product.subtitle}
+        </p>
 
-        <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <a href="#reviews" className="flex items-center gap-2 hover:opacity-80">
+        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 sm:mt-3.5 sm:gap-x-4">
+          <a href="#reviews" className="tap flex items-center gap-2 hover:opacity-80">
             <Stars value={product.rating} size={15} />
             <RatingChip value={product.rating} count={product.reviewCount} />
           </a>
-          <span className="text-[12.5px] text-ink-500">
+          <span className="text-[12px] text-ink-500 sm:text-[12.5px]">
             {formatCompact(product.soldCount)}+ bought
           </span>
         </div>
       </div>
 
-      {/* Price block */}
-      <div className="rounded-xl border border-hairline bg-surface p-4">
+      {/* Price block. Price's `xl` already drops to app scale (22px) below sm. */}
+      <div className="rounded-xl border border-hairline bg-surface p-3 sm:p-4">
         <Price price={price} mrp={mrp} size="xl" />
-        <p className="mt-1.5 text-[12px] text-ink-500">
+        <p className="mt-1 text-[11.5px] text-ink-500 sm:mt-1.5 sm:text-[12px]">
           Inclusive of all taxes
           {off > 0 && (
             <>
@@ -160,19 +164,19 @@ export function BuyBox({
       {/* Offers */}
       {applicable.length > 0 && (
         <section>
-          <h2 className="mb-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+          <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-2.5 sm:text-[12px]">
             Available offers
           </h2>
           <ul className="space-y-2">
             {applicable.slice(0, 3).map((offer) => (
-              <li key={offer.id} className="flex items-start gap-2.5 text-[13px]">
+              <li key={offer.id} className="flex items-start gap-2.5 text-[12.5px] sm:text-[13px]">
                 <span
                   className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white"
                   style={{ backgroundColor: offer.accent }}
                 >
                   <Wallet size={11} />
                 </span>
-                <span className="text-ink-700">
+                <span className="min-w-0 text-ink-700">
                   <strong className="font-semibold text-ink-950">{offer.title}</strong>{" "}
                   <span className="text-ink-500">— use code</span>{" "}
                   <code className="rounded bg-ink-100 px-1.5 py-0.5 font-mono text-[11.5px] font-bold text-ink-900">
@@ -188,7 +192,7 @@ export function BuyBox({
       {/* Variants */}
       {product.variants.map((group) => (
         <section key={group.id}>
-          <h2 className="mb-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+          <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-2.5 sm:text-[12px]">
             {group.name}:{" "}
             <span className="font-normal normal-case tracking-normal text-ink-600">
               {group.options.find((o) => o.value === selection[group.id])?.label}
@@ -207,7 +211,7 @@ export function BuyBox({
                     aria-pressed={selected}
                     title={option.inStock ? option.label : `${option.label} — out of stock`}
                     className={cn(
-                      "relative h-9 w-9 rounded-full border-2 transition-all duration-200",
+                      "tap relative h-10 w-10 rounded-full border-2 transition-all duration-200 sm:h-9 sm:w-9",
                       selected
                         ? "border-brand-700 ring-2 ring-brand-700/20 ring-offset-2"
                         : "border-ink-200 hover:border-ink-400",
@@ -230,7 +234,7 @@ export function BuyBox({
                   disabled={!option.inStock}
                   aria-pressed={selected}
                   className={cn(
-                    "min-w-[52px] rounded-lg border px-3.5 py-2 text-[13px] font-medium transition-all duration-200",
+                    "tap min-h-10 min-w-[52px] rounded-lg border px-3 py-2 text-[12.5px] font-medium transition-all duration-200 sm:min-h-0 sm:px-3.5 sm:text-[13px]",
                     selected
                       ? "border-brand-900 bg-brand-900 text-white"
                       : "border-ink-200 bg-surface text-ink-800 hover:border-ink-500",
@@ -252,28 +256,30 @@ export function BuyBox({
       ))}
 
       {/* Quantity and stock */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
         <div className="inline-flex items-center rounded-lg border border-ink-200 bg-surface">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={qty <= 1}
             aria-label="Decrease quantity"
-            className="flex h-11 w-11 items-center justify-center rounded-l-lg text-ink-600 transition-colors hover:bg-ink-100 disabled:opacity-40"
+            className="tap flex h-10 w-10 items-center justify-center rounded-l-lg text-ink-600 transition-colors hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
           >
             <Minus size={15} />
           </button>
-          <span className="w-11 text-center text-[15px] font-semibold tabular-nums">{qty}</span>
+          <span className="w-10 text-center text-[14px] font-semibold tabular-nums sm:w-11 sm:text-[15px]">
+            {qty}
+          </span>
           <button
             onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
             disabled={qty >= product.stock}
             aria-label="Increase quantity"
-            className="flex h-11 w-11 items-center justify-center rounded-r-lg text-ink-600 transition-colors hover:bg-ink-100 disabled:opacity-40"
+            className="tap flex h-10 w-10 items-center justify-center rounded-r-lg text-ink-600 transition-colors hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
           >
             <Plus size={15} />
           </button>
         </div>
 
-        <p className="text-[13px]">
+        <p className="text-[12.5px] sm:text-[13px]">
           {!available ? (
             <span className="font-semibold text-sale-600">Currently unavailable</span>
           ) : product.stock <= 12 ? (
@@ -288,12 +294,14 @@ export function BuyBox({
         </p>
       </div>
 
-      {/* CTAs */}
-      <div className="flex flex-wrap gap-2.5">
+      {/* CTAs. On a phone they share one row — two equal actions and the save
+          — with tighter lettering so all three fit; the tick on "Added to bag"
+          gives way below 360px rather than push the label past the edge. */}
+      <div className="flex gap-2 sm:flex-wrap sm:gap-2.5">
         <Button
           size="lg"
           variant="outline"
-          className="min-w-[160px] flex-1"
+          className="tap min-w-0 flex-1 px-2 text-[11px] tracking-[0.06em] sm:min-w-[160px] sm:px-8 sm:text-[12px] sm:tracking-[0.12em]"
           onClick={handleAdd}
           disabled={!available}
         >
@@ -304,9 +312,9 @@ export function BuyBox({
                 initial={reduce ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduce ? undefined : { opacity: 0, y: -8 }}
-                className="inline-flex items-center gap-2"
+                className="inline-flex items-center gap-1.5 sm:gap-2"
               >
-                <Check size={17} strokeWidth={2.5} /> Added to bag
+                <Check size={17} strokeWidth={2.5} className="max-[360px]:hidden" /> Added to bag
               </motion.span>
             ) : (
               <motion.span
@@ -322,7 +330,7 @@ export function BuyBox({
         </Button>
         <Button
           size="lg"
-          className="min-w-[160px] flex-1"
+          className="tap min-w-0 flex-1 gap-1.5 px-2 text-[11px] tracking-[0.06em] sm:min-w-[160px] sm:gap-2.5 sm:px-8 sm:text-[12px] sm:tracking-[0.12em]"
           onClick={() =>
             buyNow(addable, { quantity: qty, variantLabel: label, variantKey, priceOverride: price })
           }
@@ -333,7 +341,10 @@ export function BuyBox({
         <Button
           size="icon"
           variant="outline"
-          className={cn("h-13 w-13", wished && "border-sale-500 text-sale-500")}
+          className={cn(
+            "tap h-12 w-12 shrink-0 sm:h-13 sm:w-13",
+            wished && "border-sale-500 text-sale-500",
+          )}
           aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
           onClick={() => toggleWishlist(addable)}
         >
@@ -343,20 +354,26 @@ export function BuyBox({
 
       <DeliveryCheck deliveryDays={product.deliveryDays} codAvailable={product.codAvailable} />
 
-      {/* Trust row */}
-      <ul className="grid grid-cols-2 gap-3 border-t border-hairline pt-5 sm:grid-cols-4">
+      {/* Trust row. Phones set the icon beside the words, which halves its
+          height; from sm the icon stacks over them, centred, as before. */}
+      <ul className="grid grid-cols-2 gap-x-3 gap-y-3.5 border-t border-hairline pt-4 sm:grid-cols-4 sm:gap-3 sm:pt-5">
         {[
           { icon: Truck, label: product.freeShipping ? "Free delivery" : "₹79 delivery", sub: `In ${product.deliveryDays} day${product.deliveryDays > 1 ? "s" : ""}` },
           { icon: RotateCcw, label: `${product.returnWindowDays}-day returns`, sub: "Free pickup" },
           { icon: ShieldCheck, label: "Warranty", sub: product.warranty.split(" ").slice(0, 3).join(" ") },
           { icon: Package, label: product.codAvailable ? "COD available" : "Prepaid only", sub: product.codAvailable ? "Pay on delivery" : "Secure payment" },
         ].map((item) => (
-          <li key={item.label} className="flex flex-col items-center gap-1.5 text-center">
-            <item.icon size={18} className="text-brand-600" />
-            <span className="text-[12px] font-semibold leading-tight text-ink-900">
-              {item.label}
+          <li
+            key={item.label}
+            className="flex items-start gap-2 sm:flex-col sm:items-center sm:gap-1.5 sm:text-center"
+          >
+            <item.icon size={18} className="shrink-0 text-brand-600" />
+            <span className="flex min-w-0 flex-col gap-0.5 sm:items-center sm:gap-1.5">
+              <span className="text-[12px] font-semibold leading-tight text-ink-900">
+                {item.label}
+              </span>
+              <span className="text-[11px] leading-tight text-ink-500">{item.sub}</span>
             </span>
-            <span className="text-[11px] leading-tight text-ink-500">{item.sub}</span>
           </li>
         ))}
       </ul>

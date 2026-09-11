@@ -82,36 +82,59 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
           <OrderSummary totals={totals} lines={cart} delivery={null} showDeliveryEstimate={false} />
         </>
       }
+      total={totals.total}
+      action={
+        // Sits outside the form in the pinned bar, so it names the form it submits.
+        <Button
+          type="submit"
+          form="checkout-contact"
+          size="lg"
+          className="w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8"
+        >
+          Continue to address
+          <ArrowRight size={17} />
+        </Button>
+      }
     >
-      <Form onSubmit={submit} className="space-y-5">
-        <div className="rounded-xl border border-hairline bg-surface p-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+      <Form id="checkout-contact" onSubmit={submit} className="space-y-4 sm:space-y-5">
+        <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
+          <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
+            <h2 className="flex items-center gap-2 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[13px]">
               <UserRound size={15} className="text-brand-600" />
               Contact details
             </h2>
             {confirming && (
-              <Button type="button" size="xs" variant="outline" onClick={() => setEditing(true)}>
+              <Button
+                type="button"
+                size="xs"
+                variant="outline"
+                className="h-10 sm:h-8"
+                onClick={() => setEditing(true)}
+              >
                 <Pencil size={12} /> Edit
               </Button>
             )}
           </div>
 
           {confirming ? (
-            <dl className="space-y-2.5">
+            <dl className="space-y-2 sm:space-y-2.5">
               {[
                 { label: "Name", value: form.name },
                 { label: "Email", value: form.email },
                 { label: "Mobile", value: form.phone },
               ].map((row) => (
                 <div key={row.label} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                  <dt className="w-16 shrink-0 text-[12.5px] text-ink-500">{row.label}</dt>
-                  <dd className="text-[14px] font-medium text-ink-950">{row.value}</dd>
+                  <dt className="w-16 shrink-0 text-[12px] text-ink-500 sm:text-[12.5px]">
+                    {row.label}
+                  </dt>
+                  <dd className="min-w-0 text-[13.5px] font-medium text-ink-950 wrap-anywhere sm:text-[14px]">
+                    {row.value}
+                  </dd>
                 </div>
               ))}
             </dl>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
               <Field label="Full name" htmlFor="name" error={errors.name} className="sm:col-span-2">
                 <Input
                   id="name"
@@ -163,11 +186,12 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
             </div>
           )}
 
-          <p className="mt-4 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12px] leading-relaxed text-ink-600">
+          <p className="mt-3 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12.5px] leading-relaxed text-ink-600 sm:mt-4 sm:text-[12px]">
             <Info size={13} className="mt-px shrink-0 text-brand-600" />
             {customer ? (
-              <span>
-                Signed in as <strong className="font-semibold text-ink-900">{customer.email}</strong>
+              <span className="min-w-0">
+                Signed in as{" "}
+                <strong className="font-semibold text-ink-900 wrap-anywhere">{customer.email}</strong>
                 . Your saved addresses are ready at the next step, and this order will appear in your
                 account.
               </span>
@@ -188,13 +212,14 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
             href="/cart"
-            className="text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline"
+            className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
           >
             Back to bag
           </Link>
-          <Button type="submit" size="lg" className="min-w-[200px]">
+          <Button type="submit" size="lg" className="hidden min-w-[200px] lg:inline-flex">
             Continue to address
             <ArrowRight size={17} />
           </Button>

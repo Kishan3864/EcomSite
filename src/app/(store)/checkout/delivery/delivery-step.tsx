@@ -62,9 +62,20 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
           <OrderSummary totals={totals} lines={cart} delivery={selected} />
         </>
       }
+      total={totals.total}
+      action={
+        <Button
+          size="lg"
+          className="w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8"
+          onClick={() => router.push("/checkout/payment")}
+        >
+          Continue to payment
+          <ArrowRight size={17} />
+        </Button>
+      }
     >
-      <div className="space-y-4">
-        <ul className="space-y-3">
+      <div className="space-y-3 sm:space-y-4">
+        <ul className="space-y-2 sm:space-y-3">
           {config.deliveryOptions.map((option) => {
             const Icon = ICONS[option.id];
             const eta = estimatedDelivery(cart, option);
@@ -100,14 +111,14 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
                     </>
                   }
                   meta={
-                    <span className="text-[15px] font-semibold tabular-nums text-ink-950">
+                    <span className="text-[14px] font-semibold tabular-nums text-ink-950 sm:text-[15px]">
                       {free || option.price === 0 ? "Free" : formatINR(option.price)}
                     </span>
                   }
                 >
                   {option.id === "scheduled" && (
                     <div>
-                      <p className="mb-2.5 text-[12.5px] font-medium text-ink-800">
+                      <p className="mb-2 text-[12px] font-medium text-ink-800 sm:mb-2.5 sm:text-[12.5px]">
                         Pick a delivery date
                       </p>
                       <div className="rail gap-2">
@@ -121,7 +132,7 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
                                 dispatch({ type: "checkout/patch", patch: { deliveryDate: iso } })
                               }
                               className={cn(
-                                "flex w-[74px] flex-col items-center rounded-lg border px-2 py-2.5 transition-colors",
+                                "tap flex w-[64px] flex-col items-center rounded-lg border px-2 py-2 transition-colors sm:w-[74px] sm:py-2.5",
                                 picked
                                   ? "border-brand-900 bg-brand-900 text-white"
                                   : "border-ink-200 bg-canvas text-ink-700 hover:border-ink-400",
@@ -130,7 +141,7 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
                               <span className="text-[10.5px] uppercase tracking-[0.08em] opacity-70">
                                 {date.toLocaleDateString("en-IN", { weekday: "short" })}
                               </span>
-                              <span className="text-[17px] font-semibold tabular-nums">
+                              <span className="text-[16px] font-semibold tabular-nums sm:text-[17px]">
                                 {date.getDate()}
                               </span>
                               <span className="text-[10.5px] opacity-70">
@@ -159,7 +170,7 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
               className="mt-0.5 h-4 w-4 accent-[var(--color-brand-700)]"
             />
             <span>
-              <span className="flex items-center gap-2 text-[14px] font-semibold text-ink-950">
+              <span className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">
                 <Gift size={15} className="text-gold-600" />
                 Add gift wrapping
               </span>
@@ -177,15 +188,16 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
         />
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
             href="/checkout/address"
-            className="text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline"
+            className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
           >
             Back to address
           </Link>
           <Button
             size="lg"
-            className="min-w-[200px]"
+            className="hidden min-w-[200px] lg:inline-flex"
             onClick={() => router.push("/checkout/payment")}
           >
             Continue to payment

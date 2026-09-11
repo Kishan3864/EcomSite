@@ -53,8 +53,8 @@ export function SocialSignIn({
   const query = next ? `?next=${encodeURIComponent(next)}` : "";
 
   return (
-    <div className="mb-7">
-      <div className="space-y-2.5">
+    <div className="mb-5 sm:mb-7">
+      <div className="space-y-2 sm:space-y-2.5">
         {providers.map(({ id, label }) => {
           const Mark = MARKS[id];
           return (
@@ -65,7 +65,7 @@ export function SocialSignIn({
               href={`/api/auth/${id}/start${query}`}
               // Exactly the Sign in button's box — full width, 48px, the same
               // square corner — so the two read as one set of controls.
-              className="flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-6 text-[14px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100"
+              className="tap flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-4 text-[13.5px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100 sm:px-6 sm:text-[14px]"
             >
               <Mark />
               Continue with {label}
@@ -92,7 +92,7 @@ export function SocialSignIn({
         .
       </p>
 
-      <div className="mt-6 flex items-center gap-3 text-[12px] text-ink-400">
+      <div className="mt-4 flex items-center gap-3 text-[11.5px] text-ink-400 sm:mt-6 sm:text-[12px]">
         <span className="h-px flex-1 bg-hairline" />
         {divider}
         <span className="h-px flex-1 bg-hairline" />

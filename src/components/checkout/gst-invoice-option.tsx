@@ -48,7 +48,7 @@ export function GstInvoiceOption({
           className="mt-0.5 h-4 w-4 accent-[var(--color-brand-700)]"
         />
         <span>
-          <span className="flex items-center gap-2 text-[14px] font-semibold text-ink-950">
+          <span className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">
             <Building2 size={15} className="text-brand-600" />
             This is a business purchase
           </span>
@@ -63,7 +63,7 @@ export function GstInvoiceOption({
         <Field
           label="GSTIN"
           htmlFor="buyer-gstin"
-          className="mt-4"
+          className="mt-3 sm:mt-4"
           error={invalid ? "A GSTIN is 15 characters, like 29ABCDE1234F1Z5." : undefined}
           hint="Fifteen characters, exactly as it appears on your registration certificate."
         >

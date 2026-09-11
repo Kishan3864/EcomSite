@@ -39,7 +39,9 @@ export function Hero({ banners }: { banners: Banner[] }) {
       {/* Full-bleed. Boxing the hero inside the page gutter and rounding it
           made it read as one more card; edge to edge it reads as a window. */}
       <div className="relative overflow-hidden bg-brand-950">
-        <div className="relative aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9]">
+        {/* Phones size the hero from its copy (with a floor) rather than a
+            ratio, so a long headline grows the band instead of being clipped. */}
+        <div className="relative sm:aspect-[16/9] lg:aspect-[21/9]">
           <AnimatePresence initial={false} mode="popLayout">
             <motion.div
               key={banner.id}
@@ -73,7 +75,7 @@ export function Hero({ banners }: { banners: Banner[] }) {
 
           <div
             className={cn(
-              "container-page absolute inset-0 flex flex-col justify-end pb-16 sm:justify-center sm:pb-0",
+              "container-page relative flex min-h-[320px] flex-col justify-end pb-12 pt-8 sm:absolute sm:inset-0 sm:min-h-0 sm:justify-center sm:pb-0 sm:pt-0",
               banner.align === "right" && "sm:items-end sm:text-right",
             )}
           >
@@ -96,28 +98,31 @@ export function Hero({ banners }: { banners: Banner[] }) {
                   <span className="h-px w-7 bg-gold-400" />
                   {banner.eyebrow}
                 </span>
-                <h1 className="mt-5 font-display text-[32px] leading-[1.02] tracking-[-0.035em] text-white sm:text-[50px] lg:text-[64px]">
+                <h1 className="mt-3 font-display text-[24px] leading-[1.02] tracking-[-0.035em] text-white sm:mt-5 sm:text-[50px] lg:text-[64px]">
                   {banner.title}
                 </h1>
-                <p className="mt-4 max-w-md text-[13.5px] leading-[1.7] text-white/65 sm:mt-5 sm:text-[15px]">
+                <p className="mt-2 line-clamp-2 max-w-md text-[13px] leading-[1.55] text-white/65 sm:mt-5 sm:line-clamp-none sm:text-[15px] sm:leading-[1.7]">
                   {banner.subtitle}
                 </p>
+                {/* On phones the two actions grow to fill the row, so when a
+                    long label pushes one onto its own line both read as
+                    full-width buttons rather than a ragged pair. */}
                 <div
                   className={cn(
-                    "mt-6 flex flex-wrap items-center gap-3",
+                    "mt-4 flex flex-wrap items-center gap-2 sm:mt-6 sm:gap-3",
                     banner.align === "right" && "sm:justify-end",
                   )}
                 >
                   <Link
                     href={banner.href}
-                    className="inline-flex h-12 items-center gap-2 bg-gold-400 px-8 text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-gold-300"
+                    className="tap inline-flex h-10 grow items-center justify-center gap-2 bg-gold-400 px-5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-gold-300 sm:h-12 sm:grow-0 sm:px-8 sm:text-[12px]"
                   >
                     {banner.cta}
                     <ArrowRight size={15} />
                   </Link>
                   <Link
                     href="/products"
-                    className="inline-flex h-12 items-center border border-white/30 px-8 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-ink-950"
+                    className="tap inline-flex h-10 grow items-center justify-center border border-white/30 px-5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-ink-950 sm:h-12 sm:grow-0 sm:px-8 sm:text-[12px]"
                   >
                     Browse everything
                   </Link>
@@ -144,14 +149,16 @@ export function Hero({ banners }: { banners: Banner[] }) {
             </button>
           </div>
 
-          <div className="container-page absolute inset-x-0 bottom-4 flex items-center gap-2 sm:bottom-5">
+          {/* On phones each dash sits in a hit area about 40px square — the
+              arrows are hidden there, so these are the only manual control. */}
+          <div className="container-page absolute inset-x-0 bottom-0 flex items-center sm:bottom-5 sm:gap-2">
             {banners.map((b, i) => (
               <button
                 key={b.id}
                 onClick={() => go(i)}
                 aria-label={`Go to slide ${i + 1}`}
                 aria-current={i === index}
-                className="group py-2"
+                className="group flex h-10 items-center px-3 first:pl-0 sm:block sm:h-auto sm:px-0 sm:py-2"
               >
                 <span
                   className={cn(

@@ -26,7 +26,7 @@ export function ReviewForm({ productId }: { productId: string }) {
 
   if (sent) {
     return (
-      <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-brand-200 bg-brand-50 p-4 text-[13px] leading-relaxed text-brand-900">
+      <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-brand-200 bg-brand-50 p-3.5 text-[12.5px] leading-relaxed text-brand-900 sm:mt-6 sm:p-4 sm:text-[13px]">
         <Check size={16} className="mt-0.5 shrink-0 text-brand-600" />
         <span>
           Thank you — your review is with our team. Once it is checked it will show up on this
@@ -38,7 +38,7 @@ export function ReviewForm({ productId }: { productId: string }) {
 
   if (!customer) {
     return (
-      <div className="mt-6 rounded-xl border border-hairline bg-surface p-4 text-[13px] text-ink-600">
+      <div className="mt-4 rounded-xl border border-hairline bg-surface p-3.5 text-[12.5px] text-ink-600 sm:mt-6 sm:p-4 sm:text-[13px]">
         {sessionChecked ? (
           <>
             <Link
@@ -58,7 +58,12 @@ export function ReviewForm({ productId }: { productId: string }) {
 
   if (!open) {
     return (
-      <Button variant="outline" size="md" className="mt-6" onClick={() => setOpen(true)}>
+      <Button
+        variant="outline"
+        size="md"
+        className="tap mt-4 w-full sm:mt-6 sm:w-auto"
+        onClick={() => setOpen(true)}
+      >
         <PenLine size={15} /> Write a review
       </Button>
     );
@@ -86,15 +91,17 @@ export function ReviewForm({ productId }: { productId: string }) {
   }
 
   return (
-    <Form onSubmit={submit} className="mt-6 rounded-xl border border-hairline bg-surface p-5">
-      <h3 className="text-[14px] font-semibold text-ink-950">Write a review</h3>
+    <Form onSubmit={submit} className="mt-4 rounded-xl border border-hairline bg-surface p-4 sm:mt-6 sm:p-5">
+      <h3 className="text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">Write a review</h3>
       <p className="mt-1 text-[12.5px] text-ink-500">
         Posting as {customer.name}. Reviews are checked before they appear.
       </p>
 
       <fieldset className="mt-4">
         <legend className="mb-1.5 text-[12.5px] font-medium text-ink-800">Your rating</legend>
-        <div className="flex gap-1" onMouseLeave={() => setHover(0)}>
+        {/* Phones: each star a 40px target; the row is pulled back by the
+            padding so the first star still lines up under the legend. */}
+        <div className="-ml-2 flex sm:ml-0 sm:gap-1" onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map((value) => (
             <button
               key={value}
@@ -103,7 +110,7 @@ export function ReviewForm({ productId }: { productId: string }) {
               aria-pressed={rating === value}
               onMouseEnter={() => setHover(value)}
               onClick={() => setRating(value)}
-              className="rounded-md p-1 transition-transform hover:scale-110"
+              className="tap rounded-md p-2 transition-transform hover:scale-110 sm:p-1"
             >
               <Star
                 size={24}
@@ -131,7 +138,8 @@ export function ReviewForm({ productId }: { productId: string }) {
           rows={4}
           maxLength={1200}
           placeholder="How does it feel to use? Would you buy it again?"
-          className="w-full rounded-lg border border-ink-200 bg-canvas px-3.5 py-3 text-[14px] leading-relaxed text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500"
+          // 16px on phones: iOS zooms the page into any smaller field.
+          className="w-full rounded-lg border border-ink-200 bg-canvas px-3.5 py-3 text-[16px] leading-relaxed text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500 sm:text-[14px]"
         />
       </Field>
 
@@ -142,10 +150,16 @@ export function ReviewForm({ productId }: { productId: string }) {
       )}
 
       <div className="mt-4 flex gap-2">
-        <Button type="submit" size="sm" loading={pending}>
+        <Button type="submit" size="sm" loading={pending} className="tap h-10 sm:h-9">
           Submit review
         </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="tap h-10 sm:h-9"
+          onClick={() => setOpen(false)}
+        >
           Cancel
         </Button>
       </div>

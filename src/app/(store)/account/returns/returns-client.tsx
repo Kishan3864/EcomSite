@@ -87,19 +87,19 @@ export function ReturnsClient({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <header>
-        <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
           Returns and refunds
         </h1>
-        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-ink-600">
+        <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[14px]">
           Free pickup from every serviceable pincode. Refunds start within 48 hours of the item
           reaching our warehouse.
         </p>
       </header>
 
       <section>
-        <h2 className="mb-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+        <h2 className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-3 sm:text-[12px]">
           Your return requests
         </h2>
         {requests.length === 0 ? (
@@ -107,10 +107,10 @@ export function ReturnsClient({
             icon={<RotateCcw size={24} />}
             title="No returns yet"
             body="Nothing to see here — which is usually a good sign."
-            className="py-10"
+            className="px-4 py-8 sm:px-6 sm:py-10"
           />
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-2.5 sm:space-y-3">
             <AnimatePresence initial={false}>
               {requests.map((request) => {
                 const stepIndex = STATUS_STEPS.indexOf(request.status);
@@ -122,34 +122,34 @@ export function ReturnsClient({
                     animate={{ opacity: 1, y: 0 }}
                     className="overflow-hidden rounded-xl border border-hairline bg-surface"
                   >
-                    <div className="flex gap-4 p-4">
-                      <span className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-ink-100">
+                    <div className="flex gap-3 p-3.5 sm:gap-4 sm:p-4">
+                      <span className="relative h-[72px] w-[58px] shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-20 sm:w-16">
                         <Image
                           src={request.image}
                           alt=""
                           fill
-                          sizes="64px"
+                          sizes="(min-width: 640px) 64px, 58px"
                           className="object-cover"
                         />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] font-medium text-ink-950">
+                        <p className="line-clamp-2 text-[13px] font-medium text-ink-950 sm:line-clamp-none sm:text-[13.5px]">
                           {request.productTitle}
                         </p>
-                        <p className="mt-0.5 text-[12px] text-ink-500">
+                        <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
                           Order {request.orderNumber} · {request.reason}
                         </p>
-                        <p className="mt-0.5 text-[12px] text-ink-500">
+                        <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
                           Requested {formatDate(request.requestedAt, "short")}
                         </p>
-                        <p className="mt-1.5 flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-700">
-                          <CircleDollarSign size={13} />
+                        <p className="mt-1.5 flex items-center gap-1.5 text-[12px] font-semibold text-brand-700 sm:text-[12.5px]">
+                          <CircleDollarSign size={13} className="shrink-0" />
                           {formatINR(request.refundAmount)} to {request.refundMode}
                         </p>
                       </div>
                     </div>
 
-                    <div className="border-t border-hairline bg-canvas px-4 py-3">
+                    <div className="border-t border-hairline bg-canvas px-3.5 py-2.5 sm:px-4 sm:py-3">
                       {request.status === "rejected" ? (
                         <p className="text-[12.5px] font-medium text-sale-600">
                           This return was not approved. Contact support for details.
@@ -203,10 +203,10 @@ export function ReturnsClient({
       </section>
 
       <section>
-        <h2 className="mb-1 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+        <h2 className="mb-1 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
           Start a new return
         </h2>
-        <p className="mb-3 text-[13px] text-ink-500">
+        <p className="mb-2.5 text-[12.5px] text-ink-500 sm:mb-3 sm:text-[13px]">
           Delivered items are eligible for the return window shown on each product page.
         </p>
 
@@ -220,24 +220,25 @@ export function ReturnsClient({
                 View my orders
               </Link>
             }
-            className="py-10"
+            className="px-4 py-8 sm:px-6 sm:py-10"
           />
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-2.5 sm:space-y-3">
             {eligible.map(({ order, line }) => (
               <li
                 key={`${order.id}-${line.id}`}
                 className="overflow-hidden rounded-xl border border-hairline bg-surface"
               >
-                <div className="flex items-center gap-4 p-4">
+                <div className="flex items-center gap-3 p-3.5 sm:gap-4 sm:p-4">
                   <span className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-ink-100">
                     <Image src={line.image} alt="" fill sizes="56px" className="object-cover" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-1 text-[13.5px] font-medium text-ink-950">
+                    <p className="line-clamp-1 text-[13px] font-medium text-ink-950 sm:text-[13.5px]">
                       {line.title}
                     </p>
-                    <p className="text-[12px] text-ink-500">
+                    {/* At 320px the order number is wider than this column. */}
+                    <p className="break-words text-[11.5px] text-ink-500 sm:text-[12px]">
                       Order {order.number} · delivered{" "}
                       {formatDate(order.estimatedDelivery, "short")}
                     </p>
@@ -250,7 +251,7 @@ export function ReturnsClient({
                         s === `${order.id}-${line.id}` ? null : `${order.id}-${line.id}`,
                       )
                     }
-                    className="shrink-0"
+                    className="h-10 shrink-0 sm:h-9"
                   >
                     <RotateCcw size={13} /> Return
                   </Button>
@@ -265,7 +266,7 @@ export function ReturnsClient({
                       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-hairline p-4">
+                      <div className="border-t border-hairline p-3.5 sm:p-4">
                         <Field label="Why are you returning this?" htmlFor={`reason-${line.id}`}>
                           <Select
                             id={`reason-${line.id}`}
@@ -279,7 +280,7 @@ export function ReturnsClient({
                             ))}
                           </Select>
                         </Field>
-                        <p className="mt-3 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12px] leading-relaxed text-ink-600">
+                        <p className="mt-3 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12.5px] leading-relaxed text-ink-600 sm:text-[12px]">
                           <Truck size={13} className="mt-px shrink-0 text-brand-600" />
                           A pickup will be scheduled within 24 hours. Keep the item in its original
                           packaging with all tags attached.
@@ -290,10 +291,20 @@ export function ReturnsClient({
                           </p>
                         )}
                         <div className="mt-3 flex gap-2">
-                          <Button size="sm" loading={pending} onClick={() => raise(order, line)}>
+                          <Button
+                            size="sm"
+                            loading={pending}
+                            onClick={() => raise(order, line)}
+                            className="h-10 flex-1 sm:h-9 sm:flex-initial"
+                          >
                             Confirm return
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => setOpenFor(null)}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setOpenFor(null)}
+                            className="h-10 sm:h-9"
+                          >
                             Cancel
                           </Button>
                         </div>
@@ -307,7 +318,7 @@ export function ReturnsClient({
         )}
       </section>
 
-      <p className="rounded-xl border border-hairline bg-surface p-4 text-[12.5px] leading-relaxed text-ink-600">
+      <p className="rounded-xl border border-hairline bg-surface p-3.5 text-[12.5px] leading-relaxed text-ink-600 sm:p-4">
         Read the full{" "}
         <Link href="/legal/refunds" className="font-semibold text-brand-700 hover:underline">
           return policy

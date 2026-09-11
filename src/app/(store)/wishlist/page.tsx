@@ -17,20 +17,20 @@ export default async function WishlistPage() {
 
   return (
     <>
-      <div className="container-page py-5 sm:py-7">
+      <div className="container-page py-3 sm:py-7">
         <Breadcrumbs
           items={[
             { name: "Home", href: "/" },
             { name: "Wishlist", href: "/wishlist" },
           ]}
-          className="mb-5"
+          className="mb-3 sm:mb-5"
         />
 
-        <header className="mb-7">
-          <h1 className="font-display text-[28px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[36px]">
+        <header className="mb-4 sm:mb-7">
+          <h1 className="font-display text-[24px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[36px]">
             Your wishlist
           </h1>
-          <p className="mt-2 text-[14px] text-ink-600">
+          <p className="mt-1 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
             Saved on this device. We will tell you if anything here drops in price.
           </p>
         </header>

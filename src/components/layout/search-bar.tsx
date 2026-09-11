@@ -119,7 +119,11 @@ export function SearchBar({
   const showPanel = open && (variant === "sheet" || true);
 
   return (
-    <div ref={wrapper} className={cn("relative w-full", className)}>
+    <div
+      ref={wrapper}
+      // In the sheet the field stays pinned and only the suggestions scroll.
+      className={cn("relative w-full", variant === "sheet" && "flex h-full flex-col", className)}
+    >
       <Form onSubmit={submit} role="search">
         <div
           className={cn(
@@ -149,7 +153,8 @@ export function SearchBar({
             role="combobox"
             aria-controls="search-suggestions"
             placeholder={variant === "sheet" ? "Search WeekendCart" : ROTATING[placeholderIndex]}
-            className="min-w-0 flex-1 bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400 [&::-webkit-search-cancel-button]:hidden"
+            // 16px on phones, or iOS zooms the page into the field on focus.
+            className="min-w-0 flex-1 bg-transparent text-[16px] text-ink-900 outline-none placeholder:text-ink-400 sm:text-sm [&::-webkit-search-cancel-button]:hidden"
           />
           {term && (
             <button
@@ -159,7 +164,7 @@ export function SearchBar({
                 input.current?.focus();
               }}
               aria-label="Clear search"
-              className="rounded-md p-1 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
+              className="tap -mr-2 flex h-10 w-10 items-center justify-center rounded-md text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700 sm:mr-0 sm:h-auto sm:w-auto sm:p-1"
             >
               <X size={15} />
             </button>
@@ -182,10 +187,17 @@ export function SearchBar({
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
               "z-50 overflow-hidden rounded-xl border border-hairline bg-surface shadow-xl",
-              variant === "header" ? "absolute inset-x-0 top-[calc(100%+8px)]" : "mt-3",
+              variant === "header"
+                ? "absolute inset-x-0 top-[calc(100%+8px)]"
+                : "mt-3 flex min-h-0 flex-col",
             )}
           >
-            <div className="max-h-[min(70vh,560px)] overflow-y-auto overscroll-contain">
+            <div
+              className={cn(
+                "overflow-y-auto overscroll-contain",
+                variant === "header" ? "max-h-[min(70dvh,560px)]" : "min-h-0",
+              )}
+            >
               {term.trim() ? (
                 hits.length > 0 ? (
                   <ul role="listbox" className="p-1.5">
@@ -200,19 +212,21 @@ export function SearchBar({
                     <li>
                       <button
                         onClick={() => go(`/search?q=${encodeURIComponent(term.trim())}`, term.trim())}
-                        className="mt-1 flex w-full items-center justify-between gap-3 rounded-lg border-t border-hairline px-3 py-3 text-left text-[13px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+                        className="tap mt-1 flex w-full items-center justify-between gap-3 rounded-lg border-t border-hairline px-3 py-3 text-left text-[12.5px] font-semibold text-brand-700 transition-colors hover:bg-brand-50 sm:text-[13px]"
                       >
-                        See all results for &ldquo;{term.trim()}&rdquo;
-                        <ArrowUpRight size={15} />
+                        <span className="min-w-0 break-words">
+                          See all results for &ldquo;{term.trim()}&rdquo;
+                        </span>
+                        <ArrowUpRight size={15} className="shrink-0" />
                       </button>
                     </li>
                   </ul>
                 ) : (
-                  <div className="px-5 py-8 text-center">
-                    <p className="text-sm font-medium text-ink-900">
+                  <div className="px-4 py-6 text-center sm:px-5 sm:py-8">
+                    <p className="break-words text-[13.5px] font-medium text-ink-900 sm:text-sm">
                       Nothing matched &ldquo;{term.trim()}&rdquo;
                     </p>
-                    <p className="mt-1 text-xs text-ink-500">
+                    <p className="mt-1 text-[12.5px] text-ink-500 sm:text-xs">
                       Try a shorter term, or browse a category below.
                     </p>
                     <div className="mt-4 flex flex-wrap justify-center gap-1.5">
@@ -220,7 +234,7 @@ export function SearchBar({
                         <button
                           key={s}
                           onClick={() => setTerm(s)}
-                          className="rounded-full border border-ink-200 px-3 py-1.5 text-xs text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700"
+                          className="tap rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
                         >
                           {s}
                         </button>
@@ -229,28 +243,31 @@ export function SearchBar({
                   </div>
                 )
               ) : (
-                <div className="p-4">
+                <div className="p-3 sm:p-4">
                   {recentSearches.length > 0 && (
-                    <section className="mb-5">
+                    <section className="mb-4 sm:mb-5">
                       <header className="mb-2 flex items-center justify-between">
                         <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
                           Recent searches
                         </h3>
+                        {/* The negative margin gives a finger a real target
+                            without moving the word. */}
                         <button
                           onClick={() => dispatch({ type: "search/clear" })}
-                          className="text-[11px] font-medium text-ink-400 hover:text-sale-600"
+                          className="-m-2 p-2 text-[11px] font-medium text-ink-400 hover:text-sale-600 lg:m-0 lg:p-0"
                         >
                           Clear
                         </button>
                       </header>
                       <ul className="flex flex-wrap gap-1.5">
                         {recentSearches.map((s) => (
-                          <li key={s}>
+                          <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="inline-flex items-center gap-1.5 rounded-full bg-ink-100 px-3 py-1.5 text-xs text-ink-700 transition-colors hover:bg-ink-200"
+                              className="tap inline-flex max-w-full items-center gap-1.5 rounded-full bg-ink-100 px-3 py-1.5 text-[11.5px] text-ink-700 transition-colors hover:bg-ink-200 sm:text-xs"
                             >
-                              <Clock size={11} /> {s}
+                              <Clock size={11} className="shrink-0" />
+                              <span className="truncate">{s}</span>
                             </button>
                           </li>
                         ))}
@@ -258,23 +275,23 @@ export function SearchBar({
                     </section>
                   )}
 
-                  <section className="mb-5">
+                  <section className="mb-4 sm:mb-5">
                     <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
                       Trending now
                     </h3>
-                    <ul className="grid gap-0.5 sm:grid-cols-2">
+                    <ul className="grid grid-cols-2 gap-0.5">
                       {trendingSearches.map((t) => (
-                        <li key={t.term}>
+                        <li key={t.term} className="min-w-0">
                           <Link
                             href={t.href}
                             onClick={() => {
                               setOpen(variant === "sheet");
                               onNavigate?.();
                             }}
-                            className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-700"
+                            className="tap flex items-center gap-2 rounded-lg px-2 py-2 text-[12.5px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-700 sm:gap-2.5 sm:px-2.5 sm:text-[13px]"
                           >
-                            <TrendingUp size={13} className="text-brand-500" />
-                            {t.term}
+                            <TrendingUp size={13} className="shrink-0 text-brand-500" />
+                            <span className="min-w-0">{t.term}</span>
                           </Link>
                         </li>
                       ))}
@@ -290,7 +307,7 @@ export function SearchBar({
                         <li key={s}>
                           <button
                             onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-3 py-1.5 text-xs text-ink-600 transition-colors hover:border-brand-500 hover:text-brand-700"
+                            className="tap inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-600 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
                           >
                             <Tag size={11} /> {s}
                           </button>
@@ -322,27 +339,27 @@ function SuggestionRow({
       <button
         onClick={onSelect}
         className={cn(
-          "flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition-colors",
+          "tap flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors sm:gap-3 sm:px-2.5 sm:py-2",
           active ? "bg-brand-50" : "hover:bg-ink-50",
         )}
       >
         {hit.image ? (
-          <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md bg-ink-100">
+          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-ink-100 sm:h-11 sm:w-11">
             <Image src={hit.image} alt="" fill sizes="44px" className="object-cover" />
           </span>
         ) : (
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-brand-50 text-brand-600">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-50 text-brand-600 sm:h-11 sm:w-11">
             <Search size={15} />
           </span>
         )}
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13.5px] font-medium text-ink-900">
+          <span className="block truncate text-[13px] font-medium text-ink-900 sm:text-[13.5px]">
             {hit.label}
           </span>
           <span className="block truncate text-[11.5px] text-ink-500">{hit.sublabel}</span>
         </span>
         {hit.price != null && (
-          <span className="shrink-0 text-[13px] font-semibold tabular-nums text-ink-900">
+          <span className="shrink-0 text-[12.5px] font-semibold tabular-nums text-ink-900 sm:text-[13px]">
             {formatINR(hit.price)}
           </span>
         )}

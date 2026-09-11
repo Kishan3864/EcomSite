@@ -27,23 +27,25 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="container-page flex min-h-[60vh] flex-col items-center justify-center py-20 text-center">
+    // dvh, not vh: on phones vh includes the space under the browser toolbar.
+    <div className="container-page flex min-h-[60dvh] flex-col items-center justify-center py-10 text-center sm:py-20">
       <span className="eyebrow">Something broke</span>
-      <h1 className="mt-5 max-w-lg font-display text-[30px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:text-[40px]">
+      <h1 className="mt-4 max-w-lg font-display text-[21px] leading-[1.12] tracking-[-0.03em] text-ink-950 sm:mt-5 sm:text-[40px] sm:leading-[1.08]">
         That did not work, and it is our fault
       </h1>
-      <p className="mt-4 max-w-md text-[14.5px] leading-relaxed text-ink-600">
+      <p className="mt-3 max-w-md text-[13.5px] leading-relaxed text-ink-600 sm:mt-4 sm:text-[14.5px]">
         The page failed to load. Nothing you did caused it, and no order or
         payment was affected. Try again, and if it keeps happening, tell us.
       </p>
 
       {error.digest && (
-        <p className="mt-5 text-[12px] text-ink-400">
-          Reference <span className="font-medium text-ink-600">{error.digest}</span>
+        <p className="mt-4 text-[12px] text-ink-400 sm:mt-5">
+          Reference <span className="break-all font-medium text-ink-600">{error.digest}</span>
         </p>
       )}
 
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
+      {/* Stacked full width on phones, where the three wrap into a ragged pile. */}
+      <div className="mt-6 flex w-full max-w-sm flex-col flex-wrap justify-center gap-2 sm:mt-8 sm:w-auto sm:max-w-none sm:flex-row sm:gap-3">
         <button type="button" onClick={reset} className={buttonClasses("primary")}>
           Try again
         </button>

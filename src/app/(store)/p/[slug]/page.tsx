@@ -106,10 +106,10 @@ export default async function ProductPage({ params }: { params: Params }) {
         }}
       />
 
-      <div className="container-page py-5 sm:py-7">
-        <Breadcrumbs items={crumbs} className="mb-6" />
+      <div className="container-page py-3 sm:py-7">
+        <Breadcrumbs items={crumbs} className="mb-3 sm:mb-6" />
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] lg:gap-12 xl:gap-16">
+        <div className="grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] lg:gap-12 xl:gap-16">
           <div className="lg:sticky lg:top-[132px] lg:h-fit">
             <Gallery
               images={product.images}
@@ -127,15 +127,18 @@ export default async function ProductPage({ params }: { params: Params }) {
 
       {/* Details */}
       <div className="container-page">
-        <div className="grid gap-10 border-t border-hairline pt-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
-          <div className="space-y-12">
+        <div className="grid gap-6 border-t border-hairline pt-6 sm:gap-10 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
+          <div className="space-y-6 sm:space-y-12">
             <section>
-              <h2 className="font-display text-[24px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
+              <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
                 Highlights
               </h2>
-              <ul className="mt-4 grid gap-2.5 sm:grid-cols-2">
+              <ul className="mt-3 grid gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-2.5">
                 {product.highlights.map((h) => (
-                  <li key={h} className="flex items-start gap-2.5 text-[14px] text-ink-700">
+                  <li
+                    key={h}
+                    className="flex items-start gap-2 text-[13.5px] text-ink-700 sm:gap-2.5 sm:text-[14px]"
+                  >
                     <Check size={16} className="mt-0.5 shrink-0 text-brand-600" strokeWidth={2.5} />
                     {h}
                   </li>
@@ -144,18 +147,21 @@ export default async function ProductPage({ params }: { params: Params }) {
             </section>
 
             <section>
-              <h2 className="font-display text-[24px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
+              <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
                 About this product
               </h2>
-              <div className="mt-4 space-y-4">
+              <div className="mt-3 space-y-3 sm:mt-4 sm:space-y-4">
                 {product.description.split("\n\n").map((para) => (
-                  <p key={para} className="max-w-2xl text-[14.5px] leading-relaxed text-ink-600">
+                  <p
+                    key={para}
+                    className="max-w-2xl text-[13.5px] leading-relaxed text-ink-600 sm:text-[14.5px]"
+                  >
                     {para}
                   </p>
                 ))}
               </div>
               {brand && (
-                <p className="mt-5 rounded-xl border border-hairline bg-surface p-4 text-[13.5px] text-ink-600">
+                <p className="mt-4 rounded-xl border border-hairline bg-surface p-3.5 text-[13px] text-ink-600 sm:mt-5 sm:p-4 sm:text-[13.5px]">
                   <strong className="font-semibold text-ink-950">About {brand.name}</strong> —{" "}
                   {brand.tagline}. Based in {brand.origin}.{" "}
                   <Link
@@ -169,25 +175,27 @@ export default async function ProductPage({ params }: { params: Params }) {
             </section>
 
             <section id="specifications" className="scroll-mt-32">
-              <h2 className="font-display text-[24px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
+              <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
                 Specifications
               </h2>
-              <div className="mt-4 space-y-6">
+              <div className="mt-3 space-y-5 sm:mt-4 sm:space-y-6">
                 {product.specifications.map((group) => (
                   <div key={group.group}>
-                    <h3 className="mb-2.5 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-500">
+                    <h3 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 sm:mb-2.5 sm:text-[12px]">
                       {group.group}
                     </h3>
+                    {/* Phones split the row two to three, so a long value is
+                        not squeezed into what a fixed label column leaves. */}
                     <dl className="overflow-hidden rounded-xl border border-hairline">
                       {group.items.map((item, i) => (
                         <div
                           key={item.label}
-                          className={`grid grid-cols-[140px_minmax(0,1fr)] gap-4 px-4 py-3 text-[13.5px] sm:grid-cols-[200px_minmax(0,1fr)] ${
+                          className={`grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3 px-3 py-2.5 text-[13px] sm:grid-cols-[200px_minmax(0,1fr)] sm:gap-4 sm:px-4 sm:py-3 sm:text-[13.5px] ${
                             i % 2 ? "bg-surface" : "bg-canvas"
                           }`}
                         >
-                          <dt className="text-ink-500">{item.label}</dt>
-                          <dd className="text-ink-900">{item.value}</dd>
+                          <dt className="text-ink-500 max-lg:break-words">{item.label}</dt>
+                          <dd className="text-ink-900 max-lg:break-words">{item.value}</dd>
                         </div>
                       ))}
                     </dl>
@@ -208,7 +216,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           </div>
 
           {/* Policy sidebar */}
-          <aside className="space-y-4 lg:sticky lg:top-[132px] lg:h-fit">
+          <aside className="space-y-3 sm:space-y-4 lg:sticky lg:top-[132px] lg:h-fit">
             {[
               {
                 icon: RotateCcw,
@@ -234,15 +242,20 @@ export default async function ProductPage({ params }: { params: Params }) {
                 linkLabel: "Shipping policy",
               },
             ].map((item) => (
-              <div key={item.title} className="rounded-xl border border-hairline bg-surface p-4">
-                <h3 className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950">
-                  <item.icon size={16} className="text-brand-600" />
+              <div
+                key={item.title}
+                className="rounded-xl border border-hairline bg-surface p-3.5 sm:p-4"
+              >
+                <h3 className="flex items-center gap-2 text-[13px] font-semibold text-ink-950 sm:text-[13.5px]">
+                  <item.icon size={16} className="shrink-0 text-brand-600" />
                   {item.title}
                 </h3>
-                <p className="mt-2 text-[12.5px] leading-relaxed text-ink-600">{item.body}</p>
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600 sm:mt-2">
+                  {item.body}
+                </p>
                 <Link
                   href={item.href}
-                  className="mt-2.5 inline-block text-[12.5px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+                  className="mt-2 inline-block text-[12.5px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:mt-2.5"
                 >
                   {item.linkLabel}
                 </Link>
@@ -252,7 +265,7 @@ export default async function ProductPage({ params }: { params: Params }) {
         </div>
       </div>
 
-      <div className="container-page py-12">
+      <div className="container-page py-7 sm:py-12">
         <BundleSection anchor={card} extras={toCardModels(bundle)} />
       </div>
 

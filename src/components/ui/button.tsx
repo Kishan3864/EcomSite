@@ -49,6 +49,8 @@ export function buttonClasses(
     "transition-[background-color,border-color,color] duration-200",
     "disabled:pointer-events-none disabled:opacity-55",
     "whitespace-nowrap select-none",
+    // Press feedback on touch screens only; outline and link have no active state.
+    "tap",
     VARIANTS[variant],
     SIZES[size],
     className,

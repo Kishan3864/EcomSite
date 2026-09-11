@@ -66,8 +66,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
+      {/* Below lg the bottom of the screen belongs to the tab bar, and on the
+          product and cart pages to a pinned buy bar above it as well, so toasts
+          drop in under the header instead, as app notifications do. */}
       <div
-        className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+76px)] z-[90] flex flex-col items-center gap-2 px-4 sm:bottom-6 sm:right-6 sm:left-auto sm:items-end sm:px-0"
+        className="pointer-events-none fixed inset-x-0 top-[calc(env(safe-area-inset-top)+64px)] z-[90] flex flex-col items-center gap-2 px-3 sm:right-6 sm:left-auto sm:items-end sm:px-0 lg:top-auto lg:bottom-6"
         role="status"
         aria-live="polite"
       >
@@ -109,9 +112,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 )}
 
                 <div className="min-w-0 flex-1 pt-0.5">
-                  <p className="text-[13px] font-semibold leading-snug">{t.title}</p>
+                  <p className="text-[12.5px] font-semibold leading-snug sm:text-[13px]">{t.title}</p>
                   {t.description && (
-                    <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-white/65">
+                    <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-white/65 sm:text-xs">
                       {t.description}
                     </p>
                   )}
@@ -119,16 +122,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     <Link
                       href={t.action.href}
                       onClick={() => dismiss(t.id)}
-                      className="mt-2 inline-block text-xs font-semibold text-gold-300 underline-offset-2 hover:underline"
+                      className="tap mt-1 inline-block py-1 text-xs font-semibold text-gold-300 underline-offset-2 hover:underline sm:mt-2 sm:py-0"
                     >
                       {t.action.label}
                     </Link>
                   )}
                 </div>
 
+                {/* Padding and margin cancel out: same icon position, 40px target. */}
                 <button
                   onClick={() => dismiss(t.id)}
-                  className="-m-1 rounded-md p-1 text-white/40 transition-colors hover:bg-white/10 hover:text-white"
+                  className="tap -m-[13px] rounded-md p-[13px] text-white/40 transition-colors hover:bg-white/10 hover:text-white sm:-m-1 sm:p-1"
                   aria-label="Dismiss notification"
                 >
                   <X size={14} />

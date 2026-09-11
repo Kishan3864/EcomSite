@@ -224,7 +224,14 @@ async function main() {
   await png(files["public/brand/weekendcart-icon.svg"], 192, out("public/brand/png/weekendcart-icon-192.png"), true);
   await png(maskableFile(), 512, out("public/brand/png/weekendcart-icon-maskable-512.png"), true);
   // Email clients do not render SVG; the welcome email shows this at 200px wide.
-  await png(files["public/brand/weekendcart-logo.svg"], 400, out("public/brand/png/weekendcart-logo-email.png"));
+  // White is baked in: a transparent logo's dark lettering disappears when a
+  // mail app forces dark mode on the message.
+  await sharp(Buffer.from(files["public/brand/weekendcart-logo.svg"]), { density: 72 * (400 / LOCKUP_WIDTH) * 4 })
+    .resize({ width: 400 })
+    .extend({ top: 8, bottom: 8, left: 8, right: 8, background: "#ffffff" })
+    .flatten({ background: "#ffffff" })
+    .png({ compressionLevel: 9 })
+    .toFile(out("public/brand/png/weekendcart-logo-email.png"));
   // iOS rounds the corners itself; a pre-rounded tile would get a double edge.
   await png(iconFile(false), 180, out("src/app/apple-icon.png"), true);
   await png(iconFile(true), 64, out("src/app/icon1.png"), true);

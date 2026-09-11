@@ -38,7 +38,7 @@ export function Field({
     <div className={cn("min-w-0", className)}>
       <label
         htmlFor={htmlFor}
-        className="mb-1.5 flex items-baseline justify-between gap-2 text-[12.5px] font-medium text-ink-800"
+        className="mb-1.5 flex items-baseline justify-between gap-2 text-[12px] font-medium text-ink-800 sm:text-[12.5px]"
       >
         {label}
         {optional && <span className="text-[11px] font-normal text-ink-400">Optional</span>}
@@ -129,7 +129,7 @@ export function OptionCard({
         onClick={onSelect}
         disabled={disabled}
         aria-pressed={selected}
-        className="flex w-full items-start gap-3 p-4 text-left"
+        className="tap flex w-full items-start gap-2.5 p-3 text-left sm:gap-3 sm:p-4"
       >
         <span
           className={cn(
@@ -138,19 +138,21 @@ export function OptionCard({
           )}
         />
         <span className="min-w-0 flex-1">
-          <span className="flex flex-wrap items-center gap-2">
-            <span className="text-[14px] font-semibold text-ink-950">{title}</span>
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-2">
+            <span className="text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">{title}</span>
             {badge}
           </span>
           {subtitle && (
-            <span className="mt-1 block text-[12.5px] leading-relaxed text-ink-600">
+            <span className="mt-0.5 block text-[12.5px] leading-normal text-ink-600 sm:mt-1 sm:leading-relaxed">
               {subtitle}
             </span>
           )}
         </span>
         {meta && <span className="shrink-0 text-right">{meta}</span>}
       </button>
-      {selected && children && <div className="border-t border-hairline p-4">{children}</div>}
+      {selected && children && (
+        <div className="border-t border-hairline p-3 sm:p-4">{children}</div>
+      )}
     </div>
   );
 }

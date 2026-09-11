@@ -68,25 +68,26 @@ export default async function CategoryPage({
       hideCategoryFilter
       brandLabels={brandLabels}
     >
-      <div className="mb-8 space-y-6">
-        <div className="rail -mx-4 px-4 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-5 lg:gap-4 lg:px-0">
+      <div className="mb-4 space-y-3 sm:mb-8 sm:space-y-6">
+        {/* The rail bleeds to the screen edge by exactly the page gutter. */}
+        <div className="rail -mx-3 gap-2 px-3 pb-1 sm:-mx-6 sm:gap-3 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-5 lg:gap-4 lg:px-0">
           {category.subcategories.map((sub) => (
             <Link
               key={sub.slug}
               href={`/c/${category.slug}/${sub.slug}`}
-              className="group flex w-[140px] flex-col gap-2.5 lg:w-auto"
+              className="tap group flex w-[112px] flex-col gap-1.5 sm:w-[140px] sm:gap-2.5 lg:w-auto"
             >
               <span className="relative aspect-[4/3] overflow-hidden rounded-xl bg-ink-100">
                 <Image
                   src={sub.image.url}
                   alt=""
                   fill
-                  sizes="(min-width:1024px) 18vw, 140px"
+                  sizes="(min-width:1024px) 18vw, (min-width:640px) 140px, 112px"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </span>
               <span className="flex items-center justify-between gap-1.5">
-                <span className="text-[13px] font-semibold text-ink-900 group-hover:text-brand-700">
+                <span className="min-w-0 text-[12.5px] font-semibold leading-snug text-ink-900 group-hover:text-brand-700 sm:text-[13px] sm:leading-normal">
                   {sub.name}
                 </span>
                 <ArrowRight
@@ -98,11 +99,11 @@ export default async function CategoryPage({
           ))}
         </div>
 
-        <ul className="flex flex-wrap gap-2">
+        <ul className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
           {category.highlights.map((h) => (
             <li
               key={h}
-              className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-[12px] font-medium text-brand-800"
+              className="shrink-0 whitespace-nowrap rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-[11.5px] font-medium text-brand-800 sm:text-[12px]"
             >
               {h}
             </li>
