@@ -16,6 +16,7 @@
  *   src/app/apple-icon.png             iOS home-screen icon
  *   public/brand/*.svg                 logo, mark and icon, light and dark
  *   public/brand/png/*.png             4K raster exports
+ *   brand-reserve/weekendcart-rounded* logo and W, original and theme colours
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -34,7 +35,10 @@ const COLOURS = {
   /** For dark backgrounds. */
   dark: { accent: "#dfb96f", peak: "#5aa886", tail: "#5aa886", word: "#fbf7ee", tagline: "#fbf7ee" },
 } as const;
-type Tone = keyof typeof COLOURS;
+type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
+
+/** The original artwork's blue, green and grey, kept for the reserve copy. */
+const ORIGINAL: Palette = { accent: "#029eda", peak: "#63bb48", tail: "#63bb48", word: "#373737", tagline: "#373737" };
 
 /** Favicon tile. */
 const TILE = "#fbf7ee";
@@ -169,8 +173,7 @@ const markBox = {
 
 const group = (id: string, fill: string, d: string) => `<g id="${id}" fill="${fill}"><path d="${d}"/></g>`;
 
-function markGroups(tone: Tone) {
-  const c = COLOURS[tone];
+function markGroups(c: Palette) {
   return [
     `<g id="mark">`,
     group("mark-accent", c.accent, MARK.accent),
@@ -180,8 +183,7 @@ function markGroups(tone: Tone) {
   ].join("");
 }
 
-function logoFile(tone: Tone) {
-  const c = COLOURS[tone];
+function logoFile(c: Palette) {
   const count: Record<string, number> = {};
   const letter = (g: Glyph, fill: string) => {
     count[g.char] = (count[g.char] ?? 0) + 1;
@@ -191,7 +193,7 @@ function logoFile(tone: Tone) {
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${logoBox.x} ${logoBox.y} ${logoBox.w} ${logoBox.h}" width="${logoBox.w * 4}" height="${logoBox.h * 4}" role="img" aria-label="WeekendCart">`,
     `<title>WeekendCart</title>`,
     `<g id="weekendcart-logo">`,
-    markGroups(tone),
+    markGroups(c),
     `<g id="wordmark">${WORD.map((g) => letter(g, c.word)).join("")}</g>`,
     `<g id="tagline">`,
     group("rule-left", c.tagline, RULES.left),
@@ -203,8 +205,8 @@ function logoFile(tone: Tone) {
   ].join("");
 }
 
-function markFile(tone: Tone) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${markBox.x} ${markBox.y} ${markBox.side} ${markBox.side}" width="512" height="512" role="img" aria-label="WeekendCart"><title>WeekendCart</title>${markGroups(tone)}</svg>`;
+function markFile(c: Palette) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${markBox.x} ${markBox.y} ${markBox.side} ${markBox.side}" width="512" height="512" role="img" aria-label="WeekendCart"><title>WeekendCart</title>${markGroups(c)}</svg>`;
 }
 
 /** The W alone on a 64-unit tile: the favicon. */
@@ -217,7 +219,7 @@ function iconFile(rounded: boolean) {
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">`,
     `<rect id="tile" width="64" height="64" rx="${rounded ? 14 : 0}" fill="${TILE}"/>`,
-    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups("light")}</g>`,
+    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups(COLOURS.light)}</g>`,
     `</svg>`,
   ].join("");
 }
@@ -235,12 +237,17 @@ async function main() {
   mkdirSync(out("public/brand/png"), { recursive: true });
 
   const files: Record<string, string> = {
-    "public/brand/weekendcart-logo.svg": logoFile("light"),
-    "public/brand/weekendcart-logo-light.svg": logoFile("dark"),
-    "public/brand/weekendcart-mark.svg": markFile("light"),
-    "public/brand/weekendcart-mark-light.svg": markFile("dark"),
+    "public/brand/weekendcart-logo.svg": logoFile(COLOURS.light),
+    "public/brand/weekendcart-logo-light.svg": logoFile(COLOURS.dark),
+    "public/brand/weekendcart-mark.svg": markFile(COLOURS.light),
+    "public/brand/weekendcart-mark-light.svg": markFile(COLOURS.dark),
     "public/brand/weekendcart-icon.svg": iconFile(true),
     "src/app/icon.svg": iconFile(true),
+    // Source copies, beside the reserved logos: original colours and theme colours.
+    "brand-reserve/weekendcart-rounded.svg": logoFile(ORIGINAL),
+    "brand-reserve/weekendcart-rounded-mark.svg": markFile(ORIGINAL),
+    "brand-reserve/weekendcart-rounded-theme.svg": logoFile(COLOURS.light),
+    "brand-reserve/weekendcart-rounded-theme-mark.svg": markFile(COLOURS.light),
   };
   for (const [file, svg] of Object.entries(files)) writeFileSync(out(file), svg + "\n");
 
