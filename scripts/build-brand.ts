@@ -1,168 +1,230 @@
 /**
- * Builds every brand asset from the active concept in
- * src/components/brand/mark-geometry.ts.
+ * Builds every brand asset from the WeekendCart logo geometry below.
  *
  *   npm run brand:build
  *
- * The wordmark is set in Plus Jakarta Sans and converted to outlines here,
- * once. An SVG that uses <text> renders in whatever font the viewing machine
- * happens to have; outlines render identically everywhere, with no font request
- * and no flash of the wrong typeface.
+ * The logo is drawn on the 751 × 251 grid of the original artwork. The W is
+ * three rounded strokes — a short accent, a tall peak and a short tail — built
+ * here as filled outlines, not strokes, so every tool renders them the same.
+ * "eekend" is M PLUS Rounded 1c Bold and "CART" is Open Sans, both converted to
+ * outlines once, so the logo needs no font on any device. Every letter is its
+ * own path in its own group.
  *
  * Writes:
- *   src/components/brand/wordmark.ts   outlined wordmark, used by the header
- *   src/app/icon.svg, icon1.png        favicon (SVG, with a PNG fallback)
+ *   src/components/brand/logo-art.ts   paths and colours, used by the header
+ *   src/app/icon.svg, icon1.png        favicon: the W alone (SVG, PNG fallback)
  *   src/app/apple-icon.png             iOS home-screen icon
- *   public/brand/*.svg                 lockups for print, invoices, onboarding
- *   public/brand/png/*.png             full-HD raster exports
+ *   public/brand/*.svg                 logo, mark and icon, light and dark
+ *   public/brand/png/*.png             4K raster exports
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import opentype from "opentype.js";
 import sharp from "sharp";
-import { ACTIVE, type MarkTone } from "../src/components/brand/mark-geometry";
 
 const root = process.cwd();
 const out = (...parts: string[]) => join(root, ...parts);
 
-const fonts = new Map<number, opentype.Font>();
-function font(weight: 500 | 700 | 800) {
-  if (!fonts.has(weight)) {
-    const buffer = readFileSync(
-      out("node_modules/@fontsource/plus-jakarta-sans/files", `plus-jakarta-sans-latin-${weight}-normal.woff`),
-    );
-    fonts.set(weight, opentype.parse(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)));
+/* ------------------------------------------------------------- colours */
+
+/** The site's evergreen and brass, in place of the original blue and green. */
+const COLOURS = {
+  /** For light backgrounds. */
+  light: { accent: "#d0a04b", peak: "#2f7a5f", tail: "#2f7a5f", word: "#16261f", tagline: "#16261f" },
+  /** For dark backgrounds. */
+  dark: { accent: "#dfb96f", peak: "#5aa886", tail: "#5aa886", word: "#fbf7ee", tagline: "#fbf7ee" },
+} as const;
+type Tone = keyof typeof COLOURS;
+
+/** Favicon tile. */
+const TILE = "#fbf7ee";
+
+/* ---------------------------------------------------------------- the W */
+
+type Pt = readonly [number, number];
+const R = 12; // stroke radius: the strokes are 24 units wide
+
+const ACCENT: [Pt, Pt] = [[56.8, 57], [76, 105]];
+const PEAK: [Pt, Pt, Pt] = [[93.4, 154], [133, 57], [172.6, 154]];
+const TAIL: [Pt, Pt] = [[215.3, 57], [196.1, 105]];
+
+const f2 = (n: number) => +n.toFixed(2);
+const at = (p: Pt, v: Pt, k: number): Pt => [p[0] + v[0] * k, p[1] + v[1] * k];
+const pt = (p: Pt) => `${f2(p[0])} ${f2(p[1])}`;
+function unit(a: Pt, b: Pt): Pt {
+  const dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy);
+  return [dx / l, dy / l];
+}
+const normal = (u: Pt): Pt => [-u[1], u[0]];
+const arc = (to: Pt, sweep: 0 | 1) => `A${R} ${R} 0 0 ${sweep} ${pt(to)}`;
+
+/** A straight stroke with round ends, as a filled outline. */
+function capsule([p, q]: [Pt, Pt]) {
+  const n = normal(unit(p, q));
+  return `M${pt(at(p, n, R))}L${pt(at(q, n, R))}${arc(at(q, n, -R), 0)}L${pt(at(p, n, -R))}${arc(at(p, n, R), 0)}Z`;
+}
+
+/** Two strokes meeting in a round-topped peak, as one filled outline. */
+function peak([p1, c, p2]: [Pt, Pt, Pt]) {
+  const u1 = unit(p1, c), n1 = normal(u1);
+  const u2 = unit(c, p2), n2 = normal(u2);
+  // Where the two inner edges cross, under the peak.
+  const a = at(p1, n1, R), b = at(p2, n2, R);
+  const t = ((b[0] - a[0]) * u2[1] - (b[1] - a[1]) * u2[0]) / (u1[0] * u2[1] - u1[1] * u2[0]);
+  const inner = at(a, u1, t);
+  return [
+    `M${pt(at(p1, n1, -R))}`,
+    `L${pt(at(c, n1, -R))}`,
+    arc(at(c, n2, -R), 1),
+    `L${pt(at(p2, n2, -R))}`,
+    arc(at(p2, n2, R), 1),
+    `L${pt(inner)}`,
+    `L${pt(at(p1, n1, R))}`,
+    arc(at(p1, n1, -R), 1),
+    "Z",
+  ].join("");
+}
+
+const MARK = { accent: capsule(ACCENT), peak: peak(PEAK), tail: capsule(TAIL) };
+const MARK_INK = {
+  x0: ACCENT[0][0] - R,
+  y0: ACCENT[0][1] - R,
+  x1: TAIL[0][0] + R,
+  y1: PEAK[0][1] + R,
+};
+
+/* ---------------------------------------------------------------- type */
+
+function font(file: string) {
+  const buffer = readFileSync(out("node_modules/@fontsource", file));
+  return opentype.parse(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
+}
+const rounded = font("m-plus-rounded-1c/files/m-plus-rounded-1c-latin-700-normal.woff");
+const sans = font("open-sans/files/open-sans-latin-400-normal.woff");
+
+interface Glyph { char: string; d: string; x0: number; y0: number; x1: number; y1: number }
+
+function glyph(f: opentype.Font, char: string, size: number, left: number, baseline: number): Glyph {
+  const g = f.charToGlyph(char);
+  const origin = g.getPath(0, 0, size).getBoundingBox();
+  const path = g.getPath(left - origin.x1, baseline, size);
+  const box = path.getBoundingBox();
+  return { char, d: path.toPathData(2), x0: box.x1, y0: box.y1, x1: box.x2, y1: box.y2 };
+}
+
+const unitsTall = (f: opentype.Font, char: string) => {
+  const box = f.charToGlyph(char).getBoundingBox();
+  return box.y2 - box.y1;
+};
+
+/** "eekend": x-height 71, baseline 156, each letter where the original has it. */
+const WORD_SIZE = (71 / unitsTall(rounded, "n")) * rounded.unitsPerEm;
+const WORD = [240, 317, 394, 470, 547, 624].map((left, i) => glyph(rounded, "eekend"[i], WORD_SIZE, left, 156));
+
+/** "CART": cap height 27 on baseline 216, spaced to span 325–414 as in the original. */
+const TAG_SIZE = (27 / unitsTall(sans, "T")) * sans.unitsPerEm;
+const TAG = (() => {
+  const natural: Glyph[] = [];
+  let x = 0;
+  for (const char of "CART") {
+    const g = glyph(sans, char, TAG_SIZE, x, 216);
+    natural.push(g);
+    x = g.x1;
   }
-  return fonts.get(weight)!;
-}
-
-/** Outline a run of text from x = `start`, with pairwise kerning and tracking in em. */
-function outline(f: opentype.Font, text: string, size: number, tracking: number, start = 0) {
-  const glyphs = f.stringToGlyphs(text);
-  const scale = size / f.unitsPerEm;
-  let x = start;
-  let d = "";
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-
-  glyphs.forEach((glyph, i) => {
-    const path = glyph.getPath(x, 0, size);
-    d += path.toPathData(2);
-    const box = path.getBoundingBox();
-    if (box.x2 > box.x1) {
-      minX = Math.min(minX, box.x1);
-      maxX = Math.max(maxX, box.x2);
-      minY = Math.min(minY, box.y1);
-      maxY = Math.max(maxY, box.y2);
-    }
-    let advance = (glyph.advanceWidth ?? 0) * scale;
-    if (i < glyphs.length - 1) advance += f.getKerningValue(glyph, glyphs[i + 1]) * scale;
-    x += advance + tracking * size;
+  const inkWidth = natural.reduce((w, g) => w + (g.x1 - g.x0), 0);
+  const gap = (414 - 325 - inkWidth) / 3;
+  let left = 325;
+  return natural.map((g) => {
+    const placed = glyph(sans, g.char, TAG_SIZE, left, 216);
+    left = placed.x1 + gap;
+    return placed;
   });
+})();
 
-  return { d, end: x, minX, maxX, minY, maxY };
+const RULES = { left: "M62 200H314V204H62Z", right: "M425 200H677V204H425Z" };
+
+/* ------------------------------------------------------------- layout */
+
+const PAD = 2;
+const ink = {
+  x0: Math.min(MARK_INK.x0, 62),
+  y0: Math.min(MARK_INK.y0, ...WORD.map((g) => g.y0)),
+  x1: Math.max(677, ...WORD.map((g) => g.x1)),
+  y1: Math.max(...TAG.map((g) => g.y1)),
+};
+const logoBox = {
+  x: Math.floor(ink.x0 - PAD),
+  y: Math.floor(ink.y0 - PAD),
+  w: Math.ceil(ink.x1 + PAD) - Math.floor(ink.x0 - PAD),
+  h: Math.ceil(ink.y1 + PAD) - Math.floor(ink.y0 - PAD),
+};
+const markSide = Math.max(MARK_INK.x1 - MARK_INK.x0, MARK_INK.y1 - MARK_INK.y0) + PAD * 2;
+const markBox = {
+  x: f2((MARK_INK.x0 + MARK_INK.x1) / 2 - markSide / 2),
+  y: f2((MARK_INK.y0 + MARK_INK.y1) / 2 - markSide / 2),
+  side: f2(markSide),
+};
+
+/* --------------------------------------------------------------- files */
+
+const group = (id: string, fill: string, d: string) => `<g id="${id}" fill="${fill}"><path d="${d}"/></g>`;
+
+function markGroups(tone: Tone) {
+  const c = COLOURS[tone];
+  return [
+    `<g id="mark">`,
+    group("mark-accent", c.accent, MARK.accent),
+    group("mark-peak", c.peak, MARK.peak),
+    group("mark-tail", c.tail, MARK.tail),
+    `</g>`,
+  ].join("");
 }
 
-/* ------------------------------------------------------------ geometry */
-
-const W = ACTIVE.word;
-const ink = ACTIVE.ink;
-
-const firstRun = outline(font(W.weight), W.text.slice(0, W.splitAt), W.size, W.tracking);
-const secondRun = outline(font(W.secondWeight ?? W.weight), W.text.slice(W.splitAt), W.size, W.tracking, firstRun.end);
-const word = {
-  first: firstRun.d,
-  second: secondRun.d,
-  minX: Math.min(firstRun.minX, secondRun.minX),
-  maxX: Math.max(firstRun.maxX, secondRun.maxX),
-  minY: Math.min(firstRun.minY, secondRun.minY),
-  maxY: Math.max(firstRun.maxY, secondRun.maxY),
-};
-
-// Place the wordmark so its first glyph's ink starts `gap` after the mark's ink.
-const WORD_X = +(ink.x1 + W.gap - word.minX).toFixed(2);
-
-const top = Math.floor(Math.min(ink.y0, W.baseline + word.minY)) - 1;
-const bottom = Math.ceil(Math.max(ink.y1, W.baseline + word.maxY)) + 1;
-const left = Math.floor(Math.min(ink.x0, 0)) - 1;
-const lockup = {
-  x0: left,
-  y0: top,
-  width: Math.ceil(WORD_X + word.maxX) + 2 - left,
-  height: bottom - top,
-};
-
-const translate = (d: string, dx: number, dy: number) =>
-  `<g transform="translate(${dx} ${dy})"><path d="${d}"/></g>`;
-
-const mark = (tone: MarkTone) => `<defs>${ACTIVE.defs(tone)}</defs>${ACTIVE.body(tone)}`;
-const TAGLINE_FILL: Record<MarkTone, string> = { light: "#55504a", dark: "#c7c2b9" };
-
-function horizontal(tone: MarkTone) {
-  const c = W.colours[tone];
+function logoFile(tone: Tone) {
+  const c = COLOURS[tone];
+  const count: Record<string, number> = {};
+  const letter = (g: Glyph, fill: string) => {
+    count[g.char] = (count[g.char] ?? 0) + 1;
+    return group(`letter-${g.char}${g.char === "e" ? `-${count.e}` : ""}`, fill, g.d);
+  };
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${lockup.x0} ${lockup.y0} ${lockup.width} ${lockup.height}" width="${lockup.width * 4}" height="${lockup.height * 4}" role="img" aria-label="WeekendCart">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${logoBox.x} ${logoBox.y} ${logoBox.w} ${logoBox.h}" width="${logoBox.w * 4}" height="${logoBox.h * 4}" role="img" aria-label="WeekendCart">`,
     `<title>WeekendCart</title>`,
-    mark(tone),
-    `<g fill="${c.first}">${translate(word.first, WORD_X, W.baseline)}</g>`,
-    `<g fill="${c.second}">${translate(word.second, WORD_X, W.baseline)}</g>`,
+    `<g id="weekendcart-logo">`,
+    markGroups(tone),
+    `<g id="wordmark">${WORD.map((g) => letter(g, c.word)).join("")}</g>`,
+    `<g id="tagline">`,
+    group("rule-left", c.tagline, RULES.left),
+    TAG.map((g) => group(`tagline-${g.char}`, c.tagline, g.d)).join(""),
+    group("rule-right", c.tagline, RULES.right),
+    `</g>`,
+    `</g>`,
     `</svg>`,
   ].join("");
 }
 
-const tag = outline(font(700), "ONLINE STORE", 11, 0.32);
+function markFile(tone: Tone) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${markBox.x} ${markBox.y} ${markBox.side} ${markBox.side}" width="512" height="512" role="img" aria-label="WeekendCart"><title>WeekendCart</title>${markGroups(tone)}</svg>`;
+}
 
-function stacked(tone: MarkTone) {
-  const c = W.colours[tone];
-  const markScale = 1.5;
-  const markW = (ink.x1 - ink.x0) * markScale;
-  const wordW = word.maxX - word.minX;
-  const tagW = tag.maxX - tag.minX;
-  const width = Math.ceil(Math.max(markW, wordW, tagW) + 48);
-  const centre = width / 2;
-
-  const markTop = 16;
-  const markBottom = markTop + (ink.y1 - ink.y0) * markScale;
-  const wordBaseline = markBottom + 18 - word.minY;
-  const tagBaseline = wordBaseline + 26;
-  const height = Math.ceil(tagBaseline + 20);
-
-  const markX = centre - (ink.x0 + (ink.x1 - ink.x0) / 2) * markScale;
-  const markY = markTop - ink.y0 * markScale;
-  const wordX = centre - (word.minX + wordW / 2);
-  const tagX = centre - (tag.minX + tagW / 2);
-
+/** The W alone on a 64-unit tile: the favicon. */
+function iconFile(rounded: boolean) {
+  const width = MARK_INK.x1 - MARK_INK.x0;
+  const height = MARK_INK.y1 - MARK_INK.y0;
+  const scale = 56 / width;
+  const tx = 32 - (MARK_INK.x0 + width / 2) * scale;
+  const ty = 32 - (MARK_INK.y0 + height / 2) * scale;
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width * 4}" height="${height * 4}" role="img" aria-label="WeekendCart — Online Store">`,
-    `<title>WeekendCart</title>`,
-    `<g transform="translate(${markX.toFixed(2)} ${markY.toFixed(2)}) scale(${markScale})">${mark(tone)}</g>`,
-    `<g fill="${c.first}">${translate(word.first, wordX, wordBaseline)}</g>`,
-    `<g fill="${c.second}">${translate(word.second, wordX, wordBaseline)}</g>`,
-    `<g fill="${TAGLINE_FILL[tone]}">${translate(tag.d, tagX, tagBaseline)}</g>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">`,
+    `<rect id="tile" width="64" height="64" rx="${rounded ? 14 : 0}" fill="${TILE}"/>`,
+    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups("light")}</g>`,
     `</svg>`,
   ].join("");
 }
-
-/** The mark alone, on a square canvas centred on its ink. */
-function markFile(tone: MarkTone) {
-  const side = Math.max(ink.x1 - ink.x0, ink.y1 - ink.y0) + 4;
-  const cx = (ink.x0 + ink.x1) / 2;
-  const cy = (ink.y0 + ink.y1) / 2;
-  const vb = `${(cx - side / 2).toFixed(2)} ${(cy - side / 2).toFixed(2)} ${side.toFixed(2)} ${side.toFixed(2)}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="512" height="512" role="img" aria-label="WeekendCart"><title>WeekendCart</title>${mark(tone)}</svg>`;
-}
-
-const iconFile = (rounded: boolean) => {
-  const body = ACTIVE.icon({ opaque: !rounded });
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">${
-    rounded ? body : body.replace(/rx="\d+(?:\.\d+)?"/, 'rx="0"')
-  }</svg>`;
-};
-
-/* -------------------------------------------------------------- write */
 
 async function png(svg: string, width: number, file: string, square = false) {
   const intrinsic = Number(/width="(\d+(?:\.\d+)?)"/.exec(svg)?.[1] ?? width);
-  const density = Math.min(2400, Math.max(72, (72 * width) / intrinsic));
+  const density = Math.min(4800, Math.max(72, (72 * width) / intrinsic));
   await sharp(Buffer.from(svg), { density })
     .resize(square ? { width, height: width, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } } : { width })
     .png({ compressionLevel: 9 })
@@ -173,10 +235,8 @@ async function main() {
   mkdirSync(out("public/brand/png"), { recursive: true });
 
   const files: Record<string, string> = {
-    "public/brand/weekendcart-logo.svg": horizontal("light"),
-    "public/brand/weekendcart-logo-light.svg": horizontal("dark"),
-    "public/brand/weekendcart-logo-stacked.svg": stacked("light"),
-    "public/brand/weekendcart-logo-stacked-light.svg": stacked("dark"),
+    "public/brand/weekendcart-logo.svg": logoFile("light"),
+    "public/brand/weekendcart-logo-light.svg": logoFile("dark"),
     "public/brand/weekendcart-mark.svg": markFile("light"),
     "public/brand/weekendcart-mark-light.svg": markFile("dark"),
     "public/brand/weekendcart-icon.svg": iconFile(true),
@@ -184,36 +244,46 @@ async function main() {
   };
   for (const [file, svg] of Object.entries(files)) writeFileSync(out(file), svg + "\n");
 
-  await png(files["public/brand/weekendcart-logo.svg"], 1920, out("public/brand/png/weekendcart-logo-1920.png"));
-  await png(files["public/brand/weekendcart-logo-light.svg"], 1920, out("public/brand/png/weekendcart-logo-light-1920.png"));
-  await png(files["public/brand/weekendcart-logo-stacked.svg"], 1200, out("public/brand/png/weekendcart-logo-stacked-1200.png"));
-  await png(files["public/brand/weekendcart-mark.svg"], 1024, out("public/brand/png/weekendcart-mark-1024.png"), true);
-  await png(files["public/brand/weekendcart-icon.svg"], 1024, out("public/brand/png/weekendcart-icon-1024.png"), true);
+  // 4K: 3840 wide for the logo, 4096 square for the mark and icon.
+  await png(files["public/brand/weekendcart-logo.svg"], 3840, out("public/brand/png/weekendcart-logo-4k.png"));
+  await png(files["public/brand/weekendcart-logo-light.svg"], 3840, out("public/brand/png/weekendcart-logo-light-4k.png"));
+  await png(files["public/brand/weekendcart-mark.svg"], 4096, out("public/brand/png/weekendcart-mark-4k.png"), true);
+  await png(files["public/brand/weekendcart-mark-light.svg"], 4096, out("public/brand/png/weekendcart-mark-light-4k.png"), true);
+  await png(files["public/brand/weekendcart-icon.svg"], 4096, out("public/brand/png/weekendcart-icon-4k.png"), true);
   await png(files["public/brand/weekendcart-icon.svg"], 512, out("public/brand/png/weekendcart-icon-512.png"), true);
   // iOS rounds the corners itself; a pre-rounded tile would get a double edge.
   await png(iconFile(false), 180, out("src/app/apple-icon.png"), true);
   await png(iconFile(true), 64, out("src/app/icon1.png"), true);
 
+  const list = (items: string[]) => `[\n${items.map((d) => `    "${d}",`).join("\n")}\n  ]`;
   writeFileSync(
-    out("src/components/brand/wordmark.ts"),
+    out("src/components/brand/logo-art.ts"),
     [
-      `// Generated by scripts/build-brand.ts for "${ACTIVE.name}".`,
-      "// Do not edit by hand — change mark-geometry.ts and run `npm run brand:build`.",
+      "// Generated by scripts/build-brand.ts.",
+      "// Do not edit by hand — change the script and run `npm run brand:build`.",
       "",
-      "export const WORDMARK = {",
-      `  viewBox: "${lockup.x0} ${lockup.y0} ${lockup.width} ${lockup.height}",`,
-      `  width: ${lockup.width},`,
-      `  height: ${lockup.height},`,
-      `  x: ${WORD_X},`,
-      `  baseline: ${W.baseline},`,
-      `  first: "${word.first}",`,
-      `  second: "${word.second}",`,
+      "export const LOGO = {",
+      `  viewBox: "${logoBox.x} ${logoBox.y} ${logoBox.w} ${logoBox.h}",`,
+      `  width: ${logoBox.w},`,
+      `  height: ${logoBox.h},`,
+      `  markViewBox: "${markBox.x} ${markBox.y} ${markBox.side} ${markBox.side}",`,
+      `  mark: {`,
+      `    accent: "${MARK.accent}",`,
+      `    peak: "${MARK.peak}",`,
+      `    tail: "${MARK.tail}",`,
+      `  },`,
+      `  word: ${list(WORD.map((g) => g.d))},`,
+      `  tagline: ${list([RULES.left, ...TAG.map((g) => g.d), RULES.right])},`,
       "} as const;",
+      "",
+      `export const LOGO_COLOURS = ${JSON.stringify(COLOURS, null, 2).replace(/"(\w+)":/g, "$1:")} as const;`,
+      "",
+      "export type LogoTone = keyof typeof LOGO_COLOURS;",
       "",
     ].join("\n"),
   );
 
-  console.log(`${ACTIVE.name}: lockup ${lockup.width}×${lockup.height} · ${Object.keys(files).length} SVGs · 8 PNGs`);
+  console.log(`WeekendCart: logo ${logoBox.w}×${logoBox.h} · ${Object.keys(files).length} SVGs · 8 PNGs`);
 }
 
 main().catch((error) => {

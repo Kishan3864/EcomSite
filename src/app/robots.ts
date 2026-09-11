@@ -17,8 +17,6 @@ export default function robots(): MetadataRoute.Robots {
           "/order/",
           "/wishlist",
           "/search",
-          // Temporary logo chooser; removed once a logo is picked.
-          "/logo",
           "/*?*page=",
           "/*?*sort=",
           "/*?*brands=",

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, Home, Search, ShoppingBag } from "lucide-react";
-import { FeatherMark } from "@/components/brand/logo";
+import { LogoMark } from "@/components/brand/logo";
 import { StoreChrome } from "@/components/layout/store-chrome";
 import { buttonClasses } from "@/components/ui/button";
 import { ProductRail } from "@/components/product/product-rail";
@@ -20,7 +20,7 @@ export default async function NotFound() {
     <StoreChrome>
       <div className="container-page flex flex-col items-center justify-center py-20 text-center sm:py-28">
         <div className="relative">
-          <FeatherMark size={72} className="opacity-90" />
+          <LogoMark size={72} className="opacity-90" />
           <span className="absolute -right-2 -top-1 rounded-full bg-sale-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-white">
             404
           </span>
