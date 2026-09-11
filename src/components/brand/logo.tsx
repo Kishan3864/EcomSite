@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BUSINESS, isFilled } from "@/config/business";
-import { BAG, HANDLE, SMILE, SPEED, WHEELS, markColours, type MarkTone } from "./mark-geometry";
+import { ACTIVE, type MarkTone } from "./mark-geometry";
 import { WORDMARK } from "./wordmark";
 
 /**
@@ -32,78 +32,49 @@ export const BRAND = {
 } as const;
 
 /**
- * The bag gradients, defined once for the whole document and referenced by
- * every mark on the page. Defining them inside each mark would put the same id
- * in the DOM several times — the header, the footer and the menu all show the
- * logo — which is invalid HTML.
+ * The mark's shared definitions (gradients), once for the whole document and
+ * referenced by every mark on the page. Inside each mark they would repeat the
+ * same ids several times — header, footer and menu all show the logo — which
+ * is invalid HTML.
+ *
+ * The markup comes from mark-geometry.ts: static strings written in this
+ * repository, never user input.
  */
 export function BrandDefs() {
-  const light = markColours("light");
-  const dark = markColours("dark");
   return (
     <svg width="0" height="0" aria-hidden="true" focusable="false" className="absolute">
-      <defs>
-        <linearGradient id="wc-bag-light" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={light.bagTop} />
-          <stop offset="1" stopColor={light.bagBottom} />
-        </linearGradient>
-        <linearGradient id="wc-bag-dark" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={dark.bagTop} />
-          <stop offset="1" stopColor={dark.bagBottom} />
-        </linearGradient>
-      </defs>
+      <defs dangerouslySetInnerHTML={{ __html: ACTIVE.defs("light") + ACTIVE.defs("dark") }} />
     </svg>
   );
 }
 
-/** The mark's artwork, on the shared 64-unit grid. */
-function MarkArt({ tone, speed = true }: { tone: MarkTone; speed?: boolean }) {
-  const c = markColours(tone);
-  return (
-    <>
-      {speed &&
-        SPEED.map((d) => (
-          <path key={d} d={d} fill="none" stroke={c.speed} strokeWidth="2.6" strokeLinecap="round" />
-        ))}
-      <path d={HANDLE} fill="none" stroke={c.handle} strokeWidth="4.2" strokeLinecap="round" />
-      <path d={BAG} fill={`url(#wc-bag-${tone})`} />
-      <path
-        d={SMILE}
-        fill="none"
-        stroke={c.smile}
-        strokeWidth="3.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {WHEELS.map((w) => (
-        <circle key={w.cx} cx={w.cx} cy={w.cy} r={w.r} fill={c.wheels} />
-      ))}
-    </>
-  );
+/** The active concept's artwork, on its 64-unit grid. */
+function MarkArt({ tone }: { tone: MarkTone }) {
+  return <g dangerouslySetInnerHTML={{ __html: ACTIVE.body(tone) }} />;
 }
 
-/** The mark on its own — a bag on two wheels. */
+/** A square viewBox centred on the mark's ink, with a little room. */
+const MARK_BOX = (() => {
+  const { x0, y0, x1, y1 } = ACTIVE.ink;
+  const side = Math.max(x1 - x0, y1 - y0) + 4;
+  const cx = (x0 + x1) / 2;
+  const cy = (y0 + y1) / 2;
+  return `${(cx - side / 2).toFixed(2)} ${(cy - side / 2).toFixed(2)} ${side.toFixed(2)} ${side.toFixed(2)}`;
+})();
+
+/** The mark on its own. */
 export function BagMark({
   className,
   size = 28,
   tone = "light",
-  speed = true,
 }: {
   className?: string;
   size?: number;
   tone?: MarkTone;
-  speed?: boolean;
 }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      aria-hidden="true"
-      focusable="false"
-      className={className}
-    >
-      <MarkArt tone={tone} speed={speed} />
+    <svg width={size} height={size} viewBox={MARK_BOX} aria-hidden="true" focusable="false" className={className}>
+      <MarkArt tone={tone} />
     </svg>
   );
 }
@@ -115,8 +86,8 @@ const HEIGHTS = { sm: 26, md: 34, lg: 46 } as const;
 
 /**
  * The lockup: mark and wordmark in one SVG. The wordmark is outlined Plus
- * Jakarta Sans ExtraBold (see scripts/build-brand.ts), so it renders
- * identically on every device with no font request and no reflow.
+ * Jakarta Sans (see scripts/build-brand.ts), so it renders identically on every
+ * device with no font request and no reflow.
  */
 function Lockup({
   tone,
@@ -129,7 +100,7 @@ function Lockup({
 }) {
   const height = HEIGHTS[size];
   const width = Math.round((height * WORDMARK.width) / WORDMARK.height);
-  const light = tone === "light";
+  const colours = ACTIVE.word.colours[tone];
 
   return (
     <svg
@@ -142,8 +113,8 @@ function Lockup({
     >
       <MarkArt tone={tone} />
       <g transform={`translate(${WORDMARK.x} ${WORDMARK.baseline})`}>
-        <path d={WORDMARK.weekend} fill={light ? "#0d0c0a" : "#ffffff"} />
-        <path d={WORDMARK.cart} fill={light ? "#9a6926" : "#dfb96f"} />
+        <path d={WORDMARK.first} fill={colours.first} />
+        <path d={WORDMARK.second} fill={colours.second} />
       </g>
     </svg>
   );
