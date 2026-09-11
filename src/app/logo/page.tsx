@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ACTIVE, CONCEPTS, type Concept, type MarkTone } from "@/components/brand/mark-geometry";
 import { DRAFTS } from "@/components/brand/concepts-draft";
+import { DESIGNS, type Design } from "./designs";
 
 /**
  * TEMPORARY — a page for choosing the logo. It is deleted, along with
@@ -87,6 +88,51 @@ function Favicons({ concept }: { concept: Concept }) {
   );
 }
 
+const TABS = [
+  { bg: "#dee1e6", label: "Light tab", fg: "#3c4043" },
+  { bg: "#35363a", label: "Dark tab", fg: "#e8eaed" },
+];
+
+/** One of the twenty typographic directions. */
+function DesignCard({ design }: { design: Design }) {
+  return (
+    <section className="overflow-hidden border border-hairline bg-surface">
+      <div className="flex items-start gap-4 px-5 py-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center bg-ink-950 font-display text-[20px] text-white">
+          {design.key}
+        </span>
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-semibold text-ink-950">{design.name}</h2>
+          <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-700">
+            {design.font}
+          </p>
+          <p className="mt-1 text-[12.5px] leading-relaxed text-ink-500">{design.note}</p>
+        </div>
+      </div>
+      <div className="flex min-h-[124px] items-center overflow-x-auto border-t border-hairline bg-canvas px-5 py-6">
+        {design.render(false)}
+      </div>
+      <div className="flex min-h-[124px] items-center overflow-x-auto px-5 py-6" style={{ background: "#0b1611" }}>
+        {design.render(true)}
+      </div>
+      <div className="grid grid-cols-2 gap-px bg-hairline">
+        {TABS.map((tab) => (
+          <div key={tab.label} className="flex items-center gap-4 px-4 py-3" style={{ background: tab.bg }}>
+            {[16, 32, 64].map((size) => (
+              <svg key={size} viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
+                {design.icon()}
+              </svg>
+            ))}
+            <span className="ml-auto text-[11px] font-medium" style={{ color: tab.fg }}>
+              {tab.label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function LogoChooserPage() {
   return (
     <main className="min-h-dvh bg-canvas px-4 py-10 sm:px-8">
@@ -97,7 +143,7 @@ export default function LogoChooserPage() {
             Choose the WeekendCart logo
           </h1>
           <p className="mt-3 text-[14.5px] leading-relaxed text-ink-600">
-            Fourteen directions, each shown on a light page, a dark page, and as a favicon at the
+            Thirty-four directions, each shown on a light page, a dark page, and as a favicon at the
             real 16, 32 and 64 pixel sizes a browser tab uses. Pasand ka <strong>letter</strong>{" "}
             batao — wahi final hoga, aur ye page hata diya jaayega.
           </p>
@@ -135,6 +181,23 @@ export default function LogoChooserPage() {
               </section>
             );
           })}
+        </div>
+
+        <header className="mt-16 max-w-3xl border-b border-ink-950 pb-6">
+          <span className="eyebrow">20 naye designs</span>
+          <h2 className="mt-3 font-display text-[28px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:text-[38px]">
+            Different type, colour and layout in every one
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-relaxed text-ink-600">
+            Stacked W with eekend and Cart, a trolley standing in for a letter, script, retro,
+            serif, sticker and badge styles — each in its own typeface and palette. Number batao.
+          </p>
+        </header>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          {DESIGNS.map((design) => (
+            <DesignCard key={design.key} design={design} />
+          ))}
         </div>
       </div>
     </main>
