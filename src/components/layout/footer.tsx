@@ -218,7 +218,6 @@ export async function Footer() {
           <p className="text-[12px] text-ink-500">
             &copy; {new Date().getFullYear()} {BRAND.legalName}. All rights reserved.
             {isGstRegistered ? ` GSTIN ${BUSINESS.gstin}.` : ""}
-            {isFilled(BUSINESS.udyamNumber) ? ` Udyam ${BUSINESS.udyamNumber}.` : ""}
           </p>
           <ul className="flex flex-wrap gap-x-5 gap-y-2">
             {[

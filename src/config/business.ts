@@ -45,10 +45,29 @@ export const BUSINESS = {
   /** One of: "Proprietorship" | "Partnership" | "LLP" | "Private Limited". */
   entityType: "Proprietorship" as const,
 
+  /**
+   * How the payment aggregator has onboarded this business. It decides how
+   * every legal page names the party a customer contracts with, and the two
+   * must agree: a website naming a firm the aggregator has no record of is a
+   * KYC mismatch.
+   *
+   *   "unregistered" - onboarded on the proprietor's PAN alone. The customer
+   *                    contracts with the proprietor personally, trading
+   *                    under the brand.
+   *   "registered"   - onboarded as a registered proprietorship firm.
+   *
+   * Switch to "registered" once the aggregator account is re-verified that way.
+   */
+  registrationStatus: "unregistered" as "unregistered" | "registered",
+
   /** Full name of the proprietor, as on PAN. Required on some invoices. */
   proprietorName: "Patel KishanKumar SureshBhai",
 
-  /** Udyam / MSME registration number, e.g. "UDYAM-GJ-00-0000000". */
+  /**
+   * Udyam / MSME registration number. Printed only inside the Privacy policy
+   * and the Terms of use - never in the footer, header, contact or about
+   * page, or anywhere else a passer-by would see it.
+   */
   udyamNumber: "UDYAM-GJ-22-0670828",
 
   /**
@@ -99,7 +118,7 @@ export const BUSINESS = {
    */
   grievanceOfficer: {
     name: "Patel KishanKumar SureshBhai",
-    designation: "Proprietor and Grievance Officer",
+    designation: "Owner and Grievance Officer",
   },
 
   // ── Web ─────────────────────────────────────────────────────────────────────
@@ -216,6 +235,20 @@ export function addressLines(): string[] {
 
 /** Whether the store can honestly claim it issues GST invoices. */
 export const isGstRegistered = isFilled(BUSINESS.gstin);
+
+/** Onboarded with the aggregator as a registered firm, rather than on PAN alone. */
+export const isRegisteredBusiness = BUSINESS.registrationStatus === "registered";
+
+/**
+ * The party a customer actually contracts with, worded the way the payment
+ * aggregator's KYC record words it. Every legal page reads this, so changing
+ * `registrationStatus` changes them all at once.
+ */
+export function operatorDescription(): string {
+  return isRegisteredBusiness
+    ? BUSINESS.legalName + ", a sole proprietorship firm of " + BUSINESS.proprietorName
+    : BUSINESS.proprietorName + ", trading as " + BUSINESS.legalName;
+}
 
 /** Whether every legally required field has been supplied. */
 export function missingRequiredFields(): string[] {

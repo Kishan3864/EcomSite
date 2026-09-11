@@ -9,7 +9,7 @@ import { BUSINESS, addressLines, isFilled } from "@/config/business";
 
 export const metadata: Metadata = {
   title: "Contact us",
-  description: `Contact ${BUSINESS.brandName} — phone, email and our registered address. Support runs ${BUSINESS.supportHours}.`,
+  description: `Contact ${BUSINESS.brandName} — phone, email and our business address. Support runs ${BUSINESS.supportHours}.`,
   alternates: { canonical: "/contact" },
   openGraph: {
     title: `Contact us · ${BUSINESS.brandName}`,
@@ -110,18 +110,12 @@ export default function ContactPage() {
 
           <div className="rounded-xl border border-hairline bg-surface p-5">
             <h2 className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
-              <MapPin size={14} className="text-brand-600" /> Registered address
+              <MapPin size={14} className="text-brand-600" /> Business address
             </h2>
             <address className="mt-3 text-[13px] not-italic leading-relaxed text-ink-600">
               {BRAND.legalName}
-              {BUSINESS.entityType === "Proprietorship" ? (
-                <>
-                  <br />
-                  <span className="text-ink-500">
-                    Sole proprietorship of {BUSINESS.proprietorName}
-                  </span>
-                </>
-              ) : null}
+              <br />
+              <span className="text-ink-500">Operated by {BUSINESS.proprietorName}</span>
               {addressLines().map((line) => (
                 <span key={line}>
                   <br />
@@ -132,12 +126,6 @@ export default function ContactPage() {
                 <>
                   <br />
                   <span className="text-ink-400">GSTIN {BUSINESS.gstin}</span>
-                </>
-              ) : null}
-              {isFilled(BUSINESS.udyamNumber) ? (
-                <>
-                  <br />
-                  <span className="text-ink-400">Udyam {BUSINESS.udyamNumber}</span>
                 </>
               ) : null}
             </address>

@@ -9,7 +9,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { brands } from "@/data/taxonomy";
 import { POOL, img } from "@/data/images";
 import { BRAND } from "@/components/brand/logo";
-import { BUSINESS, formatAddress, isFilled } from "@/config/business";
+import { BUSINESS, formatAddress, isFilled, operatorDescription } from "@/config/business";
 
 /**
  * About page.
@@ -22,7 +22,7 @@ import { BUSINESS, formatAddress, isFilled } from "@/config/business";
 
 export const metadata: Metadata = {
   title: `About ${BUSINESS.brandName}`,
-  description: `${BUSINESS.brandName} is an Indian online store run by ${BUSINESS.legalName}, selling ${BUSINESS.categoriesSold
+  description: `${BUSINESS.brandName} is an Indian online store run by ${BUSINESS.proprietorName}, selling ${BUSINESS.categoriesSold
     .join(", ")
     .toLowerCase()} with honest pricing and a straightforward return policy.`,
   alternates: { canonical: "/about" },
@@ -129,16 +129,8 @@ export default function AboutPage() {
               </h2>
               <div className="mt-4 space-y-3.5 text-[14.5px] leading-[1.75] text-ink-600">
                 <p>
-                  {BUSINESS.brandName} is owned and operated by {BUSINESS.legalName}
-                  {BUSINESS.entityType === "Proprietorship"
-                    ? `, a sole proprietorship registered in India${
-                        isFilled(BUSINESS.udyamNumber)
-                          ? ` under Udyam registration ${BUSINESS.udyamNumber}`
-                          : ""
-                      }`
-                    : ""}
-                  . We sell {BUSINESS.categoriesSold.join(", ").toLowerCase()} to customers across
-                  India.
+                  {BUSINESS.brandName} is owned and operated by {operatorDescription()}. We sell{" "}
+                  {BUSINESS.categoriesSold.join(", ").toLowerCase()} to customers across India.
                 </p>
                 <p>
                   We are a small, new business, and we would rather say that plainly than pretend to
@@ -160,12 +152,12 @@ export default function AboutPage() {
               </h3>
               <dl className="mt-4 space-y-3.5 text-[13px]">
                 <div>
-                  <dt className="text-ink-500">Legal entity</dt>
+                  <dt className="text-ink-500">Trading name</dt>
                   <dd className="mt-0.5 font-medium text-ink-900">{BUSINESS.legalName}</dd>
                 </div>
                 <div>
-                  <dt className="text-ink-500">Type</dt>
-                  <dd className="mt-0.5 font-medium text-ink-900">{BUSINESS.entityType}</dd>
+                  <dt className="text-ink-500">Operated by</dt>
+                  <dd className="mt-0.5 font-medium text-ink-900">{BUSINESS.proprietorName}</dd>
                 </div>
                 {isFilled(BUSINESS.gstin) ? (
                   <div>
@@ -175,16 +167,8 @@ export default function AboutPage() {
                     </dd>
                   </div>
                 ) : null}
-                {isFilled(BUSINESS.udyamNumber) ? (
-                  <div>
-                    <dt className="text-ink-500">Udyam registration</dt>
-                    <dd className="mt-0.5 font-medium tabular-nums text-ink-900">
-                      {BUSINESS.udyamNumber}
-                    </dd>
-                  </div>
-                ) : null}
                 <div>
-                  <dt className="text-ink-500">Registered address</dt>
+                  <dt className="text-ink-500">Business address</dt>
                   <dd className="mt-0.5 font-medium leading-relaxed text-ink-900">
                     {formatAddress()}
                   </dd>

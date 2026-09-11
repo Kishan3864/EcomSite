@@ -1,5 +1,11 @@
 import type { PolicySection } from "@/components/content/prose-page";
-import { BUSINESS, formatAddress, isFilled, isGstRegistered } from "@/config/business";
+import {
+  BUSINESS,
+  formatAddress,
+  isFilled,
+  isGstRegistered,
+  operatorDescription,
+} from "@/config/business";
 
 /**
  * Policy copy lives in the data layer like everything else, so a legal review
@@ -14,11 +20,19 @@ import { BUSINESS, formatAddress, isFilled, isGstRegistered } from "@/config/bus
 const ADDRESS = formatAddress();
 const O = BUSINESS.ops;
 
-/** "Acme Traders, a sole proprietorship firm" — used wherever the contract is named. */
-const ENTITY =
-  BUSINESS.entityType === "Proprietorship"
-    ? `${BUSINESS.legalName}, a sole proprietorship firm`
-    : BUSINESS.legalName;
+/**
+ * The party the customer contracts with, worded to match the payment
+ * aggregator's KYC record. See `registrationStatus` in the business config.
+ */
+const ENTITY = operatorDescription();
+
+/**
+ * The Udyam number appears in exactly two places - the Privacy policy and the
+ * Terms of use - and nowhere in the site chrome.
+ */
+const UDYAM_LINE: string[] = isFilled(BUSINESS.udyamNumber)
+  ? ["Udyam (MSME) registration number: " + BUSINESS.udyamNumber + "."]
+  : [];
 
 const GRIEVANCE_BLOCK = [
   `${BUSINESS.grievanceOfficer.name}, ${BUSINESS.grievanceOfficer.designation}`,
@@ -58,6 +72,7 @@ export const policies: Policy[] = [
         heading: "Who we are",
         paragraphs: [
           `This website is owned and operated by ${ENTITY}, having its place of business at ${ADDRESS} (referred to as "we", "us" or "${BUSINESS.brandName}").`,
+          ...UDYAM_LINE,
           `For the purposes of the Digital Personal Data Protection Act, 2023 we are the Data Fiduciary in respect of the personal data described below. You are the Data Principal.`,
           `This policy is published under the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011 and under Section 5 of the Digital Personal Data Protection Act, 2023.`,
         ],
@@ -200,7 +215,7 @@ export const policies: Policy[] = [
     slug: "terms",
     title: "Terms of use",
     eyebrow: "Legal",
-    description: `The agreement between you and ${BUSINESS.legalName} when you use this website or place an order on it.`,
+    description: `The agreement between you and ${BUSINESS.brandName} when you use this website or place an order on it.`,
     intro:
       "These terms govern your use of this website and every order you place on it. Please read them before you buy. By using the site you accept them.",
     updatedAt: UPDATED,
@@ -209,7 +224,8 @@ export const policies: Policy[] = [
         id: "the-agreement",
         heading: "The agreement",
         paragraphs: [
-          `This website is operated by ${ENTITY}, with its place of business at ${ADDRESS}. In these terms, "we", "us" and "${BUSINESS.brandName}" mean that entity, and "you" means the person using the site.`,
+          `This website is operated by ${ENTITY}, with its place of business at ${ADDRESS}. In these terms, "we", "us" and "${BUSINESS.brandName}" mean the operator named above, and "you" means the person using the site.`,
+          ...UDYAM_LINE,
           "By accessing this website, creating an account or placing an order, you confirm that you accept these terms and agree to be bound by them. If you do not accept them, please do not use the site.",
           "These terms are published as an electronic record under the Information Technology Act, 2000. They do not require a physical or digital signature.",
         ],
@@ -287,7 +303,7 @@ export const policies: Policy[] = [
         id: "ip",
         heading: "Intellectual property",
         paragraphs: [
-          `The design, layout, text, graphics, logos and software on this site are owned by or licensed to ${BUSINESS.legalName} and are protected under Indian copyright and trade mark law. You may not reproduce, distribute or create derivative works from them without our written permission.`,
+          `The design, layout, text, graphics, logos and software on this site are owned by or licensed to ${ENTITY} and are protected under Indian copyright and trade mark law. You may not reproduce, distribute or create derivative works from them without our written permission.`,
           "Product names, brand names and logos of the products we sell belong to their respective owners. They appear on this site solely to identify the goods being offered for sale, and their appearance does not imply any endorsement of us by those owners.",
         ],
       },
@@ -724,7 +740,10 @@ export const servicesSections: PolicySection[] = [
     id: "what-we-do",
     heading: "What we do",
     paragraphs: [
-      `${BUSINESS.legalName} operates ${BUSINESS.brandName}, an online retail store selling physical consumer goods to customers across India through this website.`,
+      BUSINESS.brandName +
+        " is an online retail store operated by " +
+        operatorDescription() +
+        ", selling physical consumer goods to customers across India through this website.",
       "We are a first-party retailer, not a marketplace. We buy stock, hold it ourselves, and sell it under our own invoice. There are no third-party sellers on this site, and no seller onboarding.",
     ],
   },
