@@ -19,6 +19,7 @@ export const PALETTE = {
   brass400: "#d0a04b",
   brass600: "#9a6926",
   amber: "#c4782a",
+  emerald: "#2f7a5f",
   cream: "#fbf7ee",
   ink: "#0d0c0a",
 } as const;
@@ -208,7 +209,44 @@ const folded: Concept = {
   },
 };
 
-export const CONCEPTS = { classic, wcart, folded } as const;
+/* ------------------------------------------------ C: Monogram */
+
+/**
+ * A handle over a W makes the bag. The mark is the tile itself — an app icon
+ * from the start — beside a wide-tracked, fashion-house wordmark.
+ */
+function monogramBody(tone: MarkTone) {
+  return [
+    `<rect width="64" height="64" rx="18" fill="url(#${gid("monogram", tone)})"/>`,
+    `<path d="M25.5 23a6.5 6.5 0 0 1 13 0" fill="none" stroke="${PALETTE.brass300}" stroke-width="3.8" stroke-linecap="round"/>`,
+    `<path d="M15 26L23 45L32 31L41 45L49 26" fill="none" stroke="${PALETTE.cream}" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round"/>`,
+  ].join("");
+}
+
+const monogram: Concept = {
+  name: "C — Monogram",
+  defs: (tone) =>
+    `<linearGradient id="${gid("monogram", tone)}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${PALETTE.emerald}"/><stop offset="1" stop-color="${PALETTE.evergreen950}"/></linearGradient>`,
+  body: monogramBody,
+  ink: { x0: 0, y0: 0, x1: 64, y1: 64 },
+  icon: () => `<defs>${monogram.defs("light")}</defs>${monogramBody("light")}`,
+  word: {
+    text: "WEEKENDCART",
+    splitAt: 7,
+    weight: 700,
+    size: 26,
+    tracking: 0.16,
+    // Cap height centred on the tile.
+    baseline: 41.4,
+    gap: 14,
+    colours: {
+      light: { first: PALETTE.evergreen900, second: PALETTE.evergreen900 },
+      dark: { first: "#ffffff", second: "#ffffff" },
+    },
+  },
+};
+
+export const CONCEPTS = { classic, wcart, folded, monogram } as const;
 
 /** The direction the site uses. Change it, then run `npm run brand:build`. */
-export const ACTIVE: Concept = CONCEPTS.folded;
+export const ACTIVE: Concept = CONCEPTS.monogram;
