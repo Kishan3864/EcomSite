@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ACTIVE, CONCEPTS, type Concept, type MarkTone } from "@/components/brand/mark-geometry";
 import { DRAFTS } from "@/components/brand/concepts-draft";
 import { DESIGNS, type Design } from "./designs";
+import { PREMIUM } from "./designs-premium";
 
 /**
  * TEMPORARY — a page for choosing the logo. It is deleted, along with
@@ -143,7 +144,7 @@ export default function LogoChooserPage() {
             Choose the WeekendCart logo
           </h1>
           <p className="mt-3 text-[14.5px] leading-relaxed text-ink-600">
-            Thirty-four directions, each shown on a light page, a dark page, and as a favicon at the
+            Fifty-four directions, each shown on a light page, a dark page, and as a favicon at the
             real 16, 32 and 64 pixel sizes a browser tab uses. Pasand ka <strong>letter</strong>{" "}
             batao — wahi final hoga, aur ye page hata diya jaayega.
           </p>
@@ -196,6 +197,23 @@ export default function LogoChooserPage() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           {DESIGNS.map((design) => (
+            <DesignCard key={design.key} design={design} />
+          ))}
+        </div>
+
+        <header className="mt-16 max-w-3xl border-b border-ink-950 pb-6">
+          <span className="eyebrow">20 premium designs</span>
+          <h2 className="mt-3 font-display text-[28px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:text-[38px]">
+            Foil, glass, chrome, wax and neon
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-relaxed text-ink-600">
+            Photoshop-style finishes — metallic gradients, blur, emboss, extrusion, glow and paper
+            layers — each with its own typeface and palette. P-number batao (jaise P7).
+          </p>
+        </header>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          {PREMIUM.map((design) => (
             <DesignCard key={design.key} design={design} />
           ))}
         </div>
