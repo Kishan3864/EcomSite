@@ -59,7 +59,12 @@ export function NewsletterForm() {
           required
           placeholder="you@example.in"
           aria-invalid={Boolean(state.error)}
-          className="h-12 flex-1 rounded-xl border border-white/15 bg-white/5 px-4 text-sm text-white outline-none transition-colors placeholder:text-white/35 focus:border-gold-400 focus:bg-white/10"
+          // flex-1 only from sm up. Below that the row stacks into a column,
+          // and flex-1 there means a flex-basis of 0 on the vertical axis —
+          // which is what squashed this input to a sliver on phones.
+          // text-base on phones: iOS zooms the page into any input set smaller
+          // than 16px the moment it is focused.
+          className="h-12 w-full shrink-0 rounded-field border border-white/15 bg-white/5 px-4 text-base text-white outline-none transition-colors placeholder:text-white/35 focus:border-gold-400 focus:bg-white/10 sm:w-auto sm:flex-1 sm:text-sm"
         />
         <SubscribeButton />
       </div>
