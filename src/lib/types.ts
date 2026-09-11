@@ -226,7 +226,12 @@ export interface DeliveryOption {
   maxDays: number;
 }
 
-export type PaymentMethodId = "upi" | "card" | "netbanking" | "wallet" | "cod";
+/**
+ * What the checkout offers is "online" (Razorpay, which itself covers UPI,
+ * cards, net banking and wallets) and "cod". The narrower ids remain because a
+ * paid order is recorded as what the customer actually used.
+ */
+export type PaymentMethodId = "online" | "upi" | "card" | "netbanking" | "wallet" | "cod";
 
 export interface PaymentMethod {
   id: PaymentMethodId;

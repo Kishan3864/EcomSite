@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { verifyWebhookSignature, type RazorpayPayment } from "@/lib/payments/razorpay";
-import { applyWebhookPayment } from "@/services/payments";
+import { applyWebhookPayment } from "@/services/payment-core";
 
 /**
  * Razorpay webhook.
@@ -33,7 +33,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
   }
 
+  // A Razorpay event is a few kilobytes. Refuse anything far larger before
+  // reading it, so the endpoint cannot be used to make the server buffer and
+  // hash arbitrarily large bodies.
+  const declared = Number(request.headers.get("content-length") ?? "0");
+  if (declared > 256_000) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
   const raw = await request.text();
+  if (raw.length > 256_000) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
 
   let valid = false;
   try {

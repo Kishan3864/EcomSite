@@ -10,6 +10,7 @@ import type {
   OrderTrackingEvent,
   ReturnRequest,
 } from "@/lib/types";
+import { resolveAvatar } from "@/lib/avatar";
 
 /**
  * Storefront reads for orders. Everything the confirmation, tracking and
@@ -138,7 +139,9 @@ export function toOrder(row: OrderRow): Order {
               ? "Net banking"
               : row.paymentMethod === "WALLET"
                 ? "Wallet"
-                : "UPI",
+                : row.paymentMethod === "ONLINE"
+                  ? "Online payment"
+                  : "UPI",
       description: row.paymentDetail ?? "",
     },
     totals: {
@@ -252,6 +255,8 @@ export async function getCustomerProfile() {
       tier: true,
       loyaltyPoints: true,
       createdAt: true,
+      avatarUrl: true,
+      avatar: { select: { key: true } },
       _count: { select: { orders: true } },
     },
   });
@@ -265,6 +270,7 @@ export async function getCustomerProfile() {
     loyaltyPoints: c.loyaltyPoints,
     memberSince: c.createdAt.toISOString(),
     orderCount: c._count.orders,
+    avatarUrl: resolveAvatar(c),
     avatarInitials: c.name
       .split(" ")
       .map((n) => n[0])

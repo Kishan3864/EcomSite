@@ -113,6 +113,7 @@ export interface Invoice {
 }
 
 const PAYMENT_LABEL: Record<string, string> = {
+  ONLINE: "Online payment",
   UPI: "UPI",
   CARD: "Credit / Debit card",
   NETBANKING: "Net banking",

@@ -28,6 +28,8 @@ import { getOffer } from "./catalog";
 import { safeNextPath } from "@/lib/auth/oauth";
 import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
+import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
+import { expireStalePendingOrders } from "./payment-core";
 
 /**
  * Everything the storefront writes goes through here. Prices, stock and coupon
@@ -94,6 +96,21 @@ export async function placeOrder(
       ok: false,
       error: "Create an account or sign in to place this order. Nothing you have entered is lost.",
       field: "account",
+    };
+
+  if (!rateLimit("order:place", session.id, 8, 10 * 60_000)) return { ok: false, error: TOO_MANY };
+
+  // Writing an order takes its stock off the shelf, so unpaid online orders are
+  // a way to hold stock nobody else can buy. Release the lapsed ones first, then
+  // refuse to let one customer stack up more.
+  await expireStalePendingOrders();
+  const unpaid = await db.order.count({
+    where: { customerId: session.id, paymentStatus: "PENDING", paymentMethod: "ONLINE" },
+  });
+  if (unpaid >= 3)
+    return {
+      ok: false,
+      error: "You have unpaid orders waiting. Pay for one, or wait a few minutes and try again.",
     };
 
   if (!input.lines?.length) return { ok: false, error: "Your bag is empty." };
@@ -192,6 +209,13 @@ export async function placeOrder(
     },
   });
 
+  // Two ways to pay: the gateway, or cash on delivery. Older drafts saved in a
+  // browser may still say "upi" or "card"; those were always going to be paid
+  // through the gateway, so they are read as online rather than rejected.
+  const GATEWAY_IDS = ["online", "upi", "card", "netbanking", "wallet"];
+  if (input.paymentMethod !== "cod" && !GATEWAY_IDS.includes(input.paymentMethod))
+    return { ok: false, error: "Choose how you would like to pay.", field: "payment" };
+
   if (input.paymentMethod === "cod" && (!settings.payments.cod || totals.total > settings.payments.codLimit))
     return { ok: false, error: `Cash on Delivery is not available on this order.`, field: "payment" };
 
@@ -201,7 +225,9 @@ export async function placeOrder(
   const scheduled = input.deliveryDate ? new Date(input.deliveryDate) : null;
   const estimatedDelivery = speed === "scheduled" && scheduled ? scheduled : eta;
 
-  const method = input.paymentMethod.toUpperCase() as "UPI" | "CARD" | "NETBANKING" | "WALLET" | "COD";
+  // Online orders are written as ONLINE and narrowed to what was actually used
+  // once the gateway reports it.
+  const method: "ONLINE" | "COD" = input.paymentMethod === "cod" ? "COD" : "ONLINE";
   const email = input.contact.email.toLowerCase().trim();
   // A business buyer claiming input credit must have their GSTIN on the invoice;
   // anything that is not one is dropped rather than printed as fact.
@@ -349,9 +375,6 @@ export async function placeOrder(
           data: {
             preferredPayment: method,
             phone: input.contact.phone.trim(),
-            ...(method === "UPI" && input.paymentDetail?.includes("@")
-              ? { upiId: input.paymentDetail.trim() }
-              : {}),
           },
         });
 
@@ -460,6 +483,7 @@ export async function submitContact(input: {
   orderNumber?: string;
   message: string;
 }): Promise<ActionResult> {
+  if (!rateLimit("contact:ip", await clientIp(), 5, 10 * 60_000)) return { ok: false, error: TOO_MANY };
   if (input.name.trim().length < 2) return { ok: false, error: "Tell us your name.", field: "name" };
   if (!EMAIL.test(input.email)) return { ok: false, error: "We need a valid email to reply to.", field: "email" };
   if (input.message.trim().length < 10)
@@ -479,6 +503,7 @@ export async function submitContact(input: {
 }
 
 export async function subscribeNewsletter(email: string, source = "footer"): Promise<ActionResult> {
+  if (!rateLimit("newsletter:ip", await clientIp(), 5, 10 * 60_000)) return { ok: false, error: TOO_MANY };
   if (!EMAIL.test(email)) return { ok: false, error: "Enter a valid email address." };
   await db.newsletterSubscriber.upsert({
     where: { email: email.toLowerCase().trim() },
@@ -593,6 +618,8 @@ export async function requestPasswordHelp(
   formData: FormData,
 ): Promise<PasswordHelpState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!rateLimit("password-help:ip", await clientIp(), 5, 60 * 60_000))
+    return { error: TOO_MANY, values: { email } };
   if (!EMAIL.test(email))
     return { error: "Enter the email address on your account.", values: { email } };
 
@@ -632,6 +659,13 @@ export async function loginAction(_prev: AuthFormState, formData: FormData): Pro
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const values = { email };
+
+  // Password guessing is the attack here, so count per address as well as
+  // per IP: an attacker rotating IPs against one account is still stopped.
+  const ip = await clientIp();
+  if (!rateLimit("login:ip", ip, 12, 15 * 60_000) || !rateLimit("login:email", email.toLowerCase(), 10, 15 * 60_000))
+    return { error: TOO_MANY, values };
+
   if (!EMAIL.test(email)) return { error: "Enter a valid email address.", field: "email", values };
   if (password.length < 6) return { error: "Enter your password.", field: "password", values };
 
@@ -648,6 +682,7 @@ export async function registerAction(_prev: AuthFormState, formData: FormData): 
   const password = String(formData.get("password") ?? "");
 
   const values = { name, email, phone };
+  if (!rateLimit("register:ip", await clientIp(), 6, 60 * 60_000)) return { error: TOO_MANY, values };
   if (name.length < 2) return { error: "Tell us your name.", field: "name", values };
   if (!EMAIL.test(email)) return { error: "Enter a valid email address.", field: "email", values };
   if (!PHONE.test(phone.replace(/\s/g, "")))

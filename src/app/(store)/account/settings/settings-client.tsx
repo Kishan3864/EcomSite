@@ -1,18 +1,21 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import {
   AlertCircle,
   AlertTriangle,
   Banknote,
+  Camera,
   Check,
   CreditCard,
   Landmark,
   LifeBuoy,
   MapPin,
   Package,
+  ShieldCheck,
   Smartphone,
   Wallet,
 } from "lucide-react";
@@ -28,8 +31,11 @@ import {
 } from "@/services/account-actions";
 import { useStore } from "@/store/store";
 import { Form } from "@/components/ui/form";
+import { Avatar } from "@/components/account/avatar";
+import { removeAvatar, uploadAvatar, type AvatarState } from "@/services/avatar-actions";
 
 const ICONS: Record<PaymentMethodId, typeof Wallet> = {
+  online: ShieldCheck,
   upi: Smartphone,
   card: CreditCard,
   netbanking: Landmark,
@@ -61,6 +67,7 @@ export function SettingsClient({
         </p>
       </header>
 
+      <PhotoSection />
       <DetailsSection profile={profile} />
       <DefaultAddressSection addresses={addresses} />
       <PaymentSection />
@@ -129,6 +136,177 @@ function SaveButton({ children, disabled }: { children: string; disabled?: boole
       {pending ? "Saving" : children}
     </Button>
   );
+}
+
+/**
+ * Profile photo.
+ *
+ * The image is cropped square and re-encoded in the browser before it is sent.
+ * That keeps the upload to a few tens of kilobytes, and re-encoding drops the
+ * EXIF block — a phone photo can carry the GPS position it was taken at, which
+ * has no business leaving the customer's device. The server checks the bytes
+ * again regardless; nothing here is trusted by it.
+ */
+function PhotoSection() {
+  const { customer, sessionChecked, dispatch } = useStore();
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [state, setState] = useState<AvatarState>({});
+  const [pending, startTransition] = useTransition();
+
+  // Release the previous preview's object URL whenever it is replaced.
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  async function refreshSession() {
+    const response = await fetch("/api/me", { cache: "no-store" });
+    if (response.ok) {
+      const data = await response.json();
+      dispatch({ type: "session/set", customer: data.customer, addresses: data.addresses });
+    }
+    router.refresh();
+  }
+
+  async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    // Cleared so choosing the same file again still fires a change.
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setState({ error: "Choose an image file." });
+      return;
+    }
+    if (file.size > 15_000_000) {
+      setState({ error: "That file is too large. Choose a photo under 15 MB." });
+      return;
+    }
+
+    let blob: Blob;
+    try {
+      blob = await squareImage(file, 320);
+    } catch {
+      setState({ error: "That image could not be read. Try a JPG or PNG." });
+      return;
+    }
+
+    setPreview(URL.createObjectURL(blob));
+    const form = new FormData();
+    form.append("photo", new File([blob], "avatar", { type: blob.type }));
+
+    startTransition(async () => {
+      const result = await uploadAvatar({}, form);
+      setState(result);
+      if (result.ok) await refreshSession();
+      else setPreview(null);
+    });
+  }
+
+  function onRemove() {
+    startTransition(async () => {
+      const result = await removeAvatar();
+      setState(result);
+      setPreview(null);
+      if (result.ok) await refreshSession();
+    });
+  }
+
+  const shown = preview ?? customer?.avatarUrl ?? null;
+  const hasUpload = Boolean(customer?.avatarUrl?.startsWith("/api/account/avatar/"));
+
+  return (
+    <Section
+      id="photo"
+      title="Profile photo"
+      description="Shown in your account menu. Without one, we use your Google photo, or a drawn avatar."
+    >
+      <div className="flex flex-wrap items-center gap-5">
+        <Avatar src={shown} seed={customer?.email ?? ""} size={72} />
+        <div className="space-y-2.5">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => inputRef.current?.click()}
+              disabled={!sessionChecked || pending}
+              loading={pending}
+            >
+              <Camera size={14} />
+              {hasUpload ? "Change photo" : "Upload photo"}
+            </Button>
+            {hasUpload && (
+              <Button type="button" size="sm" variant="outline" onClick={onRemove} disabled={pending}>
+                Remove
+              </Button>
+            )}
+          </div>
+          <p className="text-[12px] leading-relaxed text-ink-500">
+            JPG, PNG or WebP. We crop it square and strip location data from it.
+          </p>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden="true"
+            onChange={onPick}
+          />
+        </div>
+      </div>
+
+      {state.error && (
+        <p role="alert" className="mt-4 flex items-start gap-1.5 text-[12.5px] text-sale-600">
+          <AlertCircle size={13} className="mt-px shrink-0" />
+          {state.error}
+        </p>
+      )}
+      {state.ok && state.message && (
+        <p role="status" className="mt-4 flex items-center gap-1.5 text-[12.5px] text-brand-700">
+          <Check size={13} className="shrink-0" />
+          {state.message}
+        </p>
+      )}
+    </Section>
+  );
+}
+
+/** Crop to a centred square, scale it down, and re-encode it. */
+async function squareImage(file: File, size: number): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const side = Math.min(bitmap.width, bitmap.height);
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Canvas unavailable");
+  context.drawImage(
+    bitmap,
+    (bitmap.width - side) / 2,
+    (bitmap.height - side) / 2,
+    side,
+    side,
+    0,
+    0,
+    size,
+    size,
+  );
+  bitmap.close();
+
+  const encode = (type: string, quality: number) =>
+    new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
+
+  // WebP where the browser can write it; older Safari silently hands back a
+  // PNG instead, so check the type and fall back to JPEG.
+  const webp = await encode("image/webp", 0.86);
+  if (webp && webp.type === "image/webp") return webp;
+  const jpeg = await encode("image/jpeg", 0.88);
+  if (!jpeg) throw new Error("Could not encode image");
+  return jpeg;
 }
 
 function DetailsSection({ profile }: { profile: SettingsProfile }) {
@@ -267,7 +445,6 @@ function PaymentSection() {
   const { config, customer, sessionChecked } = useStore();
   const [state, action] = useActionState(savePaymentPreferences, {});
   const [method, setMethod] = useState("");
-  const [upiId, setUpiId] = useState("");
   const filled = useRef(false);
 
   // The session lands from /api/me a moment after this renders. Fill the form
@@ -277,7 +454,6 @@ function PaymentSection() {
     if (!sessionChecked || filled.current) return;
     filled.current = true;
     setMethod(customer?.preferredPayment ?? "");
-    setUpiId(customer?.upiId ?? "");
   }, [sessionChecked, customer]);
 
   return (
@@ -336,23 +512,6 @@ function PaymentSection() {
           </p>
         )}
 
-        <Field
-          label="UPI ID"
-          htmlFor="settings-upi"
-          optional
-          error={state.field === "upiId" ? state.error : undefined}
-          hint="Saved so the UPI step at checkout is already filled in."
-        >
-          <Input
-            id="settings-upi"
-            name="upiId"
-            value={upiId}
-            onChange={(e) => setUpiId(e.target.value)}
-            invalid={state.field === "upiId"}
-            placeholder="yourname@okhdfcbank"
-            disabled={!sessionChecked}
-          />
-        </Field>
 
         <SaveButton disabled={!sessionChecked}>Save preferences</SaveButton>
       </Form>

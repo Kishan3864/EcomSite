@@ -16,6 +16,7 @@ import { logoutAction } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cn, formatDate } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
+import { Avatar } from "@/components/account/avatar";
 
 const LINKS = [
   { href: "/account", label: "Overview", icon: UserRound, exact: true },
@@ -34,6 +35,7 @@ export interface AccountProfile {
   loyaltyPoints: number;
   memberSince: string;
   avatarInitials: string;
+  avatarUrl: string | null;
 }
 
 export function AccountNav({
@@ -56,9 +58,12 @@ export function AccountNav({
       <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
         <div className="peacock-surface p-5">
           <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold-400 text-[15px] font-bold text-brand-950">
-              {profile?.avatarInitials ?? "··"}
-            </span>
+            <Avatar
+              src={profile?.avatarUrl}
+              seed={profile?.email ?? ""}
+              size={48}
+              className="ring-2 ring-white/20"
+            />
             <div className="min-w-0">
               <p className="truncate text-[15px] font-semibold text-white">{profile?.name}</p>
               <p className="truncate text-[12px] text-white/60">{profile?.email}</p>

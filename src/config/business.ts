@@ -187,7 +187,7 @@ export const BUSINESS = {
     shippingFee: 79,
 
     /** Set to false until you actually offer Cash on Delivery. */
-    codEnabled: false,
+    codEnabled: true,
 
     /** Maximum order value eligible for COD, in rupees. */
     codLimit: 5000,

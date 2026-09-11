@@ -31,7 +31,7 @@ const CSP = [
   "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
-  "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://cdn.pixabay.com https://cdn.razorpay.com https://badges.razorpay.com",
+  "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://cdn.pixabay.com https://cdn.razorpay.com https://badges.razorpay.com https://lh3.googleusercontent.com https://*.googleusercontent.com https://platform-lookaside.fbsbx.com",
   // Checkout talks to the gateway directly from the browser, and reports its
   // own telemetry to lumberjack. Blocking either breaks the payment flow with
   // no visible error.

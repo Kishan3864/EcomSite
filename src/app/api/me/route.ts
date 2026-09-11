@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCustomerSession } from "@/lib/auth/customer";
 import { getCustomerAddresses } from "@/services/orders";
+import { resolveAvatar } from "@/lib/avatar";
 
 /**
  * Who is signed in, their saved addresses and their checkout preferences.
@@ -27,6 +28,7 @@ export async function GET() {
       select: {
         phone: true,
         avatarUrl: true,
+        avatar: { select: { key: true } },
         authProvider: true,
         preferredPayment: true,
         upiId: true,
@@ -41,7 +43,7 @@ export async function GET() {
         name: session.name,
         email: session.email,
         phone: profile?.phone ?? "",
-        avatarUrl: profile?.avatarUrl ?? null,
+        avatarUrl: profile ? resolveAvatar(profile) : null,
         authProvider: profile?.authProvider ?? "PASSWORD",
         // Lower-cased so it lines up with PaymentMethodId on the client.
         preferredPayment: profile?.preferredPayment

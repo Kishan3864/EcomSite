@@ -112,6 +112,9 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
+  /// Paid through the gateway checkout, before the gateway has said how.
+  /// Narrowed to UPI / CARD / NETBANKING / WALLET once the payment lands.
+  ONLINE
   UPI
   CARD
   NETBANKING
@@ -479,10 +482,12 @@ model Customer {
   upiId            String?
 
   /// Federated sign-in. `providerId` is the provider's own subject id.
-  authProvider  AuthProvider @default(PASSWORD)
+  authProvider  AuthProvider    @default(PASSWORD)
   providerId    String?
   avatarUrl     String?
-  emailVerified Boolean      @default(false)
+  /// A photo the customer uploaded themselves. Wins over avatarUrl.
+  avatar        CustomerAvatar?
+  emailVerified Boolean         @default(false)
 
   addresses Address[]
   orders    Order[]
@@ -821,4 +826,20 @@ model WebhookEvent {
   createdAt DateTime  @default(now())
 
   @@index([event])
+}
+
+/// A profile photo the customer uploaded.
+///
+/// Kept out of the Customer row on purpose: Prisma selects every scalar column
+/// by default, and a customer is read on nearly every request. Bytes in that
+/// row would ride along with every session check.
+model CustomerAvatar {
+  customerId String   @id
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  /// Random and unguessable, and replaced on every upload. It is the URL, so a
+  /// new photo is a new address and no cache ever serves the old one.
+  key        String   @unique
+  mime       String
+  data       Bytes
+  updatedAt  DateTime @updatedAt
 }

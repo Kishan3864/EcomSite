@@ -24,6 +24,16 @@ const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
   // No offerText on either: there is no cashback scheme and no bank
   // arrangement behind one. An inducement we cannot honour is the kind of
   // claim a payment reviewer treats as a red flag, and a customer as a lie.
+  // One option for everything the gateway takes. Razorpay's own checkout then
+  // offers UPI (Google Pay, PhonePe, Paytm), cards, net banking and wallets, so
+  // repeating those choices here would only add a step and a chance to pick
+  // the wrong one.
+  online: {
+    name: "Pay online",
+    description:
+      "UPI (Google Pay, PhonePe, Paytm), credit and debit cards, net banking and wallets, on Razorpay's secure checkout",
+    badge: "Recommended",
+  },
   upi: {
     name: "UPI",
     description: "Google Pay, PhonePe, Paytm, BHIM or any UPI app",
@@ -78,9 +88,11 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   ];
 
   // Order matters: this is the order the payment step lists them in.
-  const enabled: PaymentMethod["id"][] = (["upi", "card", "netbanking", "wallet", "cod"] as const).filter(
-    (id) => s.payments[id],
-  );
+  const gatewayOn = s.payments.upi || s.payments.card || s.payments.netbanking || s.payments.wallet;
+  const enabled: PaymentMethod["id"][] = [
+    ...(gatewayOn ? (["online"] as const) : []),
+    ...(s.payments.cod ? (["cod"] as const) : []),
+  ];
 
   return {
     deliveryOptions,

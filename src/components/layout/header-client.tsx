@@ -39,6 +39,7 @@ import { cartCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 import { BUSINESS } from "@/config/business";
+import { Avatar } from "@/components/account/avatar";
 
 /** Everything the account owns, in the order a shopper is likely to want it. */
 const ACCOUNT_LINKS = [
@@ -444,16 +445,7 @@ function AccountMenu() {
             ) : customer ? (
               <>
                 <div role="none" className="flex items-center gap-3 border-b border-hairline px-4 py-3.5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-900 text-[12px] font-bold text-white">
-                    {customer.avatarUrl ? (
-                      // Avatars come from the sign-in provider, whose hosts are
-                      // not in the next/image remote patterns.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={customer.avatarUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      customer.name.slice(0, 1).toUpperCase()
-                    )}
-                  </span>
+                  <Avatar src={customer.avatarUrl} seed={customer.email} size={36} />
                   <span className="min-w-0">
                     <span className="block truncate text-[13.5px] font-semibold text-ink-950">
                       {customer.name}

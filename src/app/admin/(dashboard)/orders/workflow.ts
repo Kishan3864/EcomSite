@@ -25,9 +25,10 @@ export const PAYMENT_STATUSES: PaymentStatus[] = [
   "PARTIALLY_REFUNDED",
 ];
 
-export const PAYMENT_METHODS: PaymentMethod[] = ["UPI", "CARD", "NETBANKING", "WALLET", "COD"];
+export const PAYMENT_METHODS: PaymentMethod[] = ["ONLINE", "UPI", "CARD", "NETBANKING", "WALLET", "COD"];
 
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  ONLINE: "Online (Razorpay)",
   UPI: "UPI",
   CARD: "Card",
   NETBANKING: "Net banking",

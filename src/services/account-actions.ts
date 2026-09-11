@@ -22,7 +22,7 @@ export interface AccountFormState {
 
 const PHONE = /^(\+91[\s-]?)?[6-9]\d{9}$/;
 const UPI_ID = /^[a-z0-9._-]{2,64}@[a-z]{2,32}$/i;
-const METHODS: readonly PaymentMethod[] = ["UPI", "CARD", "NETBANKING", "WALLET", "COD"];
+const METHODS: readonly PaymentMethod[] = ["ONLINE", "COD"];
 
 const EXPIRED = "Your session has ended. Sign in again to save this.";
 
