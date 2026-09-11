@@ -173,6 +173,24 @@ function iconFile(rounded: boolean) {
   ].join("");
 }
 
+/**
+ * The installed-app icon: an opaque full-bleed tile with the W inside the
+ * central safe zone, since Android crops maskable icons to a circle or squircle.
+ */
+function maskableFile() {
+  const width = MARK_INK.x1 - MARK_INK.x0;
+  const height = MARK_INK.y1 - MARK_INK.y0;
+  const scale = 38 / width;
+  const tx = 32 - (MARK_INK.x0 + width / 2) * scale;
+  const ty = 32 - (MARK_INK.y0 + height / 2) * scale;
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">`,
+    `<rect width="64" height="64" fill="${TILE}"/>`,
+    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups(COLOURS.light)}</g>`,
+    `</svg>`,
+  ].join("");
+}
+
 async function png(svg: string, width: number, file: string, square = false) {
   const intrinsic = Number(/width="(\d+(?:\.\d+)?)"/.exec(svg)?.[1] ?? width);
   const density = Math.min(4800, Math.max(72, (72 * width) / intrinsic));
@@ -202,6 +220,11 @@ async function main() {
   await png(files["public/brand/weekendcart-mark-light.svg"], 4096, out("public/brand/png/weekendcart-mark-light-4k.png"), true);
   await png(files["public/brand/weekendcart-icon.svg"], 4096, out("public/brand/png/weekendcart-icon-4k.png"), true);
   await png(files["public/brand/weekendcart-icon.svg"], 512, out("public/brand/png/weekendcart-icon-512.png"), true);
+  // Web app manifest: home-screen icon, and the maskable one Android crops.
+  await png(files["public/brand/weekendcart-icon.svg"], 192, out("public/brand/png/weekendcart-icon-192.png"), true);
+  await png(maskableFile(), 512, out("public/brand/png/weekendcart-icon-maskable-512.png"), true);
+  // Email clients do not render SVG; the welcome email shows this at 200px wide.
+  await png(files["public/brand/weekendcart-logo.svg"], 400, out("public/brand/png/weekendcart-logo-email.png"));
   // iOS rounds the corners itself; a pre-rounded tile would get a double edge.
   await png(iconFile(false), 180, out("src/app/apple-icon.png"), true);
   await png(iconFile(true), 64, out("src/app/icon1.png"), true);
@@ -242,7 +265,7 @@ async function main() {
     ].join("\n"),
   );
 
-  console.log(`WeekendCart: logo ${LOCKUP_WIDTH}×${LOCKUP_HEIGHT} · ${Object.keys(files).length} SVGs · 8 PNGs`);
+  console.log(`WeekendCart: logo ${LOCKUP_WIDTH}×${LOCKUP_HEIGHT} · ${Object.keys(files).length} SVGs · 11 PNGs`);
 }
 
 main().catch((error) => {

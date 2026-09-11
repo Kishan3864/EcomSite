@@ -741,6 +741,8 @@ model NewsletterSubscriber {
   email     String   @unique
   source    String   @default("footer")
   createdAt DateTime @default(now())
+  /// When the welcome email went out; null until it has, so it is sent once.
+  welcomedAt DateTime?
 }
 
 /**

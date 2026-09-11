@@ -57,13 +57,16 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
   category: "shopping",
+  // Installed from "Add to Home Screen", the site opens full-screen like an app.
+  appleWebApp: { capable: true, title: BRAND.name, statusBarStyle: "default" },
+  // iOS would otherwise underline prices and order numbers as phone numbers.
+  formatDetection: { telephone: false, email: false, address: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbfaf8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a2322" },
-  ],
+  // The page canvas, so the browser's status bar and the sticky header read as
+  // one surface, the way an app's top bar does.
+  themeColor: "#f7f5f1",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

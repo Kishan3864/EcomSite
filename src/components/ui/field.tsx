@@ -6,9 +6,11 @@ import { cn } from "@/lib/utils";
 
 /** Shared form field styling for checkout, auth and account forms. */
 
+// 16px on phones, 14px from sm up: iOS zooms the whole page into any field
+// set smaller than 16px the moment it is focused, which no app would do.
 export const inputClasses = (invalid?: boolean) =>
   cn(
-    "h-11 w-full rounded-field border bg-canvas px-3.5 text-[14px] text-ink-900 outline-none",
+    "h-11 w-full rounded-field border bg-canvas px-3.5 text-[16px] text-ink-900 outline-none sm:text-[14px]",
     "transition-colors placeholder:text-ink-400",
     invalid
       ? "border-sale-500 focus:border-sale-600"
