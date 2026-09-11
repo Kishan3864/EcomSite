@@ -21,21 +21,21 @@ const CSP = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   // Checkout renders the bank and UPI pages inside an iframe it owns.
-  "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com",
+  "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com https://accounts.google.com/gsi/",
   "child-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
   // A bank's 3-D Secure page posts back through Razorpay.
   "form-action 'self' https://api.razorpay.com https://checkout.razorpay.com",
   // Razorpay's checkout script. It is loaded from their CDN and cannot be
   // self-hosted: it is versioned by them and must stay current for card
   // network and UPI changes.
-  "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
-  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://accounts.google.com/gsi/client",
+  "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   "font-src 'self' data:",
   "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://cdn.pixabay.com https://cdn.razorpay.com https://badges.razorpay.com https://lh3.googleusercontent.com https://*.googleusercontent.com https://platform-lookaside.fbsbx.com",
   // Checkout talks to the gateway directly from the browser, and reports its
   // own telemetry to lumberjack. Blocking either breaks the payment flow with
   // no visible error.
-  "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com",
+  "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://accounts.google.com/gsi/",
   "manifest-src 'self'",
   "media-src 'self'",
   "worker-src 'self' blob:",

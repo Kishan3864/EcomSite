@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { configuredProviders, type ProviderId } from "@/lib/auth/oauth";
+import { GoogleButton } from "@/components/auth/google-identity";
 
 /** Brand marks, drawn inline — the shared social icons file has no login marks. */
 const MARKS: Record<ProviderId, () => ReactElement> = {
@@ -50,7 +51,7 @@ export function SocialSignIn({ next }: { next?: string }) {
       <div className="space-y-2.5">
         {providers.map(({ id, label }) => {
           const Mark = MARKS[id];
-          return (
+          const redirect = (
             // A plain anchor: next/link would prefetch the route on hover and
             // start a handshake nobody asked for.
             <a
@@ -65,6 +66,14 @@ export function SocialSignIn({ next }: { next?: string }) {
               </span>
               Continue with {label}
             </a>
+          );
+          // Google gets its own button, which turns into "Continue as <name>"
+          // when the browser is signed in to Google. The redirect button stays
+          // underneath as the fallback for when Google's script cannot load.
+          return id === "google" ? (
+            <GoogleButton key={id} next={next} fallback={redirect} />
+          ) : (
+            redirect
           );
         })}
       </div>

@@ -6,6 +6,8 @@ import { PageTransition } from "@/components/layout/page-transition";
 import { StoreProvider } from "@/store/store";
 import { ToastProvider } from "@/components/ui/toast";
 import { getStorefrontConfig } from "@/services/storefront-config";
+import { GoogleOneTap } from "@/components/auth/google-identity";
+import { configuredProvider } from "@/lib/auth/oauth";
 
 /**
  * Everything that wraps a storefront page: providers, header, footer, mobile
@@ -31,6 +33,9 @@ export async function StoreChrome({ children }: { children: React.ReactNode }) {
         </div>
         <BottomNav />
         <CartDrawer />
+        {/* Only when Google sign-in is configured, so an unconfigured store never
+            loads Google's script or makes a request that is bound to fail. */}
+        {configuredProvider("google") ? <GoogleOneTap /> : null}
       </ToastProvider>
     </StoreProvider>
   );
