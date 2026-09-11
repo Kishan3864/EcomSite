@@ -1,14 +1,16 @@
 /**
- * Builds every brand asset from the WeekendCart logo geometry below.
+ * Builds every brand asset.
  *
  *   npm run brand:build
  *
- * The logo is drawn on the 751 × 251 grid of the original artwork. The W is
- * three rounded strokes — a short accent, a tall peak and a short tail — built
- * here as filled outlines, not strokes, so every tool renders them the same.
- * "eekend" is M PLUS Rounded 1c Bold and "CART" is Open Sans, both converted to
- * outlines once, so the logo needs no font on any device. Every letter is its
- * own path in its own group.
+ * The full logo — W, "eekend" and the ruled "CART" — comes from the finished
+ * artwork in scripts/brand/weekendcart-logo.svg, recoloured for light and dark
+ * backgrounds. Its letters are already outlines, so it needs no font on any
+ * device; every stroke and letter is written as its own path in its own group.
+ *
+ * The favicon's W is drawn below on the 751 × 251 grid of the original artwork:
+ * three rounded strokes — a short accent, a tall peak and a short tail — as
+ * filled outlines, so every tool renders them the same.
  *
  * Writes:
  *   src/components/brand/logo-art.ts   paths and colours, used by the header
@@ -16,11 +18,9 @@
  *   src/app/apple-icon.png             iOS home-screen icon
  *   public/brand/*.svg                 logo, mark and icon, light and dark
  *   public/brand/png/*.png             4K raster exports
- *   brand-reserve/weekendcart-rounded* logo and W, original and theme colours
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import opentype from "opentype.js";
 import sharp from "sharp";
 
 const root = process.cwd();
@@ -36,9 +36,6 @@ const COLOURS = {
   dark: { accent: "#dfb96f", peak: "#5aa886", tail: "#5aa886", word: "#fbf7ee", tagline: "#fbf7ee" },
 } as const;
 type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
-
-/** The original artwork's blue, green and grey, kept for the reserve copy. */
-const ORIGINAL: Palette = { accent: "#029eda", peak: "#63bb48", tail: "#63bb48", word: "#373737", tagline: "#373737" };
 
 /** Favicon tile. */
 const TILE = "#fbf7ee";
@@ -97,71 +94,32 @@ const MARK_INK = {
   y1: PEAK[0][1] + R,
 };
 
-/* ---------------------------------------------------------------- type */
+/* ----------------------------------------------------------- the lockup */
 
-function font(file: string) {
-  const buffer = readFileSync(out("node_modules/@fontsource", file));
-  return opentype.parse(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
+/**
+ * The full logo is finished by hand in a design tool and kept as
+ * scripts/brand/weekendcart-logo.svg: the six letters of "eekend", the ruled
+ * "CART" (rule, C, A, R, T, rule), then the W's accent, peak and tail, in that
+ * order. Its own colours are ignored; the palettes above are applied here.
+ */
+const SOURCE = readFileSync(out("scripts/brand/weekendcart-logo.svg"), "utf8");
+const SOURCE_PATHS = [...SOURCE.matchAll(/<path d="([^"]+)"/g)].map((m) => m[1]);
+if (SOURCE_PATHS.length !== 15) {
+  throw new Error(`weekendcart-logo.svg: expected 15 paths, found ${SOURCE_PATHS.length}`);
 }
-const rounded = font("m-plus-rounded-1c/files/m-plus-rounded-1c-latin-700-normal.woff");
-const sans = font("open-sans/files/open-sans-latin-400-normal.woff");
-
-interface Glyph { char: string; d: string; x0: number; y0: number; x1: number; y1: number }
-
-function glyph(f: opentype.Font, char: string, size: number, left: number, baseline: number): Glyph {
-  const g = f.charToGlyph(char);
-  const origin = g.getPath(0, 0, size).getBoundingBox();
-  const path = g.getPath(left - origin.x1, baseline, size);
-  const box = path.getBoundingBox();
-  return { char, d: path.toPathData(2), x0: box.x1, y0: box.y1, x1: box.x2, y1: box.y2 };
-}
-
-const unitsTall = (f: opentype.Font, char: string) => {
-  const box = f.charToGlyph(char).getBoundingBox();
-  return box.y2 - box.y1;
+const LOCKUP = {
+  viewBox: /viewBox="([^"]+)"/.exec(SOURCE)![1],
+  word: SOURCE_PATHS.slice(0, 6),
+  tagline: SOURCE_PATHS.slice(6, 12),
+  mark: { accent: SOURCE_PATHS[12], peak: SOURCE_PATHS[13], tail: SOURCE_PATHS[14] },
 };
-
-/** "eekend": x-height 71, baseline 156, each letter where the original has it. */
-const WORD_SIZE = (71 / unitsTall(rounded, "n")) * rounded.unitsPerEm;
-const WORD = [240, 317, 394, 470, 547, 624].map((left, i) => glyph(rounded, "eekend"[i], WORD_SIZE, left, 156));
-
-/** "CART": cap height 27 on baseline 216, spaced to span 325–414 as in the original. */
-const TAG_SIZE = (27 / unitsTall(sans, "T")) * sans.unitsPerEm;
-const TAG = (() => {
-  const natural: Glyph[] = [];
-  let x = 0;
-  for (const char of "CART") {
-    const g = glyph(sans, char, TAG_SIZE, x, 216);
-    natural.push(g);
-    x = g.x1;
-  }
-  const inkWidth = natural.reduce((w, g) => w + (g.x1 - g.x0), 0);
-  const gap = (414 - 325 - inkWidth) / 3;
-  let left = 325;
-  return natural.map((g) => {
-    const placed = glyph(sans, g.char, TAG_SIZE, left, 216);
-    left = placed.x1 + gap;
-    return placed;
-  });
-})();
-
-const RULES = { left: "M62 200H314V204H62Z", right: "M425 200H677V204H425Z" };
+const [, , LOCKUP_WIDTH, LOCKUP_HEIGHT] = LOCKUP.viewBox.split(/\s+/).map(Number);
+const WORD_IDS = ["letter-e-1", "letter-e-2", "letter-k", "letter-e-3", "letter-n", "letter-d"];
+const TAGLINE_IDS = ["rule-left", "tagline-C", "tagline-A", "tagline-R", "tagline-T", "rule-right"];
 
 /* ------------------------------------------------------------- layout */
 
 const PAD = 2;
-const ink = {
-  x0: Math.min(MARK_INK.x0, 62),
-  y0: Math.min(MARK_INK.y0, ...WORD.map((g) => g.y0)),
-  x1: Math.max(677, ...WORD.map((g) => g.x1)),
-  y1: Math.max(...TAG.map((g) => g.y1)),
-};
-const logoBox = {
-  x: Math.floor(ink.x0 - PAD),
-  y: Math.floor(ink.y0 - PAD),
-  w: Math.ceil(ink.x1 + PAD) - Math.floor(ink.x0 - PAD),
-  h: Math.ceil(ink.y1 + PAD) - Math.floor(ink.y0 - PAD),
-};
 const markSide = Math.max(MARK_INK.x1 - MARK_INK.x0, MARK_INK.y1 - MARK_INK.y0) + PAD * 2;
 const markBox = {
   x: f2((MARK_INK.x0 + MARK_INK.x1) / 2 - markSide / 2),
@@ -173,33 +131,24 @@ const markBox = {
 
 const group = (id: string, fill: string, d: string) => `<g id="${id}" fill="${fill}"><path d="${d}"/></g>`;
 
-function markGroups(c: Palette) {
+function markGroups(c: Palette, paths: { accent: string; peak: string; tail: string } = MARK) {
   return [
     `<g id="mark">`,
-    group("mark-accent", c.accent, MARK.accent),
-    group("mark-peak", c.peak, MARK.peak),
-    group("mark-tail", c.tail, MARK.tail),
+    group("mark-accent", c.accent, paths.accent),
+    group("mark-peak", c.peak, paths.peak),
+    group("mark-tail", c.tail, paths.tail),
     `</g>`,
   ].join("");
 }
 
 function logoFile(c: Palette) {
-  const count: Record<string, number> = {};
-  const letter = (g: Glyph, fill: string) => {
-    count[g.char] = (count[g.char] ?? 0) + 1;
-    return group(`letter-${g.char}${g.char === "e" ? `-${count.e}` : ""}`, fill, g.d);
-  };
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${logoBox.x} ${logoBox.y} ${logoBox.w} ${logoBox.h}" width="${logoBox.w * 4}" height="${logoBox.h * 4}" role="img" aria-label="WeekendCart">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${LOCKUP.viewBox}" width="${LOCKUP_WIDTH}" height="${LOCKUP_HEIGHT}" role="img" aria-label="WeekendCart">`,
     `<title>WeekendCart</title>`,
     `<g id="weekendcart-logo">`,
-    markGroups(c),
-    `<g id="wordmark">${WORD.map((g) => letter(g, c.word)).join("")}</g>`,
-    `<g id="tagline">`,
-    group("rule-left", c.tagline, RULES.left),
-    TAG.map((g) => group(`tagline-${g.char}`, c.tagline, g.d)).join(""),
-    group("rule-right", c.tagline, RULES.right),
-    `</g>`,
+    markGroups(c, LOCKUP.mark),
+    `<g id="wordmark">${LOCKUP.word.map((d, i) => group(WORD_IDS[i], c.word, d)).join("")}</g>`,
+    `<g id="tagline">${LOCKUP.tagline.map((d, i) => group(TAGLINE_IDS[i], c.tagline, d)).join("")}</g>`,
     `</g>`,
     `</svg>`,
   ].join("");
@@ -243,11 +192,6 @@ async function main() {
     "public/brand/weekendcart-mark-light.svg": markFile(COLOURS.dark),
     "public/brand/weekendcart-icon.svg": iconFile(true),
     "src/app/icon.svg": iconFile(true),
-    // Source copies, beside the reserved logos: original colours and theme colours.
-    "brand-reserve/weekendcart-rounded.svg": logoFile(ORIGINAL),
-    "brand-reserve/weekendcart-rounded-mark.svg": markFile(ORIGINAL),
-    "brand-reserve/weekendcart-rounded-theme.svg": logoFile(COLOURS.light),
-    "brand-reserve/weekendcart-rounded-theme-mark.svg": markFile(COLOURS.light),
   };
   for (const [file, svg] of Object.entries(files)) writeFileSync(out(file), svg + "\n");
 
@@ -269,18 +213,26 @@ async function main() {
       "// Generated by scripts/build-brand.ts.",
       "// Do not edit by hand — change the script and run `npm run brand:build`.",
       "",
+      "/** The full logo, from scripts/brand/weekendcart-logo.svg. */",
       "export const LOGO = {",
-      `  viewBox: "${logoBox.x} ${logoBox.y} ${logoBox.w} ${logoBox.h}",`,
-      `  width: ${logoBox.w},`,
-      `  height: ${logoBox.h},`,
-      `  markViewBox: "${markBox.x} ${markBox.y} ${markBox.side} ${markBox.side}",`,
+      `  viewBox: "${LOCKUP.viewBox}",`,
+      `  width: ${LOCKUP_WIDTH},`,
+      `  height: ${LOCKUP_HEIGHT},`,
       `  mark: {`,
-      `    accent: "${MARK.accent}",`,
-      `    peak: "${MARK.peak}",`,
-      `    tail: "${MARK.tail}",`,
+      `    accent: "${LOCKUP.mark.accent}",`,
+      `    peak: "${LOCKUP.mark.peak}",`,
+      `    tail: "${LOCKUP.mark.tail}",`,
       `  },`,
-      `  word: ${list(WORD.map((g) => g.d))},`,
-      `  tagline: ${list([RULES.left, ...TAG.map((g) => g.d), RULES.right])},`,
+      `  word: ${list(LOCKUP.word)},`,
+      `  tagline: ${list(LOCKUP.tagline)},`,
+      "} as const;",
+      "",
+      "/** The W alone, as the favicon draws it. */",
+      "export const MARK = {",
+      `  viewBox: "${markBox.x} ${markBox.y} ${markBox.side} ${markBox.side}",`,
+      `  accent: "${MARK.accent}",`,
+      `  peak: "${MARK.peak}",`,
+      `  tail: "${MARK.tail}",`,
       "} as const;",
       "",
       `export const LOGO_COLOURS = ${JSON.stringify(COLOURS, null, 2).replace(/"(\w+)":/g, "$1:")} as const;`,
@@ -290,7 +242,7 @@ async function main() {
     ].join("\n"),
   );
 
-  console.log(`WeekendCart: logo ${logoBox.w}×${logoBox.h} · ${Object.keys(files).length} SVGs · 8 PNGs`);
+  console.log(`WeekendCart: logo ${LOCKUP_WIDTH}×${LOCKUP_HEIGHT} · ${Object.keys(files).length} SVGs · 8 PNGs`);
 }
 
 main().catch((error) => {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { BUSINESS, isFilled } from "@/config/business";
-import { LOGO, LOGO_COLOURS, type LogoTone } from "./logo-art";
+import { LOGO, LOGO_COLOURS, MARK, type LogoTone } from "./logo-art";
 
 /**
  * Brand identity, derived from the one place real business facts live.
@@ -31,18 +31,24 @@ export const BRAND = {
 } as const;
 
 /** The W: accent, peak and tail. Paths come from scripts/build-brand.ts. */
-function MarkParts({ tone }: { tone: LogoTone }) {
+function MarkParts({
+  tone,
+  paths,
+}: {
+  tone: LogoTone;
+  paths: { accent: string; peak: string; tail: string };
+}) {
   const c = LOGO_COLOURS[tone];
   return (
     <>
-      <path d={LOGO.mark.accent} fill={c.accent} />
-      <path d={LOGO.mark.peak} fill={c.peak} />
-      <path d={LOGO.mark.tail} fill={c.tail} />
+      <path d={paths.accent} fill={c.accent} />
+      <path d={paths.peak} fill={c.peak} />
+      <path d={paths.tail} fill={c.tail} />
     </>
   );
 }
 
-/** The W on its own. */
+/** The W on its own, as the favicon draws it. */
 export function LogoMark({
   className,
   size = 28,
@@ -53,8 +59,8 @@ export function LogoMark({
   tone?: LogoTone;
 }) {
   return (
-    <svg width={size} height={size} viewBox={LOGO.markViewBox} aria-hidden="true" focusable="false" className={className}>
-      <MarkParts tone={tone} />
+    <svg width={size} height={size} viewBox={MARK.viewBox} aria-hidden="true" focusable="false" className={className}>
+      <MarkParts tone={tone} paths={MARK} />
     </svg>
   );
 }
@@ -63,8 +69,8 @@ const HEIGHTS = { sm: 38, md: 46, lg: 58 } as const;
 
 /**
  * The full logo — W, "eekend" and the ruled "CART" — in one SVG. The letters
- * are outlines (see scripts/build-brand.ts), so it renders identically on every
- * device with no font request and no reflow.
+ * are outlines (from scripts/brand/weekendcart-logo.svg), so it renders
+ * identically on every device with no font request and no reflow.
  */
 function Lockup({
   tone,
@@ -88,7 +94,7 @@ function Lockup({
       aria-label={BRAND.name}
       className={cn("shrink-0", className)}
     >
-      <MarkParts tone={tone} />
+      <MarkParts tone={tone} paths={LOGO.mark} />
       <g fill={c.word}>
         {LOGO.word.map((d) => (
           <path key={d} d={d} />
