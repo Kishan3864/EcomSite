@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { configuredProviders, type ProviderId } from "@/lib/auth/oauth";
-import { GoogleButton } from "@/components/auth/google-identity";
+import { GooglePrompt } from "@/components/auth/google-identity";
 
 /** Brand marks, drawn inline — the shared social icons file has no login marks. */
 const MARKS: Record<ProviderId, () => ReactElement> = {
@@ -51,32 +51,26 @@ export function SocialSignIn({ next }: { next?: string }) {
       <div className="space-y-2.5">
         {providers.map(({ id, label }) => {
           const Mark = MARKS[id];
-          const redirect = (
+          return (
             // A plain anchor: next/link would prefetch the route on hover and
             // start a handshake nobody asked for.
             <a
               key={id}
               href={`/api/auth/${id}/start${query}`}
-              // The mark sits at a fixed inset and the label is centred on the
-              // button, so two providers stack without their text shifting.
-              className="group relative flex h-13 w-full items-center justify-center rounded-lg border border-ink-200 bg-surface px-14 text-[14.5px] font-semibold tracking-[-0.01em] text-ink-900 shadow-xs transition-[background-color,border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-ink-300 hover:bg-ink-50 hover:shadow-md active:translate-y-0 active:scale-[0.995] active:bg-ink-100 active:shadow-xs"
+              // Exactly the Sign in button's box — full width, 48px, the same
+              // square corner — so the two read as one set of controls.
+              className="flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-6 text-[14px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100"
             >
-              <span className="absolute left-4 flex h-7 w-7 items-center justify-center rounded-md bg-white shadow-xs ring-1 ring-ink-100 transition-transform duration-200 group-hover:scale-105">
-                <Mark />
-              </span>
+              <Mark />
               Continue with {label}
             </a>
           );
-          // Google gets its own button, which turns into "Continue as <name>"
-          // when the browser is signed in to Google. The redirect button stays
-          // underneath as the fallback for when Google's script cannot load.
-          return id === "google" ? (
-            <GoogleButton key={id} next={next} fallback={redirect} />
-          ) : (
-            redirect
-          );
         })}
       </div>
+
+      {/* Google's One Tap prompt, which offers "Continue as <name>" in the
+          browser's corner when the browser is signed in to Google. */}
+      {providers.some((provider) => provider.id === "google") ? <GooglePrompt next={next} /> : null}
 
       {/* The email form takes consent with a checkbox; a provider sign-up skips
           that form entirely, so the acknowledgement has to sit with the buttons. */}

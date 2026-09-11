@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/store/store";
 
@@ -158,58 +158,21 @@ export function GoogleOneTap() {
 }
 
 /**
- * Google's own button, which becomes "Continue as <name>" when the browser has
- * a Google session. Falls back to our redirect button if GIS cannot load —
- * blocked by an extension, the secondary domain, no network to Google.
+ * The One Tap prompt on the sign-in pages, which sit outside the store chrome.
+ *
+ * These pages show our own "Continue with Google" button rather than Google's
+ * rendered one: Google draws its button inside an iframe capped at 400px wide
+ * and about 40px tall, so it can never match the full-width, 48px Sign in
+ * button beneath it. The personalised "Continue as <name>" experience comes
+ * from this prompt instead, in the browser's corner.
  */
-export function GoogleButton({ next, fallback }: { next?: string; fallback: ReactNode }) {
-  const slot = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState<"loading" | "ready" | "fallback">("loading");
-
+export function GooglePrompt({ next }: { next?: string }) {
   useEffect(() => {
-    let alive = true;
     afterSignIn = () => window.location.assign(safePath(next, "/account"));
-
-    // Never leave a blank space where a button should be.
-    const timer = window.setTimeout(() => {
-      if (alive) setState((current) => (current === "loading" ? "fallback" : current));
-    }, 5000);
-
     setupGoogle().then((id) => {
-      if (!alive) return;
-      const el = slot.current;
-      if (!id || !el) {
-        setState("fallback");
-        return;
-      }
-      id.renderButton(el, {
-        type: "standard",
-        theme: "outline",
-        size: "large",
-        text: "continue_with",
-        shape: "rectangular",
-        logo_alignment: "left",
-        width: Math.round(Math.min(400, Math.max(220, el.offsetWidth))),
-      });
-      setState("ready");
-      promptOnce(id);
+      if (id) promptOnce(id);
     });
-
-    return () => {
-      alive = false;
-      window.clearTimeout(timer);
-    };
   }, [next]);
 
-  return (
-    <div>
-      {state !== "fallback" && (
-        <div className="relative min-h-[44px]">
-          <div ref={slot} className="flex justify-center" />
-          {state === "loading" && <div aria-hidden className="skeleton absolute inset-0" />}
-        </div>
-      )}
-      {state === "fallback" && fallback}
-    </div>
-  );
+  return null;
 }
