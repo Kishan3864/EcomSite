@@ -201,9 +201,15 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
               title: "Shipping",
               body: (
                 <>
-                  <strong className="font-semibold text-ink-900">{order.courier}</strong>
-                  <br />
-                  AWB {order.awb}
+                  {order.awb ? (
+                    <>
+                      <strong className="font-semibold text-ink-900">{order.courier}</strong>
+                      <br />
+                      AWB {order.awb}
+                    </>
+                  ) : (
+                    "Tracking number appears here once the parcel is booked."
+                  )}
                   <br />
                   {order.delivery.name} · by {formatDate(order.estimatedDelivery, "short")}
                 </>

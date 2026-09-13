@@ -1,37 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { AlertCircle, Check, MapPin } from "lucide-react";
+import { AlertCircle, Check, Info, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatDate } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
+import { BUSINESS } from "@/config/business";
+import { formatDate } from "@/lib/utils";
+import { checkServiceability } from "@/services/shipping";
 
 interface CheckResult {
-  ok: boolean;
-  city?: string;
-  date?: string;
-  cod?: boolean;
-  message: string;
+  tone: "ok" | "info" | "error";
+  title: string;
+  detail?: string;
 }
 
-/** Serviceability lookup — mocked from the pincode prefix for now. */
-const CITY_BY_PREFIX: Record<string, { city: string; days: number }> = {
-  "56": { city: "Bengaluru, Karnataka", days: 1 },
-  "40": { city: "Mumbai, Maharashtra", days: 2 },
-  "41": { city: "Pune, Maharashtra", days: 2 },
-  "11": { city: "New Delhi, Delhi", days: 2 },
-  "12": { city: "Gurugram, Haryana", days: 2 },
-  "60": { city: "Chennai, Tamil Nadu", days: 2 },
-  "50": { city: "Hyderabad, Telangana", days: 2 },
-  "70": { city: "Kolkata, West Bengal", days: 3 },
-  "38": { city: "Ahmedabad, Gujarat", days: 3 },
-  "30": { city: "Jaipur, Rajasthan", days: 3 },
-  "68": { city: "Kochi, Kerala", days: 4 },
-  "22": { city: "Lucknow, Uttar Pradesh", days: 4 },
-  "78": { city: "Guwahati, Assam", days: 6 },
-};
+const COURIER = BUSINESS.ops.courierPartners[0] ?? "our courier";
 
+/**
+ * Asks the courier whether it delivers to a pincode. The answer is theirs; the
+ * date is ours — the product's own delivery promise, counted from today.
+ */
 export function DeliveryCheck({
   deliveryDays,
   codAvailable,
@@ -41,37 +30,62 @@ export function DeliveryCheck({
 }) {
   const [pincode, setPincode] = useState("");
   const [result, setResult] = useState<CheckResult | null>(null);
-  const [checking, setChecking] = useState(false);
+  const [checking, startChecking] = useTransition();
 
   function check(e: React.FormEvent) {
     e.preventDefault();
     if (!/^\d{6}$/.test(pincode)) {
-      setResult({ ok: false, message: "Enter a valid 6-digit pincode." });
+      setResult({ tone: "error", title: "Enter a valid 6-digit pincode." });
       return;
     }
 
-    setChecking(true);
-    // Simulates the network latency a real serviceability API would add.
-    setTimeout(() => {
-      const match = CITY_BY_PREFIX[pincode.slice(0, 2)];
-      if (!match) {
-        setResult({
-          ok: false,
-          message: "We do not deliver to this pincode yet. Try another, or contact support.",
-        });
-      } else {
-        const eta = new Date();
-        eta.setDate(eta.getDate() + Math.max(match.days, deliveryDays));
-        setResult({
-          ok: true,
-          city: match.city,
-          date: eta.toISOString(),
-          cod: codAvailable && match.days <= 4,
-          message: "Delivery available",
-        });
+    startChecking(async () => {
+      let answer: Awaited<ReturnType<typeof checkServiceability>>;
+      try {
+        answer = await checkServiceability(pincode);
+      } catch {
+        setResult({ tone: "error", title: "We could not check that pincode just now. Try again in a moment." });
+        return;
       }
-      setChecking(false);
-    }, 620);
+
+      if (!answer.configured) {
+        setResult({
+          tone: "info",
+          title: `We deliver across India with ${COURIER}.`,
+          detail: `Usually within ${deliveryDays} day${deliveryDays > 1 ? "s" : ""} of dispatch. ${
+            codAvailable ? "Cash on Delivery is offered at checkout." : "Prepaid only for this item."
+          }`,
+        });
+        return;
+      }
+      if (answer.error) {
+        setResult({ tone: "error", title: answer.error });
+        return;
+      }
+      if (!answer.serviceable) {
+        setResult({
+          tone: "error",
+          title: `${COURIER} does not deliver to ${pincode} yet.`,
+          detail: "Try another pincode, or message us and we will look for a way.",
+        });
+        return;
+      }
+
+      const eta = new Date();
+      eta.setDate(eta.getDate() + deliveryDays);
+      const place = [answer.city, answer.state].filter(Boolean).join(", ");
+      setResult({
+        tone: "ok",
+        title: `Delivery by ${formatDate(eta.toISOString(), "day")}`,
+        detail: [
+          place,
+          codAvailable && answer.cod ? "Cash on Delivery available" : "Prepaid only",
+          `${BUSINESS.ops.returnWindowDays}-day returns`,
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      });
+    });
   }
 
   return (
@@ -93,7 +107,8 @@ export function DeliveryCheck({
             setResult(null);
           }}
           inputMode="numeric"
-          placeholder="e.g. 560102"
+          autoComplete="postal-code"
+          placeholder="e.g. 395006"
           // 16px on phones: iOS zooms the page into any smaller field.
           className="h-11 min-w-0 flex-1 rounded-lg border border-ink-200 bg-canvas px-3.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-brand-500 sm:text-sm"
         />
@@ -105,7 +120,7 @@ export function DeliveryCheck({
       <AnimatePresence mode="wait">
         {result && (
           <motion.div
-            key={result.message}
+            key={result.title}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -113,22 +128,36 @@ export function DeliveryCheck({
             className="overflow-hidden"
           >
             <div className="pt-3">
-              {result.ok ? (
+              {result.tone === "ok" ? (
                 <div className="rounded-lg bg-brand-50 p-3">
                   <p className="flex items-center gap-2 text-[12.5px] font-semibold text-brand-800 sm:text-[13px]">
                     <Check size={15} strokeWidth={2.5} className="shrink-0" />
-                    Delivery by {formatDate(result.date!, "day")}
+                    {result.title}
                   </p>
-                  <p className="mt-1 pl-[23px] text-[11.5px] text-brand-700/80 sm:text-[12px]">
-                    {result.city} · {result.cod ? "Cash on Delivery available" : "Prepaid only"} ·
-                    Free returns
+                  {result.detail && (
+                    <p className="mt-1 pl-[23px] text-[11.5px] text-brand-700/80 sm:text-[12px]">{result.detail}</p>
+                  )}
+                </div>
+              ) : result.tone === "info" ? (
+                <div className="rounded-lg bg-canvas p-3">
+                  <p className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-800 sm:text-[13px]">
+                    <Info size={15} className="shrink-0 text-brand-600" />
+                    {result.title}
                   </p>
+                  {result.detail && (
+                    <p className="mt-1 pl-[23px] text-[11.5px] text-ink-500 sm:text-[12px]">{result.detail}</p>
+                  )}
                 </div>
               ) : (
-                <p className="flex items-start gap-2 rounded-lg bg-sale-50 p-3 text-[12.5px] text-sale-700 sm:text-[13px]">
-                  <AlertCircle size={15} className="mt-px shrink-0" />
-                  {result.message}
-                </p>
+                <div className="rounded-lg bg-sale-50 p-3">
+                  <p className="flex items-start gap-2 text-[12.5px] text-sale-700 sm:text-[13px]">
+                    <AlertCircle size={15} className="mt-px shrink-0" />
+                    {result.title}
+                  </p>
+                  {result.detail && (
+                    <p className="mt-1 pl-[23px] text-[11.5px] text-sale-700/80 sm:text-[12px]">{result.detail}</p>
+                  )}
+                </div>
               )}
             </div>
           </motion.div>

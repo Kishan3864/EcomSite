@@ -32,6 +32,7 @@ export interface ProductFormValues {
   mrp: number | "";
   stock: number;
   lowStockThreshold: number;
+  weightGrams: number;
   hsnCode: string;
   taxRate: number | "";
   badges: string[];
@@ -74,6 +75,7 @@ const DEFAULTS: ProductFormValues = {
   mrp: "",
   stock: 0,
   lowStockThreshold: 10,
+  weightGrams: 1000,
   hsnCode: "",
   taxRate: "",
   badges: [],
@@ -234,6 +236,13 @@ export function ProductForm({
               <Label htmlFor="p-stock">Stock on hand</Label>
               <input id="p-stock" name="stock" type="number" min={0} step={1} inputMode="numeric" defaultValue={dv("stock", init.stock)} className={cn(inputCls, "tabular-nums")} required />
               <FieldError>{err("stock")}</FieldError>
+            </div>
+            <div>
+              <Label htmlFor="p-weight" hint="Packed, in grams. The courier charges by this.">
+                Weight
+              </Label>
+              <input id="p-weight" name="weightGrams" type="number" min={50} step={10} inputMode="numeric" defaultValue={dv("weightGrams", init.weightGrams)} className={cn(inputCls, "tabular-nums")} required />
+              <FieldError>{err("weightGrams")}</FieldError>
             </div>
             <div>
               <Label htmlFor="p-low" hint="Flagged as low at or below this number.">

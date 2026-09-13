@@ -246,6 +246,25 @@ and later uses Google lands in the same account. Facebook does not confirm it, s
 Facebook sign-in never attaches itself to an account that already exists; those customers
 are sent back to the password form instead.
 
+### Courier — Delhivery One (optional)
+
+Leave these out and the shop still ships: you book on Delhivery One's own site and type the
+courier and waybill into the order in `/admin/orders`. Fill them in and the order page gets
+a **Book with Delhivery** button, the product page's pincode check asks Delhivery directly,
+and tracking scans flow onto the customer's order page on their own.
+
+```
+DELHIVERY_ENV="staging"            # "staging" = Delhivery's test system; "production" = live
+DELHIVERY_API_TOKEN="..."          # Delhivery One → Settings → API → the token for that environment
+DELHIVERY_PICKUP_LOCATION="..."    # your warehouse name, exactly as registered under Pickup locations
+```
+
+Start on `staging` with the **test** token: bookings there get a waybill and tracking but no
+courier is dispatched and nothing is billed. Prove the whole flow — book, pickup, label,
+refresh tracking — then switch the two values to `production` and the live token. Nothing
+else changes. `npx tsx scripts/check-delhivery.ts` on the server tells you whether the token
+and the pincode lookup work from this box. The full walkthrough is in `docs/delhivery.md`.
+
 ## 3. Deploy (first time and every update)
 
 **Server (VPS)**

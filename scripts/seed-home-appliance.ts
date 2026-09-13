@@ -91,6 +91,7 @@ interface Seed {
   price: number;
   mrp: number;
   stock: number;
+  weightGrams: number;
   hsn: string;
   images: [string, string];
   highlights: string[];
@@ -112,6 +113,7 @@ const PRODUCTS: Seed[] = [
     price: 2499,
     mrp: 3499,
     stock: 24,
+    weightGrams: 4200,
     hsn: "8509",
     images: ["/products/mixer-grinder-1.jpg", "/products/mixer-grinder-2.jpg"],
     highlights: [
@@ -152,6 +154,7 @@ const PRODUCTS: Seed[] = [
     price: 1199,
     mrp: 1799,
     stock: 40,
+    weightGrams: 1100,
     hsn: "8516",
     images: ["/products/electric-kettle-1.jpg", "/products/electric-kettle-2.jpg"],
     highlights: [
@@ -192,6 +195,7 @@ const PRODUCTS: Seed[] = [
     price: 2299,
     mrp: 3299,
     stock: 18,
+    weightGrams: 2300,
     hsn: "8516",
     images: ["/products/induction-cooktop-1.jpg", "/products/induction-cooktop-2.jpg"],
     highlights: [
@@ -232,6 +236,7 @@ const PRODUCTS: Seed[] = [
     price: 1499,
     mrp: 2199,
     stock: 30,
+    weightGrams: 1400,
     hsn: "8516",
     images: ["/products/steam-iron-1.jpg", "/products/steam-iron-2.jpg"],
     highlights: [
@@ -273,6 +278,7 @@ const PRODUCTS: Seed[] = [
     price: 4299,
     mrp: 5999,
     stock: 12,
+    weightGrams: 5500,
     hsn: "8508",
     images: ["/products/vacuum-cleaner-1.jpg", "/products/vacuum-cleaner-2.jpg"],
     highlights: [
@@ -366,6 +372,7 @@ async function seed() {
       uqc: "NOS",
       stock: p.stock,
       lowStockThreshold: 5,
+      weightGrams: p.weightGrams,
       tags: p.tags,
       highlights: p.highlights,
       specifications: p.specs,

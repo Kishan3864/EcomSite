@@ -187,6 +187,8 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
   if (stock === null) return { error: "Stock must be a whole number, 0 or more.", field: "stock" };
   const lowStockThreshold = intIn(formData, "lowStockThreshold", 0, 1_000_000, 10);
   if (lowStockThreshold === null) return { error: "Low-stock threshold must be a whole number, 0 or more.", field: "lowStockThreshold" };
+  const weightGrams = intIn(formData, "weightGrams", 50, 200_000, 1000);
+  if (weightGrams === null) return { error: "Weight must be between 50 g and 200 kg, in grams.", field: "weightGrams" };
 
   // Both are optional: blank means the category's default, then the rate in Settings.
   const hsnCode = str(formData, "hsnCode");
@@ -271,6 +273,7 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
       price,
       mrp,
       lowStockThreshold,
+      weightGrams,
       hsnCode: hsnCode || null,
       taxRate,
       badges,

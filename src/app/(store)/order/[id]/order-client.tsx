@@ -256,9 +256,15 @@ export function OrderClient({ order }: { order: Order | null }) {
               </h2>
               {/* AWBs are one long unbroken code; let them wrap rather than overflow. */}
               <p className="text-[12.5px] leading-relaxed text-ink-600 wrap-anywhere">
-                <strong className="font-semibold text-ink-900">{order.courier}</strong>
-                <br />
-                AWB {order.awb}
+                {order.awb ? (
+                  <>
+                    <strong className="font-semibold text-ink-900">{order.courier}</strong>
+                    <br />
+                    AWB {order.awb}
+                  </>
+                ) : (
+                  "Courier and tracking number appear here once your parcel is booked."
+                )}
                 <br />
                 {order.delivery.name}
               </p>

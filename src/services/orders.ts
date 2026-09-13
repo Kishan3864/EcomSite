@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { syncTracking, trackingIsFresh } from "@/lib/shipping/tracking";
 import { canViewOrder, getCustomerSession } from "@/lib/auth/customer";
 import type {
   Address,
@@ -155,19 +156,28 @@ export function toOrder(row: OrderRow): Order {
     },
     estimatedDelivery: row.estimatedDelivery.toISOString(),
     tracking: buildTimeline(row),
-    courier: row.courier ?? "WeekendCart Fleet",
+    courier: row.courier ?? "",
     awb: row.awb ?? "",
   };
 }
 
 /** Order by id or number, only if the current visitor is allowed to see it. */
 export async function getOrderForViewer(idOrNumber: string): Promise<Order | null> {
-  const row = await db.order.findFirst({
+  let row = await db.order.findFirst({
     where: { OR: [{ id: idOrNumber }, { number: idOrNumber.toUpperCase() }] },
     include: orderInclude,
   });
   if (!row) return null;
   if (!(await canViewOrder(row))) return null;
+
+  // A parcel on its way: pull the courier's latest scans into the timeline
+  // before drawing it, so the page shows where it actually is. Throttled to
+  // once every twenty minutes inside syncTracking, and a courier outage leaves
+  // the page exactly as it was.
+  if (row.courier === "Delhivery" && row.awb && !trackingIsFresh(row)) {
+    await syncTracking(row.id);
+    row = (await db.order.findUnique({ where: { id: row.id }, include: orderInclude })) ?? row;
+  }
   return toOrder(row);
 }
 

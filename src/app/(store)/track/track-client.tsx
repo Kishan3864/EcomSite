@@ -178,7 +178,11 @@ export function TrackDetail({ order }: { order: Order | null }) {
                 label: order.status === "delivered" ? "Delivered on" : "Expected by",
                 value: formatDate(order.estimatedDelivery, "day"),
               },
-              { icon: Package, label: "Courier", value: `${order.courier} · ${order.awb}` },
+              {
+                icon: Package,
+                label: "Courier",
+                value: order.awb ? `${order.courier} · ${order.awb}` : "Being packed — booking soon",
+              },
               {
                 icon: MapPin,
                 label: "Delivering to",

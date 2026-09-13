@@ -60,6 +60,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     mrp: product.mrp,
     stock: product.stock,
     lowStockThreshold: product.lowStockThreshold,
+    weightGrams: product.weightGrams,
     // The form posts every field it renders and the action writes the lot, so
     // anything missing here is silently cleared on the next save.
     hsnCode: product.hsnCode ?? "",

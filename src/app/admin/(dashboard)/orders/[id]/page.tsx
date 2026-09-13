@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
+import { delhiveryConfig } from "@/lib/shipping/delhivery";
 import { buttonClasses } from "@/components/ui/button";
 import {
   Card,
@@ -57,6 +58,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   if (!order) notFound();
 
   const canEdit = hasRole(session, "MANAGER");
+  const courier = delhiveryConfig();
   const advance = nextStatus(order.status);
   const showCod = order.paymentMethod === "COD" && order.paymentStatus !== "PAID";
 
@@ -191,9 +193,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <Card title="Shipment">
             <ShipmentForm
               orderId={order.id}
+              orderNumber={order.number}
               courier={order.courier ?? ""}
               awb={order.awb ?? ""}
               estimatedDelivery={toDateInput(order.estimatedDelivery)}
+              status={order.status}
+              paymentMethod={order.paymentMethod}
+              paymentStatus={order.paymentStatus}
+              courierLink={courier ? { env: courier.env } : null}
               readOnly={!canEdit}
             />
           </Card>

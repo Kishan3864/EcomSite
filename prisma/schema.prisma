@@ -233,6 +233,8 @@ model Product {
   uqc               String?        @default("NOS")
   stock             Int            @default(0)
   lowStockThreshold Int            @default(10)
+  /// Packed weight in grams, for the courier's booking and its rate card.
+  weightGrams       Int            @default(1000)
   soldCount         Int            @default(0)
   rating            Float          @default(0)
   reviewCount       Int            @default(0)
@@ -595,6 +597,8 @@ model Order {
 
   courier           String?
   awb               String?
+  /// When the courier's tracking was last pulled into the timeline.
+  trackingSyncedAt  DateTime?
   estimatedDelivery DateTime
   deliveredAt       DateTime?
   cancelledAt       DateTime?
