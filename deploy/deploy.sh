@@ -178,10 +178,25 @@ if ! NEXT_DIST_DIR=.next-build SKIP_TYPE_CHECK=1 \
   echo
   echo "  The build failed. Nothing was swapped: the site is still serving the"
   echo "  previous build, untouched."
-  echo "  If the last line was 'Killed', the box ran out of memory — add swap:"
-  echo "    sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile"
-  echo "    sudo mkswap /swapfile && sudo swapon /swapfile"
-  echo "    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab"
+  echo
+  if command -v free >/dev/null; then
+    echo "  Memory right now:"
+    free -h | sed 's/^/    /'
+    echo
+  fi
+  echo "  If the last line was 'Killed', the kernel stopped it for running the box"
+  echo "  out of memory. This machine shares its memory with other sites, so what"
+  echo "  is free varies through the day — the same build succeeds at a quieter"
+  echo "  moment. Give it more swap and it stops mattering:"
+  echo
+  echo "    sudo fallocate -l 4G /swapfile2"
+  echo "    sudo chmod 600 /swapfile2"
+  echo "    sudo mkswap /swapfile2"
+  echo "    sudo swapon /swapfile2"
+  echo "    echo '/swapfile2 none swap sw 0 0' | sudo tee -a /etc/fstab"
+  echo
+  echo "  A second file, deliberately: /swapfile already exists and is in use, so"
+  echo "  it cannot be resized in place."
   exit 1
 fi
 

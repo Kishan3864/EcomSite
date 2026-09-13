@@ -101,17 +101,24 @@ The kernel stopped the build for running the box out of memory. Nothing was
 swapped in, so the site is still serving the previous build untouched — but the
 new code is not live. Give the machine some swap, once:
 
+This machine shares its memory with the other sites on it, so what is free
+varies through the day: the same build succeeds at a quieter moment and is
+killed at a busy one. Swap makes that stop mattering.
+
 **Server (VPS)**
 
 ```bash
-free -h                                   # how much it has now
-sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab   # survives a reboot
-free -h                                   # Swap: should now show 2.0Gi
+free -h                     # Swap is likely already 2G, and already full
+sudo fallocate -l 4G /swapfile2
+sudo chmod 600 /swapfile2
+sudo mkswap /swapfile2
+sudo swapon /swapfile2
+echo '/swapfile2 none swap sw 0 0' | sudo tee -a /etc/fstab   # survives a reboot
+free -h                     # Swap should now total 6.0Gi
 ```
+
+A second file, deliberately: `/swapfile` already exists and is in use, so it
+cannot be resized in place.
 
 Then push again. The build also no longer runs the TypeScript compiler on the
 server — that pass is what ran the box out of memory, and it runs on the
