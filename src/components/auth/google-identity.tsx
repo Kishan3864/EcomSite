@@ -189,11 +189,18 @@ export function GooglePrompt({ next }: { next?: string }) {
  * checks the signature against keys it already holds, so nothing at sign-in
  * time depends on this server reaching Google at all.
  *
- * Google draws its button in an iframe it controls, so it cannot be styled.
- * Ours stays underneath, drawn exactly as before, and Google's sits invisibly
- * on top of it taking the clicks. If GIS never loads — a blocked script, a
- * browser that refuses third-party frames — nothing is overlaid and the button
- * underneath is still a working link to the redirect flow.
+ * Google's button is shown as Google draws it, not as we would like it drawn.
+ * The first attempt hid it behind ours at opacity 0 to keep the page looking
+ * the same; Google refuses to act on a click it cannot prove the person could
+ * see — a transparent or covered button is exactly how a clickjacking attack
+ * is built — so the click fell through to the link underneath and started the
+ * very redirect flow this was meant to replace. It looked identical and did
+ * the wrong thing.
+ *
+ * So it is rendered plainly. Until GIS answers, our own button is shown so the
+ * space is never empty; if GIS never loads at all — a blocked script, a browser
+ * that refuses third-party frames — ours stays, and it is still a working link
+ * to the redirect flow.
  */
 export function GoogleButton({
   next,
@@ -206,7 +213,7 @@ export function GoogleButton({
   children: ReactNode;
 }) {
   const host = useRef<HTMLDivElement>(null);
-  const [overlaid, setOverlaid] = useState(false);
+  const [rendered, setRendered] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -222,15 +229,27 @@ export function GoogleButton({
           size: "large",
           text: "continue_with",
           shape: "rectangular",
-          logo_alignment: "center",
-          // Google caps this at 400. Anything wider than the button underneath
-          // would be clipped by the wrapper rather than overflowing it.
+          logo_alignment: "left",
+          // Google caps this at 400 and ignores anything larger.
           width: Math.min(parent.clientWidth || 320, 400),
         });
-        setOverlaid(true);
       } catch {
-        // Leave ours showing; the link underneath still works.
+        return; // Leave ours showing; it is still a working link.
       }
+
+      // renderButton fills the container asynchronously, so asking straight
+      // away would always find it empty and leave the fallback in place for
+      // good. Watch for the iframe instead, and give up after two seconds.
+      const started = Date.now();
+      const poll = setInterval(() => {
+        if (cancelled || !host.current) return clearInterval(poll);
+        if (host.current.childElementCount > 0) {
+          clearInterval(poll);
+          setRendered(true);
+        } else if (Date.now() - started > 2_000) {
+          clearInterval(poll);
+        }
+      }, 100);
     });
 
     return () => {
@@ -239,25 +258,23 @@ export function GoogleButton({
   }, [next]);
 
   return (
-    <div className="relative">
-      <a
-        href={href}
-        // Exactly the Sign in button's box — full width, 48px, the same square
-        // corner — so the two read as one set of controls.
-        className="tap flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-4 text-[13.5px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100 sm:px-6 sm:text-[14px]"
-        // Once Google's button is on top, ours is decoration: keep it out of
-        // the tab order and off the screen reader, which reads Google's.
-        tabIndex={overlaid ? -1 : undefined}
-        aria-hidden={overlaid || undefined}
-      >
-        {children}
-      </a>
-      <div
-        ref={host}
-        className={`absolute inset-0 flex items-center justify-center overflow-hidden ${
-          overlaid ? "opacity-0" : "pointer-events-none"
-        }`}
-      />
-    </div>
+    <>
+      {/* Always in the document and never display:none — Google will not draw
+          its button into a hidden container, and while it is empty it takes no
+          height, so nothing shifts. */}
+      <div ref={host} className="flex justify-center empty:hidden" />
+
+      {/* Ours, until Google's is up — and permanently if GIS never loads. */}
+      {!rendered && (
+        <a
+          href={href}
+          // Exactly the Sign in button's box — full width, 48px, the same
+          // square corner — so the two read as one set of controls.
+          className="tap flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-4 text-[13.5px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100 sm:px-6 sm:text-[14px]"
+        >
+          {children}
+        </a>
+      )}
+    </>
   );
 }

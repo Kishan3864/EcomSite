@@ -115,12 +115,14 @@ function familyVerdict(v4: { works: boolean }, v6: { works: boolean }) {
   if (v4.works && v6.works) return ok("both families work — routing is not the problem here.");
   if (v6.works && !v4.works)
     return warn(
-      "IPv4 out of this server is broken; IPv6 is healthy.\n" +
-        "    The app handles it (ipv6first + Happy Eyeballs), so sign-in works.\n" +
-        "    But github.com is IPv4-only, so `git pull` on this box cannot work until\n" +
-        "    the host fixes it — which is why deploys are pushed here instead.\n" +
+      "IPv4 out of this server is broken; IPv6 answered at least once.\n" +
+        "    Do not read that as healthy — both families have been seen timing out\n" +
+        "    here at different moments. It is why Google sign-in no longer depends on\n" +
+        "    this server reaching Google at all; see the signing keys below.\n" +
+        "    github.com is IPv4-only, so `git pull` on this box cannot work until the\n" +
+        "    host repairs IPv4 — which is why deploys are pushed here instead.\n" +
         "    Do NOT add an IPv4 precedence line to /etc/gai.conf: it would force the\n" +
-        "    broken family on everything.",
+        "    dead family on everything.",
     );
   if (v4.works && !v6.works)
     return warn(

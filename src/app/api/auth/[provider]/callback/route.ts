@@ -12,6 +12,7 @@ import {
   tokensMatch,
 } from "@/lib/auth/oauth";
 import { httpsFetch, type OutboundResponse } from "@/lib/net/outbound";
+import { readGoogleIdToken } from "@/lib/auth/google-id-token";
 
 /**
  * Why every failure below is written to the server log.
@@ -125,7 +126,16 @@ async function exchangeCode(provider: ConfiguredProvider, code: string, verifier
     logFailure("token exchange", provider, "the response carried no access_token");
     return null;
   }
-  return token;
+
+  // Google returns an ID token alongside the access token. Reading it saves a
+  // second round trip to the provider, on a server where every round trip is a
+  // chance to fail.
+  const idToken =
+    typeof payload === "object" && payload !== null
+      ? (payload as { id_token?: unknown }).id_token
+      : null;
+
+  return { token, idToken: typeof idToken === "string" ? idToken : null };
 }
 
 async function fetchUserinfo(provider: ConfiguredProvider, accessToken: string): Promise<unknown> {
@@ -191,13 +201,23 @@ export async function GET(
   }
   if (!code) fail("oauth_failed");
 
-  const accessToken = await exchangeCode(provider, code, handshake.verifier);
-  const payload = accessToken ? await fetchUserinfo(provider, accessToken) : null;
-  if (!payload) fail("oauth_failed");
+  const exchanged = await exchangeCode(provider, code, handshake.verifier);
+  if (!exchanged) fail("oauth_failed");
 
-  // Nothing usable came back: either the provider was never asked for an
-  // address, or the customer declined it at the consent screen.
-  const profile = provider.readProfile(payload);
+  // Google: read the ID token we already hold. Anyone else, or a response
+  // without one: ask the provider who this is.
+  let profile =
+    provider.id === "google" && exchanged.idToken
+      ? await readGoogleIdToken(exchanged.idToken, provider.clientId)
+      : null;
+
+  if (!profile) {
+    const payload = await fetchUserinfo(provider, exchanged.token);
+    if (!payload) fail("oauth_failed");
+    // Nothing usable came back: either the provider was never asked for an
+    // address, or the customer declined it at the consent screen.
+    profile = provider.readProfile(payload);
+  }
   if (!profile) fail("oauth_email");
 
   const result = await signInWithProvider(provider.authProvider, profile);

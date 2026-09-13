@@ -52,6 +52,31 @@ async function verifyAgainst(keys: JWTVerifyGetKey, credential: string, clientId
   });
 }
 
+/**
+ * The ID token that comes back with the redirect flow's token response.
+ *
+ * No nonce here, and none is needed: this token did not travel through the
+ * browser. It came straight from Google over TLS, in the reply to a request
+ * carrying our client secret and the PKCE verifier, so the exchange is already
+ * bound to this attempt. Reading it saves the second call to Google's userinfo
+ * endpoint, which on this server is a call that may simply never answer.
+ */
+export async function readGoogleIdToken(
+  idToken: string,
+  clientId: string,
+): Promise<ProviderProfile | null> {
+  const keys = await googleKeySet();
+  if (!keys) return null;
+  try {
+    const { payload } = await verifyAgainst(keys, idToken, clientId);
+    const claims = payload as Record<string, unknown>;
+    // readClaims insists on a nonce; this token has none to insist on.
+    return readClaims({ ...claims, nonce: "" }, "");
+  } catch {
+    return null;
+  }
+}
+
 export async function verifyGoogleIdToken(
   credential: string,
   clientId: string,
