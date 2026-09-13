@@ -11,6 +11,7 @@ import {
   safeNextPath,
   tokensMatch,
 } from "@/lib/auth/oauth";
+import { httpsFetch, type OutboundResponse } from "@/lib/net/outbound";
 
 /**
  * Why every failure below is written to the server log.
@@ -28,6 +29,14 @@ import {
  * name the fix exactly. Neither the client secret nor the authorisation code
  * is ever logged.
  */
+function parseJson(body: string): unknown {
+  try {
+    return JSON.parse(body);
+  } catch {
+    return null;
+  }
+}
+
 function logFailure(stage: string, provider: ConfiguredProvider, detail: string) {
   console.error(`[auth:${provider.id}] ${stage} — ${detail}`);
 }
@@ -55,24 +64,23 @@ const BACKOFF_MS = [0, 400, 1_200];
 async function attempt(
   stage: string,
   provider: ConfiguredProvider,
-  run: (signal: AbortSignal) => Promise<Response>,
-): Promise<Response | null> {
+  run: () => Promise<OutboundResponse>,
+): Promise<OutboundResponse | null> {
   let lastReason = "";
 
   for (const [tries, wait] of BACKOFF_MS.entries()) {
     if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
 
     try {
-      const response = await run(AbortSignal.timeout(REQUEST_TIMEOUT_MS));
-      if (response.ok) {
+      const response = await run();
+      if (response.status >= 200 && response.status < 300) {
         if (tries > 0) console.warn(`[auth:${provider.id}] ${stage} — succeeded on try ${tries + 1}`);
         return response;
       }
 
       // Both Google and Facebook answer a rejected exchange with JSON naming
       // the reason. It is about the request, not the person, so it is safe.
-      const body = await response.text().catch(() => "");
-      lastReason = `HTTP ${response.status} ${body.slice(0, 400)}`;
+      lastReason = `HTTP ${response.status} ${response.body.slice(0, 400)}`;
       if (response.status < 500) break; // an answer, and not one retrying changes
     } catch (error) {
       // Almost always the network: this server could not reach the provider.
@@ -88,9 +96,8 @@ async function attempt(
 }
 
 async function exchangeCode(provider: ConfiguredProvider, code: string, verifier: string) {
-  const response = await attempt("token exchange", provider, (signal) =>
-    fetch(provider.tokenUrl, {
-      signal,
+  const response = await attempt("token exchange", provider, () =>
+    httpsFetch(provider.tokenUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -103,13 +110,13 @@ async function exchangeCode(provider: ConfiguredProvider, code: string, verifier
         client_id: provider.clientId,
         client_secret: provider.clientSecret,
         code_verifier: verifier,
-      }),
-      cache: "no-store",
+      }).toString(),
+      timeoutMs: REQUEST_TIMEOUT_MS,
     }),
   );
   if (!response) return null;
 
-  const payload: unknown = await response.json().catch(() => null);
+  const payload: unknown = parseJson(response.body);
   const token =
     typeof payload === "object" && payload !== null
       ? (payload as { access_token?: unknown }).access_token
@@ -122,14 +129,13 @@ async function exchangeCode(provider: ConfiguredProvider, code: string, verifier
 }
 
 async function fetchUserinfo(provider: ConfiguredProvider, accessToken: string): Promise<unknown> {
-  const response = await attempt("userinfo", provider, (signal) =>
-    fetch(provider.userinfoUrl, {
-      signal,
+  const response = await attempt("userinfo", provider, () =>
+    httpsFetch(provider.userinfoUrl, {
       headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
-      cache: "no-store",
+      timeoutMs: REQUEST_TIMEOUT_MS,
     }),
   );
-  return response ? response.json().catch(() => null) : null;
+  return response ? parseJson(response.body) : null;
 }
 
 /** Back to sign-in with a code that page knows how to put into words. */

@@ -2,8 +2,10 @@ import "server-only";
 
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+import { httpsFetch } from "@/lib/net/outbound";
+
 /**
- * Razorpay, over plain fetch.
+ * Razorpay, over the IPv6-safe HTTPS helper.
  *
  * The official SDK wraps the same three REST calls we need and pulls in its own
  * HTTP stack, so this talks to the API directly. Everything here is
@@ -43,23 +45,38 @@ function authHeader() {
   return `Basic ${Buffer.from(`${id}:${secret}`).toString("base64")}`;
 }
 
-async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API}${path}`, {
-    ...init,
+/**
+ * Every gateway call goes through httpsFetch rather than fetch.
+ *
+ * On this server IPv4 is dead and IPv6 is healthy, and Node's fetch keeps
+ * choosing the dead one and waiting it out — see src/lib/net/outbound.ts. A
+ * Google sign-in failing that way is annoying; a payment failing that way is a
+ * customer who has been charged, or thinks they have, while our side never
+ * heard back. This path has to reach Razorpay over whichever family works.
+ */
+async function call<T>(
+  path: string,
+  init?: { method?: string; body?: string; headers?: Record<string, string> },
+): Promise<T> {
+  const response = await httpsFetch(`${API}${path}`, {
+    method: init?.method,
+    body: init?.body,
     headers: {
       Authorization: authHeader(),
       "Content-Type": "application/json",
       ...init?.headers,
     },
-    // A payment call must never be served from a cache.
-    cache: "no-store",
+    timeoutMs: 15_000,
   });
 
-  const body = (await response.json().catch(() => null)) as
-    | (T & { error?: { code?: string; description?: string } })
-    | null;
+  let body: (T & { error?: { code?: string; description?: string } }) | null = null;
+  try {
+    body = JSON.parse(response.body);
+  } catch {
+    body = null;
+  }
 
-  if (!response.ok) {
+  if (response.status < 200 || response.status >= 300) {
     const description = body?.error?.description ?? `HTTP ${response.status}`;
     throw new Error(`Razorpay: ${description}`);
   }

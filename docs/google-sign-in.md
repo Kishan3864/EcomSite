@@ -99,14 +99,19 @@ build that could not fetch its fonts, and the deploy that could not reach
 GitHub (`github.com` publishes no IPv6 address at all, which is why forcing
 `-4` made no difference: IPv4 was the only road, and it is shut).
 
-Two changes make the app immune to it:
+Three changes make the app immune to it:
 
 - It starts with `--dns-result-order=ipv6first`, so the family that works is
   tried first.
 - `src/instrumentation.ts` turns on **Happy Eyeballs** — when a name resolves
   to both families, the second is tried half a second after the first instead
-  of waiting out a connection that will never open. Whichever family is healthy
-  wins the race. If IPv4 is repaired later, or IPv6 breaks instead, this keeps
+  of waiting out a connection that will never open.
+- **The calls that must not fail do not go through `fetch` at all.** Neither of
+  the settings above reaches Node's bundled fetch, which kept choosing the dead
+  IPv4 address and waiting the full ten seconds. Sign-in, Razorpay and the OTP
+  SMS now use `src/lib/net/outbound.ts`, which asks `node:https` for every
+  address IPv6-first and moves on after 250ms. Whichever family is healthy wins
+  the race; if IPv4 is repaired later, or IPv6 breaks instead, this keeps
   working with nothing to change.
 
 > **Do not add an IPv4 precedence line to `/etc/gai.conf` on this box.** It

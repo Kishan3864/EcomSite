@@ -1,5 +1,7 @@
 import "server-only";
 
+import { httpsFetch } from "@/lib/net/outbound";
+
 /**
  * SMS delivery for one-time sign-in codes, through MSG91.
  *
@@ -42,7 +44,10 @@ export async function sendOtpSms(phone: string, code: string): Promise<boolean> 
   }
 
   try {
-    const response = await fetch(FLOW_URL, {
+    // httpsFetch, not fetch: this server can only reach the outside world over
+    // IPv6 and Node's fetch keeps picking the dead IPv4 address. A sign-in code
+    // that never arrives locks the customer out of their own account.
+    const response = await httpsFetch(FLOW_URL, {
       method: "POST",
       headers: {
         authkey: settings.authKey,
@@ -54,10 +59,15 @@ export async function sendOtpSms(phone: string, code: string): Promise<boolean> 
         short_url: "0",
         recipients: [{ mobiles: phone.replace(/^\+/, ""), otp: code }],
       }),
-      signal: AbortSignal.timeout(10_000),
+      timeoutMs: 10_000,
     });
-    const body = (await response.json().catch(() => null)) as { type?: string; message?: string } | null;
-    if (response.ok && body?.type === "success") return true;
+    let body: { type?: string; message?: string } | null = null;
+    try {
+      body = JSON.parse(response.body);
+    } catch {
+      body = null;
+    }
+    if (response.status >= 200 && response.status < 300 && body?.type === "success") return true;
     // Never log the code itself; the provider's message is enough to act on.
     console.error("[sms] MSG91 rejected the OTP message", response.status, body?.message);
     return false;

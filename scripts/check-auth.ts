@@ -16,6 +16,7 @@ import "dotenv/config";
 import { connect, setDefaultAutoSelectFamily, setDefaultAutoSelectFamilyAttemptTimeout } from "node:net";
 import { setDefaultResultOrder } from "node:dns";
 import { lookup } from "node:dns/promises";
+import { httpsFetch } from "../src/lib/net/outbound";
 
 /**
  * Test the way the app runs, not the way a bare `npx tsx` would.
@@ -138,19 +139,24 @@ function familyVerdict(v4: { works: boolean }, v6: { works: boolean }) {
  * shop, and reporting "unreachable" for something the app would have got on its
  * second try is a false alarm.
  */
-async function reach(url: string) {
+async function reach(url: string, how: "app" | "fetch") {
   const started = Date.now();
   let why = "";
   for (const attempt of [1, 2]) {
     try {
-      const res = await fetch(url, {
-        method: "HEAD",
-        signal: AbortSignal.timeout(15_000),
-        cache: "no-store",
-      });
-      const note = attempt > 1 ? " (on the second try — the network is flaky)" : "";
+      const status =
+        how === "app"
+          ? (await httpsFetch(url, { method: "HEAD", timeoutMs: 10_000 })).status
+          : (
+              await fetch(url, {
+                method: "HEAD",
+                signal: AbortSignal.timeout(10_000),
+                cache: "no-store",
+              })
+            ).status;
+      const note = attempt > 1 ? " (on the second try)" : "";
       return (attempt > 1 ? warn : ok)(
-        `${url} — HTTP ${res.status} in ${Date.now() - started}ms${note}`,
+        `${url} — HTTP ${status} in ${Date.now() - started}ms${note}`,
       );
     } catch (error) {
       why = error instanceof Error ? error.message : String(error);
@@ -169,7 +175,9 @@ async function reach(url: string) {
  */
 async function checkCredentials(p: (typeof PROVIDERS)[number], clientId: string, secret: string) {
   try {
-    const res = await fetch(p.tokenUrl, {
+    // Through the same helper the callback uses, so a pass here means a real
+    // sign-in would have got through too.
+    const res = await httpsFetch(p.tokenUrl, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
       body: new URLSearchParams({
@@ -178,11 +186,10 @@ async function checkCredentials(p: (typeof PROVIDERS)[number], clientId: string,
         redirect_uri: `${site}/api/auth/${p.id}/callback`,
         client_id: clientId,
         client_secret: secret,
-      }),
-      signal: AbortSignal.timeout(20_000),
-      cache: "no-store",
+      }).toString(),
+      timeoutMs: 20_000,
     });
-    const body = (await res.text().catch(() => "")).slice(0, 300);
+    const body = res.body.slice(0, 300);
     const error = /"error"\s*:\s*"([^"]+)"/.exec(body)?.[1] ?? "";
 
     if (error === "invalid_grant")
@@ -240,8 +247,11 @@ async function main() {
     console.log(`    redirect URI        ${site}/api/auth/${p.id}/callback`);
     if (p.id === "google") console.log(`    JavaScript origin   ${site}`);
 
-    console.log("\n  Reachable from this server, the way the app reaches it?");
-    for (const host of p.hosts) console.log("  " + (await reach(host)));
+    console.log("\n  The way sign-in reaches it (node:https, IPv6 first, Happy Eyeballs)");
+    for (const host of p.hosts) console.log("  " + (await reach(host, "app")));
+
+    console.log("\n  The way plain fetch() reaches it — for comparison only");
+    for (const host of p.hosts) console.log("  " + (await reach(host, "fetch")));
 
     console.log("\n  Each address family on its own, per host");
     let anyV4 = false;
