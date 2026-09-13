@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { logActivity, requireAdmin } from "@/lib/auth/admin";
+import { DelhiveryError, cancelShipment, delhiveryConfig } from "@/lib/shipping/delhivery";
 import type { OrderStatus } from "@/generated/prisma/client";
 import {
   ADVANCE_LABEL,
@@ -160,15 +161,45 @@ export async function cancelOrder(_prev: FormState, formData: FormData): Promise
     });
   });
 
+  // A parcel already booked with the courier is cancelled there too, so nobody
+  // comes to collect it. If Delhivery cannot be reached the order is still
+  // cancelled here — the customer asked, the stock is back — and the owner is
+  // told to cancel the booking on Delhivery One by hand.
+  let courierNote = "";
+  let courierFailed = false;
+  if (order.courier === "Delhivery" && order.awb) {
+    try {
+      const config = delhiveryConfig();
+      if (!config) throw new DelhiveryError("Delhivery is not connected on this server.");
+      await cancelShipment(config, order.awb);
+      await db.orderEvent.create({
+        data: {
+          orderId: id,
+          status: "CANCELLED",
+          title: "Courier booking cancelled",
+          description: `Waybill ${order.awb} cancelled with Delhivery before pickup.`,
+          location: order.shipCity,
+          actorName: session.name,
+        },
+      });
+      courierNote = ` and the Delhivery booking ${order.awb} cancelled`;
+    } catch (error) {
+      const why = error instanceof Error ? error.message : "no answer";
+      console.error("[shipping] cancel", order.number, why);
+      courierFailed = true;
+      courierNote = ` — but the Delhivery booking ${order.awb} could not be cancelled (${why}). Cancel it on Delhivery One under Orders & Pickups.`;
+    }
+  }
+
   await logActivity(session, {
     action: "order.cancel",
     entity: "Order",
     entityId: id,
     summary: `Cancelled order ${order.number}`,
-    metadata: { reason, restocked: order.lines.length },
+    metadata: { reason, restocked: order.lines.length, awb: order.awb, courierCancelled: !!order.awb && !courierFailed },
   });
   revalidateOrder(id);
-  redirect(flash(id, `${order.number} cancelled and stock returned`));
+  redirect(flash(id, `${order.number} cancelled and stock returned${courierNote}`, courierFailed ? "error" : undefined));
 }
 
 export async function setShipment(_prev: FormState, formData: FormData): Promise<FormState> {

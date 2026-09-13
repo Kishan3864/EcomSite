@@ -260,6 +260,22 @@ export async function createShipment(
   return { waybill: pkg.waybill, refnum: pkg.refnum };
 }
 
+/**
+ * Cancel a booked shipment before the courier collects it. Nothing is billed
+ * for a shipment that is cancelled unpicked, which is also what makes a live
+ * booking safe to test: book, look at it, cancel.
+ */
+export async function cancelShipment(config: DelhiveryConfig, waybill: string): Promise<void> {
+  const data = await request<{ status?: boolean; error?: string; remarks?: string; message?: string }>(
+    config,
+    "/api/p/edit",
+    { method: "POST", body: JSON.stringify({ waybill, cancellation: "true" }) },
+  );
+  if (data.status === false) {
+    throw new DelhiveryError(data.error || data.remarks || data.message || "Delhivery refused to cancel the shipment.");
+  }
+}
+
 /** Ask Delhivery to come and collect from the pickup location. */
 export async function requestPickup(
   config: DelhiveryConfig,
