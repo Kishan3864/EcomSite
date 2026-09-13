@@ -550,31 +550,3 @@ export function OpeningNote({ hasCategories }: { hasCategories: boolean }) {
     </section>
   );
 }
-
-/* ------------------------------------------------------------------ *
- *  7 — Trust row
- *  Typographic, not four icons in four boxes.
- * ------------------------------------------------------------------ */
-
-export function TrustRow({ items }: { items: { title: string; body: string }[] }) {
-  return (
-    <section className="border-y border-hairline bg-surface">
-      {/* Two up from the smallest phone: four short promises stacked one per
-          row made a tall band out of very little copy. */}
-      <div className="container-page grid grid-cols-2 gap-x-4 divide-hairline sm:gap-x-8 lg:grid-cols-4 lg:gap-x-0 lg:divide-x">
-        {items.map((item, i) => (
-          <Reveal key={item.title} delay={i * 0.05}>
-            <div className="px-0 py-4 sm:py-8 lg:px-8 lg:first:pl-0 lg:last:pr-0">
-              <p className="font-display text-[15px] leading-snug tracking-[-0.015em] text-ink-950 sm:text-[16px]">
-                {item.title}
-              </p>
-              <p className="mt-1 text-[12.5px] leading-relaxed text-ink-500 sm:mt-1.5 sm:text-[13px]">
-                {item.body}
-              </p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}

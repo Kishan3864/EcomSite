@@ -8,7 +8,6 @@ import {
   OpeningNote,
   ProductGrid,
   Spotlight,
-  TrustRow,
 } from "@/components/home/showcase";
 import { toCardModels } from "@/lib/card";
 import {
@@ -19,7 +18,6 @@ import {
   getFlashDeals,
   getNewArrivals,
 } from "@/services/catalog";
-import { trustBadges } from "@/data/marketing";
 import { BRAND } from "@/components/brand/logo";
 
 export const revalidate = 120;
@@ -52,12 +50,13 @@ export const metadata: Metadata = {
  *
  * Nothing is duplicated to fill space: a band with nothing to show is left
  * out, and it returns by itself as the catalogue grows. No editing required.
+ *
+ * The delivery/returns promises are not repeated here either — the footer
+ * carries them, with icons, on every page of the site.
  */
 
 /** Below this the shop is merchandised as one shelf rather than eight bands. */
 const SPARSE_BELOW = 10;
-
-const trust = trustBadges.map(({ title, body }) => ({ title, body }));
 
 export default async function HomePage() {
   const { products: productCount } = await getCatalogueSize();
@@ -84,7 +83,6 @@ async function EmptyHome() {
       <CategoryMosaic categories={categories} />
       <OpeningNote hasCategories={categories.length > 0} />
       <EditorialBand banner={banners.mid[0]} />
-      <TrustRow items={trust} />
     </>
   );
 }
@@ -132,8 +130,6 @@ async function SparseHome() {
       />
 
       <EditorialBand banner={banners.mid[0]} />
-
-      <TrustRow items={trust} />
     </>
   );
 }
@@ -190,8 +186,6 @@ async function FullHome() {
         products={toCardModels(newArrivals)}
         columns={5}
       />
-
-      <TrustRow items={trust} />
     </>
   );
 }

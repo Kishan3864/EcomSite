@@ -225,7 +225,10 @@ export async function Footer() {
         </div>
       </div>
 
-      {/* Category sitemap */}
+      {/* Category sitemap. Left out entirely while there are no departments —
+          a heading with nothing under it reads as something that failed to
+          load, and it comes back by itself with the first category. */}
+      {categories.length > 0 && (
       <div className="border-t border-hairline">
         <div className="container-page py-5 sm:py-8">
           <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3.5">
@@ -259,6 +262,7 @@ export async function Footer() {
           </div>
         </div>
       </div>
+      )}
 
       {/* Legal. No bottom-nav clearance here: BottomNav leaves its own spacer
           after the footer, and only on the pages where it actually shows. */}

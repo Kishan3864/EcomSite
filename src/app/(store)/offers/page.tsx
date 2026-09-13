@@ -16,7 +16,7 @@ import {
   searchProducts,
 } from "@/services/catalog";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
-import { formatDate } from "@/lib/utils";
+import { discountPercent, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Offers and deals",
@@ -45,6 +45,33 @@ export default async function OffersPage() {
     getBanners(),
   ]);
 
+  // Every number on this page is read off the catalogue. "40% biggest
+  // discount" used to be typed into the markup, which made it a claim that
+  // stayed put whatever the shop was actually selling.
+  const biggestDiscount = Math.max(
+    0,
+    ...bigDiscounts.items.map((p) => discountPercent(p.mrp, p.price)),
+    ...flashDeals.map((p) => discountPercent(p.mrp, p.price)),
+  );
+
+  // reduce() with no initial value throws on an empty array. With the demo
+  // coupons cleared this page answered 500 — from a link in the header.
+  const soonestExpiry = offers.length
+    ? offers.reduce((a, b) => (a.expiresAt < b.expiresAt ? a : b)).expiresAt
+    : null;
+
+  const stats = [
+    ...(offers.length > 0 ? [{ value: offers.length, label: "Coupons live" }] : []),
+    ...(flashDeals.length > 0 ? [{ value: `${flashDeals.length}+`, label: "Deals today" }] : []),
+    ...(biggestDiscount > 0
+      ? [{ value: `${biggestDiscount}%`, label: "Biggest discount" }]
+      : []),
+  ];
+
+  const nothingRunning =
+    offers.length === 0 && flashDeals.length === 0 && limited.length === 0 &&
+    bigDiscounts.items.length === 0;
+
   return (
     <>
       <BreadcrumbJsonLd items={crumbs} />
@@ -58,19 +85,19 @@ export default async function OffersPage() {
               <Sparkles size={12} /> Live right now
             </p>
             <h1 className="mt-3 max-w-2xl font-display text-[24px] leading-[1.06] tracking-[-0.03em] text-white sm:mt-4 sm:text-[46px]">
-              Every offer running today, in plain language.
+              {nothingRunning
+                ? "No offers running at the moment."
+                : "Every offer running today, in plain language."}
             </h1>
             <p className="mt-2 max-w-xl text-[13.5px] leading-relaxed text-white/65 sm:mt-3 sm:text-[14.5px]">
-              No inflated MRP, no fine print hidden three clicks deep. Here is exactly what each
-              code does, what it needs, and when it expires.
+              {nothingRunning
+                ? "When there is a coupon or a genuine reduction, it appears here first — with what it needs and when it expires. We would rather show you nothing than a discount off a price we invented."
+                : "No inflated MRP, no fine print hidden three clicks deep. Here is exactly what each code does, what it needs, and when it expires."}
             </p>
             {/* Three even columns on phones so the stats sit on one line. */}
+            {stats.length > 0 && (
             <div className="mt-4 grid grid-cols-3 gap-3 sm:mt-6 sm:flex sm:flex-wrap sm:gap-6">
-              {[
-                { value: offers.length, label: "Coupons live" },
-                { value: `${flashDeals.length}+`, label: "Deals today" },
-                { value: "40%", label: "Biggest discount" },
-              ].map((stat) => (
+              {stats.map((stat) => (
                 <div key={stat.label} className="min-w-0">
                   <p className="font-display text-[21px] leading-none text-gold-300 sm:text-[28px]">
                     {stat.value}
@@ -81,9 +108,21 @@ export default async function OffersPage() {
                 </div>
               ))}
             </div>
+            )}
+            {nothingRunning && (
+              <div className="mt-5 flex flex-wrap gap-2 sm:mt-7 sm:gap-3">
+                <Link
+                  href="/products"
+                  className="tap inline-flex h-11 grow items-center justify-center bg-gold-400 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors hover:bg-gold-300 sm:h-12 sm:grow-0 sm:px-8"
+                >
+                  Browse the shop
+                </Link>
+              </div>
+            )}
           </div>
         </header>
 
+        {offers.length > 0 && (
         <section className="mt-6 sm:mt-10">
           <Reveal>
             <SectionHeader
@@ -100,7 +139,9 @@ export default async function OffersPage() {
             ))}
           </div>
         </section>
+        )}
 
+        {bigDiscounts.items.length > 0 && (
         <section className="mt-8 sm:mt-12">
           <Reveal>
             <SectionHeader
@@ -114,6 +155,7 @@ export default async function OffersPage() {
           </Reveal>
           <ProductGrid products={toCardModels(bigDiscounts.items)} className="xl:grid-cols-5" />
         </section>
+        )}
       </div>
 
       <ProductRail
@@ -134,6 +176,7 @@ export default async function OffersPage() {
         products={toCardModels(limited)}
       />
 
+      {categories.length > 0 && (
       <section className="container-page py-6 sm:py-14">
         <Reveal>
           <SectionHeader
@@ -168,6 +211,7 @@ export default async function OffersPage() {
           ))}
         </div>
       </section>
+      )}
 
       <section className="container-page pb-8 sm:pb-14">
         <div className="rounded-2xl border border-hairline bg-surface p-4 sm:p-8">
@@ -185,13 +229,19 @@ export default async function OffersPage() {
                 title: "Bank offers stack",
                 body: "Card and UPI offers apply on top of any coupon, as an instant discount at the payment step.",
               },
-              {
-                title: "Real expiry dates",
-                body: `The soonest code expires on ${formatDate(
-                  offers.reduce((a, b) => (a.expiresAt < b.expiresAt ? a : b)).expiresAt,
-                  "short",
-                )}. We do not silently extend them.`,
-              },
+              ...(soonestExpiry
+                ? [
+                    {
+                      title: "Real expiry dates",
+                      body: `The soonest code expires on ${formatDate(soonestExpiry, "short")}. We do not silently extend them.`,
+                    },
+                  ]
+                : [
+                    {
+                      title: "Real expiry dates",
+                      body: "Every code we publish carries the date it runs out, and we do not silently extend them.",
+                    },
+                  ]),
               {
                 title: "Refunds keep the discount",
                 body: "If you return part of an order, the coupon is re-applied proportionally rather than clawed back.",

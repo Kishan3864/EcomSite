@@ -68,10 +68,13 @@ export function HeaderClient({
   searchDocs,
   categories,
   offerCount,
+  promoLine,
 }: {
   searchDocs: SearchDoc[];
   categories: Category[];
   offerCount: number;
+  /** Built from a live coupon, or null when there is none to name. */
+  promoLine: string | null;
 }) {
   const [scrolled, setScrolled] = useState(false);
   // The drawers are keyed to the route they were opened on, so navigating
@@ -95,7 +98,7 @@ export function HeaderClient({
 
   return (
     <>
-      <AnnouncementBar offerCount={offerCount} />
+      <AnnouncementBar offerCount={offerCount} promoLine={promoLine} />
 
       <header
         className={cn(
@@ -139,6 +142,10 @@ export function HeaderClient({
             </nav>
           </div>
 
+          {/* The department bar only exists to hold departments. With none it
+              would be a rule across the page with two links pushed to the far
+              right — so it is left out until there is a category to put in it. */}
+          {categories.length > 0 && (
           <div className="hidden border-t border-hairline lg:block">
             <div className="flex items-center justify-between py-1.5">
               <MegaMenu categories={categories} />
@@ -158,6 +165,7 @@ export function HeaderClient({
               </div>
             </div>
           </div>
+          )}
 
           {/* ---------------------------- Mobile ---------------------------- */}
           {/* 57px exactly: the listing toolbar sticks at top-[57px], its top
@@ -537,18 +545,30 @@ function AccountMenu() {
   );
 }
 
-function AnnouncementBar({ offerCount }: { offerCount: number }) {
+function AnnouncementBar({
+  offerCount,
+  promoLine,
+}: {
+  offerCount: number;
+  promoLine: string | null;
+}) {
   const { config } = useStore();
+  // Every line here is a promise made on every page of the shop, so each one
+  // has to be true at the moment it is shown. The coupon line names a code
+  // that actually exists, or is dropped; the last line counts live offers, or
+  // says something that is true of a shop with none.
   const items = [
     `Free delivery on orders above ₹${config.rates.freeThreshold.toLocaleString("en-IN")}`,
-    "Use WEEKEND10 for 10% off your first order",
+    ...(promoLine ? [promoLine] : []),
     // Both claims below have to be ones we can stand behind. Free pickup is
     // only offered where the courier services the pincode, and "sourced direct
     // from brands" was never true of a reseller — what is true is that we hold
     // the stock and invoice it ourselves.
     `${BUSINESS.ops.returnWindowDays}-day returns on most items`,
     "Bought and invoiced by us, not a marketplace",
-    offerCount > 0 ? `${offerCount} live offers today` : "New arrivals every week",
+    ...(offerCount > 0
+      ? [`${offerCount} live offer${offerCount > 1 ? "s" : ""} today`]
+      : []),
   ];
 
   return (
@@ -673,9 +693,11 @@ function MobileMenu({
         className="px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2"
         aria-label="Mobile navigation"
       >
+        {categories.length > 0 && (
         <p className="px-2 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">
           Shop by category
         </p>
+        )}
         <ul>
           {categories.map((category) => (
             <li key={category.slug}>
