@@ -13,8 +13,22 @@
  * It signs nobody in and changes nothing. Safe to run on the live box.
  */
 import "dotenv/config";
-import { connect } from "node:net";
+import { connect, setDefaultAutoSelectFamily, setDefaultAutoSelectFamilyAttemptTimeout } from "node:net";
+import { setDefaultResultOrder } from "node:dns";
 import { lookup } from "node:dns/promises";
+
+/**
+ * Test the way the app runs, not the way a bare `npx tsx` would.
+ *
+ * PM2 starts the app with --dns-result-order=ipv6first and it turns on Happy
+ * Eyeballs in src/instrumentation.ts. A script run by hand inherits neither, so
+ * without these two lines it reports failures the app itself would not have —
+ * which is worse than useless, because it sends you looking for a fault that is
+ * already handled.
+ */
+setDefaultResultOrder("ipv6first");
+setDefaultAutoSelectFamily(true);
+setDefaultAutoSelectFamilyAttemptTimeout(500);
 
 const ok = (s: string) => `\x1b[32m✓\x1b[0m ${s}`;
 const bad = (s: string) => `\x1b[31m✗\x1b[0m ${s}`;
@@ -48,30 +62,48 @@ const PROVIDERS = [
 
 /**
  * Opens a plain TCP connection to the host on 443, over one address family
- * only. If IPv6 hangs while IPv4 answers, that is the whole bug: Node prefers
- * IPv6 by default, so every outbound call to that host waits for a route that
- * does not exist. deploy/ecosystem.config.cjs sets --dns-result-order=ipv4first
- * for exactly this, and /etc/gai.conf can do the same for the rest of the box.
+ * only, and reports the DNS lookup and the connect separately.
+ *
+ * Separately, because they fail for different reasons and only one of them is
+ * about routing. A ten-second total is a broken route if the connect took it,
+ * and a slow resolver if the lookup did — and on this box both have been seen.
  */
 async function tcp(host: string, family: 4 | 6) {
-  const started = Date.now();
+  const dnsStarted = Date.now();
+  let address: string;
   try {
-    const { address } = await lookup(host, { family });
-    await new Promise<void>((resolve, reject) => {
-      const socket = connect({ host: address, port: 443, timeout: 10_000 });
-      socket.once("connect", () => (socket.destroy(), resolve()));
-      socket.once("timeout", () => (socket.destroy(), reject(new Error("timed out"))));
-      socket.once("error", (error) => (socket.destroy(), reject(error)));
-    });
-    return { works: true, line: ok(`IPv${family} ${address} — connected in ${Date.now() - started}ms`) };
+    ({ address } = await lookup(host, { family }));
   } catch (error) {
     const why = error instanceof Error ? error.message : String(error);
     const absent = /ENOTFOUND|ENODATA/.test(why);
     return {
       works: false,
-      absent,
       line: (absent ? warn : bad)(
-        `IPv${family} — ${absent ? "no address of this family (fine)" : why} (after ${Date.now() - started}ms)`,
+        `IPv${family} — ${absent ? "no address of this family (fine)" : `DNS: ${why}`}` +
+          ` (after ${Date.now() - dnsStarted}ms)`,
+      ),
+    };
+  }
+  const dnsMs = Date.now() - dnsStarted;
+
+  const connectStarted = Date.now();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const socket = connect({ host: address, port: 443, timeout: 10_000, autoSelectFamily: false });
+      socket.once("connect", () => (socket.destroy(), resolve()));
+      socket.once("timeout", () => (socket.destroy(), reject(new Error("timed out"))));
+      socket.once("error", (error) => (socket.destroy(), reject(error)));
+    });
+    return {
+      works: true,
+      line: ok(`IPv${family} ${address} — dns ${dnsMs}ms, connect ${Date.now() - connectStarted}ms`),
+    };
+  } catch (error) {
+    return {
+      works: false,
+      line: bad(
+        `IPv${family} ${address} — dns ${dnsMs}ms, connect ` +
+          `${error instanceof Error ? error.message : String(error)} after ${Date.now() - connectStarted}ms`,
       ),
     };
   }
@@ -98,20 +130,33 @@ function familyVerdict(v4: { works: boolean }, v6: { works: boolean }) {
   return bad("neither family can open a connection — this is a matter for the host.");
 }
 
-/** Can this box open a connection to that host at all? */
+/**
+ * Can this box open a connection to that host at all?
+ *
+ * Twice, because the app tries three times. On a network that fails
+ * intermittently, one attempt tells you about one moment rather than about the
+ * shop, and reporting "unreachable" for something the app would have got on its
+ * second try is a false alarm.
+ */
 async function reach(url: string) {
   const started = Date.now();
-  try {
-    const res = await fetch(url, {
-      method: "HEAD",
-      signal: AbortSignal.timeout(15_000),
-      cache: "no-store",
-    });
-    return ok(`${url} — HTTP ${res.status} in ${Date.now() - started}ms`);
-  } catch (error) {
-    const why = error instanceof Error ? error.message : String(error);
-    return bad(`${url} — ${why} (after ${Date.now() - started}ms)`);
+  let why = "";
+  for (const attempt of [1, 2]) {
+    try {
+      const res = await fetch(url, {
+        method: "HEAD",
+        signal: AbortSignal.timeout(15_000),
+        cache: "no-store",
+      });
+      const note = attempt > 1 ? " (on the second try — the network is flaky)" : "";
+      return (attempt > 1 ? warn : ok)(
+        `${url} — HTTP ${res.status} in ${Date.now() - started}ms${note}`,
+      );
+    } catch (error) {
+      why = error instanceof Error ? error.message : String(error);
+    }
   }
+  return bad(`${url} — ${why} (after ${Date.now() - started}ms, two tries)`);
 }
 
 /**
@@ -195,16 +240,23 @@ async function main() {
     console.log(`    redirect URI        ${site}/api/auth/${p.id}/callback`);
     if (p.id === "google") console.log(`    JavaScript origin   ${site}`);
 
-    console.log("\n  Reachable from this server?");
+    console.log("\n  Reachable from this server, the way the app reaches it?");
     for (const host of p.hosts) console.log("  " + (await reach(host)));
 
-    console.log("\n  Address families (the token endpoint)");
-    const tokenHost = new URL(p.tokenUrl).host;
-    const v4 = await tcp(tokenHost, 4);
-    const v6 = await tcp(tokenHost, 6);
-    console.log("  " + v4.line);
-    console.log("  " + v6.line);
-    console.log("  " + familyVerdict(v4, v6));
+    console.log("\n  Each address family on its own, per host");
+    let anyV4 = false;
+    let anyV6 = false;
+    for (const url of p.hosts) {
+      const host = new URL(url).host;
+      console.log(`  ${host}`);
+      const v4 = await tcp(host, 4);
+      const v6 = await tcp(host, 6);
+      console.log("    " + v4.line);
+      console.log("    " + v6.line);
+      anyV4 ||= v4.works;
+      anyV6 ||= v6.works;
+    }
+    console.log("  " + familyVerdict({ works: anyV4 }, { works: anyV6 }));
 
     console.log("\n  Credentials");
     console.log("  " + (await checkCredentials(p, clientId, secret)));

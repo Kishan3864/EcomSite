@@ -32,8 +32,13 @@ function logFailure(stage: string, provider: ConfiguredProvider, detail: string)
   console.error(`[auth:${provider.id}] ${stage} — ${detail}`);
 }
 
-/** Per attempt. Long enough for a slow answer, short enough not to strand anyone. */
-const REQUEST_TIMEOUT_MS = 8_000;
+/**
+ * Per attempt. A healthy connect to Google from this box has been measured at
+ * up to 7 seconds when the network is having a bad moment, so 8 was cutting it
+ * fine; 10 leaves margin without stranding anyone, since the slow path is rare
+ * and the common one answers in well under a second.
+ */
+const REQUEST_TIMEOUT_MS = 10_000;
 const BACKOFF_MS = [0, 400, 1_200];
 
 /**
