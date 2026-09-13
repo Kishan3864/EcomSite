@@ -95,6 +95,28 @@ The server output appears in your own terminal as it runs. Push to GitHub as
 well, whenever it suits you (`git push origin main`) — that is the backup copy,
 not the deploy path.
 
+### If a deploy says "Killed"
+
+The kernel stopped the build for running the box out of memory. Nothing was
+swapped in, so the site is still serving the previous build untouched — but the
+new code is not live. Give the machine some swap, once:
+
+**Server (VPS)**
+
+```bash
+free -h                                   # how much it has now
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab   # survives a reboot
+free -h                                   # Swap: should now show 2.0Gi
+```
+
+Then push again. The build also no longer runs the TypeScript compiler on the
+server — that pass is what ran the box out of memory, and it runs on the
+development machine before every commit instead (see `next.config.ts`).
+
 ### Why a deploy now needs almost no network at all
 
 - **The fonts** are in the repository, so the build never calls Google.

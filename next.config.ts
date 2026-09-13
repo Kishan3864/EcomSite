@@ -112,6 +112,22 @@ const nextConfig: NextConfig = {
    */
   distDir: process.env.NEXT_DIST_DIR || ".next",
 
+  /**
+   * Type-checking during the production build, unless told not to.
+   *
+   * `next build` runs the TypeScript compiler over the whole project after it
+   * has finished bundling, and on the VPS that step was killed by the kernel
+   * for running the box out of memory — so a deploy could not complete at all.
+   *
+   * deploy/deploy.sh therefore sets SKIP_TYPE_CHECK=1. Nothing goes unchecked
+   * by it: `npx tsc --noEmit` and `npx eslint src` run on the development
+   * machine before every commit, over the same code, so a type error is caught
+   * before it is ever pushed. Locally the flag is unset and a plain
+   * `npm run build` still type-checks everything. (Next 16 no longer runs
+   * ESLint during the build at all, so there is nothing to switch off there.)
+   */
+  typescript: { ignoreBuildErrors: process.env.SKIP_TYPE_CHECK === "1" },
+
   // Stop announcing the framework and its version in every response. Version
   // disclosure is the first step of picking a known exploit.
   poweredByHeader: false,

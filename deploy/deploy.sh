@@ -158,7 +158,22 @@ npm run db:seed
 # visitor untouched. If it fails, nothing has moved and the deploy simply stops.
 step "Building (into .next-build — the live site keeps serving the old one)"
 rm -rf .next-build
-NEXT_DIST_DIR=.next-build npm run build
+# SKIP_TYPE_CHECK: the compiler pass at the end of `next build` was killed by
+# the kernel on this box for running it out of memory. The same check runs on
+# the development machine before every commit — see next.config.ts.
+# --max-old-space-size keeps the bundler itself from asking for more heap than
+# the machine can give, which is what turns "slow" into "Killed".
+if ! NEXT_DIST_DIR=.next-build SKIP_TYPE_CHECK=1 \
+     NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=1024" npm run build; then
+  echo
+  echo "  The build failed. Nothing was swapped: the site is still serving the"
+  echo "  previous build, untouched."
+  echo "  If the last line was 'Killed', the box ran out of memory — add swap:"
+  echo "    sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile"
+  echo "    sudo mkswap /swapfile && sudo swapon /swapfile"
+  echo "    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab"
+  exit 1
+fi
 
 # Two renames on the same filesystem: as close to instant as the disk allows.
 step "Swapping the finished build into place"
