@@ -14,10 +14,13 @@
  * prices in, and check the HSN against the purchase invoice from your supplier
  * before a customer can buy it.
  *
- * The photographs are stock images from Unsplash, which the site already allows
- * (see images.remotePatterns in next.config.ts). Replace them with pictures of
- * the actual goods: the Upload button on the product form takes a file from
- * your phone or computer.
+ * The photographs are files in public/products/, committed to the repository
+ * and served from this site. They are deliberately not links to a stock-photo
+ * host: this server cannot reliably open a connection to the outside world, and
+ * Next fetches a remote image itself in order to optimise it — so a pasted
+ * Unsplash URL renders as an empty box here however valid the link is. Replace
+ * them with pictures of the actual goods; the Upload button on the product form
+ * takes a file from your phone or computer, and that is stored locally too.
  *
  * Idempotent: every row is upserted on its slug, so running it twice changes
  * nothing. --remove deletes exactly what it created and nothing else.
@@ -25,7 +28,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { POOL, img } from "../src/data/images";
+
 
 const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -49,7 +52,7 @@ const CATEGORY = {
   accent: "#426b58",
   description:
     "Appliances for the kitchen and the rest of the house — bought, stocked and invoiced by us, with the warranty handled here rather than sent somewhere else.",
-  imageUrl: img(POOL.kitchen[0], { fit: "wide", w: 1400 }),
+  imageUrl: "/products/home-appliance-category.jpg",
   imageAlt: "Home and kitchen appliances",
   highlights: [
     "Free delivery over ₹999",
@@ -66,14 +69,14 @@ const SUBCATEGORIES = [
     slug: "kitchen-appliances",
     name: "Kitchen appliances",
     description: "Mixers, kettles and cooktops — the machines that do the work in a kitchen.",
-    imageUrl: img(POOL.kitchen[1], { fit: "wide", w: 1200 }),
+    imageUrl: "/products/home-appliance-kitchen.jpg",
     imageAlt: "Kitchen appliances",
   },
   {
     slug: "home-care",
     name: "Home care",
     description: "Irons, vacuum cleaners and everything else that keeps a house in order.",
-    imageUrl: img(POOL.decor[2], { fit: "wide", w: 1200 }),
+    imageUrl: "/products/home-appliance-homecare.jpg",
     imageAlt: "Home care appliances",
   },
 ];
@@ -110,7 +113,7 @@ const PRODUCTS: Seed[] = [
     mrp: 3499,
     stock: 24,
     hsn: "8509",
-    images: [img(POOL.kitchen[2]), img(POOL.kitchen[3])],
+    images: ["/products/mixer-grinder-1.jpg", "/products/mixer-grinder-2.jpg"],
     highlights: [
       "750W copper-wound motor",
       "3 stainless steel jars (1.5L, 1L, 400ml)",
@@ -150,7 +153,7 @@ const PRODUCTS: Seed[] = [
     mrp: 1799,
     stock: 40,
     hsn: "8516",
-    images: [img(POOL.kitchen[4]), img(POOL.kitchen[5])],
+    images: ["/products/electric-kettle-1.jpg", "/products/electric-kettle-2.jpg"],
     highlights: [
       "1.5 litre, 1500W",
       "Auto shut-off and boil-dry protection",
@@ -190,7 +193,7 @@ const PRODUCTS: Seed[] = [
     mrp: 3299,
     stock: 18,
     hsn: "8516",
-    images: [img(POOL.kitchen[1]), img(POOL.kitchen[0])],
+    images: ["/products/induction-cooktop-1.jpg", "/products/induction-cooktop-2.jpg"],
     highlights: [
       "2000W with 8 preset modes",
       "Crystal glass touch panel",
@@ -230,7 +233,7 @@ const PRODUCTS: Seed[] = [
     mrp: 2199,
     stock: 30,
     hsn: "8516",
-    images: [img(POOL.decor[0]), img(POOL.decor[1])],
+    images: ["/products/steam-iron-1.jpg", "/products/steam-iron-2.jpg"],
     highlights: [
       "1600W with ceramic soleplate",
       "Steam burst and spray",
@@ -271,7 +274,7 @@ const PRODUCTS: Seed[] = [
     mrp: 5999,
     stock: 12,
     hsn: "8508",
-    images: [img(POOL.furniture[0]), img(POOL.furniture[1])],
+    images: ["/products/vacuum-cleaner-1.jpg", "/products/vacuum-cleaner-2.jpg"],
     highlights: [
       "1200W, wet and dry",
       "10 litre drum, bagless",
