@@ -102,9 +102,14 @@ export async function placeOrder(
   if (!rateLimit("order:place", session.id, 8, 10 * 60_000)) return { ok: false, error: TOO_MANY };
 
   // Writing an order takes its stock off the shelf, so unpaid online orders are
-  // a way to hold stock nobody else can buy. Release the lapsed ones first, then
-  // refuse to let one customer stack up more.
+  // a way to hold stock nobody else can buy. Release the lapsed ones first.
   await expireStalePendingOrders();
+  // A customer placing a fresh order has abandoned any of their own that never
+  // reached a payment window — most often because the gateway could not be
+  // reached at the time. Those are released after two minutes rather than
+  // forty-five, so a retry is never refused for the earlier attempt's sake. A
+  // payment that lands late on a released order revives it (see markPaid).
+  await expireStalePendingOrders({ customerId: session.id, olderThanMinutes: 2 });
   const unpaid = await db.order.count({
     where: { customerId: session.id, paymentStatus: "PENDING", paymentMethod: "ONLINE" },
   });

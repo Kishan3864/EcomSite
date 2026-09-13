@@ -56,7 +56,7 @@ const PRINCIPLES = [
   {
     icon: ShieldCheck,
     title: "Returns that are actually usable",
-    body: `You have ${O.returnWindowDays} days from delivery on most categories and ${O.returnWindowExtendedDays} on fashion. No restocking fee. If an item arrives damaged or is not what you ordered, we cover the delivery charge both ways.`,
+    body: `You have ${O.returnWindowDays} days from delivery. No restocking fee. If an item arrives damaged or is not what you ordered, we cover the delivery charge both ways.`,
   },
   {
     icon: Headset,

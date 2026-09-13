@@ -160,7 +160,7 @@ export function ReviewStep() {
             cta={payLabel}
             ctaHref={needsAccount ? REGISTER_HREF : undefined}
             onCta={pay}
-            footnote="256-bit encrypted. Demo checkout — no money moves."
+            footnote="256-bit encrypted. Nothing is charged until you confirm on the payment page."
           />
         </>
       }
@@ -281,8 +281,10 @@ export function ReviewStep() {
           </ul>
         </section>
 
-        {/* Below lg the pay button lives in the pinned bar, so this keeps only the terms. */}
-        <div className="flex flex-col gap-3 rounded-xl border border-hairline bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+        {/* The one Pay button on a desktop is in the order summary beside this;
+            on a phone it is the pinned bar. This keeps only the terms — a second
+            button here made two places to press for one payment. */}
+        <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
           <p className="text-[12.5px] leading-relaxed text-ink-500">
             By placing this order you agree to our{" "}
             <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
@@ -294,26 +296,6 @@ export function ReviewStep() {
             </Link>
             .
           </p>
-          {needsAccount ? (
-            <Link
-              href={REGISTER_HREF}
-              className={buttonClasses("primary", "lg", "hidden shrink-0 lg:inline-flex")}
-            >
-              <UserRound size={16} />
-              Create an account to pay
-            </Link>
-          ) : (
-            <Button
-              size="lg"
-              className="hidden shrink-0 lg:inline-flex"
-              loading={placing || !sessionChecked}
-              onClick={pay}
-              disabled={!address || !payment}
-            >
-              <Lock size={16} />
-              Pay {formatINR(totals.total)}
-            </Button>
-          )}
         </div>
 
         {/* A 40px touch target on phones; the negative margin keeps the line. */}

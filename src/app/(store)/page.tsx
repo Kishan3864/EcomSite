@@ -78,7 +78,7 @@ async function EmptyHome() {
       {banners.hero.length > 0 ? (
         <Hero banners={banners.hero} />
       ) : (
-        <HeroStatic hasProducts={false} />
+        <HeroStatic hasProducts={false} categories={categories} />
       )}
       <CategoryMosaic categories={categories} />
       <OpeningNote hasCategories={categories.length > 0} />
@@ -111,7 +111,7 @@ async function SparseHome() {
       {banners.hero.length > 0 ? (
         <Hero banners={banners.hero} />
       ) : (
-        <HeroStatic hasProducts />
+        <HeroStatic hasProducts categories={categories} />
       )}
 
       <CategoryMosaic categories={categories} />
@@ -154,7 +154,7 @@ async function FullHome() {
       {banners.hero.length > 0 ? (
         <Hero banners={banners.hero} />
       ) : (
-        <HeroStatic hasProducts />
+        <HeroStatic hasProducts categories={categories} />
       )}
 
       <CategoryMosaic categories={categories} />

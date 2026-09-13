@@ -58,16 +58,35 @@ async function call<T>(
   path: string,
   init?: { method?: string; body?: string; headers?: Record<string, string> },
 ): Promise<T> {
-  const response = await httpsFetch(`${API}${path}`, {
-    method: init?.method,
-    body: init?.body,
-    headers: {
-      Authorization: authHeader(),
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
-    timeoutMs: 15_000,
-  });
+  // Three tries, but only for a request that got no answer — a dropped or
+  // stalled connection, which on this box is a real possibility. A reply of any
+  // kind, including an error, is final: retrying a create that Razorpay has
+  // already accepted would mint a second gateway order for one purchase.
+  let response: Awaited<ReturnType<typeof httpsFetch>> | null = null;
+  let lastError: unknown = null;
+  for (const wait of [0, 400, 1_200]) {
+    if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
+    try {
+      response = await httpsFetch(`${API}${path}`, {
+        method: init?.method,
+        body: init?.body,
+        headers: {
+          Authorization: authHeader(),
+          "Content-Type": "application/json",
+          ...init?.headers,
+        },
+        timeoutMs: 12_000,
+      });
+      break;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  if (!response) {
+    throw new Error(
+      `Razorpay could not be reached (${lastError instanceof Error ? lastError.message : String(lastError)})`,
+    );
+  }
 
   let body: (T & { error?: { code?: string; description?: string } }) | null = null;
   try {

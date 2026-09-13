@@ -285,7 +285,10 @@ export function ProcessingClient() {
                 <Link href="/checkout/review" className={buttonClasses("primary")}>
                   Try again
                 </Link>
-                <Link href="/cart" className={buttonClasses("outline")}>
+                <Link href="/account/orders" className={buttonClasses("outline")}>
+                  My orders
+                </Link>
+                <Link href="/cart" className={buttonClasses("ghost")}>
                   Back to bag
                 </Link>
               </>

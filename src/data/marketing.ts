@@ -237,7 +237,7 @@ export const trustBadges = [
   },
   {
     icon: "rotate-ccw",
-    title: `${BUSINESS.ops.returnWindowDays}–${BUSINESS.ops.returnWindowExtendedDays} day returns`,
+    title: `${BUSINESS.ops.returnWindowDays}-day returns`,
     body: "No restocking fee. Refunds go back to how you paid",
   },
   {

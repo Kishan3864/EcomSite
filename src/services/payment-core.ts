@@ -176,11 +176,22 @@ export async function applyWebhookPayment(payment: RazorpayPayment): Promise<voi
  * lazily, piggy-backing on checkout traffic, so it needs no scheduler. If a
  * payment for a released order does arrive late, markPaid revives it.
  */
-export async function expireStalePendingOrders(): Promise<number> {
-  const cutoff = new Date(Date.now() - PENDING_EXPIRY_MINUTES * 60_000);
+export async function expireStalePendingOrders(scope?: {
+  /** Only this customer's orders — used when they are placing a fresh one. */
+  customerId?: string;
+  /** Override the shop-wide window; a customer superseding their own can be short. */
+  olderThanMinutes?: number;
+}): Promise<number> {
+  const minutes = scope?.olderThanMinutes ?? PENDING_EXPIRY_MINUTES;
+  const cutoff = new Date(Date.now() - minutes * 60_000);
 
   const stale = await db.order.findMany({
-    where: { paymentStatus: "PENDING", paymentMethod: "ONLINE", placedAt: { lt: cutoff } },
+    where: {
+      paymentStatus: "PENDING",
+      paymentMethod: "ONLINE",
+      placedAt: { lt: cutoff },
+      ...(scope?.customerId ? { customerId: scope.customerId } : {}),
+    },
     select: { id: true, lines: { select: { productId: true, quantity: true } } },
     take: 50,
   });
@@ -215,7 +226,7 @@ export async function expireStalePendingOrders(): Promise<number> {
           orderId: order.id,
           status: "CANCELLED",
           title: "Order lapsed",
-          description: `No payment arrived within ${PENDING_EXPIRY_MINUTES} minutes, so the items were released.`,
+          description: `No payment arrived within ${minutes} minutes, so the items were released.`,
           location: "Online",
         },
       });

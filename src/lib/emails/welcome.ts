@@ -124,7 +124,7 @@ function reasons(): Point[] {
   });
   list.push({
     title: "Easy returns",
-    body: `Return eligible items within ${O.returnWindowDays} days of delivery, or ${O.returnWindowExtendedDays} days on fashion. No restocking fee.`,
+    body: `Return eligible items within ${O.returnWindowDays} days of delivery. No restocking fee.`,
   });
   list.push(
     BUSINESS.whatsappEnabled

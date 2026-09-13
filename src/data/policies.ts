@@ -392,12 +392,11 @@ export const policies: Policy[] = [
         id: "return-window",
         heading: "Return windows",
         paragraphs: [
-          `You may return an eligible item within ${O.returnWindowDays} days of delivery. Some categories carry a longer window of ${O.returnWindowExtendedDays} days. The exact window that applies is shown on each product page and on your order.`,
+          `You may return an eligible item within ${O.returnWindowDays} days of delivery, counted from the day the courier marks it delivered. The window is shown on each product page and on your order.`,
         ],
         table: {
           head: ["Category", "Return window", "Condition"],
           rows: [
-            ["Fashion and accessories", `${O.returnWindowExtendedDays} days`, "Unworn, unwashed, tags intact"],
             ["Home, kitchen and decor", `${O.returnWindowDays} days`, "Unused, original packaging"],
             ["Electronics and gadgets", `${O.returnWindowDays} days`, "Unused, all accessories and seals intact"],
             ["Home appliances", `${O.returnWindowDays} days`, "Unused, original packaging, invoice retained"],
@@ -588,7 +587,7 @@ export const policies: Policy[] = [
     description:
       "Which payment methods we accept, how your payment credentials are protected, and what happens when a payment fails.",
     intro:
-      "Payments on this site are processed by a payment aggregator authorised by the Reserve Bank of India. We never see, handle or store your card number, UPI PIN or banking password.",
+      "Online payments on this site are processed by Razorpay, a payment aggregator authorised by the Reserve Bank of India. We never see, handle or store your card number, UPI PIN or banking password. Cash on Delivery, where offered, is collected by the courier at your door.",
     updatedAt: UPDATED,
     sections: [
       {
@@ -622,7 +621,7 @@ export const policies: Policy[] = [
         id: "failed",
         heading: "When a payment fails",
         paragraphs: [
-          "If a payment fails, no order is created and no contract is formed. Where an amount was debited despite the failure, it is a bank-side hold rather than a charge to us, and it reverses automatically — normally within 5 to 7 business days.",
+          "If an online payment fails, the order is not confirmed and no contract is formed; the items are released back to stock within a few minutes. Where an amount was debited despite the failure, it is a bank-side hold rather than a charge to us, and it reverses automatically — normally within 5 to 7 business days.",
           "If a debited amount has not reversed after that, send us the transaction reference and date and we will pursue it with our payment aggregator. Under the Reserve Bank of India's turnaround-time framework, banks and payment operators are required to reverse failed transactions within prescribed timelines and to compensate the customer for delays beyond them.",
         ],
       },
@@ -776,7 +775,7 @@ export const servicesSections: PolicySection[] = [
         ["2. We confirm", "You get an order acknowledgement by email and SMS with the order number."],
         ["3. We pack", `Packed and handed to a courier partner within ${O.dispatchDays} business days.`],
         ["4. It ships", `Delivered in ${DELIVERY_WINDOW}, with a tracking link.`],
-        ["5. You decide", `Keep it, or return it within ${O.returnWindowDays} to ${O.returnWindowExtendedDays} days for a refund.`],
+        ["5. You decide", `Keep it, or return it within ${O.returnWindowDays} days for a refund.`],
       ],
     },
   },
@@ -873,7 +872,7 @@ export const faqs: { category: string; items: { q: string; a: string }[] }[] = [
     items: [
       {
         q: "How long do I have to return something?",
-        a: `${O.returnWindowDays} days from delivery for most categories, and ${O.returnWindowExtendedDays} days for fashion. The window that applies is shown on each product page.`,
+        a: `${O.returnWindowDays} days from delivery, counted from the day the courier marks it delivered. The window is shown on each product page.`,
       },
       {
         q: "What cannot be returned?",

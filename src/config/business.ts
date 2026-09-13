@@ -168,7 +168,7 @@ export const BUSINESS = {
     returnWindowDays: 7,
 
     /** Longer window for the categories you allow it on. */
-    returnWindowExtendedDays: 14,
+    returnWindowExtendedDays: 7,
 
     /** Business days to inspect a returned item once it reaches you. */
     inspectionDays: 2,
