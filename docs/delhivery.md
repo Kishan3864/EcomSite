@@ -56,7 +56,7 @@ staging panel is separate from the live one.
 ### 2. Put them in `.env` — Server (VPS)
 
 ```
-nano ~/weekendcart/.env
+cd ~/ecom.flexypdf.com && nano .env
 ```
 
 ```
