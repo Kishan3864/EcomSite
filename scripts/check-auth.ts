@@ -13,6 +13,8 @@
  * It signs nobody in and changes nothing. Safe to run on the live box.
  */
 import "dotenv/config";
+import { connect } from "node:net";
+import { lookup } from "node:dns/promises";
 
 const ok = (s: string) => `\x1b[32m✓\x1b[0m ${s}`;
 const bad = (s: string) => `\x1b[31m✗\x1b[0m ${s}`;
@@ -43,6 +45,31 @@ const PROVIDERS = [
     hosts: ["https://www.facebook.com", "https://graph.facebook.com"],
   },
 ];
+
+/**
+ * Opens a plain TCP connection to the host on 443, over one address family
+ * only. If IPv6 hangs while IPv4 answers, that is the whole bug: Node prefers
+ * IPv6 by default, so every outbound call to that host waits for a route that
+ * does not exist. deploy/ecosystem.config.cjs sets --dns-result-order=ipv4first
+ * for exactly this, and /etc/gai.conf can do the same for the rest of the box.
+ */
+async function tcp(host: string, family: 4 | 6) {
+  const started = Date.now();
+  try {
+    const { address } = await lookup(host, { family });
+    await new Promise<void>((resolve, reject) => {
+      const socket = connect({ host: address, port: 443, timeout: 10_000 });
+      socket.once("connect", () => (socket.destroy(), resolve()));
+      socket.once("timeout", () => (socket.destroy(), reject(new Error("timed out"))));
+      socket.once("error", (error) => (socket.destroy(), reject(error)));
+    });
+    return ok(`IPv${family} ${address} — connected in ${Date.now() - started}ms`);
+  } catch (error) {
+    const why = error instanceof Error ? error.message : String(error);
+    const note = /ENOTFOUND|ENODATA/.test(why) ? "no address of this family (fine)" : why;
+    return (family === 6 ? warn : bad)(`IPv${family} — ${note} (after ${Date.now() - started}ms)`);
+  }
+}
 
 /** Can this box open a connection to that host at all? */
 async function reach(url: string) {
@@ -143,6 +170,11 @@ async function main() {
 
     console.log("\n  Reachable from this server?");
     for (const host of p.hosts) console.log("  " + (await reach(host)));
+
+    console.log("\n  Address families (the token endpoint)");
+    const tokenHost = new URL(p.tokenUrl).host;
+    console.log("  " + (await tcp(tokenHost, 4)));
+    console.log("  " + (await tcp(tokenHost, 6)));
 
     console.log("\n  Credentials");
     console.log("  " + (await checkCredentials(p, clientId, secret)));

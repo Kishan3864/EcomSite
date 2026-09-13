@@ -32,6 +32,20 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: port,
+        /**
+         * Try IPv4 before IPv6 for every outbound connection this app makes.
+         *
+         * A box that has an IPv6 address but no working route to it will sit
+         * on the connect for a minute or more and then fail, rather than
+         * falling back — and Node resolves Google's endpoints to IPv6 first by
+         * default. That is a plausible reading of a token exchange that never
+         * answers while everything else about the setup is correct.
+         *
+         * It only changes the order. A host that is genuinely IPv6-only is
+         * still reached; nothing is switched off. On a healthy box this is a
+         * no-op.
+         */
+        NODE_OPTIONS: "--dns-result-order=ipv4first",
         // Read by src/app/robots.ts and the environment badge: anything other
         // than "production" is closed to crawlers and marked in the corner.
         APP_ENV: appEnv,

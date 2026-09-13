@@ -75,6 +75,21 @@ this server talks to Google directly, behind the scenes, to redeem the code.
 | The code was already used | Log says `invalid_grant` | Harmless — it happens if the callback page is refreshed or opened twice. Sign in again |
 | `.env` edited but not reloaded | Nothing changed after fixing the console | `pm2 reload weekendcart` — the app reads `.env` at start |
 
+**What the code does about it already.** The token exchange now times out after
+8 seconds and retries twice with a short pause, so a connection that drops or
+stalls once costs a second and nobody notices. It does *not* retry a request
+the provider actually answered with a 4xx — a wrong secret or a used code fails
+at once and says so, because asking again would only replay a single-use code.
+A retry that succeeds is written to the log, so an intermittent network shows
+up there even when no customer ever sees an error.
+
+The app is also started with `--dns-result-order=ipv4first`, so it tries IPv4
+before IPv6 for every outbound call. A machine with an IPv6 address and no
+working IPv6 route sits on the connect for a minute rather than falling back,
+and Node prefers IPv6 by default. The check's "Address families" lines show
+whether that is happening here: IPv4 connecting in milliseconds while IPv6
+hangs is the signature.
+
 **The network cause is the likely one on this box.** It has already failed to
 reach `fonts.googleapis.com` during a build and `github.com` during a deploy,
 both timing out on connect while other hosts answered normally. Google's token

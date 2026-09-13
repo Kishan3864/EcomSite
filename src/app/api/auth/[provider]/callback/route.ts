@@ -32,35 +32,60 @@ function logFailure(stage: string, provider: ConfiguredProvider, detail: string)
   console.error(`[auth:${provider.id}] ${stage} — ${detail}`);
 }
 
-/** A fetch that reports why it failed instead of vanishing. */
+/** Per attempt. Long enough for a slow answer, short enough not to strand anyone. */
+const REQUEST_TIMEOUT_MS = 8_000;
+const BACKOFF_MS = [0, 400, 1_200];
+
+/**
+ * A fetch that retries a connection that never got an answer, and reports why
+ * when it finally gives up.
+ *
+ * Only failures with no answer are retried — a dropped connection, a refused
+ * one, a timeout, or a 5xx from the provider. A 4xx is an answer: the code was
+ * already redeemed, or the credentials are wrong, and asking again would at
+ * best waste the customer's time and at worst replay a single-use code. So a
+ * bad network costs a second and nobody notices; a bad setting fails at once
+ * and says so.
+ */
 async function attempt(
   stage: string,
   provider: ConfiguredProvider,
-  run: () => Promise<Response>,
+  run: (signal: AbortSignal) => Promise<Response>,
 ): Promise<Response | null> {
-  try {
-    const response = await run();
-    if (response.ok) return response;
-    // Both Google and Facebook answer a rejected exchange with JSON naming the
-    // reason. It is about the request, not about the person, so it is safe.
-    const body = await response.text().catch(() => "");
-    logFailure(stage, provider, `HTTP ${response.status} ${body.slice(0, 400)}`);
-    return null;
-  } catch (error) {
-    // Almost always the network: this server could not reach the provider.
-    logFailure(
-      stage,
-      provider,
-      `request failed (${error instanceof Error ? error.message : String(error)}). ` +
-        `Check that this server can reach ${new URL(provider.tokenUrl).host}.`,
-    );
-    return null;
+  let lastReason = "";
+
+  for (const [tries, wait] of BACKOFF_MS.entries()) {
+    if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
+
+    try {
+      const response = await run(AbortSignal.timeout(REQUEST_TIMEOUT_MS));
+      if (response.ok) {
+        if (tries > 0) console.warn(`[auth:${provider.id}] ${stage} — succeeded on try ${tries + 1}`);
+        return response;
+      }
+
+      // Both Google and Facebook answer a rejected exchange with JSON naming
+      // the reason. It is about the request, not the person, so it is safe.
+      const body = await response.text().catch(() => "");
+      lastReason = `HTTP ${response.status} ${body.slice(0, 400)}`;
+      if (response.status < 500) break; // an answer, and not one retrying changes
+    } catch (error) {
+      // Almost always the network: this server could not reach the provider.
+      lastReason =
+        `request failed (${error instanceof Error ? error.message : String(error)}). ` +
+        `Check that this server can reach ${new URL(provider.tokenUrl).host} — ` +
+        "npx tsx scripts/check-auth.ts";
+    }
   }
+
+  logFailure(stage, provider, lastReason);
+  return null;
 }
 
 async function exchangeCode(provider: ConfiguredProvider, code: string, verifier: string) {
-  const response = await attempt("token exchange", provider, () =>
+  const response = await attempt("token exchange", provider, (signal) =>
     fetch(provider.tokenUrl, {
+      signal,
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -92,8 +117,9 @@ async function exchangeCode(provider: ConfiguredProvider, code: string, verifier
 }
 
 async function fetchUserinfo(provider: ConfiguredProvider, accessToken: string): Promise<unknown> {
-  const response = await attempt("userinfo", provider, () =>
+  const response = await attempt("userinfo", provider, (signal) =>
     fetch(provider.userinfoUrl, {
+      signal,
       headers: { Authorization: `Bearer ${accessToken}`, Accept: "application/json" },
       cache: "no-store",
     }),
