@@ -6,6 +6,7 @@ import { ImageOff } from "lucide-react";
 import { cn, slugify } from "@/lib/utils";
 import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls, textareaCls } from "@/components/admin/ui";
+import { ImageField } from "@/components/admin/image-field";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { Form } from "@/components/ui/form";
@@ -131,17 +132,15 @@ export function SubcategoryForm({
         <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_160px]">
           <div className="grid gap-4">
             <div>
-              <Label htmlFor="sub-image" hint="An https:// URL or a path under /public.">
-                Image URL
+              <Label htmlFor="sub-image" hint="Upload one from this computer, or paste an address.">
+                Image
               </Label>
-              <input
-                id="sub-image"
+              <ImageField
                 name="imageUrl"
                 value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value.trim())}
-                className={inputCls}
-                placeholder="https://images.unsplash.com/…"
-                required
+                onChange={setImageUrl}
+                alt={imageAlt || name}
+                aspect="wide"
               />
               <FieldError>{err("imageUrl")}</FieldError>
             </div>

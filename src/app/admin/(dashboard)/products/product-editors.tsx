@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowDown, ArrowUp, ImageOff, Plus, Search, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ImageOff, Loader2, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { inputCls, selectArrow, selectCls } from "@/components/admin/ui";
@@ -42,12 +42,47 @@ function isUrlish(value: string) {
 
 export function ImagesEditor({ value, onChange }: { value: ImageInput[]; onChange: (next: ImageInput[]) => void }) {
   const update = (i: number, patch: Partial<ImageInput>) => onChange(value.map((img, idx) => (idx === i ? { ...img, ...patch } : img)));
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  /**
+   * Several at once, because a product has several photographs and choosing
+   * them one at a time is the kind of thing that makes an owner stop adding
+   * them. Each becomes a row in order; the first is the cover.
+   */
+  async function uploadFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploadError(null);
+    setUploading(files.length);
+    const added: ImageInput[] = [];
+    try {
+      for (const file of Array.from(files)) {
+        const body = new FormData();
+        body.append("file", file);
+        const res = await fetch("/api/admin/media", { method: "POST", body, credentials: "same-origin" });
+        const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+        if (!res.ok || !data.url) {
+          setUploadError(data.error ?? "One of those images did not upload.");
+          break;
+        }
+        added.push({ url: data.url, alt: "" });
+      }
+    } catch {
+      setUploadError("The upload did not go through. Check the connection and try again.");
+    } finally {
+      setUploading(0);
+      if (fileInput.current) fileInput.current.value = "";
+      if (added.length) onChange([...value, ...added]);
+    }
+  }
 
   return (
     <div className="grid gap-2.5">
       {value.length === 0 && (
         <p className="rounded-lg border border-dashed border-ink-200 px-4 py-6 text-center text-[12.5px] text-ink-500">
-          No images yet. Paste an image URL below — the first image is the cover shown on cards.
+          No images yet. Upload them from this computer, or paste an address — the first
+          image is the cover shown on cards.
         </p>
       )}
       {value.map((img, i) => (
@@ -96,11 +131,38 @@ export function ImagesEditor({ value, onChange }: { value: ImageInput[]; onChang
           </div>
         </div>
       ))}
-      <div>
-        <Button type="button" variant="outline" size="xs" onClick={() => onChange([...value, { url: "", alt: "" }])}>
-          <Plus size={13} /> Add image
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          className="hidden"
+          onChange={(e) => void uploadFiles(e.target.files)}
+        />
+        <Button
+          type="button"
+          variant="primary"
+          size="xs"
+          onClick={() => fileInput.current?.click()}
+          disabled={uploading > 0}
+        >
+          {uploading > 0 ? (
+            <>
+              <Loader2 size={13} className="animate-spin" /> Uploading {uploading}…
+            </>
+          ) : (
+            <>
+              <Upload size={13} /> Upload images
+            </>
+          )}
         </Button>
+        <Button type="button" variant="outline" size="xs" onClick={() => onChange([...value, { url: "", alt: "" }])}>
+          <Plus size={13} /> Add by URL
+        </Button>
+        <span className="text-[11px] text-ink-400">JPG, PNG or WebP · up to 8 MB each</span>
       </div>
+      {uploadError && <p className="text-[12px] text-sale-600">{uploadError}</p>}
     </div>
   );
 }

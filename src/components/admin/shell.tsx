@@ -30,6 +30,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/admin\/categories/, "Categories"],
   [/^\/admin\/brands/, "Brands"],
   [/^\/admin\/inventory/, "Inventory"],
+  [/^\/admin\/media/, "Images"],
   [/^\/admin\/banners/, "Banners"],
   [/^\/admin\/reviews/, "Reviews & Q&A"],
   [/^\/admin\/messages/, "Inbox"],

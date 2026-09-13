@@ -736,6 +736,7 @@ model AdminUser {
   updatedAt    DateTime  @updatedAt
 
   activity ActivityLog[]
+  uploads   MediaAsset[]
 }
 
 model ActivityLog {
@@ -843,4 +844,29 @@ model CustomerAvatar {
   mime       String
   data       Bytes
   updatedAt  DateTime @updatedAt
+}
+
+/// An image uploaded through the admin panel.
+///
+/// Stored in the database rather than on disk, for the same reason customer
+/// photos are: a deploy replaces the application directory, and a file written
+/// beside it is a file nobody backs up. Here it travels with `pg_dump` and
+/// survives every deploy without anyone having to remember it.
+model MediaAsset {
+  id        String   @id @default(cuid())
+  /// Random and unguessable, and part of the URL — so a replaced image is a new
+  /// address and no cache anywhere ever serves the old bytes.
+  key       String   @unique
+  filename  String
+  mime      String
+  bytes     Int
+  data      Bytes
+  /// What the picture shows. Copied into alt text when the image is used.
+  alt       String   @default("")
+  createdAt DateTime @default(now())
+
+  uploadedById String?
+  uploadedBy   AdminUser? @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
 }

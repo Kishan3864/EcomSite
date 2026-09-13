@@ -34,6 +34,7 @@ import {
 import { cn, slugify } from "@/lib/utils";
 import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls, selectArrow, selectCls, textareaCls } from "@/components/admin/ui";
+import { ImageField } from "@/components/admin/image-field";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { GST_RATES } from "../products/product-schema";
@@ -317,17 +318,15 @@ export function CategoryForm({
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <Label htmlFor="cat-image" hint="An https:// URL or a path under /public. Square images crop best.">
-                  Image URL
+                <Label htmlFor="cat-image" hint="Upload one from this computer, or paste an address. Square images crop best.">
+                  Image
                 </Label>
-                <input
-                  id="cat-image"
+                <ImageField
                   name="imageUrl"
                   value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value.trim())}
-                  className={inputCls}
-                  placeholder="https://images.unsplash.com/…"
-                  required
+                  onChange={setImageUrl}
+                  alt={imageAlt || name}
+                  aspect="square"
                 />
                 <FieldError>{err("imageUrl")}</FieldError>
               </div>

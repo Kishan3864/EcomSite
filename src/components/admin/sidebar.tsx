@@ -63,6 +63,8 @@ const GROUPS = (c: SidebarCounts): NavGroup[] => [
       { href: "/admin/categories", label: "Categories", icon: Layers },
       { href: "/admin/brands", label: "Brands", icon: Tag },
       { href: "/admin/inventory", label: "Inventory", icon: Boxes, count: c.lowStock, countTone: "sale" },
+      { href: "/admin/media", label: "Images", icon: ImageIcon },
+      { href: "/admin/media", label: "Images", icon: ImageIcon },
     ],
   },
   {

@@ -13,6 +13,7 @@ import {
   selectCls,
   textareaCls,
 } from "@/components/admin/ui";
+import { ImageField } from "@/components/admin/image-field";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { cn } from "@/lib/utils";
@@ -205,16 +206,15 @@ export function BannerForm({
         <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_200px]">
           <div className="grid gap-4">
             <div>
-              <Label htmlFor="b-image">Image URL</Label>
-              <input
-                id="b-image"
+              <Label htmlFor="b-image" hint="Upload one from this computer, or paste an address.">
+                Image
+              </Label>
+              <ImageField
                 name="imageUrl"
                 value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className={inputCls}
-                required
-                disabled={readOnly}
-                placeholder="https://images.unsplash.com/photo-…"
+                onChange={setImageUrl}
+                alt={title}
+                aspect="wide"
               />
               <FieldError>{err("imageUrl")}</FieldError>
             </div>

@@ -1,8 +1,7 @@
 # Putting the first real catalogue in
 
-Written for whoever runs the shop, not for a developer. Everything here happens
-in the admin panel at `https://weekendcart.com/admin`, except the product
-photos, which have to be put on the server first.
+Written for whoever runs the shop, not for a developer. All of it happens in the
+admin panel at `https://weekendcart.com/admin` — photographs included.
 
 ## Order matters
 
@@ -18,33 +17,35 @@ this order, or the dropdowns on the product form will be empty:
 
 ## Product photos
 
-**There is no upload button.** The product form asks for an image *address*,
-and it accepts only two kinds:
+**Upload them.** Every image field in the admin panel — products, categories,
+collections, banners — has an **Upload** button and takes a drag-and-drop. Pick
+the file from this computer or your phone and it is stored immediately; the
+preview appears before you have finished the rest of the form.
 
-- a path inside this site, starting with `/` — e.g. `/products/mixer-front.jpg`
-- a full `https://` address, but **only** from `images.unsplash.com`,
-  `images.pexels.com` or `cdn.pixabay.com`
+Accepted: **JPG, PNG or WebP, up to 8 MB each.** On a product you can select
+several at once, and they are added in the order you picked them — the first is
+the cover shown on cards. The arrows on each row change that order.
 
-Anything else — a Google Drive link, a WhatsApp link, your own other website —
-is refused by the image layer and the card renders empty. That list lives in
-`next.config.ts` under `images.remotePatterns`.
+SVG is refused on purpose: it is a document that can carry script, not a
+picture.
 
-So for real photographs, put the files in the repository and use the first
-kind. On your PC:
+Pasting an address still works, for a stock photograph you already have online.
+The field takes a full `https://` address, but only from
+`images.unsplash.com`, `images.pexels.com` or `cdn.pixabay.com` — anywhere
+else is blocked by the image layer and the card renders empty. That list lives
+in `next.config.ts` under `images.remotePatterns`. Uploading avoids the
+question entirely.
 
-**Windows**
+### Where uploaded images live
 
-```powershell
-# put the photos in C:\EcomSite\public\products\  (jpg or webp, about 1200px wide)
-git add public/products
-git commit -m "Add product photographs"
-git push origin main
-```
+In the database, not in a folder on the server. That means they survive every
+deploy without anyone having to think about it, and they are inside the nightly
+`pg_dump` backup along with the orders.
 
-Then deploy as usual, and paste `/products/<filename>` into the form. A file at
-`public/products/mixer-front.jpg` is served at `/products/mixer-front.jpg`.
-
-Name the files in plain lowercase with hyphens and no spaces.
+**Catalogue → Images** in the admin panel lists everything uploaded, with how
+many places each picture is used. Deleting is refused while anything still
+points at a picture, so a product can never be left with a hole in it — change
+the product first, then delete the file.
 
 ## What the product form needs
 
