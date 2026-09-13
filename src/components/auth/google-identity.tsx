@@ -225,12 +225,17 @@ export function GoogleButton({
       try {
         id.renderButton(parent, {
           type: "standard",
-          theme: "outline",
+          // Black, square, full-width-for-this-column: as close to the store's
+          // own buttons as Google's own options reach. Everything inside the
+          // button is drawn by Google in its own frame, so these five options
+          // are the whole of what can be asked for.
+          theme: "filled_black",
           size: "large",
           text: "continue_with",
           shape: "rectangular",
           logo_alignment: "left",
-          // Google caps this at 400 and ignores anything larger.
+          // Google caps this at 400 and ignores anything larger, which is why
+          // the form column above is 400 wide — see AuthShell.
           width: Math.min(parent.clientWidth || 320, 400),
         });
       } catch {

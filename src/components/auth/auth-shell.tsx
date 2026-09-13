@@ -50,7 +50,11 @@ export function AuthShell({
             phone the form starts just under the header rather than floating in
             the middle of a tall screen. */}
         <main id="main" className="flex flex-1 items-start pt-6 pb-8 sm:items-center sm:py-14">
-          <div className="mx-auto w-full max-w-md">
+          {/* 400, not the 448 of max-w-md: Google draws its sign-in button in
+              its own frame and will not make it wider than 400px. Matching the
+              column to the button is the only way the two line up, since the
+              button cannot be made to match the column. */}
+          <div className="mx-auto w-full max-w-[400px]">
             <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:text-[36px]">
               {title}
             </h1>
