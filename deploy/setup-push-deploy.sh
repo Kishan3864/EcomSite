@@ -34,10 +34,6 @@ fi
 # refused; a bare repo has no checkout, so this is only belt and braces.
 git --git-dir="$BARE" config receive.denyCurrentBranch ignore
 
-step "Installing the post-receive hook"
-install -m 755 "$APP_DIR/deploy/post-receive" "$BARE/hooks/post-receive"
-echo "  $BARE/hooks/post-receive"
-
 step "Pointing the app directory at it"
 cd "$APP_DIR"
 if git remote | grep -qx local; then
@@ -48,9 +44,15 @@ fi
 git remote -v | sed 's/^/  /'
 
 step "Seeding the bare repo with what is checked out here"
-# So the first push has a common ancestor and sends only what is new.
+# Before the hook is installed, deliberately: this push would otherwise fire
+# the deploy script that is checked out right now, which is the old one that
+# still tries to reach GitHub.
 git push --quiet local "HEAD:refs/heads/main" 2>/dev/null || true
 git --git-dir="$BARE" log -1 --format='  at %h — %s' 2>/dev/null || echo "  (empty — the first push will fill it)"
+
+step "Installing the post-receive hook"
+install -m 755 "$APP_DIR/deploy/post-receive" "$BARE/hooks/post-receive"
+echo "  $BARE/hooks/post-receive"
 
 cat <<EOF
 
