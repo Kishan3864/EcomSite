@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
-  BadgePercent,
   Boxes,
   ExternalLink,
   Image as ImageIcon,
@@ -69,7 +68,6 @@ const GROUPS = (c: SidebarCounts): NavGroup[] => [
   {
     label: "Marketing",
     items: [
-      { href: "/admin/offers", label: "Coupons & offers", icon: BadgePercent },
       { href: "/admin/banners", label: "Banners", icon: ImageIcon },
       { href: "/admin/reviews", label: "Reviews & Q&A", icon: Star, count: c.reviews },
     ],

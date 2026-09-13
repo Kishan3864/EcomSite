@@ -152,13 +152,6 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
                   save
                 />
               )}
-              {order.totals.couponDiscount > 0 && (
-                <Row
-                  label={`Coupon ${order.totals.couponCode ?? ""}`}
-                  value={`− ${formatINR(order.totals.couponDiscount)}`}
-                  save
-                />
-              )}
               <Row
                 label="Delivery"
                 value={order.totals.shipping === 0 ? "Free" : formatINR(order.totals.shipping)}

@@ -29,7 +29,6 @@ const LINK_COLUMNS = [
     title: "Shop",
     links: [
       { label: "All products", href: "/products" },
-      { label: "Today's offers", href: "/offers" },
       { label: "New arrivals", href: "/products?sort=newest" },
       { label: "Bestsellers", href: "/products?sort=popularity" },
       { label: "Under ₹999", href: "/products?maxPrice=999" },

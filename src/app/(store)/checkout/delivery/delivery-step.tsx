@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CalendarDays, Gift, Truck, Zap } from "lucide-react";
-import type { DeliverySpeed, Offer } from "@/lib/types";
+import type { DeliverySpeed } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Badge } from "@/components/ui/primitives";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { GstInvoiceOption } from "@/components/checkout/gst-invoice-option";
 import { useStore } from "@/store/store";
-import { computeTotals, estimatedDelivery, evaluateCoupon } from "@/lib/pricing";
+import { computeTotals, estimatedDelivery } from "@/lib/pricing";
 
 import { addDays, cn, formatDate, formatINR } from "@/lib/utils";
 
@@ -22,8 +22,8 @@ const ICONS: Record<DeliverySpeed, typeof Truck> = {
   scheduled: CalendarDays,
 };
 
-export function DeliveryStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, config, dispatch, hydrated } = useStore();
+export function DeliveryStep() {
+  const { cart, checkout, addresses, config, dispatch, hydrated } = useStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -33,16 +33,11 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
   const address = addresses.find((a) => a.id === checkout.addressId);
   const selected =
     config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0];
-
   const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
-  const applied = offers.find((o) => o.code === coupon) ?? null;
-  const check = applied
-    ? evaluateCoupon(applied, itemsTotal, [...new Set(cart.map((l) => l.categorySlug))])
-    : { ok: false, discount: 0 };
+
   const totals = computeTotals(cart, {
     delivery: selected,
     rates: config.rates,
-    coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
   const scheduleDates = Array.from({ length: 6 }, (_, i) => addDays(new Date(), i + 4));
@@ -58,7 +53,7 @@ export function DeliveryStep({ offers }: { offers: Offer[] }) {
       }
       aside={
         <>
-          <CheckoutAside offers={offers} />
+          <CheckoutAside />
           <OrderSummary totals={totals} lines={cart} delivery={selected} />
         </>
       }

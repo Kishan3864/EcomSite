@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/primitives";
 import { CartClient } from "./cart-client";
-import { getOffers } from "@/services/catalog";
 
 export const metadata: Metadata = {
   title: "Your bag",
-  description: "Review the items in your WeekendCart bag, apply a coupon and check out.",
+  description: "Review the items in your WeekendCart bag and check out.",
   robots: { index: false, follow: true },
   alternates: { canonical: "/cart" },
 };
 
 export default async function CartPage() {
-  const offers = await getOffers();
 
   return (
     <div className="container-page py-4 sm:py-7">
@@ -32,7 +30,7 @@ export default async function CartPage() {
         </p>
       </header>
 
-      <CartClient offers={offers} />
+      <CartClient />
     </div>
   );
 }

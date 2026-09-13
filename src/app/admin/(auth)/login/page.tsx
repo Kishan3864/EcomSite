@@ -48,7 +48,7 @@ export default async function AdminLoginPage({
             {[
               "Live orders with one-click status updates and tracking events",
               "Catalogue edits that reach the storefront within seconds",
-              "Coupons, banners and inventory, with an audit trail",
+              "Banners, inventory and settings, with an audit trail",
             ].map((line) => (
               <li key={line} className="flex items-start gap-2.5 text-[14px] text-white/75">
                 <ShieldCheck size={16} className="mt-0.5 shrink-0 text-gold-400" />

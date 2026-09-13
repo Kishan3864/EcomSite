@@ -17,7 +17,6 @@ import {
   getBrand,
   getBundle,
   getCategory,
-  getOffers,
   getProduct,
   getQuestions,
   getRelated,
@@ -69,14 +68,13 @@ export default async function ProductPage({ params }: { params: Params }) {
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const [brand, category, reviews, questions, related, bundle, offers] = await Promise.all([
+  const [brand, category, reviews, questions, related, bundle] = await Promise.all([
     getBrand(product.brandSlug),
     getCategory(product.categorySlug),
     getReviews(product.id),
     getQuestions(product.id),
     getRelated(product, 10),
     getBundle(product),
-    getOffers(),
   ]);
 
   const subcategory = category?.subcategories.find((s) => s.slug === product.subcategorySlug);
@@ -119,7 +117,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           </div>
 
           <div>
-            <BuyBox product={product} brandName={brand?.name ?? product.brandSlug} offers={offers} />
+            <BuyBox product={product} brandName={brand?.name ?? product.brandSlug} />
             <div id="buy-box-sentinel" aria-hidden className="h-px" />
           </div>
         </div>

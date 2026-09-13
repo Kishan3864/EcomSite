@@ -30,7 +30,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
     db.category.findUnique({
       where: { id },
       include: {
-        _count: { select: { products: true, offers: true } },
+        _count: { select: { products: true } },
         subcategories: {
           orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
           include: { _count: { select: { products: true } } },
@@ -117,7 +117,6 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                     </a>
                   ),
                 },
-                { label: "Offers scoped", value: `${category._count.offers}` },
                 { label: "Menu position", value: `#${category.sortOrder + 1}` },
                 { label: "Created", value: <DateCell value={category.createdAt} /> },
                 { label: "Updated", value: <DateCell value={category.updatedAt} time /> },
@@ -130,7 +129,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
               <p className="text-[12.5px] leading-relaxed text-ink-600">
                 {category._count.products > 0 || subProducts > 0
                   ? `This category has ${Math.max(category._count.products, subProducts)} products. Move them to another category before deleting, or hide the category instead.`
-                  : `Deleting removes the category and its ${subs.length} subcategor${subs.length === 1 ? "y" : "ies"}. Any offers scoped to it become store-wide.`}
+                  : `Deleting removes the category and its ${subs.length} subcategor${subs.length === 1 ? "y" : "ies"}.`}
               </p>
               <ConfirmForm
                 action={deleteCategory}

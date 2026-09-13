@@ -13,19 +13,17 @@ import {
   Trash2,
   Truck,
 } from "lucide-react";
-import type { Offer } from "@/lib/types";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
-import { CouponBox } from "@/components/cart/coupon-box";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { useStore } from "@/store/store";
 import { useCommerce } from "@/store/commerce";
-import { computeTotals, evaluateCoupon } from "@/lib/pricing";
+import { computeTotals } from "@/lib/pricing";
 
 import { formatINR } from "@/lib/utils";
 
-export function CartClient({ offers }: { offers: Offer[] }) {
-  const { cart, saved, coupon, config, dispatch, hydrated } = useStore();
+export function CartClient() {
+  const { cart, saved, config, dispatch, hydrated } = useStore();
   const { toggleWishlist, isWishlisted } = useCommerce();
 
   if (!hydrated) {
@@ -48,33 +46,16 @@ export function CartClient({ offers }: { offers: Offer[] }) {
         title="Your bag is empty"
         body="Nothing here yet. Browse the catalogue and anything you add will be saved on this device."
         action={
-          <div className="flex flex-wrap justify-center gap-2">
-            <Link href="/products" className={buttonClasses("primary", "md")}>
-              Start shopping
-            </Link>
-            <Link href="/offers" className={buttonClasses("outline", "md")}>
-              See today&rsquo;s deals
-            </Link>
-          </div>
+          <Link href="/products" className={buttonClasses("primary", "md")}>
+            Start shopping
+          </Link>
         }
       />
     );
   }
-
-  const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
-  const cartCategories = [...new Set(cart.map((l) => l.categorySlug))];
-  const appliedOffer = offers.find((o) => o.code === coupon) ?? null;
-  const check = appliedOffer
-    ? evaluateCoupon(appliedOffer, itemsTotal, cartCategories)
-    : { ok: false, discount: 0 };
-
   const totals = computeTotals(cart, {
     delivery: config.deliveryOptions[0],
     rates: config.rates,
-    coupon:
-      appliedOffer && check.ok
-        ? { code: appliedOffer.code, discount: check.discount, type: appliedOffer.type }
-        : null,
   });
 
   return (
@@ -335,11 +316,6 @@ export function CartClient({ offers }: { offers: Offer[] }) {
 
         {cart.length > 0 && (
           <aside className="min-w-0 space-y-3 sm:space-y-4 lg:sticky lg:top-[132px] lg:h-fit">
-            <CouponBox
-              offers={offers}
-              itemsTotal={itemsTotal}
-              categories={cartCategories}
-            />
             <OrderSummary
               totals={totals}
               lines={cart}

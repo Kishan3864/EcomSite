@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { DeliveryStep } from "./delivery-step";
-import { getOffers } from "@/services/catalog";
 
 export const metadata: Metadata = {
   title: "Checkout — delivery",
@@ -8,6 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default async function CheckoutDeliveryPage() {
-  const offers = await getOffers();
-  return <DeliveryStep offers={offers} />;
+  return <DeliveryStep />;
 }

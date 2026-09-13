@@ -174,13 +174,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               {order.productDiscount > 0 && (
                 <Row label="Product discount" value={`− ${formatINR(order.productDiscount)}`} save />
               )}
-              {order.couponDiscount > 0 && (
-                <Row
-                  label={`Coupon ${order.couponCode ?? ""}`}
-                  value={`− ${formatINR(order.couponDiscount)}`}
-                  save
-                />
-              )}
               <Row
                 label={order.deliveryName}
                 value={order.shipping === 0 ? "Free" : formatINR(order.shipping)}

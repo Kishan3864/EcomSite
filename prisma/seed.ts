@@ -39,7 +39,6 @@ import {
   customer as demoCustomer,
   heroBanners,
   midBanners,
-  offers,
   promoTiles,
   returnRequests,
   savedAddresses,
@@ -241,7 +240,6 @@ async function seedProducts() {
   );
   const brandIdBySlug = new Map(brands.map((b) => [b.slug, b.id]));
   const catIdBySlug = new Map(categories.map((c) => [c.slug, c.id]));
-
   for (const [i, p] of products.entries()) {
     const sku = `MAY-${CATEGORY_CODE[p.categorySlug] ?? "GEN"}-${String(i + 1).padStart(4, "0")}`;
     const own = ownTax(p);
@@ -379,24 +377,6 @@ async function seedSocialProof() {
 }
 
 async function seedMarketing() {
-  const catIdBySlug = new Map(categories.map((c) => [c.slug, c.id]));
-
-  for (const o of offers) {
-    const data = {
-      title: o.title,
-      description: o.description,
-      type: o.type.toUpperCase() as "PERCENT" | "FLAT" | "SHIPPING" | "BANK",
-      value: o.value,
-      minSpend: o.minSpend,
-      maxDiscount: o.maxDiscount ?? null,
-      categoryId: o.categorySlug ? (catIdBySlug.get(o.categorySlug) ?? null) : null,
-      accent: o.accent,
-      expiresAt: new Date(o.expiresAt),
-      isActive: true,
-    };
-    await db.offer.upsert({ where: { code: o.code }, create: { id: o.id, code: o.code, ...data }, update: data });
-  }
-
   const banners: { id: string; placement: BannerPlacement; data: Record<string, unknown> }[] = [
     ...heroBanners.map((b, i) => ({
       id: `banner-${b.id}`,
@@ -422,7 +402,6 @@ async function seedMarketing() {
     });
   }
 
-  log("offers", offers.length);
   log("banners", banners.length);
 }
 
@@ -524,8 +503,6 @@ async function seedOrders(customerId: string) {
         itemsTotal: o.totals.itemsTotal,
         mrpTotal: o.totals.mrpTotal,
         productDiscount: o.totals.productDiscount,
-        couponCode: o.totals.couponCode,
-        couponDiscount: o.totals.couponDiscount,
         shipping: o.totals.shipping,
         tax: o.totals.tax,
         total: o.totals.total,

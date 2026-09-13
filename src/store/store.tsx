@@ -96,7 +96,6 @@ export interface StoreState {
   customer: StoreCustomer | null;
   /** Set at the review step, consumed by the processing screen. */
   pendingCheckout: PendingCheckout | null;
-  coupon: string | null;
   checkout: CheckoutDraft;
   recentSearches: string[];
   hydrated: boolean;
@@ -113,7 +112,6 @@ const INITIAL: StoreState = {
   addressSync: [],
   customer: null,
   pendingCheckout: null,
-  coupon: null,
   checkout: {
     contact: null,
     addressId: null,
@@ -146,7 +144,6 @@ type Action =
   | { type: "address/remove"; id: string }
   | { type: "address/sync"; address: Address }
   | { type: "address/synced"; sent: Address; id: string | null }
-  | { type: "coupon/set"; code: string | null }
   | { type: "checkout/patch"; patch: Partial<CheckoutDraft> }
   | { type: "checkout/stage"; pending: PendingCheckout }
   | { type: "checkout/abort" }
@@ -221,7 +218,7 @@ function reducer(state: StoreState, action: Action): StoreState {
       return { ...state, cart: state.cart.filter((l) => l.id !== action.id) };
 
     case "cart/clear":
-      return { ...state, cart: [], coupon: null };
+      return { ...state, cart: [] };
 
     case "cart/save": {
       const line = state.cart.find((l) => l.id === action.id);
@@ -348,9 +345,6 @@ function reducer(state: StoreState, action: Action): StoreState {
       };
     }
 
-    case "coupon/set":
-      return { ...state, coupon: action.code };
-
     case "checkout/patch":
       return { ...state, checkout: { ...state.checkout, ...action.patch } };
 
@@ -361,13 +355,12 @@ function reducer(state: StoreState, action: Action): StoreState {
       return { ...state, pendingCheckout: null };
 
     // The order now lives in the database, so all that is left here is to empty
-    // the bag and forget the coupon and payment choice.
+    // the bag and forget the payment choice.
     case "checkout/complete":
       return {
         ...state,
         pendingCheckout: null,
         cart: [],
-        coupon: null,
         checkout: { ...state.checkout, paymentMethod: null, paymentDetail: null },
       };
 
@@ -457,7 +450,6 @@ const PERSISTED: (keyof StoreState)[] = [
   "addresses",
   "addressSync",
   "pendingCheckout",
-  "coupon",
   "checkout",
   "recentSearches",
 ];

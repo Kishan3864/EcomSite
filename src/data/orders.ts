@@ -78,7 +78,6 @@ function order(
       itemsTotal,
       mrpTotal,
       productDiscount: mrpTotal - itemsTotal,
-      couponDiscount: 0,
       shipping,
       tax: Math.round(total - total / 1.18),
       total,

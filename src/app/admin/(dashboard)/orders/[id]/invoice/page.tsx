@@ -202,12 +202,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 Reference: <span className="font-mono">{invoice.payment.reference}</span>
               </>
             )}
-            {invoice.couponCode && (
-              <>
-                <br />
-                Coupon applied: <span className="font-mono">{invoice.couponCode}</span>
-              </>
-            )}
           </p>
         </div>
 

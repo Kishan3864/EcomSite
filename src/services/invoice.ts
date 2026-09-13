@@ -97,8 +97,8 @@ export interface Invoice {
     sgst: number;
     igst: number;
     tax: number;
-    /** What the items cost before the coupon, tax included — the price on the
-     *  shelf, not a pre-tax figure. Labelled as such wherever it is printed. */
+    /** What the items cost before any order-level discount, tax included — the
+     *  price on the shelf, not a pre-tax figure. Labelled as such in print. */
     itemsInclusiveBeforeDiscount: number;
     discount: number;
     roundOff: number;
@@ -107,7 +107,6 @@ export interface Invoice {
   amountInWords: string;
   payment: { method: string; status: string; reference: string | null };
   buyerGstin: string | null;
-  couponCode: string | null;
   /** True when there is no GST registration to invoice under. */
   isBillOfSupply: boolean;
 }
@@ -167,7 +166,7 @@ export async function getInvoice(orderId: string): Promise<Invoice | null> {
       amountPaise: gross[i],
       ratePercent: rateOf(l.taxRate ?? settings.tax.gstRate),
     })),
-    discountPaise: toPaise(order.couponDiscount),
+    discountPaise: 0,
     shipping:
       order.shipping > 0
         ? { amountPaise: toPaise(order.shipping), ratePercent: rateOf(DELIVERY_RATE) }
@@ -293,7 +292,7 @@ export async function getInvoice(orderId: string): Promise<Invoice | null> {
       igst,
       tax: cgst + sgst + igst,
       itemsInclusiveBeforeDiscount: lines.reduce((t, l) => t + l.grossPaise, 0),
-      discount: toPaise(order.couponDiscount),
+      discount: 0,
       roundOff,
       payable,
     },
@@ -304,7 +303,6 @@ export async function getInvoice(orderId: string): Promise<Invoice | null> {
       reference: order.paymentRef,
     },
     buyerGstin: order.buyerGstin,
-    couponCode: order.couponCode,
     isBillOfSupply: billOfSupply,
   };
 }

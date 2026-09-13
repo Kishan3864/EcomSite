@@ -4,13 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Info, Pencil, UserRound } from "lucide-react";
-import type { Offer } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { useStore } from "@/store/store";
-import { computeTotals, evaluateCoupon } from "@/lib/pricing";
+import { computeTotals } from "@/lib/pricing";
 import { Form } from "@/components/ui/form";
 
 
@@ -20,8 +19,8 @@ interface Contact {
   phone: string;
 }
 
-export function ContactStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, customer, config, dispatch } = useStore();
+export function ContactStep() {
+  const { cart, checkout, customer, config, dispatch } = useStore();
   const router = useRouter();
 
   // Untouched, the form shows the signed-in customer's details — which arrive
@@ -40,16 +39,9 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
   const [editing, setEditing] = useState(false);
   const confirming = Boolean(customer?.name && customer.email && customer.phone) && !editing;
 
-  const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
-  const applied = offers.find((o) => o.code === coupon) ?? null;
-  const check = applied
-    ? evaluateCoupon(applied, itemsTotal, [...new Set(cart.map((l) => l.categorySlug))])
-    : { ok: false, discount: 0 };
-
   const totals = computeTotals(cart, {
     delivery: config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0],
     rates: config.rates,
-    coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
   function submit(e: React.FormEvent) {
@@ -78,7 +70,7 @@ export function ContactStep({ offers }: { offers: Offer[] }) {
       description="We use these details for the invoice, delivery updates and nothing else."
       aside={
         <>
-          <CheckoutAside offers={offers} />
+          <CheckoutAside />
           <OrderSummary totals={totals} lines={cart} delivery={null} showDeliveryEstimate={false} />
         </>
       }

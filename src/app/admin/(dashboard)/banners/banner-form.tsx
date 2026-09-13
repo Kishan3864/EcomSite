@@ -184,7 +184,7 @@ export function BannerForm({
             <FieldError>{err("cta")}</FieldError>
           </div>
           <div>
-            <Label htmlFor="b-href" hint="A path on this site, e.g. /c/fashion or /offers.">
+            <Label htmlFor="b-href" hint="A path on this site, e.g. /c/fashion or /products.">
               Links to
             </Label>
             <input
@@ -194,7 +194,7 @@ export function BannerForm({
               className={inputCls}
               required
               disabled={readOnly}
-              placeholder="/offers"
+              placeholder="/products"
             />
             <FieldError>{err("href")}</FieldError>
           </div>

@@ -5,20 +5,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Gift, Lock, MapPin, Pencil, Truck, UserRound, Wallet } from "lucide-react";
-import type { Offer } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Price } from "@/components/ui/primitives";
 import { useStore } from "@/store/store";
-import { computeTotals, estimatedDelivery, evaluateCoupon } from "@/lib/pricing";
+import { computeTotals, estimatedDelivery } from "@/lib/pricing";
 import { formatDate, formatINR } from "@/lib/utils";
 
 const REGISTER_HREF = "/register?next=/checkout/review";
 const SIGN_IN_HREF = "/login?next=/checkout/review";
 
-export function ReviewStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, config, customer, dispatch, hydrated, sessionChecked } =
+export function ReviewStep() {
+  const { cart, checkout, addresses, config, customer, dispatch, hydrated, sessionChecked } =
     useStore();
   const router = useRouter();
   const [placing, setPlacing] = useState(false);
@@ -32,16 +31,9 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
   const delivery =
     config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0];
   const payment = config.paymentMethods.find((p) => p.id === checkout.paymentMethod);
-
-  const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
-  const applied = offers.find((o) => o.code === coupon) ?? null;
-  const check = applied
-    ? evaluateCoupon(applied, itemsTotal, [...new Set(cart.map((l) => l.categorySlug))])
-    : { ok: false, discount: 0 };
   const totals = computeTotals(cart, {
     delivery,
     rates: config.rates,
-    coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
   const eta = estimatedDelivery(cart, delivery);
@@ -83,8 +75,7 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
           buyerGstin: checkout.buyerGstin,
           paymentMethod: payment.id,
           paymentDetail: checkout.paymentDetail,
-          couponCode: applied && check.ok ? applied.code : null,
-        },
+            },
       },
     });
     router.push("/checkout/processing");
@@ -161,7 +152,7 @@ export function ReviewStep({ offers }: { offers: Offer[] }) {
       description="Last look. Nothing is charged until you press the button at the bottom."
       aside={
         <>
-          <CheckoutAside offers={offers} />
+          <CheckoutAside />
           <OrderSummary
             totals={totals}
             lines={cart}

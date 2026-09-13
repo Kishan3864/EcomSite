@@ -177,7 +177,7 @@ export async function deleteCategory(formData: FormData) {
 
   const category = await db.category.findUnique({
     where: { id },
-    include: { _count: { select: { subcategories: true, offers: true } } },
+    include: { _count: { select: { subcategories: true } } },
   });
   if (!category) redirect(flash("/admin/categories", "Category not found", "error"));
 
@@ -195,19 +195,18 @@ export async function deleteCategory(formData: FormData) {
     );
   }
 
-  await db.category.delete({ where: { id } }); // subcategories cascade; offers fall back to store-wide
+  await db.category.delete({ where: { id } }); // subcategories cascade
   await logActivity(session, {
     action: "category.delete",
     entity: "Category",
     entityId: id,
     summary: `Deleted category ${category.name}`,
-    metadata: { subcategories: category._count.subcategories, offersUnscoped: category._count.offers },
+    metadata: { subcategories: category._count.subcategories },
   });
   revalidateStorefront();
   revalidateAdmin("categories");
 
-  const extra = category._count.offers > 0 ? ` · ${category._count.offers} offer${category._count.offers === 1 ? " is" : "s are"} now store-wide` : "";
-  redirect(flash("/admin/categories", `${category.name} deleted${extra}`));
+  redirect(flash("/admin/categories", `${category.name} deleted`));
 }
 
 export async function toggleCategoryActive(formData: FormData) {

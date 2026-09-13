@@ -55,19 +55,6 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
               </Link>
             </li>
           ))}
-          <li>
-            <Link
-              href="/offers"
-              onMouseEnter={scheduleClose}
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13.5px] font-semibold text-sale-600 transition-colors hover:bg-sale-50"
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sale-500 opacity-70" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-sale-500" />
-              </span>
-              Deals
-            </Link>
-          </li>
         </ul>
       </nav>
 

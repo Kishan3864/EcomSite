@@ -46,7 +46,7 @@ function validate(formData: FormData) {
   if (cta.length > 40) return { error: "Keep the button label under 40 characters.", field: "cta" } as const;
 
   if (!href.startsWith("/") || href.startsWith("//"))
-    return { error: "Link must be a storefront path starting with “/”, e.g. /c/fashion or /offers.", field: "href" } as const;
+    return { error: "Link must be a storefront path starting with “/”, e.g. /c/fashion or /products.", field: "href" } as const;
   if (/\s/.test(href)) return { error: "Link cannot contain spaces.", field: "href" } as const;
 
   if (!imageUrl) return { error: "An image is required.", field: "imageUrl" } as const;

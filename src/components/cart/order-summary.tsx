@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, Lock, Truck } from "lucide-react";
-import type { CartLine, DeliveryOption, Offer, OrderTotals } from "@/lib/types";
+import type { CartLine, DeliveryOption, OrderTotals } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { estimatedDelivery } from "@/lib/pricing";
 import { useStore } from "@/store/store";
@@ -18,7 +18,6 @@ export function OrderSummary({
   totals,
   lines,
   delivery,
-  coupon,
   cta,
   ctaHref,
   onCta,
@@ -29,7 +28,6 @@ export function OrderSummary({
   totals: OrderTotals;
   lines: CartLine[];
   delivery?: DeliveryOption | null;
-  coupon?: Offer | null;
   cta?: string;
   ctaHref?: string;
   onCta?: () => void;
@@ -51,15 +49,6 @@ export function OrderSummary({
           {
             label: "Product discount",
             value: `− ${formatINR(totals.productDiscount)}`,
-            tone: "save" as const,
-          },
-        ]
-      : []),
-    ...(totals.couponDiscount > 0
-      ? [
-          {
-            label: `Coupon (${totals.couponCode})`,
-            value: `− ${formatINR(totals.couponDiscount)}`,
             tone: "save" as const,
           },
         ]
@@ -165,9 +154,6 @@ export function OrderSummary({
             {footnote ?? "Secure checkout. Your details are never shared."}
           </p>
         </div>
-      )}
-      {coupon && !cta && (
-        <p className="px-4 pb-4 text-[11.5px] text-ink-400 sm:px-5 sm:pb-5">{coupon.description}</p>
       )}
     </div>
   );

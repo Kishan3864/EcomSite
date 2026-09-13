@@ -10,7 +10,6 @@ import {
   Package,
   RotateCcw,
   Settings,
-  Ticket,
   UserRound,
 } from "lucide-react";
 import { logoutAction } from "@/services/commerce";
@@ -25,7 +24,6 @@ const LINKS = [
   { href: "/account/returns", label: "Returns and refunds", icon: RotateCcw },
   { href: "/account/addresses", label: "Saved addresses", icon: MapPin },
   { href: "/wishlist", label: "Wishlist", icon: Heart },
-  { href: "/offers", label: "Coupons", icon: Ticket },
   { href: "/account/settings", label: "Settings", icon: Settings },
 ];
 

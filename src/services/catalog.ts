@@ -8,7 +8,6 @@ import type {
   Brand,
   Category,
   FacetValue,
-  Offer,
   Paginated,
   Product,
   ProductFacets,
@@ -475,45 +474,6 @@ export async function getQuestions(productId: string): Promise<QuestionAnswer[]>
     answeredAt: (q.answeredAt ?? q.createdAt).toISOString(),
     upvotes: q.upvotes,
   }));
-}
-
-/* ------------------------------ Offers ------------------------------ */
-
-type OfferRow = Prisma.OfferGetPayload<{ include: { category: { select: { slug: true } } } }>;
-
-function toOffer(o: OfferRow): Offer {
-  return {
-    id: o.id,
-    code: o.code,
-    title: o.title,
-    description: o.description,
-    type: o.type.toLowerCase() as Offer["type"],
-    value: o.value,
-    minSpend: o.minSpend,
-    maxDiscount: o.maxDiscount ?? undefined,
-    expiresAt: o.expiresAt.toISOString(),
-    categorySlug: o.category?.slug,
-    accent: o.accent,
-  };
-}
-
-export const getOffers = cache(async (): Promise<Offer[]> => {
-  const now = new Date();
-  const rows = await db.offer.findMany({
-    where: { isActive: true, startsAt: { lte: now }, expiresAt: { gte: now } },
-    orderBy: { createdAt: "asc" },
-    include: { category: { select: { slug: true } } },
-  });
-  return rows.map(toOffer);
-});
-
-export async function getOffer(code: string): Promise<Offer | null> {
-  const row = await db.offer.findUnique({
-    where: { code: code.toUpperCase().trim() },
-    include: { category: { select: { slug: true } } },
-  });
-  if (!row || !row.isActive) return null;
-  return toOffer(row);
 }
 
 /* ---------------------------- Catalogue size ------------------------ */

@@ -3,7 +3,6 @@ import type {
   Banner,
   Customer,
   DeliveryOption,
-  Offer,
   PaymentMethod,
   PromoTile,
   ReturnRequest,
@@ -21,7 +20,7 @@ export const heroBanners: Banner[] = [
     subtitle:
       "Electronics, home appliances, kitchen and fashion — stocked in-house, priced with nothing hidden at checkout.",
     cta: "Shop the edit",
-    href: "/offers",
+    href: "/products",
     image: { url: img(POOL.lifestyle[1], { fit: "ultrawide", w: 1800 }), alt: "WeekendCart product range" },
     align: "left",
     theme: "dark",
@@ -111,18 +110,6 @@ export const midBanners: Banner[] = [
     theme: "dark",
   },
 ];
-
-/* ------------------------------ Offers ----------------------------- */
-
-export const offers: Offer[] = [
-  { id: "o1", code: "WEEKEND10", title: "10% off your first order", description: "New customers get 10% off, capped at ₹750. Works on everything except books.", type: "percent", value: 10, minSpend: 1499, maxDiscount: 750, expiresAt: "2026-12-31T23:59:59.000Z", accent: "#2c837c" },
-  { id: "o2", code: "FESTIVE500", title: "Flat ₹500 off above ₹4,999", description: "Our festive season discount. Stacks with bank offers, not with other coupons.", type: "flat", value: 500, minSpend: 4999, expiresAt: "2026-11-15T23:59:59.000Z", accent: "#ee9014" },
-  { id: "o3", code: "FREESHIP", title: "Free express shipping", description: "Skip the ₹99 express fee on any order above ₹999.", type: "shipping", value: 99, minSpend: 999, expiresAt: "2026-12-31T23:59:59.000Z", accent: "#1f6963" },
-  { id: "o5", code: "TECH2000", title: "₹2,000 off electronics above ₹24,999", description: "Applies to phones, laptops, cameras and audio.", type: "flat", value: 2000, minSpend: 24999, categorySlug: "electronics", expiresAt: "2026-10-20T23:59:59.000Z", accent: "#164441" },
-  { id: "o6", code: "HOME20", title: "20% off home and living", description: "Furniture, decor, bedding and rugs. Capped at ₹5,000.", type: "percent", value: 20, minSpend: 2999, maxDiscount: 5000, categorySlug: "home-living", expiresAt: "2026-11-30T23:59:59.000Z", accent: "#d2740c" },
-];
-
-export const offerMap = new Map(offers.map((o) => [o.code, o]));
 
 /* ------------------------- Checkout options ------------------------ */
 

@@ -1,4 +1,4 @@
-import type { CartLine, DeliveryOption, Offer, OrderTotals } from "./types";
+import type { CartLine, DeliveryOption, OrderTotals } from "./types";
 
 /**
  * Rates the shop owner controls from Settings. The defaults here match the
@@ -13,42 +13,10 @@ export interface Rates {
 
 export const DEFAULT_RATES: Rates = { freeThreshold: 999, standardFee: 79, gstRate: 18 };
 
-export interface CouponResult {
-  code: string;
-  discount: number;
-  label: string;
-}
-
-/** Mirrors the rules a pricing service would enforce server-side. */
-export function evaluateCoupon(
-  offer: Offer | null | undefined,
-  itemsTotal: number,
-  categories: string[],
-): { ok: boolean; discount: number; reason?: string } {
-  if (!offer) return { ok: false, discount: 0, reason: "That code is not valid." };
-  if (new Date(offer.expiresAt) < new Date())
-    return { ok: false, discount: 0, reason: "This offer has expired." };
-  if (itemsTotal < offer.minSpend)
-    return {
-      ok: false,
-      discount: 0,
-      reason: `Add items worth ${(offer.minSpend - itemsTotal).toLocaleString("en-IN")} more to use this code.`,
-    };
-  if (offer.categorySlug && !categories.includes(offer.categorySlug))
-    return { ok: false, discount: 0, reason: "This code applies to a different category." };
-
-  if (offer.type === "shipping") return { ok: true, discount: 0 };
-
-  const raw = offer.type === "percent" ? (itemsTotal * offer.value) / 100 : offer.value;
-  const discount = Math.round(Math.min(raw, offer.maxDiscount ?? raw));
-  return { ok: true, discount };
-}
-
 export function computeTotals(
   lines: CartLine[],
   options: {
     delivery?: DeliveryOption | null;
-    coupon?: { code: string; discount: number; type?: Offer["type"] } | null;
     rates?: Rates;
   } = {},
 ): OrderTotals {
@@ -57,34 +25,23 @@ export function computeTotals(
   const mrpTotal = lines.reduce((sum, l) => sum + l.mrp * l.quantity, 0);
   const productDiscount = mrpTotal - itemsTotal;
 
-  const couponDiscount = options.coupon?.discount ?? 0;
-
   const baseShipping = options.delivery?.price ?? 0;
   const qualifiesFree = itemsTotal >= rates.freeThreshold;
-  const waivedByCoupon = options.coupon?.type === "shipping";
 
   const shipping =
-    options.delivery?.id === "standard"
-      ? qualifiesFree || waivedByCoupon
-        ? 0
-        : rates.standardFee
-      : waivedByCoupon
-        ? 0
-        : baseShipping;
+    options.delivery?.id === "standard" ? (qualifiesFree ? 0 : rates.standardFee) : baseShipping;
 
-  const payable = Math.max(0, itemsTotal - couponDiscount) + shipping;
+  const payable = itemsTotal + shipping;
   const tax = Math.round(payable - payable / (1 + rates.gstRate / 100));
 
   return {
     itemsTotal,
     mrpTotal,
     productDiscount,
-    couponCode: options.coupon?.code,
-    couponDiscount,
     shipping,
     tax,
     total: payable,
-    savings: productDiscount + couponDiscount + (baseShipping - shipping),
+    savings: productDiscount + (baseShipping - shipping),
   };
 }
 

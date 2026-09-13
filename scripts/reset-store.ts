@@ -7,7 +7,7 @@
  * real, and it has to be gone before the first genuine product goes up.
  *
  * Deleted: products (with their images, variants, reviews, questions and stock
- * history), categories and their collections, brands, banners, offers, and
+ * history), categories and their collections, brands, banners, and
  * every customer with their orders, returns and addresses.
  *
  * Kept: admin logins, store settings, newsletter subscribers, contact messages
@@ -51,7 +51,6 @@ async function main() {
     subcategories: await db.subcategory.count(),
     brands: await db.brand.count(),
     banners: await db.banner.count(),
-    offers: await db.offer.count(),
     reviews: await db.review.count(),
     questions: await db.question.count(),
     customers: await db.customer.count(),
@@ -92,7 +91,6 @@ async function main() {
   await step("orders (with lines, events, returns, payments)", () => db.order.deleteMany());
   await step("products (with images, variants, reviews, Q&A, stock)", () => db.product.deleteMany());
   await step("banners", () => db.banner.deleteMany());
-  await step("offers", () => db.offer.deleteMany());
   await step("categories (with their collections)", () => db.category.deleteMany());
   await step("brands", () => db.brand.deleteMany());
   await step("customers (with addresses and avatars)", () => db.customer.deleteMany());

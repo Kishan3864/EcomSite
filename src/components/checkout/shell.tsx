@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Check, Lock, RotateCcw, ShieldCheck, ShoppingBag } from "lucide-react";
-import type { Offer } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { useStore } from "@/store/store";
@@ -223,9 +222,8 @@ export function CheckoutShell({
 }
 
 /** Shared bag summary shown alongside every checkout step. */
-export function CheckoutAside({ offers }: { offers: Offer[] }) {
-  const { cart, coupon } = useStore();
-  const applied = offers.find((o) => o.code === coupon);
+export function CheckoutAside() {
+  const { cart } = useStore();
 
   return (
     <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
@@ -260,11 +258,6 @@ export function CheckoutAside({ offers }: { offers: Offer[] }) {
           </li>
         ))}
       </ul>
-      {applied && (
-        <p className="border-t border-hairline bg-brand-50 px-4 py-2.5 text-[12px] font-medium text-brand-800 sm:px-5">
-          Coupon {applied.code} applied
-        </p>
-      )}
     </div>
   );
 }

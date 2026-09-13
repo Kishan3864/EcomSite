@@ -31,14 +31,9 @@ export function WishlistClient() {
         title="Nothing saved yet"
         body="Tap the heart on any product to keep it here. Your wishlist is stored on this device."
         action={
-          <div className="flex flex-wrap justify-center gap-2">
-            <Link href="/products" className={buttonClasses("primary", "md")}>
-              Browse products
-            </Link>
-            <Link href="/offers" className={buttonClasses("outline", "md")}>
-              See what is on offer
-            </Link>
-          </div>
+          <Link href="/products" className={buttonClasses("primary", "md")}>
+            Browse products
+          </Link>
         }
       />
     );

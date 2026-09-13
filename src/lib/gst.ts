@@ -220,9 +220,9 @@ const addSplits = (a: TaxSplit, b: TaxSplit): TaxSplit => ({
  *
  * The order's stored tax figure and the invoice are both derived from this, so
  * the number a customer sees on their confirmation cannot drift from the one
- * printed on the legal document. A coupon reduces the taxable value of the
- * goods it applied to; delivery is a supply in its own right and is never
- * discounted, so it is taxed apart from the items.
+ * printed on the legal document. An order-level discount reduces the taxable
+ * value of the goods it applied to; delivery is a supply in its own right and
+ * is never discounted, so it is taxed apart from the items.
  */
 export function taxOnOrder(input: {
   items: TaxableItem[];

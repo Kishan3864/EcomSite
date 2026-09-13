@@ -30,7 +30,6 @@ const ENTITY_LINK: Record<string, (id: string) => string> = {
   Brand: () => "/admin/brands",
   Category: () => "/admin/categories",
   Banner: (id) => `/admin/banners/${id}`,
-  Offer: (id) => `/admin/offers/${id}`,
   Review: () => "/admin/reviews",
   Question: () => "/admin/reviews",
   ReturnRequest: () => "/admin/returns",

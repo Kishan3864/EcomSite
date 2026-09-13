@@ -13,10 +13,9 @@ import {
   RotateCcw,
   ShieldCheck,
   Truck,
-  Wallet,
   Zap,
 } from "lucide-react";
-import type { Offer, Product } from "@/lib/types";
+import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Price, RatingChip, Stars } from "@/components/ui/primitives";
 import { fromCard, useCommerce, type AddableProduct } from "@/store/commerce";
@@ -26,11 +25,9 @@ import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
 export function BuyBox({
   product,
   brandName,
-  offers,
 }: {
   product: Product;
   brandName: string;
-  offers: Offer[];
 }) {
   const [selection, setSelection] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -95,10 +92,6 @@ export function BuyBox({
     colors: [],
   });
 
-  const applicable = offers.filter(
-    (o) => (!o.categorySlug || o.categorySlug === product.categorySlug) && price >= o.minSpend,
-  );
-
   function handleAdd() {
     addToCart(addable, { quantity: qty, variantLabel: label, variantKey, priceOverride: price });
     setAdded(true);
@@ -160,34 +153,6 @@ export function BuyBox({
           )}
         </p>
       </div>
-
-      {/* Offers */}
-      {applicable.length > 0 && (
-        <section>
-          <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-2.5 sm:text-[12px]">
-            Available offers
-          </h2>
-          <ul className="space-y-2">
-            {applicable.slice(0, 3).map((offer) => (
-              <li key={offer.id} className="flex items-start gap-2.5 text-[12.5px] sm:text-[13px]">
-                <span
-                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white"
-                  style={{ backgroundColor: offer.accent }}
-                >
-                  <Wallet size={11} />
-                </span>
-                <span className="min-w-0 text-ink-700">
-                  <strong className="font-semibold text-ink-950">{offer.title}</strong>{" "}
-                  <span className="text-ink-500">— use code</span>{" "}
-                  <code className="rounded bg-ink-100 px-1.5 py-0.5 font-mono text-[11.5px] font-bold text-ink-900">
-                    {offer.code}
-                  </code>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {/* Variants */}
       {product.variants.map((group) => (

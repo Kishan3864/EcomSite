@@ -66,13 +66,6 @@ enum QuestionStatus {
   HIDDEN
 }
 
-enum OfferType {
-  PERCENT
-  FLAT
-  SHIPPING
-  BANK
-}
-
 enum BannerPlacement {
   HERO
   MID
@@ -197,7 +190,6 @@ model Category {
 
   subcategories Subcategory[]
   products      Product[]
-  offers        Offer[]
 
   @@index([isActive, sortOrder])
 }
@@ -406,29 +398,6 @@ model Question {
  * ------------------------------------------------------------------
  */
 
-model Offer {
-  id          String    @id @default(cuid())
-  code        String    @unique
-  title       String
-  description String
-  type        OfferType
-  value       Int
-  minSpend    Int       @default(0)
-  maxDiscount Int?
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  accent      String    @default("#2c837c")
-  startsAt    DateTime  @default(now())
-  expiresAt   DateTime
-  usageLimit  Int?
-  usedCount   Int       @default(0)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([isActive, expiresAt])
-}
-
 model Banner {
   id        String          @id @default(cuid())
   placement BannerPlacement
@@ -605,8 +574,6 @@ model Order {
   itemsTotal      Int
   mrpTotal        Int
   productDiscount Int     @default(0)
-  couponCode      String?
-  couponDiscount  Int     @default(0)
   shipping        Int     @default(0)
   tax             Int     @default(0)
   total           Int

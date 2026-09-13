@@ -188,7 +188,6 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
                           <Link href={`/admin/orders/${o.id}`} className="font-medium text-ink-950 hover:text-brand-700">
                             {o.number}
                           </Link>
-                          {o.couponCode && <span className="block text-[11.5px] text-ink-400">Coupon {o.couponCode}</span>}
                         </Td>
                         <Td>
                           <DateCell value={o.placedAt} />

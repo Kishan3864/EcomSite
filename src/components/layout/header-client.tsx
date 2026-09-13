@@ -20,7 +20,6 @@ import {
   RotateCcw,
   Search,
   ShoppingBag,
-  Sparkles,
   Truck,
   User,
   UserPlus,
@@ -67,14 +66,9 @@ const GUEST_HELP_LINKS = [
 export function HeaderClient({
   searchDocs,
   categories,
-  offerCount,
-  promoLine,
 }: {
   searchDocs: SearchDoc[];
   categories: Category[];
-  offerCount: number;
-  /** Built from a live coupon, or null when there is none to name. */
-  promoLine: string | null;
 }) {
   const [scrolled, setScrolled] = useState(false);
   // The drawers are keyed to the route they were opened on, so navigating
@@ -98,7 +92,7 @@ export function HeaderClient({
 
   return (
     <>
-      <AnnouncementBar offerCount={offerCount} promoLine={promoLine} />
+      <AnnouncementBar />
 
       <header
         className={cn(
@@ -155,12 +149,6 @@ export function HeaderClient({
                   className="inline-flex items-center gap-1.5 text-ink-600 transition-colors hover:text-brand-700"
                 >
                   <Package size={14} /> Track order
-                </Link>
-                <Link
-                  href="/offers"
-                  className="inline-flex items-center gap-1.5 font-medium text-brand-700 transition-colors hover:text-brand-900"
-                >
-                  <Sparkles size={14} /> Today&rsquo;s offers
                 </Link>
               </div>
             </div>
@@ -545,30 +533,18 @@ function AccountMenu() {
   );
 }
 
-function AnnouncementBar({
-  offerCount,
-  promoLine,
-}: {
-  offerCount: number;
-  promoLine: string | null;
-}) {
+function AnnouncementBar() {
   const { config } = useStore();
   // Every line here is a promise made on every page of the shop, so each one
-  // has to be true at the moment it is shown. The coupon line names a code
-  // that actually exists, or is dropped; the last line counts live offers, or
-  // says something that is true of a shop with none.
+  // has to be true at the moment it is shown.
   const items = [
     `Free delivery on orders above ₹${config.rates.freeThreshold.toLocaleString("en-IN")}`,
-    ...(promoLine ? [promoLine] : []),
     // Both claims below have to be ones we can stand behind. Free pickup is
     // only offered where the courier services the pincode, and "sourced direct
     // from brands" was never true of a reseller — what is true is that we hold
     // the stock and invoice it ourselves.
     `${BUSINESS.ops.returnWindowDays}-day returns on most items`,
     "Bought and invoiced by us, not a marketplace",
-    ...(offerCount > 0
-      ? [`${offerCount} live offer${offerCount > 1 ? "s" : ""} today`]
-      : []),
   ];
 
   return (
@@ -605,7 +581,6 @@ function MobileMenu({
   const { wishlist, customer, hydrated } = useStore();
 
   const links = [
-    { href: "/offers", label: "Offers and deals" },
     ...(customer
       ? [
           { href: "/account", label: "My account" },

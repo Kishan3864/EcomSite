@@ -146,20 +146,6 @@ export interface Product {
   bundleIds: ID[];
 }
 
-export interface Offer {
-  id: ID;
-  code: string;
-  title: string;
-  description: string;
-  type: "percent" | "flat" | "shipping" | "bank";
-  value: number;
-  minSpend: number;
-  maxDiscount?: number;
-  expiresAt: string;
-  categorySlug?: string;
-  accent: string;
-}
-
 export interface Banner {
   id: ID;
   eyebrow: string;
@@ -279,8 +265,6 @@ export interface OrderTotals {
   itemsTotal: number;
   mrpTotal: number;
   productDiscount: number;
-  couponCode?: string;
-  couponDiscount: number;
   shipping: number;
   tax: number;
   total: number;

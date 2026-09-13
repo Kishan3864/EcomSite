@@ -15,7 +15,7 @@ import {
 } from "@/lib/auth/customer";
 import { passwordProblem } from "@/lib/auth/password";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
-import { computeTotals, evaluateCoupon } from "@/lib/pricing";
+import { computeTotals } from "@/lib/pricing";
 import {
   financialYear,
   gstinState,
@@ -24,7 +24,6 @@ import {
   taxOnOrder,
   toPaise,
 } from "@/lib/gst";
-import { getOffer } from "./catalog";
 import { safeNextPath } from "@/lib/auth/oauth";
 import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
@@ -35,7 +34,7 @@ import { mailConfigured, sendMail } from "@/lib/mail";
 import { buildWelcomeEmail } from "@/lib/emails/welcome";
 
 /**
- * Everything the storefront writes goes through here. Prices, stock and coupon
+ * Everything the storefront writes goes through here. Prices and stock
  * rules are recomputed from the database on every call — the client is only
  * ever a suggestion.
  */
@@ -59,7 +58,6 @@ export interface PlaceOrderInput {
   buyerGstin?: string | null;
   paymentMethod: PaymentMethodId;
   paymentDetail?: string | null;
-  couponCode?: string | null;
 }
 
 const INVOICE_PREFIX = "WKC";
@@ -173,20 +171,6 @@ export async function placeOrder(
     });
   }
 
-  const itemsTotal = priced.reduce((s, l) => s + l.price * l.quantity, 0);
-  const categories = [...new Set(priced.map((l) => l.categorySlug))];
-
-  // Coupon, verified server-side.
-  let coupon: { code: string; discount: number; type: "percent" | "flat" | "shipping" | "bank" } | null = null;
-  const offerRow = input.couponCode ? await db.offer.findUnique({ where: { code: input.couponCode.toUpperCase() } }) : null;
-  if (input.couponCode) {
-    const offer = await getOffer(input.couponCode);
-    const check = evaluateCoupon(offer, itemsTotal, categories);
-    if (!check.ok) return { ok: false, error: check.reason ?? "That coupon cannot be applied.", field: "coupon" };
-    if (offerRow?.usageLimit != null && offerRow.usedCount >= offerRow.usageLimit)
-      return { ok: false, error: "That coupon has been fully redeemed.", field: "coupon" };
-    coupon = { code: offer!.code, discount: check.discount, type: offer!.type };
-  }
 
   const speed = input.deliveryId ?? "standard";
   const delivery = {
@@ -204,7 +188,6 @@ export async function placeOrder(
   };
   const totals = computeTotals(priced, {
     delivery,
-    coupon,
     rates: {
       freeThreshold: settings.shipping.freeThreshold,
       standardFee: settings.shipping.standardFee,
@@ -247,7 +230,7 @@ export async function placeOrder(
       amountPaise: toPaise(l.price * l.quantity),
       ratePercent: l.taxRate,
     })),
-    discountPaise: toPaise(totals.couponDiscount),
+    discountPaise: 0,
     shipping:
       totals.shipping > 0
         ? { amountPaise: toPaise(totals.shipping), ratePercent: DELIVERY_TAX_RATE }
@@ -300,8 +283,6 @@ export async function placeOrder(
             itemsTotal: totals.itemsTotal,
             mrpTotal: totals.mrpTotal,
             productDiscount: totals.productDiscount,
-            couponCode: coupon?.code ?? null,
-            couponDiscount: totals.couponDiscount,
             shipping: totals.shipping,
             tax: taxRupees,
             total: totals.total,
@@ -365,10 +346,6 @@ export async function placeOrder(
               actorName: "Storefront",
             },
           });
-        }
-
-        if (coupon) {
-          await tx.offer.update({ where: { code: coupon.code }, data: { usedCount: { increment: 1 } } });
         }
 
         // How they paid this time becomes the default next time, so a returning

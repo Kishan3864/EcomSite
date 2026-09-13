@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
-import type { Address, Offer } from "@/lib/types";
+import type { Address } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { AddressForm } from "@/components/checkout/address-form";
@@ -14,11 +14,11 @@ import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { removeAddress } from "@/services/commerce";
-import { computeTotals, evaluateCoupon } from "@/lib/pricing";
+import { computeTotals } from "@/lib/pricing";
 
 
-export function AddressStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, addresses, customer, config, dispatch, hydrated } = useStore();
+export function AddressStep() {
+  const { cart, checkout, addresses, customer, config, dispatch, hydrated } = useStore();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Address | null>(null);
@@ -31,16 +31,9 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
   useEffect(() => {
     if (hydrated && cart.length > 0 && !checkout.contact) router.replace("/checkout/contact");
   }, [hydrated, cart.length, checkout.contact, router]);
-
-  const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
-  const applied = offers.find((o) => o.code === coupon) ?? null;
-  const check = applied
-    ? evaluateCoupon(applied, itemsTotal, [...new Set(cart.map((l) => l.categorySlug))])
-    : { ok: false, discount: 0 };
   const totals = computeTotals(cart, {
     delivery: config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0],
     rates: config.rates,
-    coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
   function next() {
@@ -58,7 +51,7 @@ export function AddressStep({ offers }: { offers: Offer[] }) {
       description="Pick a saved address or add a new one. You can change this before you pay."
       aside={
         <>
-          <CheckoutAside offers={offers} />
+          <CheckoutAside />
           <OrderSummary totals={totals} lines={cart} delivery={null} showDeliveryEstimate={false} />
         </>
       }

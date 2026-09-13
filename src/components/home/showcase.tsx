@@ -322,8 +322,8 @@ export function DealsBoard({ products }: { products: ProductCardModel[] }) {
         eyebrow="Reduced this week"
         title="Deals worth the scroll"
         description="Real reductions on stock we hold, not a permanent sale price dressed up as one."
-        href="/offers"
-        linkLabel="Every deal"
+        href="/products?discount=25&sort=discount"
+        linkLabel="Every reduction"
         className="mb-4 sm:mb-8"
       />
 

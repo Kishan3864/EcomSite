@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Banknote, Lock, ShieldCheck } from "lucide-react";
-import type { Offer, PaymentMethodId } from "@/lib/types";
+import type { PaymentMethodId } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { useStore } from "@/store/store";
-import { computeTotals, evaluateCoupon } from "@/lib/pricing";
+import { computeTotals } from "@/lib/pricing";
 import { formatINR } from "@/lib/utils";
 
 /** What Razorpay's checkout offers once the customer reaches it. */
@@ -25,8 +25,8 @@ const GATEWAY_METHODS = ["UPI", "Google Pay", "PhonePe", "Paytm", "Cards", "Net 
  * a second, redundant step — and a place to pick "card" and then want UPI. The
  * choice is made once, on the gateway's page, where the details are collected.
  */
-export function PaymentStep({ offers }: { offers: Offer[] }) {
-  const { cart, coupon, checkout, config, customer, dispatch, hydrated } = useStore();
+export function PaymentStep() {
+  const { cart, checkout, config, customer, dispatch, hydrated } = useStore();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -36,15 +36,9 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
 
   const selectedDelivery =
     config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0];
-  const itemsTotal = cart.reduce((s, l) => s + l.price * l.quantity, 0);
-  const applied = offers.find((o) => o.code === coupon) ?? null;
-  const check = applied
-    ? evaluateCoupon(applied, itemsTotal, [...new Set(cart.map((l) => l.categorySlug))])
-    : { ok: false, discount: 0 };
   const totals = computeTotals(cart, {
     delivery: selectedDelivery,
     rates: config.rates,
-    coupon: applied && check.ok ? { code: applied.code, discount: check.discount, type: applied.type } : null,
   });
 
   const codAllowed = totals.total <= config.codLimit;
@@ -97,7 +91,7 @@ export function PaymentStep({ offers }: { offers: Offer[] }) {
       description="Nothing is charged yet — you will see a full summary before the payment goes through."
       aside={
         <>
-          <CheckoutAside offers={offers} />
+          <CheckoutAside />
           <OrderSummary totals={totals} lines={cart} delivery={selectedDelivery} />
         </>
       }

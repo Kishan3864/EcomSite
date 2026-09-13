@@ -200,7 +200,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 value={formatPaise(totals.itemsInclusiveBeforeDiscount)}
               />
               <Total
-                label={invoice.couponCode ? `Discount (${invoice.couponCode})` : "Discount"}
+                label="Discount"
                 value={`− ${formatPaise(totals.discount)}`}
               />
             </>
