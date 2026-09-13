@@ -46,6 +46,15 @@ warn() { printf '\033[1;33m  %s\033[0m\n' "$*"; }
 # ── 1. Which site is this? ────────────────────────────────────────────────
 # Everything that differs between the live shop and the rehearsal copy is
 # here and nowhere else. Both run from the same committed files.
+# Nothing in a deploy should need the internet unless it truly does. Next's
+# telemetry ping is not worth a socket on a box whose outbound is unreliable.
+export NEXT_TELEMETRY_DISABLED=1
+
+# Where the code comes from. `origin` is GitHub; `local` is the bare repo on
+# this box that deploy/post-receive pushes into, for when GitHub is not
+# reachable from here.
+REMOTE="${DEPLOY_REMOTE:-origin}"
+
 TARGET="${1:-production}"
 case "$TARGET" in
   production)
@@ -101,21 +110,42 @@ echo "$PREVIOUS" > .last-release
 step "Leaving $(git log -1 --format='%h — %s' "$PREVIOUS")"
 
 # ── 5. New code ───────────────────────────────────────────────────────────
-step "Pulling $BRANCH"
-# github.com answers on IPv6, and a box with an IPv6 address but no working
-# IPv6 route will sit on the connect for two minutes before giving up rather
-# than falling back. Asking for IPv4 explicitly is the same request over a road
-# that exists. If the retry also fails the network is genuinely down, and the
-# deploy stops here — before anything has been touched.
-if ! git fetch --quiet origin; then
-  warn "git fetch failed. Retrying over IPv4 only…"
-  git fetch -4 --quiet origin
+# When the code was pushed straight to this box (deploy/post-receive), it is
+# already checked out and there is nothing to fetch.
+if [ "${DEPLOY_SKIP_PULL:-}" = "1" ]; then
+  step "Using the code that was just pushed"
+  git log -1 --format='  at %h — %s'
+else
+  step "Pulling $BRANCH from $REMOTE"
+  # One retry over IPv4: a box with an IPv6 address and no IPv6 route sits on
+  # the connect for two minutes rather than falling back on its own.
+  if ! git fetch --quiet "$REMOTE"; then
+    warn "git fetch failed. Retrying over IPv4 only…"
+    git fetch -4 --quiet "$REMOTE" || {
+      echo
+      echo "  Cannot reach $REMOTE. If this is GitHub and the server's network is"
+      echo "  blocking it, push straight to this box instead — see deploy/README.md,"
+      echo "  'Deploying without GitHub'. Nothing has been changed."
+      exit 1
+    }
+  fi
+  git reset --hard --quiet "$REMOTE/$BRANCH"
+  git log -1 --format='  at %h — %s'
 fi
-git reset --hard --quiet "origin/$BRANCH"
-git log -1 --format='  at %h — %s'
 
-step "Installing dependencies"
-npm ci --no-audit --no-fund
+# Reinstalling on every deploy is a minute of network for nothing when the
+# dependencies have not moved — and on a box whose outbound connections are
+# unreliable it is a minute of risk too. The lockfile is the only thing that
+# decides: if it is byte-for-byte what was last installed, node_modules is
+# already right.
+LOCK_HASH="$( (sha256sum package-lock.json 2>/dev/null || shasum -a 256 package-lock.json) | cut -d' ' -f1)"
+if [ -d node_modules ] && [ "$(cat .last-install 2>/dev/null)" = "$LOCK_HASH" ]; then
+  step "Dependencies unchanged — skipping install"
+else
+  step "Installing dependencies"
+  npm ci --no-audit --no-fund
+  echo "$LOCK_HASH" > .last-install
+fi
 
 step "Applying database migrations"
 npx prisma migrate deploy

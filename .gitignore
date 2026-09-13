@@ -20,4 +20,5 @@ src/generated
 
 # release bookkeeping written on the server by deploy/deploy.sh
 .last-release
+.last-install
 logs

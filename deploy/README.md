@@ -2,7 +2,20 @@
 
 ## Every deploy, every time
 
-Two lines. Nothing else, ever.
+One command, from your PC. No SSH, no server commands.
+
+**Windows**
+
+```powershell
+git push production main
+```
+
+That is it. The push lands in a bare repository on the server, whose
+`post-receive` hook runs the deploy for you and prints the whole thing back
+into your terminal — backup, build, swap, health check. Set it up once with
+**[Deploying without GitHub](#deploying-without-github)** below.
+
+The old way still works if you are already logged in to the box:
 
 **Server (VPS)**
 
@@ -11,7 +24,7 @@ cd ~/ecom.flexypdf.com
 bash deploy/deploy.sh
 ```
 
-That is the whole routine. The script takes the database backup itself, pulls
+Either way it is the same script and the same safety. The script takes the database backup itself, pulls
 `main`, installs, migrates, **builds into a directory the live site is not
 reading**, and only swaps the finished build in at the end. For the whole of
 the build — the slow part — visitors keep getting the old site, complete and
@@ -34,6 +47,60 @@ Roll the code back if something is wrong that the health check did not catch:
 ```bash
 cd ~/ecom.flexypdf.com && bash deploy/rollback.sh
 ```
+
+---
+
+## Deploying without GitHub
+
+This VPS cannot open a connection to `github.com:443` — it resolves, then sits
+on the connect for two minutes and times out, over IPv4 and IPv6 alike, while
+`registry.npmjs.org` on the same port answers fine. Whatever the cause at the
+provider's end, a deploy that has to pull from GitHub is a deploy that depends
+on it being fixed.
+
+So the code goes the other way. Your PC can reach GitHub *and* the server, so it
+pushes straight to the server, and the server's network never enters into it.
+
+**Server (VPS)** — once:
+
+```bash
+cd ~/ecom.flexypdf.com
+bash deploy/setup-push-deploy.sh
+```
+
+That creates `~/weekendcart.git` (a bare repository), installs the deploy hook
+into it, and adds it to the app directory as a remote called `local`.
+
+**Windows** — once:
+
+```powershell
+git remote add production ssh://flexyuser@187.127.141.107/home/flexyuser/weekendcart.git
+```
+
+**Windows** — every time after that:
+
+```powershell
+git push production main
+```
+
+The server output appears in your own terminal as it runs. Push to GitHub as
+well, whenever it suits you (`git push origin main`) — that is the backup copy,
+not the deploy path.
+
+### Why a deploy now needs almost no network at all
+
+- **The fonts** are in the repository, so the build never calls Google.
+- **`npm ci` is skipped** when `package-lock.json` is byte-for-byte what was
+  last installed — which is every deploy that only changes code. It runs, and
+  needs the network, only when a dependency actually changes.
+- **Next's telemetry** is switched off in the deploy.
+- **The code** arrives by push.
+
+A code-only deploy therefore talks to nothing outside the box.
+
+One thing still does: product images hosted on Unsplash are fetched by the
+server when it optimises them. Real product photographs kept in `public/` — see
+[docs/first-catalogue.md](../docs/first-catalogue.md) — need no network either.
 
 ---
 

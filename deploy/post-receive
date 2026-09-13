@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Git hook: deploys whatever was just pushed to this box.
+#
+# Installed into ~/weekendcart.git/hooks/post-receive by
+# deploy/setup-push-deploy.sh. Runs on the server, as the server's own user,
+# every time someone runs `git push production main` from their PC.
+#
+# Why this exists: the VPS cannot reach github.com, so the app directory cannot
+# pull. Pushing sends the code the other way — from a machine that can reach
+# both — and nothing in the deploy needs the internet at all.
+set -euo pipefail
+
+APP_DIR="${DEPLOY_APP_DIR:-$HOME/ecom.flexypdf.com}"
+BRANCH="${DEPLOY_BRANCH:-main}"
+TARGET="${DEPLOY_TARGET:-production}"
+
+# A hook runs with GIT_DIR (and friends) pointing at the bare repo. Left set,
+# every git command below would operate on the wrong repository.
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_QUARANTINE_PATH GIT_PREFIX
+
+while read -r _old _new ref; do
+  [ "$ref" = "refs/heads/$BRANCH" ] || continue
+
+  printf '\n\033[1;36m▸ Received %s — deploying\033[0m\n' "$BRANCH"
+  cd "$APP_DIR"
+
+  # `local` is this box's bare repo, a directory away. No network involved.
+  git fetch --quiet local
+  git reset --hard --quiet "local/$BRANCH"
+
+  DEPLOY_SKIP_PULL=1 bash deploy/deploy.sh "$TARGET"
+done
