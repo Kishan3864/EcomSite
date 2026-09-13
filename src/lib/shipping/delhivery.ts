@@ -106,17 +106,31 @@ export interface Serviceability {
   state: string;
 }
 
+/**
+ * The shape seen from Delhivery's own API playground (staging, 2026-09): keys
+ * come back sorted, with `cash`, `center[].cn`, `repl`, `state_code` among
+ * them. The documented `cod` / `pre_paid` / `district` are read first and the
+ * playground's names are the fallback, so either vintage of the answer works.
+ */
 interface PincodeRow {
   postal_code?: {
     pin?: number | string;
+    city?: string;
     district?: string;
     state_code?: string;
     cod?: "Y" | "N";
+    cash?: "Y" | "N";
     pre_paid?: "Y" | "N";
     pickup?: "Y" | "N";
     is_oda?: "Y" | "N";
+    center?: { cn?: string }[];
   };
 }
+
+const yes = (...flags: (string | undefined)[]) => {
+  const first = flags.find((f) => f !== undefined);
+  return first === undefined ? true : first === "Y";
+};
 
 /** Whether Delhivery delivers to a pincode, and how it can be paid for. */
 export async function checkPincode(config: DelhiveryConfig, pincode: string): Promise<Serviceability> {
@@ -127,12 +141,14 @@ export async function checkPincode(config: DelhiveryConfig, pincode: string): Pr
   );
   const row = data.delivery_codes?.[0]?.postal_code;
   if (!row) return { serviceable: false, cod: false, prepaid: false, city: "", state: "" };
+  const state = row.state_code ?? "";
   return {
     serviceable: true,
-    cod: row.cod === "Y",
-    prepaid: row.pre_paid === "Y",
-    city: row.district ?? "",
-    state: row.state_code ?? "",
+    cod: yes(row.cod, row.cash),
+    prepaid: yes(row.pre_paid),
+    city: row.district ?? row.city ?? row.center?.[0]?.cn ?? "",
+    // Staging answers a numeric placeholder here; only a real state code is shown.
+    state: /^[A-Za-z]{2,3}$/.test(state) ? state.toUpperCase() : "",
   };
 }
 
