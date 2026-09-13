@@ -36,13 +36,20 @@ const MARKS: Record<ProviderId, () => ReactElement> = {
 };
 
 /**
- * The provider buttons, and the divider that introduces the email form below
- * them. Renders nothing at all until credentials are configured, so the store
- * never shows a sign-in route that cannot complete.
+ * The provider buttons, shown beneath the form rather than above it.
+ *
+ * Google draws its own button and caps it at 400px wide and 40px tall, and
+ * nothing can change that. With the providers at the top of the page, that
+ * button sat a whole form away from the one that submits it, and the two never
+ * looked like a pair. Below the form they are adjacent, at the same width and
+ * the same height, so they read as two ways of doing one thing.
+ *
+ * Renders nothing at all until credentials are configured, so the store never
+ * shows a sign-in route that cannot complete.
  */
 export function SocialSignIn({
   next,
-  divider = "or continue with email",
+  divider = "or continue with",
 }: {
   next?: string;
   divider?: string;
@@ -53,8 +60,14 @@ export function SocialSignIn({
   const query = next ? `?next=${encodeURIComponent(next)}` : "";
 
   return (
-    <div className="mb-5 sm:mb-7">
-      <div className="space-y-2 sm:space-y-2.5">
+    <div>
+      <div className="flex items-center gap-3 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-ink-400">
+        <span className="h-px flex-1 bg-hairline" />
+        {divider}
+        <span className="h-px flex-1 bg-hairline" />
+      </div>
+
+      <div className="mt-4 space-y-2">
         {providers.map(({ id, label }) => {
           const Mark = MARKS[id];
           const start = `/api/auth/${id}/start${query}`;
@@ -77,9 +90,9 @@ export function SocialSignIn({
             <a
               key={id}
               href={start}
-              // Exactly the Sign in button's box — full width, 48px, the same
-              // square corner — so the two read as one set of controls.
-              className="tap flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-4 text-[13.5px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100 sm:px-6 sm:text-[14px]"
+              // 40px and square, the same as Google's own button beside it and
+              // the same as the submit button above.
+              className="tap flex h-10 w-full items-center justify-center gap-3 border border-ink-950 bg-ink-950 px-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-6"
             >
               <Mark />
               Continue with {label}
@@ -94,7 +107,7 @@ export function SocialSignIn({
 
       {/* The email form takes consent with a checkbox; a provider sign-up skips
           that form entirely, so the acknowledgement has to sit with the buttons. */}
-      <p className="mt-3 text-[11.5px] leading-relaxed text-ink-400">
+      <p className="mt-3 text-[11px] leading-relaxed text-ink-400">
         Continuing with a provider means you accept our{" "}
         <Link href="/legal/terms" className="text-ink-600 underline underline-offset-2 hover:text-brand-700">
           terms of service
@@ -105,12 +118,6 @@ export function SocialSignIn({
         </Link>
         .
       </p>
-
-      <div className="mt-4 flex items-center gap-3 text-[11.5px] text-ink-400 sm:mt-6 sm:text-[12px]">
-        <span className="h-px flex-1 bg-hairline" />
-        {divider}
-        <span className="h-px flex-1 bg-hairline" />
-      </div>
     </div>
   );
 }

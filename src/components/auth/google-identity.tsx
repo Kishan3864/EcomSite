@@ -273,9 +273,10 @@ export function GoogleButton({
       {!rendered && (
         <a
           href={href}
-          // Exactly the Sign in button's box — full width, 48px, the same
-          // square corner — so the two read as one set of controls.
-          className="tap flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-4 text-[13.5px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100 sm:px-6 sm:text-[14px]"
+          // The same box Google's button will take when it arrives: 40px,
+          // square, black — so the swap from one to the other does not move
+          // anything on the page.
+          className="tap flex h-10 w-full items-center justify-center gap-3 border border-ink-950 bg-ink-950 px-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-6"
         >
           {children}
         </a>

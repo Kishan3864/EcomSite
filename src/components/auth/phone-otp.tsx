@@ -233,7 +233,7 @@ function OtpSteps({
         >
           <MobileInput id={`${idPrefix}-phone`} value={phone} onChange={setPhone} invalid={Boolean(error)} />
         </Field>
-        <Button type="submit" size="lg" className="w-full" loading={pending} disabled={countdown.left > 0}>
+        <Button type="submit" size="lg" className="h-10 w-full" loading={pending} disabled={countdown.left > 0}>
           {pending ? "Sending code…" : countdown.left > 0 ? `Try again in ${countdown.left}s` : "Get OTP"}
         </Button>
         {footnote}
@@ -281,7 +281,7 @@ function OtpSteps({
         />
       </Field>
 
-      <Button type="submit" size="lg" className="w-full" loading={pending}>
+      <Button type="submit" size="lg" className="h-10 w-full" loading={pending}>
         {pending ? "Checking…" : submitLabel}
       </Button>
 
@@ -396,7 +396,7 @@ function PhoneProfileStep({ next }: { next?: string }) {
           placeholder="you@example.in"
         />
       </Field>
-      <Button type="submit" size="lg" className="w-full" loading={pending}>
+      <Button type="submit" size="lg" className="h-10 w-full" loading={pending}>
         {pending ? "Creating your account…" : "Create my account"}
       </Button>
     </form>

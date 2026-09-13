@@ -26,7 +26,7 @@ const TONES = ["bg-ink-200", "bg-sale-500", "bg-gold-400", "bg-brand-400", "bg-b
 function CreateButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" size="lg" className="w-full" loading={pending}>
+    <Button type="submit" size="lg" className="h-10 w-full" loading={pending}>
       <Check size={17} /> {pending ? "Creating your account…" : "Create my account"}
     </Button>
   );

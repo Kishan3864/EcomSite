@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Lock } from "lucide-react";
 import { BRAND, Logo } from "@/components/brand/logo";
 import { POOL, img } from "@/data/images";
 
@@ -63,6 +63,14 @@ export function AuthShell({
             </p>
 
             <div className="mt-5 space-y-4 sm:mt-8 sm:space-y-5">{children}</div>
+
+            {/* One line, and one that is true on every screen that uses this
+                shell: TLS on the wire, bcrypt at rest. Worth saying plainly on
+                the page where someone is deciding whether to trust us. */}
+            <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-ink-400 sm:mt-5">
+              <Lock size={11} className="shrink-0" />
+              Encrypted connection. Your password is never stored in plain text.
+            </p>
 
             <div className="mt-5 border-t border-hairline pt-4 text-[13px] text-ink-600 sm:mt-7 sm:pt-5 sm:text-[13.5px]">
               {footer}

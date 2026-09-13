@@ -87,13 +87,13 @@ export default async function LoginPage({
 
       {otp ? (
         <>
-          <SocialSignIn next={next} divider="or sign in with" />
           <LoginMethods phone={<PhoneOtpLogin next={next} />} email={<LoginForm next={next} />} />
+          <SocialSignIn next={next} divider="or sign in with" />
         </>
       ) : (
         <>
-          <SocialSignIn next={next} />
           <LoginForm next={next} />
+          <SocialSignIn next={next} divider="or sign in with" />
         </>
       )}
     </AuthShell>

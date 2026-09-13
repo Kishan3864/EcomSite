@@ -14,7 +14,7 @@ import { Form } from "@/components/ui/form";
 function SendButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" size="lg" className="w-full" loading={pending}>
+    <Button type="submit" size="lg" className="h-10 w-full" loading={pending}>
       <Send size={16} /> {pending ? "Sending…" : "Ask support to reset it"}
     </Button>
   );

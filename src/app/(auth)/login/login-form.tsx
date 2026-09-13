@@ -12,7 +12,7 @@ import { Form } from "@/components/ui/form";
 function SignInButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" size="lg" className="w-full" loading={pending}>
+    <Button type="submit" size="lg" className="h-10 w-full" loading={pending}>
       {pending ? "Signing you in…" : "Sign in"}
     </Button>
   );

@@ -42,8 +42,8 @@ export default async function RegisterPage({
         </>
       }
     >
-      <SocialSignIn next={next} />
       <RegisterForm next={next} />
+      <SocialSignIn next={next} divider="or sign up with" />
     </AuthShell>
   );
 }
