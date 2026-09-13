@@ -177,23 +177,32 @@ FACEBOOK_CLIENT_SECRET="..."
 → OAuth client ID → Web application. Paste under **Authorised redirect URIs**, exactly:
 
 ```
-https://ecom.flexypdf.com/api/auth/google/callback
+https://weekendcart.com/api/auth/google/callback
 ```
 
-Authorised JavaScript origin: `https://ecom.flexypdf.com`. The consent screen needs only
+Authorised JavaScript origin: `https://weekendcart.com`. The consent screen needs only
 the `email` and `profile` scopes. While it is still in Testing only the accounts listed
 there can sign in, so publish it before launch.
+
+Both must match `NEXT_PUBLIC_SITE_URL`, which is `https://weekendcart.com`. These read
+`ecom.flexypdf.com` until now, from before the rebrand — a redirect URI registered under
+the old hostname is exactly what Google answers with **Access blocked**.
 
 **Facebook** — developers.facebook.com → your app → Facebook Login → Settings → **Valid
 OAuth Redirect URIs**:
 
 ```
-https://ecom.flexypdf.com/api/auth/facebook/callback
+https://weekendcart.com/api/auth/facebook/callback
 ```
 
 Both callbacks are built from `NEXT_PUBLIC_SITE_URL`: leave it unset and the buttons stay
 hidden, set it wrong and the provider rejects the sign-in — keep it in step with the domain.
 Run `pm2 reload weekendcart` after editing `.env`.
+
+When a social sign-in fails, `npx tsx scripts/check-auth.ts` on the server says why:
+credentials set, the exact redirect URI to register, whether the provider is reachable from
+the box, and whether the id/secret pair is still accepted. The causes and their fixes are in
+**[docs/google-sign-in.md](../docs/google-sign-in.md)**.
 
 Google confirms whether an address is verified, so someone who signed up with a password
 and later uses Google lands in the same account. Facebook does not confirm it, so a
