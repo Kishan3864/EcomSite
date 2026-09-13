@@ -33,19 +33,22 @@ module.exports = {
         NODE_ENV: "production",
         PORT: port,
         /**
-         * Try IPv4 before IPv6 for every outbound connection this app makes.
+         * Try IPv6 before IPv4 for every outbound connection this app makes.
          *
-         * A box that has an IPv6 address but no working route to it will sit
-         * on the connect for a minute or more and then fail, rather than
-         * falling back — and Node resolves Google's endpoints to IPv6 first by
-         * default. That is a plausible reading of a token exchange that never
-         * answers while everything else about the setup is correct.
+         * Measured on this box, not guessed: a plain TCP connect to Google's
+         * token endpoint answers over IPv6 in 7ms and times out over IPv4
+         * after 10 seconds. Its IPv4 route out is broken; its IPv6 route is
+         * healthy. Node's fetch was picking the IPv4 address and giving up
+         * rather than trying the other one, which is why a Google sign-in
+         * failed while the console settings were perfectly correct.
          *
-         * It only changes the order. A host that is genuinely IPv6-only is
-         * still reached; nothing is switched off. On a healthy box this is a
-         * no-op.
+         * This only changes which family is tried first — an IPv4-only host is
+         * still reached, and `register()` in src/instrumentation.ts turns on
+         * Happy Eyeballs so a stalled family is abandoned for the other one
+         * within half a second either way. Revisit if the provider ever fixes
+         * IPv4: `npx tsx scripts/check-auth.ts` prints both families.
          */
-        NODE_OPTIONS: "--dns-result-order=ipv4first",
+        NODE_OPTIONS: "--dns-result-order=ipv6first",
         // Read by src/app/robots.ts and the environment badge: anything other
         // than "production" is closed to crawlers and marked in the corner.
         APP_ENV: appEnv,

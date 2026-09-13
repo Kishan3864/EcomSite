@@ -83,20 +83,40 @@ at once and says so, because asking again would only replay a single-use code.
 A retry that succeeds is written to the log, so an intermittent network shows
 up there even when no customer ever sees an error.
 
-The app is also started with `--dns-result-order=ipv4first`, so it tries IPv4
-before IPv6 for every outbound call. A machine with an IPv6 address and no
-working IPv6 route sits on the connect for a minute rather than falling back,
-and Node prefers IPv6 by default. The check's "Address families" lines show
-whether that is happening here: IPv4 connecting in milliseconds while IPv6
-hangs is the signature.
+### What was actually wrong on this server
 
-**The network cause is the likely one on this box.** It has already failed to
-reach `fonts.googleapis.com` during a build and `github.com` during a deploy,
-both timing out on connect while other hosts answered normally. Google's token
-endpoint is reached the same way, and if that connection cannot be opened, no
-Google sign-in can finish however correct the settings are. The check's
-reachability lines settle it in a few seconds. If they fail, it is a matter for
-the hosting provider, not for the console.
+Measured, not guessed. A plain TCP connection to Google's token endpoint:
+
+```
+✗ IPv4 — timed out (after 10008ms)
+✓ IPv6 2404:6800:4000:1025::5f — connected in 7ms
+```
+
+**This server's IPv4 route out is broken. Its IPv6 route is healthy.** Node was
+picking the IPv4 address, waiting, and giving up — so a Google sign-in failed
+while every setting in the console was correct. The same fault explains the
+build that could not fetch its fonts, and the deploy that could not reach
+GitHub (`github.com` publishes no IPv6 address at all, which is why forcing
+`-4` made no difference: IPv4 was the only road, and it is shut).
+
+Two changes make the app immune to it:
+
+- It starts with `--dns-result-order=ipv6first`, so the family that works is
+  tried first.
+- `src/instrumentation.ts` turns on **Happy Eyeballs** — when a name resolves
+  to both families, the second is tried half a second after the first instead
+  of waiting out a connection that will never open. Whichever family is healthy
+  wins the race. If IPv4 is repaired later, or IPv6 breaks instead, this keeps
+  working with nothing to change.
+
+> **Do not add an IPv4 precedence line to `/etc/gai.conf` on this box.** It
+> would force the broken family on everything — git, npm, curl and the app.
+> If one was added, remove it.
+
+The real repair is for the hosting provider: IPv4 outbound should work. Until
+it does, GitHub stays unreachable from the server, which is why deploys are
+pushed to the box rather than pulled from GitHub — see
+[deploy/README.md](../deploy/README.md).
 
 ## One hostname
 

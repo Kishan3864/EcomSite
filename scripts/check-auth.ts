@@ -63,12 +63,39 @@ async function tcp(host: string, family: 4 | 6) {
       socket.once("timeout", () => (socket.destroy(), reject(new Error("timed out"))));
       socket.once("error", (error) => (socket.destroy(), reject(error)));
     });
-    return ok(`IPv${family} ${address} — connected in ${Date.now() - started}ms`);
+    return { works: true, line: ok(`IPv${family} ${address} — connected in ${Date.now() - started}ms`) };
   } catch (error) {
     const why = error instanceof Error ? error.message : String(error);
-    const note = /ENOTFOUND|ENODATA/.test(why) ? "no address of this family (fine)" : why;
-    return (family === 6 ? warn : bad)(`IPv${family} — ${note} (after ${Date.now() - started}ms)`);
+    const absent = /ENOTFOUND|ENODATA/.test(why);
+    return {
+      works: false,
+      absent,
+      line: (absent ? warn : bad)(
+        `IPv${family} — ${absent ? "no address of this family (fine)" : why} (after ${Date.now() - started}ms)`,
+      ),
+    };
   }
+}
+
+/** Turns two connection results into the one sentence that matters. */
+function familyVerdict(v4: { works: boolean }, v6: { works: boolean }) {
+  if (v4.works && v6.works) return ok("both families work — routing is not the problem here.");
+  if (v6.works && !v4.works)
+    return warn(
+      "IPv4 out of this server is broken; IPv6 is healthy.\n" +
+        "    The app handles it (ipv6first + Happy Eyeballs), so sign-in works.\n" +
+        "    But github.com is IPv4-only, so `git pull` on this box cannot work until\n" +
+        "    the host fixes it — which is why deploys are pushed here instead.\n" +
+        "    Do NOT add an IPv4 precedence line to /etc/gai.conf: it would force the\n" +
+        "    broken family on everything.",
+    );
+  if (v4.works && !v6.works)
+    return warn(
+      "IPv6 out of this server is broken; IPv4 is healthy.\n" +
+        "    Change NODE_OPTIONS in deploy/ecosystem.config.cjs to\n" +
+        "    --dns-result-order=ipv4first and reload PM2.",
+    );
+  return bad("neither family can open a connection — this is a matter for the host.");
 }
 
 /** Can this box open a connection to that host at all? */
@@ -173,8 +200,11 @@ async function main() {
 
     console.log("\n  Address families (the token endpoint)");
     const tokenHost = new URL(p.tokenUrl).host;
-    console.log("  " + (await tcp(tokenHost, 4)));
-    console.log("  " + (await tcp(tokenHost, 6)));
+    const v4 = await tcp(tokenHost, 4);
+    const v6 = await tcp(tokenHost, 6);
+    console.log("  " + v4.line);
+    console.log("  " + v6.line);
+    console.log("  " + familyVerdict(v4, v6));
 
     console.log("\n  Credentials");
     console.log("  " + (await checkCredentials(p, clientId, secret)));

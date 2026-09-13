@@ -52,11 +52,19 @@ cd ~/ecom.flexypdf.com && bash deploy/rollback.sh
 
 ## Deploying without GitHub
 
-This VPS cannot open a connection to `github.com:443` — it resolves, then sits
-on the connect for two minutes and times out, over IPv4 and IPv6 alike, while
-`registry.npmjs.org` on the same port answers fine. Whatever the cause at the
-provider's end, a deploy that has to pull from GitHub is a deploy that depends
-on it being fixed.
+This VPS cannot open a connection to `github.com:443`. The cause is now
+measured rather than guessed: **its IPv4 route out is broken and its IPv6 route
+is healthy** — a TCP connect to Google's token endpoint answers over IPv6 in
+7ms and times out over IPv4 after 10 seconds (`npx tsx scripts/check-auth.ts`
+prints both). `github.com` publishes no IPv6 address at all, so IPv4 is the
+only road to it and that road is shut; forcing `-4` changed nothing for exactly
+that reason. `registry.npmjs.org` kept working because it is reachable over
+IPv6.
+
+Until the host repairs IPv4, a deploy that pulls from GitHub cannot run here.
+
+> Do **not** add an IPv4 precedence line to `/etc/gai.conf` on this box — it
+> would force the broken family on git, npm, curl and the app alike.
 
 So the code goes the other way. Your PC can reach GitHub *and* the server, so it
 pushes straight to the server, and the server's network never enters into it.
