@@ -1,23 +1,39 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 import { BRAND } from "@/components/brand/logo";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
 import { EnvironmentBadge } from "@/components/layout/environment-badge";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+/**
+ * The two typefaces, served from this repository rather than fetched.
+ *
+ * `next/font/google` downloads the files at build time, which quietly makes
+ * every production build depend on the build machine reaching
+ * fonts.googleapis.com. The VPS stopped being able to, and the build failed
+ * with the site half-deployed — a dependency on somebody else's uptime, in the
+ * one step that must not fail. The woff2 files (latin subset, variable weight)
+ * now live in ./fonts and are committed, so the build needs no network at all
+ * and the browser makes no request to Google either.
+ *
+ * Same files Google was serving, same subset. To refresh them, download the
+ * URLs in fonts/README.md and replace the two files.
+ */
+const jakarta = localFont({
+  src: "./fonts/plus-jakarta-sans-latin.woff2",
   variable: "--font-jakarta",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "200 800",
+  style: "normal",
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin"],
+const fraunces = localFont({
+  src: "./fonts/fraunces-latin.woff2",
   variable: "--font-fraunces",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: "400 700",
+  style: "normal",
 });
 
 export const metadata: Metadata = {

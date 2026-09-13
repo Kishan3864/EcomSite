@@ -56,8 +56,18 @@ npm ci --no-audit --no-fund
 
 # Migrations are not reversed: prisma migrate deploy only ever rolls forward,
 # and the schema an older build reads is almost always a superset it tolerates.
-step "Building"
-npm run build
+#
+# Built out of the way and swapped in, same as deploy.sh: a rollback is run
+# when the site is already in trouble, and rebuilding on top of what it is
+# still serving would take it off the air for the length of the build.
+step "Building (into .next-build)"
+rm -rf .next-build
+NEXT_DIST_DIR=.next-build npm run build
+
+step "Swapping the finished build into place"
+rm -rf .next-prev
+[ -d .next ] && mv .next .next-prev
+mv .next-build .next
 
 step "Reloading PM2 process '$APP_NAME'"
 if pm2 describe "$APP_NAME" >/dev/null 2>&1; then

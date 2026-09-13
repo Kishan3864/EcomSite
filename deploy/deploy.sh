@@ -15,15 +15,29 @@
 #   8. seeds the essentials only: first admin login and store settings.
 #      The demo catalogue is NOT loaded; `npm run db:seed:demo` does that, and
 #      it belongs on a development database only.
-#   9. builds the Next.js app — a failure here stops the deploy with the
-#      running site untouched, because PM2 is not reloaded until it passes
+#   9. builds the Next.js app into a directory the running site is NOT reading,
+#      so visitors see the old site, intact, for the whole of the build. Only a
+#      finished build is swapped in, by two renames.
 #  10. starts or zero-downtime-reloads the PM2 process
-#  11. health-checks the port, and tells you how to roll back if it fails
+#  11. health-checks the port; if it fails, puts the previous build straight
+#      back and reloads, so the shop is never left down
 #
 # It never touches nginx, other PM2 apps, or the other site's directory.
 set -euo pipefail
 
-APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+APP_DIR="${DEPLOY_APP_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+
+# Run from a copy of ourselves. bash reads a script as it goes, by byte offset,
+# so pulling a new version of this file half way through makes it carry on
+# reading at that offset in the *new* text — which is how a deploy can run two
+# halves of two different scripts. The copy cannot be pulled out from under us.
+if [ -z "${DEPLOY_REEXEC:-}" ]; then
+  SELF="$(mktemp)"
+  cp "$APP_DIR/deploy/deploy.sh" "$SELF"
+  DEPLOY_REEXEC=1 DEPLOY_APP_DIR="$APP_DIR" exec bash "$SELF" "$@"
+fi
+trap 'rm -f "$0"' EXIT
+
 cd "$APP_DIR"
 
 step() { printf '\n\033[1;36m▸ %s\033[0m\n' "$*"; }
@@ -101,8 +115,18 @@ npx prisma migrate deploy
 step "Seeding the essentials (admin login, store settings)"
 npm run db:seed
 
-step "Building"
-npm run build
+# The build goes somewhere the running site is not reading. This is the long
+# step — a minute or two — and for all of it the old build keeps serving every
+# visitor untouched. If it fails, nothing has moved and the deploy simply stops.
+step "Building (into .next-build — the live site keeps serving the old one)"
+rm -rf .next-build
+NEXT_DIST_DIR=.next-build npm run build
+
+# Two renames on the same filesystem: as close to instant as the disk allows.
+step "Swapping the finished build into place"
+rm -rf .next-prev
+[ -d .next ] && mv .next .next-prev
+mv .next-build .next
 
 step "Starting / reloading PM2 process '$APP_NAME'"
 mkdir -p logs
@@ -116,10 +140,26 @@ pm2 save >/dev/null
 step "Health check"
 sleep 3
 if curl -fsS -o /dev/null -w "  HTTP %{http_code} from http://127.0.0.1:$APP_PORT/\n" "http://127.0.0.1:$APP_PORT/"; then
+  echo
   echo "  Deployed. If nginx is not configured yet, see deploy/README.md."
 else
-  warn "The app did not answer on $APP_PORT."
-  warn "Logs:     pm2 logs $APP_NAME --lines 50"
-  warn "Roll back: bash deploy/rollback.sh $TARGET"
+  # It built but will not serve. Put the previous build back rather than leave
+  # the shop down while someone reads the logs.
+  warn "The app did not answer on $APP_PORT — putting the previous build back."
+  rm -rf .next-failed
+  mv .next .next-failed
+  if [ -d .next-prev ]; then
+    mv .next-prev .next
+    pm2 reload deploy/ecosystem.config.cjs --update-env
+    sleep 3
+    curl -fsS -o /dev/null -w "  HTTP %{http_code} from http://127.0.0.1:$APP_PORT/ (previous build)\n" \
+      "http://127.0.0.1:$APP_PORT/" || warn "The previous build is not answering either."
+  else
+    warn "There was no previous build to fall back to."
+  fi
+  echo
+  warn "The failed build is kept at .next-failed. Logs: pm2 logs $APP_NAME --lines 50"
+  warn "The code is still the new commit — to go back to the old one too:"
+  warn "  bash deploy/rollback.sh $TARGET"
   exit 1
 fi

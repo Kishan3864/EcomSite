@@ -1,5 +1,42 @@
 # Deploying WeekendCart
 
+## Every deploy, every time
+
+Two lines. Nothing else, ever.
+
+**Server (VPS)**
+
+```bash
+cd ~/ecom.flexypdf.com
+bash deploy/deploy.sh
+```
+
+That is the whole routine. The script takes the database backup itself, pulls
+`main`, installs, migrates, **builds into a directory the live site is not
+reading**, and only swaps the finished build in at the end. For the whole of
+the build — the slow part — visitors keep getting the old site, complete and
+styled. If the build fails, nothing was swapped and the site never changed. If
+the new build starts but does not answer, the script puts the previous one back
+by itself and reloads.
+
+Do not run `npm run build`, `pm2 restart` or `git pull` by hand on the server.
+Building by hand writes straight into the directory the live site is serving
+from, which is exactly how the shop ended up as unstyled HTML.
+
+Watch it afterwards:
+
+```bash
+pm2 logs weekendcart --lines 40
+```
+
+Roll the code back if something is wrong that the health check did not catch:
+
+```bash
+cd ~/ecom.flexypdf.com && bash deploy/rollback.sh
+```
+
+---
+
 Primary domain **weekendcart.com**, with **ecom.flexypdf.com** kept live on the
 same process as a secondary hostname.
 

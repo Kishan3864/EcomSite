@@ -97,6 +97,21 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  /**
+   * Where the build is written.
+   *
+   * `next start` serves chunks and prerendered pages out of this directory as
+   * requests come in, so building into it while the site is live rewrites the
+   * floor underneath the running process — and a build that then fails leaves
+   * it there, which is how a deploy turned the shop into unstyled HTML.
+   *
+   * `deploy/deploy.sh` sets NEXT_DIST_DIR to build somewhere else entirely and
+   * only moves the finished build into place, so the running site sees nothing
+   * until there is a complete one to swap to. Unset — every local `npm run
+   * dev` and `npm run build` — it is the usual `.next`.
+   */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+
   // Stop announcing the framework and its version in every response. Version
   // disclosure is the first step of picking a known exploit.
   poweredByHeader: false,
