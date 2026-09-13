@@ -234,9 +234,13 @@ export function GoogleButton({
           text: "continue_with",
           shape: "rectangular",
           logo_alignment: "left",
-          // Google caps this at 400 and ignores anything larger, which is why
-          // the form column above is 400 wide — see AuthShell.
-          width: Math.min(parent.clientWidth || 320, 400),
+          // Measured on the wrapper, not on the container: the container is
+          // empty at this moment and `empty:hidden` has it at display:none, so
+          // its own width is 0 and the button came out 320 wide — narrower
+          // than the submit button above it, which is exactly what it must
+          // not be. Google caps this at 400 and ignores anything larger, which
+          // is why the form column is 400 wide — see AuthShell.
+          width: Math.min(parent.parentElement?.clientWidth || parent.clientWidth || 320, 400),
         });
       } catch {
         return; // Leave ours showing; it is still a working link.
