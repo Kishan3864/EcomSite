@@ -102,7 +102,15 @@ step "Leaving $(git log -1 --format='%h — %s' "$PREVIOUS")"
 
 # ── 5. New code ───────────────────────────────────────────────────────────
 step "Pulling $BRANCH"
-git fetch --quiet origin
+# github.com answers on IPv6, and a box with an IPv6 address but no working
+# IPv6 route will sit on the connect for two minutes before giving up rather
+# than falling back. Asking for IPv4 explicitly is the same request over a road
+# that exists. If the retry also fails the network is genuinely down, and the
+# deploy stops here — before anything has been touched.
+if ! git fetch --quiet origin; then
+  warn "git fetch failed. Retrying over IPv4 only…"
+  git fetch -4 --quiet origin
+fi
 git reset --hard --quiet "origin/$BRANCH"
 git log -1 --format='  at %h — %s'
 
