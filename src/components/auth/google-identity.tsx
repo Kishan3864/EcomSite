@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useStore } from "@/store/store";
 
@@ -175,4 +175,89 @@ export function GooglePrompt({ next }: { next?: string }) {
   }, [next]);
 
   return null;
+}
+
+/**
+ * "Continue with Google", as Google's own button rather than a link to the
+ * redirect flow.
+ *
+ * The difference is where the work happens. The redirect flow sends the
+ * customer to Google and then makes *this server* call Google to redeem the
+ * code, while they wait — and on this box that call succeeds or times out more
+ * or less at random, which is what "sometimes it works" has meant all along.
+ * Google's button hands the browser a signed ID token instead; the server only
+ * checks the signature against keys it already holds, so nothing at sign-in
+ * time depends on this server reaching Google at all.
+ *
+ * Google draws its button in an iframe it controls, so it cannot be styled.
+ * Ours stays underneath, drawn exactly as before, and Google's sits invisibly
+ * on top of it taking the clicks. If GIS never loads — a blocked script, a
+ * browser that refuses third-party frames — nothing is overlaid and the button
+ * underneath is still a working link to the redirect flow.
+ */
+export function GoogleButton({
+  next,
+  href,
+  children,
+}: {
+  next?: string;
+  /** The redirect flow, still there for when Google's own button cannot load. */
+  href: string;
+  children: ReactNode;
+}) {
+  const host = useRef<HTMLDivElement>(null);
+  const [overlaid, setOverlaid] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    afterSignIn = () => window.location.assign(safePath(next, "/account"));
+
+    setupGoogle().then((id) => {
+      const parent = host.current;
+      if (cancelled || !id || !parent) return;
+      try {
+        id.renderButton(parent, {
+          type: "standard",
+          theme: "outline",
+          size: "large",
+          text: "continue_with",
+          shape: "rectangular",
+          logo_alignment: "center",
+          // Google caps this at 400. Anything wider than the button underneath
+          // would be clipped by the wrapper rather than overflowing it.
+          width: Math.min(parent.clientWidth || 320, 400),
+        });
+        setOverlaid(true);
+      } catch {
+        // Leave ours showing; the link underneath still works.
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [next]);
+
+  return (
+    <div className="relative">
+      <a
+        href={href}
+        // Exactly the Sign in button's box — full width, 48px, the same square
+        // corner — so the two read as one set of controls.
+        className="tap flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-4 text-[13.5px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100 sm:px-6 sm:text-[14px]"
+        // Once Google's button is on top, ours is decoration: keep it out of
+        // the tab order and off the screen reader, which reads Google's.
+        tabIndex={overlaid ? -1 : undefined}
+        aria-hidden={overlaid || undefined}
+      >
+        {children}
+      </a>
+      <div
+        ref={host}
+        className={`absolute inset-0 flex items-center justify-center overflow-hidden ${
+          overlaid ? "opacity-0" : "pointer-events-none"
+        }`}
+      />
+    </div>
+  );
 }

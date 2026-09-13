@@ -272,6 +272,25 @@ async function main() {
     console.log("  " + (await checkCredentials(p, clientId, secret)));
   }
 
+  console.log(head("Google signing keys (what a sign-in actually needs)"));
+  const { googleKeySet, hasGoogleKeys, refreshGoogleKeys } = await import(
+    "../src/lib/auth/google-keys"
+  );
+  if (await googleKeySet()) {
+    console.log(ok("available — verifying a sign-in opens no connection at all"));
+  } else if (await refreshGoogleKeys()) {
+    console.log(warn("fetched just now and written to .cache/google-jwks.json"));
+  } else {
+    console.log(
+      bad(
+        "no key set, and could not fetch one.\n" +
+          "    Google sign-in cannot work until this succeeds once. It retries every\n" +
+          "    30 minutes on its own — leave it and try again, or `pm2 reload weekendcart`.",
+      ),
+    );
+  }
+  if (hasGoogleKeys()) console.log("  Nothing at sign-in time waits on this server's network.");
+
   console.log(head("If a sign-in still fails"));
   console.log(`  pm2 logs weekendcart --lines 50 | grep '\\[auth:'`);
   console.log("  The callback now writes the provider's own reason to that log.\n");

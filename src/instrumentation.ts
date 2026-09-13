@@ -20,6 +20,6 @@ export async function register() {
   // Only the Node runtime has sockets; the edge runtime loads this too.
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
-  const { enableHappyEyeballs } = await import("./instrumentation-node");
-  enableHappyEyeballs();
+  const { startNodeRuntime } = await import("./instrumentation-node");
+  await startNodeRuntime();
 }

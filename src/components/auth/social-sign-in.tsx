@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactElement } from "react";
 import { configuredProviders, type ProviderId } from "@/lib/auth/oauth";
-import { GooglePrompt } from "@/components/auth/google-identity";
+import { GoogleButton, GooglePrompt } from "@/components/auth/google-identity";
 
 /** Brand marks, drawn inline — the shared social icons file has no login marks. */
 const MARKS: Record<ProviderId, () => ReactElement> = {
@@ -57,12 +57,26 @@ export function SocialSignIn({
       <div className="space-y-2 sm:space-y-2.5">
         {providers.map(({ id, label }) => {
           const Mark = MARKS[id];
+          const start = `/api/auth/${id}/start${query}`;
+
+          // Google's own button takes the click and hands us a signed token,
+          // so signing in needs nothing of this server's connection to Google.
+          // See GoogleButton. Facebook has no equivalent, and keeps the link.
+          if (id === "google") {
+            return (
+              <GoogleButton key={id} next={next} href={start}>
+                <Mark />
+                Continue with {label}
+              </GoogleButton>
+            );
+          }
+
           return (
             // A plain anchor: next/link would prefetch the route on hover and
             // start a handshake nobody asked for.
             <a
               key={id}
-              href={`/api/auth/${id}/start${query}`}
+              href={start}
               // Exactly the Sign in button's box — full width, 48px, the same
               // square corner — so the two read as one set of controls.
               className="tap flex h-12 w-full items-center justify-center gap-3 border border-ink-300 bg-surface px-4 text-[13.5px] font-semibold tracking-[-0.01em] text-ink-900 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 active:bg-ink-100 sm:px-6 sm:text-[14px]"

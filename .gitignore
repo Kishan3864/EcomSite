@@ -21,4 +21,7 @@ src/generated
 # release bookkeeping written on the server by deploy/deploy.sh
 .last-release
 .last-install
+
+# Google signing keys, cached so a sign-in never waits on the network
+.cache
 logs

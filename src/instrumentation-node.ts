@@ -1,13 +1,28 @@
 import { setDefaultAutoSelectFamily, setDefaultAutoSelectFamilyAttemptTimeout } from "node:net";
 
 /**
- * Happy Eyeballs, in its own file because it reaches for a Node socket API and
- * `instrumentation.ts` is also loaded by the edge runtime, which has none.
- * Only the Node runtime ever imports this.
+ * Node-only start-up work, in its own file because `instrumentation.ts` is also
+ * loaded by the edge runtime, which has neither sockets nor a filesystem.
  */
-export function enableHappyEyeballs() {
+export async function startNodeRuntime() {
+  // Happy Eyeballs: when a hostname resolves to both an IPv6 and an IPv4
+  // address, try the second family shortly after the first rather than waiting
+  // out a connection that is never going to open. This server's routes out are
+  // unreliable in both directions at different moments, so neither family can
+  // be trusted on its own.
   setDefaultAutoSelectFamily(true);
-  // Node's default is 250ms. Half a second is kinder to a slow-but-working
-  // first family, and still far below anything a person would notice.
   setDefaultAutoSelectFamilyAttemptTimeout(500);
+
+  // Google's signing keys, fetched now and kept fresh, so that verifying a
+  // sign-in never waits on a network call. Failures here are expected and
+  // harmless: the customer's first sign-in falls back to fetching them, and
+  // the timer tries again shortly.
+  const { refreshGoogleKeys } = await import("@/lib/auth/google-keys");
+
+  void refreshGoogleKeys();
+
+  // Every half hour, and soon after a failure. Unref'd so it never holds the
+  // process open by itself.
+  const timer = setInterval(() => void refreshGoogleKeys(), 30 * 60_000);
+  timer.unref?.();
 }
