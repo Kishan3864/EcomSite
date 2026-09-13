@@ -17,6 +17,8 @@ DNS: `ecom` → A → `187.127.141.107` (already added, TTL 3600).
 
 ## 0. One-time server prerequisites
 
+**Server (VPS)**
+
 ```bash
 node -v            # need 20+. If missing:  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && sudo apt install -y nodejs
 pm2 -v             # if missing:  sudo npm i -g pm2
@@ -24,6 +26,8 @@ psql --version     # Postgres 14+ must be installed and running (it already is i
 ```
 
 ## 1. Database (once)
+
+**Server (VPS)**
 
 ```bash
 sudo -u postgres psql <<'SQL'
@@ -33,6 +37,8 @@ SQL
 ```
 
 ## 2. Code + environment (once)
+
+**Server (VPS)**
 
 ```bash
 git clone https://github.com/Kishan3864/EcomSite.git ~/ecom.flexypdf.com
@@ -92,14 +98,24 @@ are sent back to the password form instead.
 
 ## 3. Deploy (first time and every update)
 
+**Server (VPS)**
+
 ```bash
 cd ~/ecom.flexypdf.com && bash deploy/deploy.sh
 ```
 
-The script pulls `main`, installs, runs `prisma migrate deploy`, seeds the catalogue only
-if it is empty, builds, and starts/reloads PM2 (`pm2 logs weekendcart` to watch).
+The script dumps the database, records the commit it is leaving, pulls `main`, installs,
+runs `prisma migrate deploy`, seeds **only** the essentials (first admin login and store
+settings), builds, and starts/reloads PM2 (`pm2 logs weekendcart` to watch). If the build
+fails it stops there, with the running site untouched.
+
+It never loads the demo catalogue. That catalogue is invented — eight departments of
+products that do not exist — and it belongs on a development database only:
+`npm run db:seed:demo`.
 
 ## 4. nginx + TLS (once)
+
+**Server (VPS)**
 
 ```bash
 sudo cp deploy/nginx.ecom.conf /etc/nginx/sites-available/ecom.flexypdf.com
@@ -112,39 +128,235 @@ Then open https://ecom.flexypdf.com and https://ecom.flexypdf.com/admin.
 
 ## 5. Keep it running
 
+**Server (VPS)**
+
 ```bash
 pm2 save && pm2 startup        # once — prints a command to run with sudo so PM2 survives reboots
 pm2 ls                         # "weekendcart" should be online
 pm2 logs weekendcart --lines 100
 ```
 
-## Updating later
+---
 
-Push to `main` on GitHub, then on the server: `cd ~/ecom.flexypdf.com && bash deploy/deploy.sh`.
-Schema changes ship as Prisma migrations in `prisma/migrations/` and are applied by the
-same command; nothing is ever dropped.
+# The staging site
+
+Now that the shop is live, changes stop going straight at it. There is a second copy of
+the same application on the same box — same code, its own database, its own PM2 process,
+its own hostname — where every change is rehearsed first. It costs one directory, one
+port and one database, and it is the difference between "the checkout is broken" and
+"the checkout was broken on staging for ten minutes".
+
+| | Live shop | Staging |
+| --- | --- | --- |
+| Branch | `main` | `staging` |
+| Directory | `~/ecom.flexypdf.com` | `~/staging.weekendcart.com` |
+| PM2 process | `weekendcart` | `weekendcart-staging` |
+| Port | `3040` | `3041` |
+| Database | `mayura` | `mayura_staging` |
+| Hostname | weekendcart.com | staging.weekendcart.com |
+| Indexed by Google | yes | never — `robots.txt` and `X-Robots-Tag` both say no |
+| Deploy command | `bash deploy/deploy.sh` | `bash deploy/deploy.sh staging` |
+
+Staging shows a red **STAGING** marker in the bottom-left corner of every page, storefront
+and admin panel alike, so there is never a question about which one you are looking at.
+That marker comes from `APP_ENV`, which `deploy/deploy.sh` sets for you.
+
+## Setting it up (once)
+
+DNS first, before anything else: `staging` → A → `187.127.141.107`.
+
+**Server (VPS)** — its own database:
+
+```bash
+sudo -u postgres psql <<'SQL'
+CREATE ROLE mayura_staging WITH LOGIN PASSWORD 'CHANGE-ME-different-password';
+CREATE DATABASE mayura_staging OWNER mayura_staging;
+SQL
+```
+
+**Server (VPS)** — its own checkout and environment:
+
+```bash
+git clone https://github.com/Kishan3864/EcomSite.git ~/staging.weekendcart.com
+cd ~/staging.weekendcart.com
+git checkout -b staging origin/staging 2>/dev/null || git checkout staging
+cp .env.example .env
+nano .env
+```
+
+Set in that `.env` — note every value differs from production:
+
+```
+DATABASE_URL="postgresql://mayura_staging:CHANGE-ME-different-password@localhost:5432/mayura_staging?schema=public"
+AUTH_SECRET="<a different 64 random chars>"
+NEXT_PUBLIC_SITE_URL="https://staging.weekendcart.com"
+ADMIN_SEED_EMAIL="<your email>"
+ADMIN_SEED_PASSWORD="<a password you do not use on production>"
+RAZORPAY_KEY_ID="rzp_test_xxxxxxxxxxxx"   # test keys only — never the live pair
+```
+
+`deploy/deploy.sh staging` refuses to run if `DATABASE_URL` still points at the production
+database, so a copy-pasted `.env` cannot quietly write to the live shop.
+
+**Server (VPS)** — first deploy, then nginx and TLS:
+
+```bash
+cd ~/staging.weekendcart.com && bash deploy/deploy.sh staging
+sudo cp deploy/nginx.staging.conf /etc/nginx/sites-available/staging.weekendcart.com
+sudo ln -s /etc/nginx/sites-available/staging.weekendcart.com /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d staging.weekendcart.com
+pm2 save
+```
+
+Worth doing straight after: put staging behind a password. Uncomment the two `auth_basic`
+lines in the vhost once the file exists.
+
+**Server (VPS)**
+
+```bash
+sudo apt install -y apache2-utils
+sudo htpasswd -c /etc/nginx/.htpasswd-staging weekendcart
+sudo nano /etc/nginx/sites-available/staging.weekendcart.com   # uncomment auth_basic + auth_basic_user_file
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+---
+
+# The release workflow
+
+Three branches, one direction of travel. Nothing reaches `main` that has not run on
+staging.
+
+```
+feature branch  →  staging  →  main
+   (your work)     (rehearsal)  (the live shop)
+```
+
+**Windows** — do the work:
+
+```powershell
+git checkout main
+git pull
+git checkout -b change/short-name
+# …edit, then:
+npm run build          # it must build locally before it goes anywhere
+git add -A
+git commit -m "What changed, in one line"
+```
+
+**Windows** — send it to staging:
+
+```powershell
+git checkout staging
+git merge change/short-name
+git push origin staging
+```
+
+**Server (VPS)** — deploy staging and look at it:
+
+```bash
+cd ~/staging.weekendcart.com && bash deploy/deploy.sh staging
+```
+
+Open https://staging.weekendcart.com and walk the paths that matter: home, a category, a
+product, add to cart, checkout as far as payment, `/admin`. Only then:
+
+**Windows** — promote to live:
+
+```powershell
+git checkout main
+git merge staging
+git push origin main
+```
+
+**Server (VPS)** — deploy the live shop:
+
+```bash
+cd ~/ecom.flexypdf.com && bash deploy/deploy.sh
+```
+
+Rules worth keeping:
+
+- **`main` is only ever merged into, never committed to directly.** A commit made straight
+  on `main` has never run anywhere.
+- **Every deploy takes a database dump first.** It happens automatically; the path is
+  printed in the output.
+- **Migrations only roll forward.** `prisma migrate deploy` never drops or resets. If a
+  migration has to come out, restore the dump from immediately before it.
+- **Test keys on staging, live keys on production.** Staging's `.env` should never hold a
+  live Razorpay secret; a rehearsal that charges a real card is not a rehearsal.
 
 ## Backups
 
+Every deploy takes one. By hand, any time — and always before anything destructive:
+
+**Server (VPS)**
+
 ```bash
-pg_dump -U mayura -h localhost mayura -Fc > ~/backups/mayura-$(date +%F).dump
+cd ~/ecom.flexypdf.com && bash deploy/backup-db.sh
+ls -lh ~/backups
+```
+
+The fourteen most recent dumps per database are kept; older ones are pruned. Restore:
+
+**Server (VPS)**
+
+```bash
+pg_restore --clean --if-exists \
+  -d "postgresql://mayura:PASSWORD@localhost:5432/mayura" \
+  ~/backups/mayura-YYYYMMDD-HHMMSS.dump
+pm2 reload weekendcart
 ```
 
 ## Rollback
 
+Code only, and it takes about a minute:
+
+**Server (VPS)**
+
 ```bash
-cd ~/ecom.flexypdf.com && git checkout <previous-sha> && npm ci && npm run build && pm2 reload weekendcart
+cd ~/ecom.flexypdf.com && bash deploy/rollback.sh              # back to the previous release
+cd ~/ecom.flexypdf.com && bash deploy/rollback.sh production 77ed828   # or a specific commit
 ```
+
+The checkout ends up on a detached HEAD, pinned to that commit, until the next
+`deploy/deploy.sh` puts it back on `main`. Fix the problem on a branch, take it through
+staging, and deploy again.
+
+## Clearing the demo catalogue
+
+The store shipped with an invented catalogue so the pages had something to render. Before
+the first real product goes up, it has to go. **Back up first** — this cannot be undone.
+
+**Server (VPS)**
+
+```bash
+cd ~/ecom.flexypdf.com
+bash deploy/backup-db.sh
+npx tsx scripts/reset-store.ts          # dry run: shows exactly what would go
+npx tsx scripts/reset-store.ts --yes    # do it
+pm2 reload weekendcart
+```
+
+It deletes products, categories, brands, banners, offers, reviews, and every customer with
+their orders and returns. It keeps admin logins, store settings, newsletter subscribers and
+contact messages — nothing a real person has given you.
+
+Afterwards the storefront renders its opening layout: a typographic hero, and a plain note
+where the shelves will be. Add a category in `/admin`, then a product, and the homepage
+fills itself in — one product is shown as a full spread, a handful as a single grid, and
+the full eight-band composition returns on its own at ten. Nothing to switch on.
 
 ## Ports and names used
 
-| Thing | Value |
-| --- | --- |
-| App directory | `~/ecom.flexypdf.com` |
-| PM2 process | `weekendcart` |
-| Port | `3040` |
-| nginx vhost | `/etc/nginx/sites-available/ecom.flexypdf.com` |
-| Database | `mayura` (role `mayura`) |
+| Thing | Live shop | Staging |
+| --- | --- | --- |
+| App directory | `~/ecom.flexypdf.com` | `~/staging.weekendcart.com` |
+| PM2 process | `weekendcart` | `weekendcart-staging` |
+| Port | `3040` | `3041` |
+| nginx vhost | `/etc/nginx/sites-available/ecom.flexypdf.com` | `/etc/nginx/sites-available/staging.weekendcart.com` |
+| Database | `mayura` (role `mayura`) | `mayura_staging` (role `mayura_staging`) |
 
-Change the port in `deploy/ecosystem.config.cjs` and `deploy/nginx.ecom.conf` together if
-3040 is taken (`ss -ltn | grep 3040`).
+Ports come from `APP_PORT` in `deploy/deploy.sh`. Change one there and in the matching
+nginx vhost together if it is taken (`ss -ltn | grep 3040`).

@@ -374,8 +374,22 @@ async function listActive(args: Prisma.ProductFindManyArgs): Promise<Product[]> 
 export const getTrending = (limit = 10) =>
   listActive({ where: { badges: { has: "TRENDING" } }, orderBy: { soldCount: "desc" }, take: limit });
 
-export const getBestsellers = (limit = 10) =>
-  listActive({ where: { badges: { has: "BESTSELLER" } }, orderBy: { soldCount: "desc" }, take: limit });
+/**
+ * Badged bestsellers, falling back to what actually sells.
+ *
+ * The badge is set by hand in the admin panel. A new catalogue has none, and a
+ * homepage band that stays empty until someone discovers a checkbox is a band
+ * that never appears — so below a useful number we rank by units sold instead.
+ */
+export async function getBestsellers(limit = 10) {
+  const badged = await listActive({
+    where: { badges: { has: "BESTSELLER" } },
+    orderBy: { soldCount: "desc" },
+    take: limit,
+  });
+  if (badged.length >= Math.min(4, limit)) return badged;
+  return listActive({ orderBy: [{ soldCount: "desc" }, { rating: "desc" }], take: limit });
+}
 
 export const getNewArrivals = (limit = 10) =>
   listActive({ orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }], take: limit });
@@ -501,6 +515,25 @@ export async function getOffer(code: string): Promise<Offer | null> {
   if (!row || !row.isActive) return null;
   return toOffer(row);
 }
+
+/* ---------------------------- Catalogue size ------------------------ */
+
+/**
+ * How much catalogue there is to merchandise with.
+ *
+ * The homepage asks before it decides what to render: a shop with two real
+ * products cannot fill eight bands, and padding them out with the same two
+ * products repeated reads as an empty shop pretending otherwise.
+ */
+export const getCatalogueSize = cache(
+  async (): Promise<{ products: number; categories: number }> => {
+    const [products, categories] = await Promise.all([
+      db.product.count({ where: ACTIVE }),
+      db.category.count({ where: { isActive: true } }),
+    ]);
+    return { products, categories };
+  },
+);
 
 /* ------------------------------ Banners ----------------------------- */
 

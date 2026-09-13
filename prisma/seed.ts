@@ -1,12 +1,23 @@
 /**
- * Seeds the database from the mock catalogue that shipped with phase 1.
+ * Seeds the database.
+ *
+ * Two modes, because a live shop and a development copy need different things
+ * in it. By default only the essentials go in — the first admin login and the
+ * store settings — which is all a real store wants: its catalogue is its own,
+ * entered through the admin panel.
+ *
+ *   npm run db:seed          essentials only (safe on production)
+ *   npm run db:seed:demo     essentials + the invented phase-1 catalogue
+ *
+ * The demo catalogue is eight departments of products that do not exist. It is
+ * there so the storefront has something to render while it is being built, and
+ * it must never be loaded into a database customers can see. `deploy/deploy.sh`
+ * runs the default mode only.
  *
  * Idempotent: every row is upserted on its natural key (slug, code, email,
  * order number), so it is safe to run again after a schema change. Seeded rows
  * keep the mock ids (p1, c1, b1 …) so cross-references stay trivially valid;
  * anything created later through the admin panel gets a cuid.
- *
- *   npm run db:seed
  */
 import "dotenv/config";
 import { BUSINESS, formatAddress, isGstRegistered } from "../src/config/business";
@@ -20,7 +31,7 @@ import {
   type VariantType,
 } from "../src/generated/prisma/client";
 
-import { financialYear, gstinState, invoiceNumberFor, stateCode } from "../src/lib/gst";
+import { gstinState, invoiceNumberFor, stateCode } from "../src/lib/gst";
 import { brands, categories } from "../src/data/taxonomy";
 import { products } from "../src/data/products";
 import { questions, reviews } from "../src/data/reviews";
@@ -477,8 +488,13 @@ async function seedOrders(customerId: string) {
 
     // The serial is unique across the financial year, and this database may
     // already hold invoices raised through checkout, so it is counted afresh.
+    // The prefix comes from the numbering helper rather than being spelled out
+    // here: it was hard-coded as "MYR/" and stayed that way through the rename
+    // to WeekendCart, so the count matched nothing, every demo order asked for
+    // serial 1, and the second one collided on the unique index.
+    const prefix = invoiceNumberFor(placedAt, 0).replace(/\d+$/, "");
     const issued = await db.order.count({
-      where: { invoiceNumber: { startsWith: `MYR/${financialYear(placedAt).label}/` } },
+      where: { invoiceNumber: { startsWith: prefix } },
     });
 
     await db.order.create({
@@ -654,8 +670,23 @@ async function seedSettings() {
   log("settings", Object.keys(settings).length);
 }
 
+/** The invented catalogue only loads when it is asked for, by name. */
+const withDemo = process.argv.includes("--demo") || process.env.SEED_DEMO === "1";
+
 async function main() {
-  console.log("Seeding " + BUSINESS.brandName + "\n");
+  console.log("Seeding " + BUSINESS.brandName + (withDemo ? " with the demo catalogue" : "") + "\n");
+
+  await seedAdmin();
+  await seedSettings();
+
+  if (!withDemo) {
+    console.log("\nDone — essentials only.");
+    console.log("The catalogue is yours to enter: sign in at /admin and add a category, then a");
+    console.log("product. To load the sample catalogue on a development database instead, run");
+    console.log("  npm run db:seed:demo\n");
+    return;
+  }
+
   await seedBrands();
   await seedCategories();
   await seedProducts();
@@ -664,8 +695,6 @@ async function main() {
   const customer = await seedCustomer();
   await seedOrders(customer.id);
   await seedReturns(customer.id);
-  await seedAdmin();
-  await seedSettings();
   console.log("\nDone.");
 }
 

@@ -8,18 +8,41 @@ import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowUpRight, Clock, Search, Tag, TrendingUp, X } from "lucide-react";
 import { searchDocs, type SearchDoc, type SearchHit } from "@/lib/search-index";
-import { popularSearches, trendingSearches } from "@/data/marketing";
 import { useStore } from "@/store/store";
 import { cn, formatINR } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
-const ROTATING = [
-  "Search for cotton kurtas",
-  "Search for wireless earbuds",
-  "Search for triply kadai",
-  "Search for running shoes",
-  "Search for vitamin C serum",
-];
+/**
+ * Everything the empty panel offers is read out of the same index the field
+ * searches, rather than a hand-written list. A hand-written list goes stale the
+ * moment the catalogue changes — and on a new store every term in it returns
+ * nothing, which is the worst first impression a search box can make.
+ */
+function useSuggestions(docs: SearchDoc[]) {
+  return useMemo(() => {
+    const browse = docs
+      .filter((d) => d.hit.type === "category")
+      .slice(0, 6)
+      .map((d) => d.hit);
+
+    // Category names first (short, and they always match), then product names
+    // to fill out the row on a catalogue that has more products than aisles.
+    const terms: string[] = [];
+    for (const type of ["category", "product"] as const) {
+      for (const d of docs) {
+        if (terms.length >= 8) break;
+        if (d.hit.type !== type) continue;
+        if (!terms.includes(d.hit.label)) terms.push(d.hit.label);
+      }
+    }
+
+    const placeholders = terms.length
+      ? terms.slice(0, 5).map((t) => `Search for ${t.toLowerCase()}`)
+      : ["Search the store"];
+
+    return { browse, terms, placeholders };
+  }, [docs]);
+}
 
 export function SearchBar({
   docs,
@@ -44,6 +67,7 @@ export function SearchBar({
   const router = useRouter();
   const reduce = usePrefersReducedMotion();
   const { recentSearches, dispatch } = useStore();
+  const { browse, terms, placeholders } = useSuggestions(docs);
 
   const hits = useMemo(
     () => (term.trim() ? searchDocs(docs, term, 9) : []),
@@ -53,11 +77,11 @@ export function SearchBar({
   useEffect(() => {
     if (term || variant === "sheet") return;
     const id = setInterval(
-      () => setPlaceholderIndex((i) => (i + 1) % ROTATING.length),
+      () => setPlaceholderIndex((i) => (i + 1) % placeholders.length),
       3600,
     );
     return () => clearInterval(id);
-  }, [term, variant]);
+  }, [term, variant, placeholders.length]);
 
   useEffect(() => {
     if (autoFocus) input.current?.focus();
@@ -152,7 +176,11 @@ export function SearchBar({
             aria-autocomplete="list"
             role="combobox"
             aria-controls="search-suggestions"
-            placeholder={variant === "sheet" ? "Search WeekendCart" : ROTATING[placeholderIndex]}
+            placeholder={
+              variant === "sheet"
+                ? "Search WeekendCart"
+                : placeholders[placeholderIndex % placeholders.length]
+            }
             // 16px on phones, or iOS zooms the page into the field on focus.
             className="min-w-0 flex-1 bg-transparent text-[16px] text-ink-900 outline-none placeholder:text-ink-400 sm:text-sm [&::-webkit-search-cancel-button]:hidden"
           />
@@ -229,19 +257,32 @@ export function SearchBar({
                     <p className="mt-1 text-[12.5px] text-ink-500 sm:text-xs">
                       Try a shorter term, or browse a category below.
                     </p>
-                    <div className="mt-4 flex flex-wrap justify-center gap-1.5">
-                      {popularSearches.slice(0, 5).map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => setTerm(s)}
-                          className="tap rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
+                    {terms.length > 0 && (
+                      <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+                        {terms.slice(0, 5).map((s) => (
+                          <button
+                            key={s}
+                            onClick={() => setTerm(s)}
+                            className="tap max-w-full truncate rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )
+              ) : recentSearches.length === 0 && browse.length === 0 && terms.length === 0 ? (
+                // Nothing indexed yet — an empty panel with three headings and
+                // no rows under them looks broken, so say what is true instead.
+                <div className="px-4 py-6 text-center sm:px-5 sm:py-8">
+                  <p className="text-[13.5px] font-medium text-ink-900 sm:text-sm">
+                    There is nothing to search yet
+                  </p>
+                  <p className="mt-1 text-[12.5px] text-ink-500 sm:text-xs">
+                    The first products go up shortly.
+                  </p>
+                </div>
               ) : (
                 <div className="p-3 sm:p-4">
                   {recentSearches.length > 0 && (
@@ -275,46 +316,51 @@ export function SearchBar({
                     </section>
                   )}
 
-                  <section className="mb-4 sm:mb-5">
-                    <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
-                      Trending now
-                    </h3>
-                    <ul className="grid grid-cols-2 gap-0.5">
-                      {trendingSearches.map((t) => (
-                        <li key={t.term} className="min-w-0">
-                          <Link
-                            href={t.href}
-                            onClick={() => {
-                              setOpen(variant === "sheet");
-                              onNavigate?.();
-                            }}
-                            className="tap flex items-center gap-2 rounded-lg px-2 py-2 text-[12.5px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-700 sm:gap-2.5 sm:px-2.5 sm:text-[13px]"
-                          >
-                            <TrendingUp size={13} className="shrink-0 text-brand-500" />
-                            <span className="min-w-0">{t.term}</span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
+                  {browse.length > 0 && (
+                    <section className="mb-4 sm:mb-5">
+                      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                        Browse the store
+                      </h3>
+                      <ul className="grid grid-cols-2 gap-0.5">
+                        {browse.map((t) => (
+                          <li key={t.href} className="min-w-0">
+                            <Link
+                              href={t.href}
+                              onClick={() => {
+                                setOpen(variant === "sheet");
+                                onNavigate?.();
+                              }}
+                              className="tap flex items-center gap-2 rounded-lg px-2 py-2 text-[12.5px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-700 sm:gap-2.5 sm:px-2.5 sm:text-[13px]"
+                            >
+                              <TrendingUp size={13} className="shrink-0 text-brand-500" />
+                              <span className="min-w-0 truncate">{t.label}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
 
-                  <section>
-                    <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
-                      Popular searches
-                    </h3>
-                    <ul className="flex flex-wrap gap-1.5">
-                      {popularSearches.map((s) => (
-                        <li key={s}>
-                          <button
-                            onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                            className="tap inline-flex items-center gap-1.5 rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-600 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
-                          >
-                            <Tag size={11} /> {s}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
+                  {terms.length > 0 && (
+                    <section>
+                      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                        Popular searches
+                      </h3>
+                      <ul className="flex flex-wrap gap-1.5">
+                        {terms.map((s) => (
+                          <li key={s} className="min-w-0 max-w-full">
+                            <button
+                              onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
+                              className="tap inline-flex max-w-full items-center gap-1.5 rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-600 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
+                            >
+                              <Tag size={11} className="shrink-0" />
+                              <span className="truncate">{s}</span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
                 </div>
               )}
             </div>

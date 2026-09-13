@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { BRAND } from "@/components/brand/logo";
 import { OrganizationJsonLd, WebsiteJsonLd } from "@/components/seo/json-ld";
+import { EnvironmentBadge } from "@/components/layout/environment-badge";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -96,6 +97,8 @@ export default function RootLayout({
         </a>
 
         {children}
+
+        <EnvironmentBadge />
 
         <OrganizationJsonLd />
         <WebsiteJsonLd />

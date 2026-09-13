@@ -14,3 +14,7 @@ next-env.d.ts
 # local dev database cluster + generated prisma client
 .pgdata
 src/generated
+
+# release bookkeeping written on the server by deploy/deploy.sh
+.last-release
+logs

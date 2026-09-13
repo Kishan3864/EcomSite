@@ -76,10 +76,80 @@ function BandHeader({
 /* ------------------------------------------------------------------ *
  *  1 — Category mosaic
  *  Two departments get real estate, the rest share a band beneath them.
+ *  Below four departments it falls back to an equal row (CategoryRow).
  * ------------------------------------------------------------------ */
+
+/** One to three departments, each given a full share of the row. */
+function CategoryRow({ categories }: { categories: Category[] }) {
+  const single = categories.length === 1;
+
+  return (
+    <section className="container-page py-7 sm:py-20">
+      <BandHeader
+        eyebrow={single ? "The department" : "The departments"}
+        title={single ? "What we stock" : "Where would you like to start?"}
+        href="/products"
+        linkLabel="All products"
+        className="mb-4 sm:mb-8"
+      />
+
+      <div
+        className={cn(
+          "grid gap-px border border-hairline bg-hairline",
+          categories.length === 2 && "sm:grid-cols-2",
+          categories.length === 3 && "sm:grid-cols-3",
+        )}
+      >
+        {categories.map((category, i) => (
+          <Link
+            key={category.slug}
+            href={`/c/${category.slug}`}
+            className={cn(
+              "tap group relative overflow-hidden bg-ink-100",
+              single ? "aspect-[16/10] sm:aspect-[21/9]" : "aspect-[16/10] sm:aspect-[4/3]",
+            )}
+          >
+            <Image
+              src={category.image.url}
+              alt=""
+              fill
+              priority={i === 0}
+              sizes={single ? "100vw" : "(min-width:640px) 50vw, 100vw"}
+              className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+            />
+            <span className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/25 to-transparent" />
+            <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 sm:gap-4 sm:p-8">
+              <span className="min-w-0">
+                {category.subcategories.length > 0 && (
+                  <span className="block text-[10.5px] font-semibold uppercase tracking-[0.2em] text-gold-300">
+                    {category.subcategories.length}{" "}
+                    {category.subcategories.length === 1 ? "collection" : "collections"}
+                  </span>
+                )}
+                <span className="mt-1.5 block font-display text-[20px] leading-tight tracking-[-0.02em] text-white sm:mt-2 sm:text-[32px]">
+                  {category.name}
+                </span>
+              </span>
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-white/40 text-white transition-colors duration-200 group-hover:border-white group-hover:bg-white group-hover:text-ink-950">
+                <ArrowUpRight size={17} />
+              </span>
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export function CategoryMosaic({ categories }: { categories: Category[] }) {
   if (categories.length === 0) return null;
+
+  // One, two or three departments cannot fill a mosaic built for eight: the
+  // lead tiles would take half a row each and leave bare hairline beside
+  // them. At that size they share the row as equals instead, at a size worth
+  // looking at — the mosaic returns on its own once there are four.
+  if (categories.length <= 3) return <CategoryRow categories={categories} />;
+
   const [first, second, ...rest] = categories;
 
   return (
@@ -315,6 +385,15 @@ export function DealsBoard({ products }: { products: ProductCardModel[] }) {
  *  No arrows, no rail. Everything visible, on one shared hairline grid.
  * ------------------------------------------------------------------ */
 
+/** Written out because Tailwind only sees class names it can read literally. */
+const SM_COLS = { 2: "sm:grid-cols-2", 3: "sm:grid-cols-3" } as const;
+const LG_COLS = {
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-5",
+} as const;
+
 export function ProductGrid({
   eyebrow,
   title,
@@ -336,9 +415,18 @@ export function ProductGrid({
 }) {
   if (products.length === 0) return null;
   const shown = products.slice(0, columns * 2);
+
+  // The grid narrows to what there is. A five-track row holding two cards
+  // leaves three cells of bare hairline, which reads as a shop that has run
+  // out rather than one that is small on purpose; with two products the row
+  // runs two across and the cards are simply larger.
+  const lgCols = Math.min(columns, Math.max(2, shown.length)) as 2 | 3 | 4 | 5;
+  const smCols = Math.min(3, Math.max(2, shown.length)) as 2 | 3;
+
   // Tablets run three across; a count that does not divide by three would
   // leave a half-empty last row of bare hairline, so those tiles sit out.
-  const tabletCount = shown.length < 3 ? shown.length : shown.length - (shown.length % 3);
+  const tabletCount =
+    shown.length < smCols ? shown.length : shown.length - (shown.length % smCols);
 
   return (
     <section className="container-page py-7 sm:py-20">
@@ -351,23 +439,14 @@ export function ProductGrid({
         className="mb-4 sm:mb-8"
       />
 
-      <div
-        className={cn(
-          "tile-grid grid-cols-2 sm:grid-cols-3",
-          columns === 5 ? "lg:grid-cols-5" : "lg:grid-cols-4",
-        )}
-      >
+      <div className={cn("tile-grid grid-cols-2", SM_COLS[smCols], LG_COLS[lgCols])}>
         {shown.map((product, i) => (
           <ProductCard
             key={product.id}
             product={product}
             className={i >= tabletCount ? "sm:max-lg:hidden" : undefined}
-            priority={priority && i < columns}
-            sizes={
-              columns === 5
-                ? "(min-width:1024px) 20vw, (min-width:640px) 33vw, 50vw"
-                : "(min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw"
-            }
+            priority={priority && i < lgCols}
+            sizes={`(min-width:1024px) ${Math.round(100 / lgCols)}vw, (min-width:640px) ${Math.round(100 / smCols)}vw, 50vw`}
           />
         ))}
       </div>
@@ -420,7 +499,60 @@ export function EditorialBand({ banner }: { banner?: Banner }) {
 }
 
 /* ------------------------------------------------------------------ *
- *  6 — Trust row
+ *  6 — Opening note
+ *  What stands in for the catalogue before there is one.
+ * ------------------------------------------------------------------ */
+
+export function OpeningNote({ hasCategories }: { hasCategories: boolean }) {
+  const points = [
+    {
+      title: "Stocked, not listed",
+      body: "We buy what we sell and hold it ourselves, so the first products go up only once they are on our shelves.",
+    },
+    {
+      title: "A short list, on purpose",
+      body: "The catalogue starts small and grows one product at a time. Nothing is here to pad the page out.",
+    },
+    {
+      title: "Ordering is already open",
+      body: "Accounts, delivery, GST invoicing and returns all work today — the moment a product is listed you can buy it.",
+    },
+  ];
+
+  return (
+    <section className="container-page py-10 sm:py-24">
+      <BandHeader
+        eyebrow="Before the shelves fill"
+        title={hasCategories ? "What goes up first" : "The store is being set up"}
+        description="We would rather show you three products we can actually ship than three hundred we cannot."
+        href="/contact"
+        linkLabel="Ask us anything"
+        className="mb-6 sm:mb-10"
+      />
+
+      <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-3">
+        {points.map((point, i) => (
+          <Reveal key={point.title} delay={i * 0.06}>
+            <div className="h-full bg-surface p-5 sm:p-8">
+              <span className="font-display text-[13px] tracking-[-0.01em] text-gold-700">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <p className="mt-2.5 font-display text-[18px] leading-snug tracking-[-0.02em] text-ink-950 sm:mt-3 sm:text-[21px]">
+                {point.title}
+              </p>
+              <p className="mt-2 text-[13px] leading-relaxed text-ink-500 sm:text-[13.5px]">
+                {point.body}
+              </p>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ *
+ *  7 — Trust row
  *  Typographic, not four icons in four boxes.
  * ------------------------------------------------------------------ */
 
