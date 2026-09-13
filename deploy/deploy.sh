@@ -147,6 +147,16 @@ else
   echo "$LOCK_HASH" > .last-install
 fi
 
+# Always, whether or not the install ran.
+#
+# The Prisma client is generated code, it is not in git, and it is built by the
+# postinstall hook — so skipping `npm ci` skipped it too. The client then went
+# on asking for columns a migration had just dropped, and every page that reads
+# an order answered with the error boundary. It costs under a second; it does
+# not get to depend on whether a dependency happened to change.
+step "Generating the database client"
+npx prisma generate
+
 step "Applying database migrations"
 npx prisma migrate deploy
 
