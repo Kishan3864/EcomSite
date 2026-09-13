@@ -385,6 +385,11 @@ where the shelves will be. Add a category in `/admin`, then a product, and the h
 fills itself in — one product is shown as a full spread, a handful as a single grid, and
 the full eight-band composition returns on its own at ten. Nothing to switch on.
 
+Putting the first real category and products in is its own runbook, written for the shop
+owner rather than a developer: **[docs/first-catalogue.md](../docs/first-catalogue.md)**.
+Read the photographs section before you start — the admin panel has no upload button, and
+an image address it does not accept renders as an empty card.
+
 ## Ports and names used
 
 | Thing | Live shop | Staging |
