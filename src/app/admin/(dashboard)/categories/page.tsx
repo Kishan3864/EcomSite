@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { ArrowDown, ArrowUp, Plus, Power, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";

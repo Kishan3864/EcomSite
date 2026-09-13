@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import Link from "next/link";
 import { ArrowRight, Headset, IndianRupee, PackageCheck, ShieldCheck } from "lucide-react";
 import { Breadcrumbs, SectionHeader } from "@/components/ui/primitives";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { ImageOff } from "lucide-react";
 import { cn, slugify } from "@/lib/utils";
 import { Notice, SubmitButton } from "@/components/admin/client";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { notFound } from "next/navigation";
 import { ExternalLink, Pencil } from "lucide-react";
 import { db } from "@/lib/db";

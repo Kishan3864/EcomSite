@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ChevronLeft, ChevronRight, Expand, Play, X, ZoomIn } from "lucide-react";

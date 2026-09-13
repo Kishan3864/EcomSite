@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { ArrowDown, ArrowUp, ImageOff, Loader2, Plus, Search, Trash2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

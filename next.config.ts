@@ -13,7 +13,8 @@ import type { NextConfig } from "next";
  * already shut at the source.
  *
  * Everything else is locked down: no plugins, no framing, no form posts to
- * third parties, and images only from the CDNs configured below.
+ * third parties. Images may come from any https host: the browser fetches
+ * remote ones directly (see src/lib/image-loader.ts).
  */
 const CSP = [
   "default-src 'self'",
@@ -31,7 +32,9 @@ const CSP = [
   "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://accounts.google.com/gsi/client",
   "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   "font-src 'self' data:",
-  "img-src 'self' data: blob: https://images.unsplash.com https://images.pexels.com https://cdn.pixabay.com https://cdn.razorpay.com https://badges.razorpay.com https://lh3.googleusercontent.com https://*.googleusercontent.com https://platform-lookaside.fbsbx.com",
+  // Any https host: a product photo may be a URL pasted into the admin panel,
+  // and the browser loads it directly (see src/lib/image-loader.ts).
+  "img-src 'self' data: blob: https:",
   // Checkout talks to the gateway directly from the browser, and reports its
   // own telemetry to lumberjack. Blocking either breaks the payment flow with
   // no visible error.
@@ -139,16 +142,16 @@ const nextConfig: NextConfig = {
   compress: true,
 
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "images.pexels.com" },
-      { protocol: "https", hostname: "cdn.pixabay.com" },
-    ],
+    // No remotePatterns, deliberately. The optimiser would download a remote
+    // image *from this server*, which cannot reach the internet reliably, and
+    // hang until nginx answered 504. Remote photos are instead left to the
+    // browser by src/components/ui/image.tsx, and a remote URL that somehow
+    // reaches the optimiser is refused at once rather than hanging.
     formats: ["image/avif", "image/webp"],
     deviceSizes: [360, 420, 640, 750, 828, 1080, 1200, 1440, 1920],
     imageSizes: [64, 96, 128, 200, 256, 320, 384],
-    // A remote image is content-addressed by URL; a month of caching saves the
-    // optimiser re-encoding the same photograph on every deploy.
+    // Uploads are content-addressed by key and never change; a month of caching
+    // saves the optimiser re-encoding the same photograph on every deploy.
     minimumCacheTTL: 2592000,
     // The optimiser will not process an SVG — one can carry script.
     dangerouslyAllowSVG: false,

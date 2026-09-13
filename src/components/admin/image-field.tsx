@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type DragEvent } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { ImageOff, Loader2, Trash2, Upload } from "lucide-react";
 import { inputCls } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";

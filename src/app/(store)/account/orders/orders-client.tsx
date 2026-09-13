@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { ArrowRight, Package, RotateCcw, Star } from "lucide-react";

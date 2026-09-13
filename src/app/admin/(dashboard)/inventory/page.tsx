@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { AlertTriangle, Boxes, Download, History, Layers, PackageX } from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";

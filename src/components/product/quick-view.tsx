@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import Link from "next/link";
 import { ArrowRight, Heart, Minus, Plus, ShieldCheck, Truck } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";

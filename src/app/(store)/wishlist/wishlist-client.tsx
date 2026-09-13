@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Heart, ShoppingBag, X } from "lucide-react";

@@ -116,7 +116,10 @@ function setupGoogle(): Promise<GsiId | null> {
         nonce: data.nonce,
         callback: onCredential,
         auto_select: false,
-        cancel_on_tap_outside: true,
+        // A tap elsewhere on the page leaves the prompt alone. With this on,
+        // Google aborts its own FedCM request at the first outside tap and
+        // logs the abort as an error in the console — see ONE_TAP_PATHS.
+        cancel_on_tap_outside: false,
         context: "signin",
         itp_support: true,
         use_fedcm_for_prompt: true,
@@ -137,6 +140,20 @@ function promptOnce(id: GsiId) {
 }
 
 /**
+ * Pages where a signed-out visitor is about to need an account: the bag, the
+ * checkout, the wishlist. The prompt is offered there and nowhere else.
+ *
+ * It used to appear on every page. Someone browsing a product taps the page,
+ * Google's prompt is dismissed by that tap, and Google's library then writes
+ * two red lines to the console — "The request has been aborted", "FedCM get()
+ * rejects with AbortError". Nothing is wrong when that happens, but it reads
+ * as if something is, and a prompt nobody asked for while merely looking at a
+ * kettle earns few sign-ins anyway. Where the prompt does appear, tapping
+ * outside no longer cancels it, so that abort cannot happen at all.
+ */
+const ONE_TAP_PATHS = /^\/(cart|checkout|wishlist)(\/|$)/;
+
+/**
  * The One Tap prompt for signed-out visitors, mounted once in the store chrome.
  * Skipped on the payment processing screen, where a sign-in popup would sit on
  * top of a checkout in progress.
@@ -147,7 +164,7 @@ export function GoogleOneTap() {
 
   useEffect(() => {
     if (prompted || !sessionChecked || customer) return;
-    if (pathname.startsWith("/checkout/processing")) return;
+    if (!ONE_TAP_PATHS.test(pathname) || pathname.startsWith("/checkout/processing")) return;
     afterSignIn = () => window.location.reload();
     setupGoogle().then((id) => {
       if (id) promptOnce(id);

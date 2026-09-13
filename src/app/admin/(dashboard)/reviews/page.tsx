@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import { Check, Eye, EyeOff, MessageCircleQuestion, Package, ShieldCheck, Star, Trash2, X } from "lucide-react";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";

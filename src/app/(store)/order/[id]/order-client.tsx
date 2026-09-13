@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";

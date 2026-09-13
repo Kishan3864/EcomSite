@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import Image from "next/image";
+import Image from "@/components/ui/image";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { motion } from "motion/react";
