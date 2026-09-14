@@ -34,10 +34,45 @@ function revalidateOrder(orderId: string) {
   revalidatePath("/account/orders");
 }
 
-const courierMessage = (error: unknown) =>
-  error instanceof DelhiveryError
-    ? `Delhivery: ${error.message}`
-    : "Delhivery could not be reached. Nothing was booked — try again in a moment.";
+/**
+ * Delhivery's refusals in words the owner can act on.
+ *
+ * Their raw messages are written for whoever wrote their API — long, doubled
+ * up, and ending in "contact client.support@delhivery.com" for things the
+ * owner can fix in a minute. The common ones are named here; anything else is
+ * passed through whole, because a message we do not recognise is more useful
+ * than one we have flattened.
+ */
+const KNOWN_FAILURES: [RegExp, string][] = [
+  [
+    /insufficient\s+balance|prepaid client manifest charge/i,
+    "Your Delhivery wallet is empty, so they would not create the shipment. Add money in Delhivery One → Finances → Wallet, then press Book again. Nothing was charged and the order is unchanged.",
+  ],
+  [
+    /(warehouse|pickup location).*(not|does not) exist|client warehouse/i,
+    "Delhivery does not recognise the pickup location name. It must match Delhivery One → Settings → Pickup Locations letter for letter — check DELHIVERY_PICKUP_LOCATION in .env.",
+  ],
+  [
+    /non[- ]?serviceable|not serviceable|pin.*not serviced/i,
+    "Delhivery does not deliver to this pincode. The order can still be sent another way — enter that courier and its tracking number below.",
+  ],
+  [
+    /phone|mobile/i,
+    "Delhivery rejected the phone number on this order. It needs a plain 10-digit Indian mobile — fix it on the order and book again.",
+  ],
+  [
+    /already exists|duplicate/i,
+    "Delhivery already has a shipment against this order number. Check Orders & Pickups on Delhivery One: if a waybill was created, type it into the AWB field below; if not, contact their support.",
+  ],
+];
+
+const courierMessage = (error: unknown) => {
+  if (!(error instanceof DelhiveryError)) {
+    return "Delhivery could not be reached. Nothing was booked — try again in a moment.";
+  }
+  const known = KNOWN_FAILURES.find(([pattern]) => pattern.test(error.message));
+  return known ? known[1] : `Delhivery: ${error.message}`;
+};
 
 export async function bookShipment(_prev: FormState, formData: FormData): Promise<FormState> {
   const session = await requireAdmin("MANAGER");
