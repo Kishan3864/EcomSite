@@ -18,6 +18,7 @@ export const ORDER_STATUSES: OrderStatus[] = [
 
 export const PAYMENT_STATUSES: PaymentStatus[] = [
   "PENDING",
+  "VERIFYING",
   "PAID",
   "COD_PENDING",
   "FAILED",
@@ -80,11 +81,16 @@ export function isPaymentMethod(value: string): value is PaymentMethod {
   return (PAYMENT_METHODS as string[]).includes(value);
 }
 
-/** `YYYY-MM-DD` in local time, for `<input type="date">` defaults. */
+/**
+ * `YYYY-MM-DD` for an `<input type="date">` default, in Indian time.
+ *
+ * Built from the server's own clock this lands a day out either side of
+ * midnight, because the server runs on UTC and the shop does not.
+ */
 export function toDateInput(d: Date | null | undefined) {
   if (!d) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  // en-CA gives exactly YYYY-MM-DD, which is what the input wants.
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(d);
 }
 
 /** Parses `YYYY-MM-DD` as local noon so the calendar day survives any timezone. */

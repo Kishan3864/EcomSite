@@ -187,6 +187,9 @@ const STATUS_TONES: Record<string, { tone: Tone; label: string }> = {
   RETURNED: { tone: "neutral", label: "Returned" },
   // payments
   PAID: { tone: "brand", label: "Paid" },
+  // Gold, not brand: money reported but not yet seen is not money received,
+  // and the colour should not let anyone read it as if it were.
+  VERIFYING: { tone: "gold", label: "Check bank" },
   COD_PENDING: { tone: "gold", label: "COD · unpaid" },
   FAILED: { tone: "sale", label: "Failed" },
   REFUNDED: { tone: "neutral", label: "Refunded" },
