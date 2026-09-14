@@ -29,7 +29,7 @@ import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
 import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
 import { upiConfigured } from "@/lib/payments/upi";
-import { expireStalePendingOrders } from "./order-expiry";
+import { expireStalePendingOrders, trimUnpaidOrders } from "./order-expiry";
 import { after } from "next/server";
 import { mailConfigured, sendMail } from "@/lib/mail";
 import { sendOrderConfirmation } from "./order-email";
@@ -110,23 +110,16 @@ export async function placeOrder(
   // reached a payment window — most often because the gateway could not be
   // reached at the time. Those are released after two minutes rather than
   // forty-five, so a retry is never refused for the earlier attempt's sake. A
-  // payment that lands late on a released order revives it (see markPaid).
+  // payment that lands late on a released order revives it.
   await expireStalePendingOrders({ customerId: session.id, olderThanMinutes: 2 });
   // A UPI order gets half a day before it is released — there is no payment
   // window to close, and the customer may pay from another phone hours later.
   await expireStalePendingOrders({ method: "UPI" });
-  const unpaid = await db.order.count({
-    where: {
-      customerId: session.id,
-      paymentStatus: "PENDING",
-      paymentMethod: { in: ["ONLINE", "UPI"] },
-    },
-  });
-  if (unpaid >= 3)
-    return {
-      ok: false,
-      error: "You have unpaid orders waiting. Pay for one, or wait a few minutes and try again.",
-    };
+  // Past a handful of unpaid orders, release this customer's oldest instead of
+  // refusing them a new one. Stock is what needs bounding, not the person —
+  // and on a shop whose UPI orders stay open for twelve hours, counting them
+  // and saying no locked people out of buying anything at all.
+  await trimUnpaidOrders(session.id);
 
   if (!input.lines?.length) return { ok: false, error: "Your bag is empty." };
   if (!input.contact?.name?.trim()) return { ok: false, error: "Contact name is required.", field: "name" };
