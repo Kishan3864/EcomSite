@@ -123,6 +123,7 @@ function CategorySpread({ category }: { category: Category }) {
             />
             <DepartmentGlyph
               icon={category.icon}
+              name={category.name}
               strokeWidth={1}
               className="relative h-full w-full text-ink-900"
             />
@@ -192,19 +193,29 @@ function CategoryRow({ categories }: { categories: Category[] }) {
         className="mb-6 sm:mb-10"
       />
 
+      {/* Ruled rows on a phone, tiles from 640px. A tile leans on its hover
+          state to say it is a link, and a phone has no hover — so there it is a
+          row with a chevron, which says the same thing without one. */}
       <div className={cn("tile-grid grid-cols-1", categories.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3")}>
         {categories.map((category) => (
           <Link
             key={category.slug}
             href={`/c/${category.slug}`}
-            className="tap group flex flex-col items-center justify-center gap-4 px-4 py-8 text-center transition-colors duration-200 [@media(hover:hover)]:hover:bg-ink-50"
+            className="tap group flex items-center gap-4 px-4 py-4 transition-colors duration-200 sm:flex-col sm:justify-center sm:gap-4 sm:py-8 sm:text-center [@media(hover:hover)]:hover:bg-ink-50"
           >
             <DepartmentGlyph
               icon={category.icon}
-              size={72}
-              className="text-ink-900 transition-colors duration-200 group-hover:text-brand-700"
+              name={category.name}
+              size={40}
+              className="shrink-0 text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:hidden"
             />
-            <span className="min-w-0">
+            <DepartmentGlyph
+              icon={category.icon}
+              name={category.name}
+              size={72}
+              className="hidden text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:block"
+            />
+            <span className="min-w-0 flex-1 sm:flex-none">
               <span className="block font-display text-[20px] leading-tight tracking-[-0.02em] text-ink-950">
                 {category.name}
               </span>
@@ -215,6 +226,7 @@ function CategoryRow({ categories }: { categories: Category[] }) {
                 </span>
               )}
             </span>
+            <ChevronRight size={16} className="shrink-0 text-ink-400 sm:hidden" />
           </Link>
         ))}
       </div>
@@ -234,6 +246,9 @@ function CategoryGrid({ categories }: { categories: Category[] }) {
         className="mb-6 sm:mb-10"
       />
 
+      {/* Two square tiles across on a phone rather than one long column: with
+          four departments or more the grid is the point, and a square is big
+          enough to read as a target without a hover state to help it. */}
       <div className="tile-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
         {categories.map((category) => (
           <Link
@@ -243,11 +258,13 @@ function CategoryGrid({ categories }: { categories: Category[] }) {
           >
             <DepartmentGlyph
               icon={category.icon}
+              name={category.name}
               size={56}
               className="text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:hidden"
             />
             <DepartmentGlyph
               icon={category.icon}
+              name={category.name}
               size={72}
               className="hidden text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:block"
             />

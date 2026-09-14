@@ -175,6 +175,56 @@ function BookOpenGlyph({ strokeWidth }: GlyphProps) {
   );
 }
 
+/* A front-loading appliance: the body, the control panel above the door, one
+ * dial. It is the mark for a department of appliances, which a plug is not — a
+ * plug is the mark for the wire you put in the wall. */
+function ApplianceGlyph({ strokeWidth }: GlyphProps) {
+  return (
+    <Marks
+      strokeWidth={strokeWidth}
+      main={["M12 8H36V40H12Z"]}
+      detail={["M12 16H36", "M18 20H30V34H18Z", "M28 12H32"]}
+    />
+  );
+}
+
+/* A kettle rather than a chef's hat: this shop sells the thing that boils the
+ * water, not the person using it. Lid, handle and spout are the three strokes
+ * that stop a rounded box being read as a bin. */
+function KettleGlyph({ strokeWidth }: GlyphProps) {
+  return (
+    <Marks
+      strokeWidth={strokeWidth}
+      main={["M16 16H32V36H16Z"]}
+      detail={["M20 12H28V16", "M32 20Q40 24 32 32", "M16 22L10 26"]}
+    />
+  );
+}
+
+/* A spray bottle for the cleaning half of the house. The three short ticks are
+ * the mist; without them the bottle reads as a fire extinguisher. */
+function SprayGlyph({ strokeWidth }: GlyphProps) {
+  return (
+    <Marks
+      strokeWidth={strokeWidth}
+      main={["M18 20H30V40H18Z"]}
+      detail={["M22 20V12H28V20", "M22 16H14", "M10 8H12", "M8 12H10", "M10 16H12"]}
+    />
+  );
+}
+
+/* A house, for a department that is about the home itself rather than any one
+ * kind of thing in it. */
+function HomeGlyph({ strokeWidth }: GlyphProps) {
+  return (
+    <Marks
+      strokeWidth={strokeWidth}
+      main={["M24 8L40 22V40H8V22Z"]}
+      detail={["M20 40V28H28V40"]}
+    />
+  );
+}
+
 /* The fallback. A department nobody has drawn a mark for is still a department
  * of things in boxes, so an open carton is honest rather than apologetic — far
  * better than a question mark or an empty cell. */
@@ -205,15 +255,76 @@ export const DEPARTMENT_GLYPHS: Record<string, (p: { strokeWidth: number }) => R
   dumbbell: DumbbellGlyph,
   "book-open": BookOpenGlyph,
   package: CartonGlyph,
+
+  // The appliance set, plus the Lucide spellings somebody is most likely to
+  // type into the admin panel for the same idea.
+  appliance: ApplianceGlyph,
+  "washing-machine": ApplianceGlyph,
+  washer: ApplianceGlyph,
+  refrigerator: ApplianceGlyph,
+  microwave: ApplianceGlyph,
+  kettle: KettleGlyph,
+  "coffee": KettleGlyph,
+  "cooking-pot": KettleGlyph,
+  utensils: KettleGlyph,
+  blender: KettleGlyph,
+  spray: SprayGlyph,
+  "spray-can": SprayGlyph,
+  brush: SprayGlyph,
+  broom: SprayGlyph,
+  home: HomeGlyph,
+  house: HomeGlyph,
 };
+
+/**
+ * The mark a piece of writing asks for, when nothing has chosen one for it.
+ *
+ * Subcategories carry no icon of their own, so every collection in a
+ * department used to inherit its parent's mark — four identical drawings in a
+ * row, which reads as a bug rather than as a family. Rather than add a field
+ * and an admin control for something the words already say, the name is read:
+ * "Kitchen appliances" asks for the kettle and "Home care" for the spray
+ * bottle, and anything that matches nothing falls back to whatever the caller
+ * had in mind.
+ *
+ * Deliberately blunt. It is a presentation nicety, not a taxonomy, and the
+ * moment it needs a rule it does not have, the honest answer is to give
+ * subcategories a real icon field.
+ */
+const KEYWORD_GLYPHS: [test: RegExp, glyph: string][] = [
+  [/kitchen|cook|chef|kettle|grind|mixer|blend|brew|food/i, "kettle"],
+  [/clean|care|vacuum|laundry|wash|hygiene|mop/i, "spray"],
+  [/appliance|machine|fridge|refriger|microwave/i, "appliance"],
+  [/home|living|house|decor|furnish/i, "home"],
+  [/electronic|gadget|tech|audio|computer|laptop|mobile/i, "cpu"],
+  [/fashion|cloth|apparel|wear|shirt/i, "shirt"],
+  [/furniture|sofa|seat/i, "sofa"],
+  [/beauty|skin|grooming|personal/i, "sparkles"],
+  [/jewel|gold|silver|ornament/i, "gem"],
+  [/fit|sport|gym|train|outdoor/i, "dumbbell"],
+  [/book|stationer|paper|read/i, "book-open"],
+];
+
+export function glyphNameFor(text: string): string | null {
+  for (const [test, glyph] of KEYWORD_GLYPHS) if (test.test(text)) return glyph;
+  return null;
+}
 
 export function DepartmentGlyph({
   icon,
+  name,
   size,
   strokeWidth,
   className,
 }: {
   icon: string;
+  /**
+   * What the thing is called. Read only when `icon` names no drawn mark, so an
+   * icon somebody chose in the admin panel always wins — but a department left
+   * on a default, or on a Lucide name nobody has drawn yet, still gets
+   * something better than the carton.
+   */
+  name?: string;
   size?: number;
   strokeWidth?: number;
   className?: string;
@@ -225,7 +336,9 @@ export function DepartmentGlyph({
   // the heavier weight, because the two mistakes are not equal — too heavy is
   // merely a bit blunt, too light at 20px is invisible.
   const weight = strokeWidth ?? (size !== undefined && size > 72 ? 1 : 1.5);
-  const Glyph = DEPARTMENT_GLYPHS[icon] ?? CartonGlyph;
+  const fallback = name ? glyphNameFor(name) : null;
+  const Glyph =
+    DEPARTMENT_GLYPHS[icon] ?? (fallback ? DEPARTMENT_GLYPHS[fallback] : undefined) ?? CartonGlyph;
 
   return (
     <Ink viewBox="0 0 48 48" size={size} strokeWidth={weight} className={className}>

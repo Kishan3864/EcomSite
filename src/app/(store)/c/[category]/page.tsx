@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { DepartmentGlyph } from "@/components/illustration/department-glyph";
+import { ChevronRight } from "lucide-react";
+import { DepartmentGlyph, glyphNameFor } from "@/components/illustration/department-glyph";
 import { ListingShell } from "@/components/listing/listing-shell";
 import { toCardModels } from "@/lib/card";
 import { parseQuery, type RawSearchParams } from "@/lib/query";
@@ -74,21 +75,33 @@ export default async function CategoryPage({
             makes no such promise, costs no round trip, and is the same mark the
             menu and the homepage now use. */}
         {category.subcategories.length > 0 && (
-          <div className="tile-grid grid-cols-2 sm:grid-cols-4">
+          /* One column of ruled rows on a phone, a row of tiles from 640px.
+             The tile depends on hover to say "this is a link", and a phone has
+             no hover — so on a phone it is a row with a chevron instead, which
+             says the same thing without one. */
+          <div className="tile-grid grid-cols-1 sm:grid-cols-4">
             {category.subcategories.map((sub) => (
               <Link
                 key={sub.slug}
                 href={`/c/${category.slug}/${sub.slug}`}
-                className="tap group flex flex-col items-center justify-center gap-2.5 px-3 py-5 text-center transition-colors duration-200 [@media(hover:hover)]:hover:bg-ink-50"
+                className="tap group flex items-center gap-3 px-4 py-3.5 transition-colors duration-200 sm:flex-col sm:justify-center sm:gap-2.5 sm:px-3 sm:py-5 sm:text-center [@media(hover:hover)]:hover:bg-ink-50"
               >
                 <DepartmentGlyph
-                  icon={category.icon}
-                  size={40}
-                  className="text-ink-900 transition-colors duration-200 group-hover:text-brand-700"
+                  icon={glyphNameFor(sub.name) ?? category.icon}
+                  name={sub.name}
+                  size={28}
+                  className="shrink-0 text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:hidden"
                 />
-                <span className="text-[13px] font-medium leading-[1.35] text-ink-900 sm:text-[13.5px]">
+                <DepartmentGlyph
+                  icon={glyphNameFor(sub.name) ?? category.icon}
+                  name={sub.name}
+                  size={40}
+                  className="hidden text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:block"
+                />
+                <span className="min-w-0 flex-1 text-[13.5px] font-medium leading-[1.35] text-ink-900 sm:flex-none">
                   {sub.name}
                 </span>
+                <ChevronRight size={15} className="shrink-0 text-ink-400 sm:hidden" />
               </Link>
             ))}
           </div>

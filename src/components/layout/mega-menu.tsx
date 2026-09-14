@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { DepartmentGlyph } from "@/components/illustration/department-glyph";
+import { DepartmentGlyph, glyphNameFor } from "@/components/illustration/department-glyph";
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -128,8 +128,13 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                           href={`/c/${active.slug}/${sub.slug}`}
                           className="group flex h-11 items-center gap-3 border-b border-hairline"
                         >
+                          {/* Its own mark, read from its own name. Every row
+                              carrying the department's mark made four
+                              identical drawings down one column, which reads
+                              as a fault rather than as a family. */}
                           <DepartmentGlyph
-                            icon={active.icon}
+                            icon={glyphNameFor(sub.name) ?? active.icon}
+                            name={sub.name}
                             size={24}
                             className="shrink-0 text-ink-400 transition-colors duration-200 group-hover:text-brand-700"
                           />
@@ -169,6 +174,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
               >
                 <DepartmentGlyph
                   icon={active.icon}
+                  name={active.name}
                   size={96}
                   className="text-ink-900 transition-colors duration-200 group-hover:text-brand-700"
                 />

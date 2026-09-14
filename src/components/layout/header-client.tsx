@@ -727,6 +727,7 @@ function MobileMenu({
                     keeps a 40px minimum so the target stays the size it was. */}
                 <DepartmentGlyph
                   icon={category.icon}
+                  name={category.name}
                   size={20}
                   className="shrink-0 text-ink-400"
                 />
