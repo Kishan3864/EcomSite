@@ -158,9 +158,12 @@ sent to the browser, never put in a form field, and never logged.
 
 ## Notes
 
-- **The CSP must allow PayU.** `form-action` in `next.config.ts` lists both
-  PayU hosts. Remove them and the browser blocks the payment form silently —
-  no error anywhere, every payment dead on the last click.
+- **The CSP must allow every PayU host, not just the one the form names.**
+  `form-action` in `next.config.ts` allows `https://*.payu.in`. It governs the
+  whole redirect chain, and posting to `test.payu.in/_payment` lands on
+  `apitest.payu.in/public/` — name only the first and the browser refuses the
+  second. The console then blames the URL the form named, which makes it look
+  like the policy is already correct when it is not.
 - **`NEXT_PUBLIC_SITE_URL` must be the real https origin.** PayU rejects a
   return URL that is not publicly reachable, and builds the surl/furl from it.
 - `PAYU_CLIENT_ID` / `PAYU_CLIENT_SECRET` are for PayU's newer REST APIs

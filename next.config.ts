@@ -24,11 +24,13 @@ const CSP = [
   // Checkout renders the bank and UPI pages inside an iframe it owns.
   "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com https://accounts.google.com/gsi/",
   "child-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
-  // The gateway hand-off is a form this site posts to PayU, and a bank's
-  // 3-D Secure page posts back through it. Without the gateway's hosts here
-  // the browser blocks that post silently and every payment dies on the last
-  // click, with nothing in any log to say why.
-  "form-action 'self' https://test.payu.in https://secure.payu.in https://api.razorpay.com https://checkout.razorpay.com",
+  // The gateway hand-off is a form this site posts to PayU. Every PayU host is
+  // allowed, not just the two the form points at, because form-action governs
+  // the whole redirect chain: posting to test.payu.in/_payment lands on
+  // apitest.payu.in/public/, and naming only the first host blocks the second.
+  // The failure is silent and looks like the site's own bug — the browser
+  // reports the URL the form named, not the redirect it actually refused.
+  "form-action 'self' https://payu.in https://*.payu.in https://api.razorpay.com https://checkout.razorpay.com",
   // Razorpay's checkout script. It is loaded from their CDN and cannot be
   // self-hosted: it is versioned by them and must stay current for card
   // network and UPI changes.
