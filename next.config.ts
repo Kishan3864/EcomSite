@@ -89,9 +89,14 @@ const SECURITY_HEADERS = [
   },
 
   // Keep this origin out of other tabs' process, and out of their reach.
-  // The gateway navigates the whole page rather than opening a popup, so
-  // nothing needs a handle back to this window.
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  //
+  // same-origin-allow-popups, not same-origin. Google Identity Services signs
+  // a customer in through a popup that has to hand the credential back to the
+  // window that opened it. Strict same-origin severs that handle: the popup
+  // opens, shows a blank page, and can never report anything — which is
+  // exactly how this broke once, when the setting was tightened on the
+  // assumption that nothing here used popups any more.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
 
   { key: "X-DNS-Prefetch-Control", value: "on" },
