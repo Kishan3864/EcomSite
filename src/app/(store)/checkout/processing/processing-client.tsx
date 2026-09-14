@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
@@ -11,49 +10,34 @@ import { Logo } from "@/components/brand/logo";
 import { buttonClasses } from "@/components/ui/button";
 import { useStore } from "@/store/store";
 import { placeOrder } from "@/services/commerce";
-import { confirmPayment, failPayment, paymentStatusOf, startPayment } from "@/services/payments";
 import { cn, formatINR } from "@/lib/utils";
-import { BUSINESS } from "@/config/business";
 
 /**
  * Checkout, from a staged basket to a paid order.
  *
  * The old version played four reassuring "contacting your bank" stages that
  * were pure animation, then created an order already marked paid. Now the
- * stages describe what is genuinely happening, and the order only becomes paid
- * when Razorpay says the money moved.
+ * stages describe what is genuinely happening, and an order becomes paid only
+ * where the money actually is: the gateway's verified answer, or a bank credit
+ * a person has seen.
  *
- * The flow is deliberately paranoid about the last mile. Razorpay's checkout
- * hands a success back to the browser, and that is checked — but a browser can
- * be closed, a phone can die, and a UPI collect can land two minutes after the
- * customer walks away. So the page also polls its own server, and the webhook
- * confirms the order whether or not anybody is still watching this screen.
+ * This page's job ends at the hand-off. Cash on delivery is confirmed here;
+ * UPI and the gateway each have a page of their own to go to, and the order
+ * they leave behind is real, unpaid and payable from the customer's account.
+ * Nothing about the money is decided on this screen.
  */
 
 type Phase =
   | "creating" // writing the order, still unpaid
-  | "opening" // asking the gateway for a payment session
-  | "waiting" // checkout is open, or the webhook is still to land
-  | "done"
+  | "opening" // handing over to whichever page takes the payment
+  | "done" // cash on delivery only; everything else leaves this page
   | "failed";
 
 type Failure = { message: string; needsAccount?: boolean };
 
-/** The slice of the Razorpay checkout API this page uses. */
-interface RazorpayCheckout {
-  open(): void;
-  on(event: string, handler: (payload: { error?: { description?: string } }) => void): void;
-}
-declare global {
-  interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => RazorpayCheckout;
-  }
-}
-
 const STAGE_LABEL: Record<Phase, { title: string; detail: string }> = {
   creating: { title: "Preparing your order", detail: "Reserving the items in your bag" },
-  opening: { title: "Opening secure payment", detail: "Handing over to Razorpay" },
-  waiting: { title: "Waiting for payment", detail: "Complete the payment in the window that opened" },
+  opening: { title: "Opening secure payment", detail: "Handing over to PayU" },
   done: { title: "Payment confirmed", detail: "Your order is placed" },
   failed: { title: "Payment not completed", detail: "" },
 };
@@ -65,8 +49,6 @@ export function ProcessingClient() {
 
   const [phase, setPhase] = useState<Phase>("creating");
   const [failure, setFailure] = useState<Failure | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [scriptReady, setScriptReady] = useState(false);
 
   const amount = pendingCheckout?.amount ?? null;
 
@@ -92,117 +74,11 @@ export function ProcessingClient() {
     [dispatch, router],
   );
 
-  /** Open Razorpay's checkout for an order that already exists as PENDING. */
-  const pay = useCallback(
-    async (id: string) => {
-      setPhase("opening");
-
-      const session = await startPayment(id);
-      if (!session.ok || !session.gatewayOrderId || !session.keyId) {
-        setFailure({ message: session.error ?? "We could not start the payment." });
-        setPhase("failed");
-        return;
-      }
-
-      if (!window.Razorpay) {
-        setFailure({
-          message:
-            "The payment window could not load. Check your connection or any ad blocker, then try again.",
-        });
-        setPhase("failed");
-        return;
-      }
-
-      setPhase("waiting");
-
-      const checkout = new window.Razorpay({
-        key: session.keyId,
-        order_id: session.gatewayOrderId,
-        amount: session.amountPaise,
-        currency: "INR",
-        name: BUSINESS.brandName,
-        description: `Order ${session.orderNumber}`,
-        prefill: session.prefill,
-        notes: { orderId: id },
-        theme: { color: "#0b1611" },
-        retry: { enabled: false },
-
-        handler: async (response: {
-          razorpay_order_id: string;
-          razorpay_payment_id: string;
-          razorpay_signature: string;
-        }) => {
-          const result = await confirmPayment({
-            orderId: id,
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            signature: response.razorpay_signature,
-          });
-
-          if (result.ok && result.status === "paid") {
-            finish(id);
-            return;
-          }
-          if (!result.ok) {
-            setFailure({ message: result.error ?? "This payment could not be verified." });
-            setPhase("failed");
-            return;
-          }
-          // Authorised but not yet settled. The poll below will catch it.
-          setPhase("waiting");
-        },
-
-        modal: {
-          escape: false,
-          ondismiss: async () => {
-            // Closing the window is not proof nothing was paid: a UPI collect
-            // can still be approved on the phone. Ask the server before
-            // declaring failure and releasing the stock.
-            const status = await paymentStatusOf(id);
-            if (status === "paid") {
-              finish(id);
-              return;
-            }
-            await failPayment({
-              orderId: id,
-              gatewayOrderId: session.gatewayOrderId,
-              reason: "Payment window closed before completion",
-            });
-            setFailure({
-              message:
-                "The payment window was closed before the payment completed. Nothing has been charged, and your bag is unchanged.",
-            });
-            setPhase("failed");
-          },
-        },
-      });
-
-      checkout.on("payment.failed", (payload) => {
-        setFailure({
-          message:
-            payload.error?.description ??
-            "The payment did not go through. Nothing has been charged.",
-        });
-        setPhase("failed");
-      });
-
-      checkout.open();
-    },
-    [finish],
-  );
-
   // Create the order, then pay for it.
   useEffect(() => {
     if (!hydrated || !pendingCheckout || started.current) return;
 
-    // Only the gateway needs Razorpay's script. Waiting for it on a UPI or
-    // cash-on-delivery order would hold the whole checkout hostage to a
-    // third-party script that may be slow, blocked, or — as on this server —
-    // unreachable altogether.
     const method = pendingCheckout.input.paymentMethod;
-    const needsGateway = method !== "cod" && method !== "upi";
-    if (needsGateway && !scriptReady) return;
-
     started.current = true;
 
     placeOrder(pendingCheckout.input)
@@ -212,8 +88,6 @@ export function ProcessingClient() {
           setPhase("failed");
           return;
         }
-
-        setOrderId(result.data.orderId);
 
         // Cash on delivery takes no gateway: the order is already confirmed.
         if (method === "cod") {
@@ -230,7 +104,11 @@ export function ProcessingClient() {
           return;
         }
 
-        await pay(result.data.orderId);
+        // Everything else is the gateway. PayU is reached by posting a signed
+        // form from the browser, so the hand-off is a page of its own rather
+        // than a modal this one has to keep alive.
+        dispatch({ type: "checkout/complete" });
+        router.replace(`/checkout/payu/${result.data.orderId}`);
       })
       .catch(() => {
         setFailure({
@@ -238,33 +116,7 @@ export function ProcessingClient() {
         });
         setPhase("failed");
       });
-  }, [hydrated, pendingCheckout, scriptReady, pay, finish, dispatch, router]);
-
-  /**
-   * Poll our own database, not the gateway.
-   *
-   * The webhook is what confirms an order, and it can arrive before, during or
-   * after the browser's callback. Polling our own record means whichever gets
-   * there first wins and the customer never waits on the slower one.
-   */
-  useEffect(() => {
-    if (phase !== "waiting" || !orderId) return;
-    let cancelled = false;
-
-    const id = setInterval(async () => {
-      const status = await paymentStatusOf(orderId);
-      if (cancelled) return;
-      if (status === "paid") {
-        clearInterval(id);
-        finish(orderId);
-      }
-    }, 3000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [phase, orderId, finish]);
+  }, [hydrated, pendingCheckout, finish, dispatch, router]);
 
   const stage = STAGE_LABEL[phase];
   const complete = phase === "done";
@@ -324,22 +176,6 @@ export function ProcessingClient() {
 
   return (
     <>
-      {/* Loaded before the order is created, so the window can open the instant
-          the gateway session exists rather than after a second round trip. */}
-      <Script
-        src="https://checkout.razorpay.com/v1/checkout.js"
-        strategy="afterInteractive"
-        onReady={() => setScriptReady(true)}
-        onLoad={() => setScriptReady(true)}
-        onError={() => {
-          setFailure({
-            message:
-              "The payment window could not load. Check your connection or any ad blocker, then try again.",
-          });
-          setPhase("failed");
-        }}
-      />
-
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
         <div className="w-full max-w-md">
           <div className="mb-5 flex justify-center sm:mb-8">

@@ -14,19 +14,23 @@ import { useStore } from "@/store/store";
 import { computeTotals } from "@/lib/pricing";
 import { formatINR } from "@/lib/utils";
 
-/** What Razorpay's checkout offers once the customer reaches it. */
+/** What PayU's checkout offers once the customer reaches it. */
 const GATEWAY_METHODS = ["UPI", "Google Pay", "PhonePe", "Paytm", "Cards", "Net banking", "Wallets"];
 
 /** Every UPI app can pay the QR; these are the ones people look for by name. */
 const UPI_APP_NAMES = ["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay", "Any UPI app"];
 
 /**
- * Two ways to pay: online through Razorpay, or cash on delivery.
+ * How the customer would like to pay.
  *
- * Razorpay's own checkout already lets the customer choose UPI, a card, net
- * banking or a wallet, so asking them to make that choice here as well would be
- * a second, redundant step — and a place to pick "card" and then want UPI. The
- * choice is made once, on the gateway's page, where the details are collected.
+ * Only the routes that can actually take money are listed — see
+ * storefront-config.ts — so this page never offers a choice that dead-ends.
+ *
+ * The gateway is one option, not four: PayU's own checkout already asks for
+ * UPI, card, net banking or wallet, and asking here as well would be a second
+ * redundant step and a chance to pick "card" and then want UPI. UPI paid
+ * straight to the shop is separate because it is genuinely a different deal —
+ * no gateway, and a wait for confirmation — and the card says so.
  */
 export function PaymentStep() {
   const { cart, checkout, config, customer, dispatch, hydrated } = useStore();
@@ -87,7 +91,7 @@ export function PaymentStep() {
       patch: {
         paymentMethod: selected,
         paymentDetail:
-          selected === "cod" ? "Pay on delivery" : selected === "upi" ? "UPI" : "Razorpay",
+          selected === "cod" ? "Pay on delivery" : selected === "upi" ? "UPI" : "PayU",
       },
     });
     router.push("/checkout/review");
@@ -192,7 +196,7 @@ export function PaymentStep() {
                       </ul>
                       <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-600">
                         <Lock size={13} className="mt-0.5 shrink-0 text-brand-600" />
-                        You pick UPI, card or net banking on Razorpay&apos;s checkout at the last
+                        You pick UPI, card or net banking on PayU&apos;s checkout at the last
                         step. Card numbers, CVV and UPI PINs are entered there — they never reach
                         our servers, and we never store them.
                       </p>

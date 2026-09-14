@@ -2,7 +2,7 @@ import "server-only";
 
 import type { DeliveryOption, PaymentMethod } from "@/lib/types";
 import type { Rates } from "@/lib/pricing";
-import { razorpayConfigured } from "@/lib/payments/razorpay";
+import { payuConfigured } from "@/lib/payments/payu";
 import { upiConfigured } from "@/lib/payments/upi";
 import { getSettings } from "./settings";
 
@@ -31,10 +31,10 @@ const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
   // repeating those choices here would only add a step and a chance to pick
   // the wrong one.
   online: {
-    name: "Pay online",
+    name: "Pay online — card, UPI, net banking",
     description:
-      "UPI (Google Pay, PhonePe, Paytm), credit and debit cards, net banking and wallets, on Razorpay's secure checkout",
-    badge: "Recommended",
+      "Credit and debit cards, UPI, net banking and wallets on PayU's secure checkout. Confirmed the moment it goes through.",
+    badge: "Fastest",
   },
   // Paid straight into the shop's bank account by QR or a tap through to the
   // customer's own app. No gateway stands in between, which is why the wait
@@ -100,7 +100,7 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   // the last step of a checkout, which is the worst place to find one.
   const upiOn = s.payments.upi && upiConfigured();
   const gatewayOn =
-    (s.payments.card || s.payments.netbanking || s.payments.wallet) && razorpayConfigured();
+    (s.payments.card || s.payments.netbanking || s.payments.wallet) && payuConfigured();
   const enabled: PaymentMethod["id"][] = [
     ...(upiOn ? (["upi"] as const) : []),
     ...(gatewayOn ? (["online"] as const) : []),

@@ -66,7 +66,9 @@ export function OrderClient({ order }: { order: Order | null }) {
 
   // The processing screen appends ?placed=1, so the celebratory copy is driven
   // by an explicit flag rather than by guessing from a timestamp.
-  const justPlaced = useSearchParams().get("placed") === "1";
+  const search = useSearchParams();
+  const justPlaced = search.get("placed") === "1";
+  const paymentFailed = search.get("payment") === "failed";
   const [copied, setCopied] = useState(false);
 
 
@@ -158,6 +160,34 @@ export function OrderClient({ order }: { order: Order | null }) {
           {/* Unpaid UPI: the one thing this page must offer is a way back to
               paying. Above the delivery promise, because a promise means
               nothing until the order is paid for. */}
+          {order.paymentMethod.id !== "cod" &&
+            order.paymentMethod.id !== "upi" &&
+            order.paymentStatus === "pending" && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sale-200 bg-sale-50 p-4 sm:gap-4 sm:p-5">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sale-600 text-white sm:h-11 sm:w-11">
+                    <Wallet size={19} />
+                  </span>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-sale-700">
+                      {paymentFailed ? "Payment not completed" : "Waiting for payment"}
+                    </p>
+                    <p className="text-[13.5px] text-ink-800">
+                      Nothing has been charged. Your items are still reserved — try again to
+                      confirm this order.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/checkout/payu/${order.id}`}
+                  className={buttonClasses("primary", "md", "w-full shrink-0 sm:w-auto")}
+                >
+                  Try payment again
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            )}
+
           {order.paymentMethod.id === "upi" && order.paymentStatus === "pending" && (
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold-300 bg-gold-50 p-4 sm:gap-4 sm:p-5">
               <div className="flex items-center gap-3">
