@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "@/components/ui/image";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, MessageSquare, ThumbsUp, VerifiedIcon } from "lucide-react";
+import { ChevronDown, MessageSquare, ShieldCheck, ThumbsUp, VerifiedIcon } from "lucide-react";
 import type { QuestionAnswer, RatingBreakdown, Review } from "@/lib/types";
 import { ReviewForm } from "./review-form";
 import { Stars } from "@/components/ui/primitives";
@@ -34,6 +34,32 @@ export function ReviewsSection({
   }, [reviews, filter]);
 
   const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
+
+  // A listing nobody has reviewed yet would otherwise print "0.0" beside five
+  // empty stars and "0 ratings" — which reads as a product everyone disliked
+  // rather than one nobody has received yet. The panel says which it is, and
+  // the form beneath still explains who may write the first one.
+  if (reviewCount === 0 && reviews.length === 0) {
+    return (
+      <section id="reviews" className="scroll-mt-32">
+        <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
+          Ratings and reviews
+        </h2>
+        <div className="mt-4 rounded-xl border border-hairline bg-surface p-4 sm:mt-6 sm:p-5">
+          <p className="flex items-center gap-2 text-[13.5px] font-medium text-ink-900 sm:text-[14px]">
+            <ShieldCheck size={15} className="shrink-0 text-brand-600" />
+            No reviews yet
+          </p>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600 sm:text-[13px]">
+            Reviews here are written only by customers who bought this and had it delivered, so
+            there are none until the first one arrives. That is also why the ones you do see can be
+            trusted.
+          </p>
+          <ReviewForm productId={productId} />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="reviews" className="scroll-mt-32">
@@ -248,6 +274,27 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
         </p>
       </div>
 
+      {/* A heading over an empty rule reads as something that failed to load.
+          A new listing has no questions yet, and saying so — with the way to
+          ask one — is the honest version of the same space. */}
+      {questions.length === 0 ? (
+        <div className="mt-3 rounded-xl border border-hairline bg-surface p-4 sm:mt-5 sm:p-5">
+          <p className="flex items-center gap-2 text-[13.5px] font-medium text-ink-900 sm:text-[14px]">
+            <MessageSquare size={15} className="shrink-0 text-brand-600" />
+            No questions about this one yet
+          </p>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-600 sm:text-[13px]">
+            Ask us anything — size, fit, what is in the box, how it runs. We answer within a day,
+            and anything useful is published here for the next person wondering the same.
+          </p>
+          <a
+            href="/contact"
+            className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline"
+          >
+            Ask a question
+          </a>
+        </div>
+      ) : (
       <ul className="mt-3 divide-y divide-hairline border-y border-hairline sm:mt-5">
         {questions.map((qa) => {
           const expanded = open === qa.id;
@@ -296,6 +343,7 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
           );
         })}
       </ul>
+      )}
     </section>
   );
 }
