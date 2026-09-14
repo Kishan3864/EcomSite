@@ -80,14 +80,27 @@ function BandHeader({
  * ------------------------------------------------------------------ */
 
 /** One to three departments, each given a full share of the row. */
+/**
+ * One, two or three departments.
+ *
+ * A single department used to be a wide banner carrying its own name and
+ * nothing else — a great deal of space saying one word the visitor could
+ * already read in the menu. It is now a spread: the photograph on one side,
+ * and on the other what is actually inside it, as links. Somebody who came to
+ * buy a kettle can get to kettles from the homepage instead of being told,
+ * expensively, that the shop sells appliances.
+ *
+ * Two or three still share a row as equal tiles; at that count the names are
+ * the useful thing and there is no room for more.
+ */
 function CategoryRow({ categories }: { categories: Category[] }) {
-  const single = categories.length === 1;
+  if (categories.length === 1) return <CategorySpread category={categories[0]} />;
 
   return (
     <section className="container-page py-7 sm:py-20">
       <BandHeader
-        eyebrow={single ? "The department" : "The departments"}
-        title={single ? "What we stock" : "Where would you like to start?"}
+        eyebrow="The departments"
+        title="Where would you like to start?"
         href="/products"
         linkLabel="All products"
         className="mb-4 sm:mb-8"
@@ -104,17 +117,14 @@ function CategoryRow({ categories }: { categories: Category[] }) {
           <Link
             key={category.slug}
             href={`/c/${category.slug}`}
-            className={cn(
-              "tap group relative overflow-hidden bg-ink-100",
-              single ? "aspect-[16/10] sm:aspect-[21/9]" : "aspect-[16/10] sm:aspect-[4/3]",
-            )}
+            className="tap group relative aspect-[16/10] overflow-hidden bg-ink-100 sm:aspect-[4/3]"
           >
             <Image
               src={category.image.url}
               alt=""
               fill
               priority={i === 0}
-              sizes={single ? "100vw" : "(min-width:640px) 50vw, 100vw"}
+              sizes="(min-width:640px) 50vw, 100vw"
               className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
             />
             <span className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/25 to-transparent" />
@@ -136,6 +146,83 @@ function CategoryRow({ categories }: { categories: Category[] }) {
             </span>
           </Link>
         ))}
+      </div>
+    </section>
+  );
+}
+
+/** The whole shop, when the whole shop is one department. */
+function CategorySpread({ category }: { category: Category }) {
+  return (
+    <section className="container-page py-7 sm:py-20">
+      <BandHeader
+        eyebrow="The department"
+        title="What we stock"
+        href="/products"
+        linkLabel="All products"
+        className="mb-4 sm:mb-8"
+      />
+
+      <div className="grid overflow-hidden border border-hairline lg:grid-cols-2">
+        <Link
+          href={`/c/${category.slug}`}
+          className="tap group relative aspect-[16/10] overflow-hidden bg-ink-100 lg:aspect-auto lg:min-h-[400px]"
+        >
+          <Image
+            src={category.image.url}
+            alt={category.image.alt}
+            fill
+            priority
+            sizes="(min-width:1024px) 50vw, 100vw"
+            className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+          />
+          <span className="absolute inset-0 bg-gradient-to-t from-ink-950/55 to-transparent lg:hidden" />
+          <span className="absolute inset-x-0 bottom-0 p-4 lg:hidden">
+            <span className="font-display text-[22px] leading-tight tracking-[-0.02em] text-white">
+              {category.name}
+            </span>
+          </span>
+        </Link>
+
+        <div className="flex flex-col justify-center bg-surface p-5 sm:p-8 lg:p-12">
+          <h3 className="hidden font-display text-[30px] leading-[1.05] tracking-[-0.03em] text-ink-950 lg:block">
+            {category.name}
+          </h3>
+          <p className="text-[13.5px] leading-relaxed text-ink-600 lg:mt-4 lg:text-[14.5px]">
+            {category.description}
+          </p>
+
+          {category.subcategories.length > 0 && (
+            <>
+              <p className="mt-5 text-[10.5px] font-semibold uppercase tracking-[0.18em] text-ink-400 lg:mt-8">
+                Browse by collection
+              </p>
+              {/* Links, not labels: this is the shortest route from the
+                  homepage to the shelf somebody actually came for. */}
+              <ul className="mt-2.5 flex flex-wrap gap-2">
+                {category.subcategories.map((sub) => (
+                  <li key={sub.slug}>
+                    <Link
+                      href={`/c/${category.slug}/${sub.slug}`}
+                      className="tap inline-flex items-center gap-1.5 border border-ink-200 px-3 py-2 text-[12.5px] font-medium text-ink-800 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-950 hover:text-white"
+                    >
+                      {sub.name}
+                      <ArrowUpRight size={13} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          <Link
+            href={`/c/${category.slug}`}
+            className="tap mt-6 inline-flex h-11 w-fit items-center gap-2 bg-ink-950 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 lg:mt-9"
+          >
+            Shop {category.name}
+            <ArrowUpRight size={15} />
+          </Link>
+        </div>
       </div>
     </section>
   );
