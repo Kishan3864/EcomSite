@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Lock } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { buttonClasses } from "@/components/ui/button";
 import { formatINR } from "@/lib/utils";
@@ -48,13 +48,13 @@ export function PayuRedirect({
   if (error) {
     return (
       <Frame>
-        <span className="mx-auto flex h-12 w-12 items-center justify-center bg-sale-50 text-sale-600 sm:h-14 sm:w-14">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center border border-sale-300 text-sale-600 sm:h-14 sm:w-14">
           <AlertTriangle size={26} />
         </span>
-        <h1 className="mt-4 font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:mt-5 sm:text-2xl">
+        <h1 className="mt-4 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:mt-5 sm:text-[26px]">
           Payment could not be started
         </h1>
-        <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-ink-600 sm:text-[13.5px]">
+        <p className="mx-auto mt-2.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
           {error}
         </p>
         <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:justify-center">
@@ -72,15 +72,17 @@ export function PayuRedirect({
   return (
     <Frame>
       <Logo className="mx-auto h-7 w-auto" />
-      <h1 className="mt-5 font-display text-[19px] tracking-[-0.02em] text-ink-950 sm:text-[22px]">
+      <h1 className="mt-6 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
         Taking you to secure payment
       </h1>
-      <p className="mt-2 text-[13.5px] text-ink-600">
-        Order {orderNumber} · <strong className="text-ink-950">{formatINR(amount)}</strong>
+      <p className="mt-2.5 text-[13px] leading-[1.5] text-ink-600 sm:text-[14px]">
+        Order <span className="tabular-nums">{orderNumber}</span> ·{" "}
+        <strong className="font-semibold tabular-nums text-ink-950">{formatINR(amount)}</strong>
       </p>
 
-      <div className="mt-5 h-1 w-full overflow-hidden bg-ink-100">
-        <div className="h-full w-1/3 animate-[loading_1.1s_ease-in-out_infinite] bg-brand-600" />
+      {/* A hairline that is being drawn, rather than a coloured progress pill. */}
+      <div className="mt-5 h-0.5 w-full overflow-hidden bg-hairline">
+        <div className="h-full w-1/3 animate-[loading_1.1s_ease-in-out_infinite] bg-ink-950" />
       </div>
 
       <form ref={form} action={endpoint} method="POST" className="mt-5">
@@ -92,8 +94,7 @@ export function PayuRedirect({
         </button>
       </form>
 
-      <p className="mt-4 flex items-center justify-center gap-2 text-[11.5px] text-ink-500">
-        <Lock size={12} className="text-brand-600" />
+      <p className="mt-4 text-[13px] leading-[1.5] text-ink-500">
         Card and UPI details are entered on PayU, never on this site
       </p>
 

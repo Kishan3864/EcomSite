@@ -2,11 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { AlertCircle, Check, Info, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { BUSINESS } from "@/config/business";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { checkServiceability } from "@/services/shipping";
 
 interface CheckResult {
@@ -16,6 +15,18 @@ interface CheckResult {
 }
 
 const COURIER = BUSINESS.ops.courierPartners[0] ?? "our courier";
+
+/**
+ * A rule down the left is the whole of the difference between the three
+ * answers. Three tinted panels would put three coloured boxes into a column
+ * that is otherwise ink on paper, and the wording of each answer already says
+ * plainly which one it is — the rule only has to mark where it begins.
+ */
+const TONE_RULE: Record<CheckResult["tone"], string> = {
+  ok: "border-brand-700",
+  info: "border-rule",
+  error: "border-sale-600",
+};
 
 /**
  * Asks the courier whether it delivers to a pincode. The answer is theirs; the
@@ -89,13 +100,12 @@ export function DeliveryCheck({
   }
 
   return (
-    <section className="rounded-xl border border-hairline bg-surface p-3.5 sm:p-4">
-      <h2 className="mb-2.5 flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-3 sm:text-[12px]">
-        <MapPin size={14} className="shrink-0 text-brand-600" />
+    <section className="border-t border-hairline pt-4 sm:pt-5">
+      <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
         Check delivery to your pincode
       </h2>
 
-      <Form onSubmit={check} className="flex gap-2">
+      <Form onSubmit={check} className="mt-2.5 flex gap-2 sm:mt-3">
         <label htmlFor="pincode" className="sr-only">
           Pincode
         </label>
@@ -109,10 +119,13 @@ export function DeliveryCheck({
           inputMode="numeric"
           autoComplete="postal-code"
           placeholder="e.g. 395006"
+          // Paper, not canvas: the field now sits straight on the page rather
+          // than inside a tinted panel, and a canvas-coloured input on a
+          // canvas-coloured page is a border with nothing in it.
           // 16px on phones: iOS zooms the page into any smaller field.
-          className="h-11 min-w-0 flex-1 rounded-lg border border-ink-200 bg-canvas px-3.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-brand-500 sm:text-sm"
+          className="h-11 min-w-0 flex-1 rounded-field border border-ink-200 bg-surface px-3.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500 sm:text-[14px]"
         />
-        <Button type="submit" variant="subtle" loading={checking} className="shrink-0">
+        <Button type="submit" variant="outline" loading={checking} className="shrink-0">
           Check
         </Button>
       </Form>
@@ -127,37 +140,19 @@ export function DeliveryCheck({
             transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="pt-3">
-              {result.tone === "ok" ? (
-                <div className="rounded-lg bg-brand-50 p-3">
-                  <p className="flex items-center gap-2 text-[12.5px] font-semibold text-brand-800 sm:text-[13px]">
-                    <Check size={15} strokeWidth={2.5} className="shrink-0" />
-                    {result.title}
-                  </p>
-                  {result.detail && (
-                    <p className="mt-1 pl-[23px] text-[11.5px] text-brand-700/80 sm:text-[12px]">{result.detail}</p>
-                  )}
-                </div>
-              ) : result.tone === "info" ? (
-                <div className="rounded-lg bg-canvas p-3">
-                  <p className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-800 sm:text-[13px]">
-                    <Info size={15} className="shrink-0 text-brand-600" />
-                    {result.title}
-                  </p>
-                  {result.detail && (
-                    <p className="mt-1 pl-[23px] text-[11.5px] text-ink-500 sm:text-[12px]">{result.detail}</p>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-lg bg-sale-50 p-3">
-                  <p className="flex items-start gap-2 text-[12.5px] text-sale-700 sm:text-[13px]">
-                    <AlertCircle size={15} className="mt-px shrink-0" />
-                    {result.title}
-                  </p>
-                  {result.detail && (
-                    <p className="mt-1 pl-[23px] text-[11.5px] text-sale-700/80 sm:text-[12px]">{result.detail}</p>
-                  )}
-                </div>
+            <div
+              role={result.tone === "error" ? "alert" : "status"}
+              className={cn("mt-3.5 border-l-2 pl-3.5", TONE_RULE[result.tone])}
+            >
+              {/* Tabular figures because this line is usually a date or the
+                  pincode read back, and both are numerals in running text. */}
+              <p className="text-[13px] font-medium leading-[1.5] tabular-nums text-ink-950 sm:text-[13.5px]">
+                {result.title}
+              </p>
+              {result.detail && (
+                <p className="mt-1 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600">
+                  {result.detail}
+                </p>
               )}
             </div>
           </motion.div>

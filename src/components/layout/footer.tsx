@@ -75,41 +75,49 @@ export async function Footer() {
   return (
     // No top margin below lg: the <main> above already ends in pb-16 there.
     <footer className="border-t border-hairline bg-surface lg:mt-20">
-      {/* Trust strip */}
+      {/* Trust strip. Four rows on one shared hairline grid, the way the rest
+          of the site draws a set of equal things — the coloured chip behind each
+          glyph was the last card look left in the chrome. All four stay: this is
+          the only place the return window is printed on the screen somebody is
+          standing on when they decide whether to buy. */}
       <div className="border-b border-hairline">
-        <div className="container-page grid grid-cols-2 gap-x-3 gap-y-4 py-5 sm:gap-x-6 sm:gap-y-7 sm:py-9 lg:grid-cols-4">
-          {trustBadges.map((badge) => {
-            const Icon = TRUST_ICONS[badge.icon as keyof typeof TRUST_ICONS];
-            return (
-              <div key={badge.title} className="flex items-start gap-2.5 sm:gap-3">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 sm:h-10 sm:w-10">
-                  <Icon size={18} className="size-4 sm:size-[18px]" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-[12.5px] font-semibold text-ink-950 sm:text-[13px]">
-                    {badge.title}
-                  </p>
-                  <p className="mt-0.5 text-[11.5px] leading-snug text-ink-500 sm:text-[12px]">
-                    {badge.body}
-                  </p>
+        <div className="container-page py-4 sm:py-8">
+          <div className="tile-grid grid-cols-2 lg:grid-cols-4">
+            {trustBadges.map((badge) => {
+              const Icon = TRUST_ICONS[badge.icon as keyof typeof TRUST_ICONS];
+              return (
+                <div key={badge.title} className="flex items-start gap-2.5 p-3 sm:gap-3.5 sm:p-5">
+                  <Icon
+                    size={20}
+                    strokeWidth={1.5}
+                    aria-hidden
+                    className="mt-px shrink-0 text-ink-900"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold leading-[1.35] tabular-nums text-ink-950 sm:text-[13.5px]">
+                      {badge.title}
+                    </p>
+                    <p className="mt-1 text-[13px] leading-[1.45] text-ink-500">
+                      {badge.body}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Newsletter */}
-      <div className="peacock-surface">
+      {/* Newsletter. The one dark plane in the chrome, so it gets the shared
+          eyebrow class rather than the hand-rolled gold label it used to carry. */}
+      <div className="deep-plane">
         <div className="container-page grid gap-4 py-8 sm:gap-8 sm:py-14 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-300">
-              The WeekendCart Dispatch
-            </p>
-            <h2 className="mt-2 font-display text-[21px] leading-[1.1] tracking-[-0.02em] text-white sm:mt-3 sm:text-[38px]">
+            <span className="eyebrow eyebrow-dark">The WeekendCart Dispatch</span>
+            <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-white sm:mt-4 sm:text-[32px]">
               New drops and genuine offers. No noise, no spam.
             </h2>
-            <p className="mt-2 max-w-lg text-[13.5px] leading-relaxed text-white/60 sm:mt-3 sm:text-sm">
+            <p className="mt-3 max-w-[46ch] text-[14px] leading-[1.55] text-white/70 sm:mt-4 sm:text-[15px] sm:leading-[1.6]">
               We write about what we have stocked and why, plus first word when something is back
               in stock. Unsubscribe in one click.
             </p>
@@ -122,31 +130,37 @@ export async function Footer() {
       <div className="container-page grid gap-6 py-7 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:py-14 md:grid-cols-4 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-12">
         <div className="sm:col-span-2 md:col-span-4 lg:col-span-1">
           <Logo href={null} />
-          <p className="mt-3 max-w-sm text-[12.5px] leading-relaxed text-ink-600 sm:mt-4 sm:text-[13px]">
+          <p className="mt-3.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:mt-4 sm:text-[14px] sm:leading-[1.6]">
             {BRAND.description}
           </p>
-          <ul className="mt-4 space-y-2 text-[12.5px] text-ink-600 sm:mt-5 sm:text-[13px]">
+          {/* The glyphs are decoration beside text that already says what each
+              line is, so they sit at ink-400 with the rest of the drawn marks
+              rather than pulling brand colour into a repeating list. */}
+          <ul className="mt-4 space-y-2.5 text-[13px] text-ink-600 sm:mt-5 sm:text-[13.5px]">
             <li className="flex items-center gap-2.5">
-              <Phone size={14} className="shrink-0 text-brand-600" />
-              <a href={`tel:${BRAND.supportPhone}`} className="tap hover:text-brand-700">
+              <Phone size={14} strokeWidth={1.5} aria-hidden className="shrink-0 text-ink-400" />
+              <a
+                href={`tel:${BRAND.supportPhone}`}
+                className="tap tabular-nums transition-colors duration-200 hover:text-brand-700"
+              >
                 {BRAND.supportPhone}
               </a>
             </li>
             <li className="flex items-center gap-2.5">
-              <Mail size={14} className="shrink-0 text-brand-600" />
+              <Mail size={14} strokeWidth={1.5} aria-hidden className="shrink-0 text-ink-400" />
               <a
                 href={`mailto:${BRAND.supportEmail}`}
-                className="tap min-w-0 break-all hover:text-brand-700"
+                className="tap min-w-0 break-all transition-colors duration-200 hover:text-brand-700"
               >
                 {BRAND.supportEmail}
               </a>
             </li>
             <li className="flex items-start gap-2.5">
-              <MapPin size={14} className="mt-0.5 shrink-0 text-brand-600" />
-              <span className="min-w-0">{formatAddress()}</span>
+              <MapPin size={14} strokeWidth={1.5} aria-hidden className="mt-0.5 shrink-0 text-ink-400" />
+              <span className="min-w-0 leading-[1.5]">{formatAddress()}</span>
             </li>
           </ul>
-          <div className="mt-4 flex gap-2 sm:mt-5">
+          <div className="mt-5 flex gap-1.5 sm:mt-6">
             {[
               { href: BRAND.social.instagram, icon: InstagramIcon, label: "Instagram" },
               { href: BRAND.social.youtube, icon: YoutubeIcon, label: "YouTube" },
@@ -161,7 +175,7 @@ export async function Footer() {
                 aria-label={label}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="tap flex h-10 w-10 items-center justify-center rounded-lg border border-ink-200 text-ink-600 transition-colors hover:border-brand-500 hover:text-brand-700 lg:h-9 lg:w-9"
+                className="tap flex h-10 w-10 items-center justify-center border border-hairline text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 lg:h-9 lg:w-9"
               >
                 <Icon size={16} />
               </a>
@@ -171,7 +185,7 @@ export async function Footer() {
 
         {LINK_COLUMNS.map((column) => (
           <nav key={column.title} aria-label={column.title} className="hidden sm:block">
-            <h3 className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-950">
+            <h3 className="mb-4 border-b border-hairline pb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
               {column.title}
             </h3>
             <ul className="space-y-2.5">
@@ -179,7 +193,7 @@ export async function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[13px] text-ink-600 transition-colors hover:text-brand-700"
+                    className="text-[13px] text-ink-600 transition-colors duration-200 hover:text-brand-700"
                   >
                     {link.label}
                   </Link>
@@ -197,7 +211,7 @@ export async function Footer() {
             <nav key={column.title} aria-label={column.title}>
               <details name="footer-links" className="group border-b border-hairline">
                 <summary className="tap flex h-11 list-none items-center justify-between [&::-webkit-details-marker]:hidden">
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-950">
+                  <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
                     {column.title}
                   </h3>
                   <ChevronDown
@@ -211,7 +225,7 @@ export async function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="tap flex h-10 items-center text-[12.5px] text-ink-600"
+                        className="tap flex h-10 items-center text-[13px] text-ink-600"
                       >
                         {link.label}
                       </Link>
@@ -230,18 +244,23 @@ export async function Footer() {
       {categories.length > 0 && (
       <div className="border-t border-hairline">
         <div className="container-page py-5 sm:py-8">
-          <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3.5">
+          <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:mb-4">
             Browse every category
           </h3>
           {/* On phones the chips wrap inside a wide strip that scrolls sideways,
-              a few rows deep, rather than stacking a dozen rows down the page. */}
+              a few rows deep, rather than stacking a dozen rows down the page.
+
+              They are ruled boxes now, not pills: a department is drawn with a
+              full ink edge and a collection with a hairline, so the hierarchy is
+              read from the weight of the rule instead of from two shades of
+              grey fill. */}
           <div className="-mx-3 overflow-x-auto px-3 no-scrollbar sm:mx-0 sm:overflow-visible sm:px-0">
             <ul className="flex w-max max-w-[72rem] flex-wrap gap-x-1.5 gap-y-1.5 sm:w-auto sm:max-w-none">
               {categories.flatMap((c) => [
                 <li key={c.slug}>
                   <Link
                     href={`/c/${c.slug}`}
-                    className="tap inline-block rounded-full bg-ink-100 px-2.5 py-1.5 text-[11.5px] font-medium text-ink-700 transition-colors hover:bg-brand-100 hover:text-brand-800 sm:px-3 sm:text-[12px]"
+                    className="tap inline-block border border-ink-950 px-2.5 py-1.5 text-[13px] font-medium text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-3"
                   >
                     {c.name}
                   </Link>
@@ -250,7 +269,7 @@ export async function Footer() {
                   <li key={`${c.slug}-${s.slug}`}>
                     <Link
                       href={`/c/${c.slug}/${s.slug}`}
-                      className="tap inline-block rounded-full px-2.5 py-1.5 text-[11.5px] text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900 sm:px-3 sm:text-[12px]"
+                      className="tap inline-block border border-hairline px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 sm:px-3"
                     >
                       {s.name}
                     </Link>
@@ -267,7 +286,7 @@ export async function Footer() {
           after the footer, and only on the pages where it actually shows. */}
       <div className="border-t border-hairline bg-canvas">
         <div className="container-page flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-6">
-          <p className="text-[11.5px] text-ink-500 sm:text-[12px]">
+          <p className="text-[13px] leading-[1.5] tabular-nums text-ink-500">
             &copy; {new Date().getFullYear()} {BRAND.legalName}. All rights reserved.
             {isGstRegistered ? ` GSTIN ${BUSINESS.gstin}.` : ""}
           </p>
@@ -283,7 +302,7 @@ export async function Footer() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="tap text-[11.5px] text-ink-500 hover:text-brand-700 sm:text-[12px]"
+                  className="tap text-[13px] text-ink-500 transition-colors duration-200 hover:text-brand-700"
                 >
                   {l.label}
                 </Link>

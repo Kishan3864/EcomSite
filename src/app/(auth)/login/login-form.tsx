@@ -9,6 +9,17 @@ import { Field, Input } from "@/components/ui/field";
 import { loginAction } from "@/services/commerce";
 import { Form } from "@/components/ui/form";
 
+/**
+ * The shape every failure on these screens takes: an oxblood rule down the
+ * left, the sentence beside it, nothing rounded. It is deliberately the same
+ * block the shared `Form` draws when the browser's own constraints fail, so a
+ * server saying no and a field saying no do not look like two different
+ * accidents. The string is repeated in the sibling forms rather than exported
+ * across route folders, which is how the rest of the shop shares a class.
+ */
+const ERROR_BLOCK =
+  "flex items-start gap-2 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600";
+
 function SignInButton() {
   const { pending } = useFormStatus();
   return (
@@ -28,10 +39,7 @@ export function LoginForm({ next }: { next?: string }) {
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.error && !state.field && (
-        <p
-          role="alert"
-          className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
-        >
+        <p role="alert" className={ERROR_BLOCK}>
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           {state.error}
         </p>
@@ -76,7 +84,7 @@ export function LoginForm({ next }: { next?: string }) {
             aria-label={showPassword ? "Hide password" : "Show password"}
             // 40px square on a phone, the minimum comfortable tap; from sm up
             // it shrinks back to the icon and its padding.
-            className="absolute right-0.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700 sm:right-1.5 sm:h-auto sm:w-auto sm:p-2"
+            className="absolute right-0.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-ink-400 transition-colors duration-200 hover:text-ink-900 sm:right-1.5 sm:h-auto sm:w-auto sm:p-2"
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
@@ -86,7 +94,7 @@ export function LoginForm({ next }: { next?: string }) {
       <div className="flex items-center justify-end">
         <Link
           href="/forgot-password"
-          className="-my-2 py-2 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:my-0 sm:py-0"
+          className="-my-2 py-2 text-[13px] font-medium text-brand-700 underline-offset-4 hover:underline sm:my-0 sm:py-0"
         >
           Forgot password?
         </Link>

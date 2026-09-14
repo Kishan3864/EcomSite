@@ -79,26 +79,33 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <motion.div
               key={t.id}
               layout
-              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.96 }}
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.97 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 420, damping: 32 }}
-              className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-xl border border-ink-800/10 bg-ink-950/95 text-white shadow-xl backdrop-blur-md"
+              // A square of ink with a hairline around it, solid rather than
+              // frosted: a translucent panel over a photograph is the one place
+              // this dark plane ever became hard to read.
+              className="pointer-events-auto w-full max-w-sm overflow-hidden border border-white/10 bg-ink-950 text-white"
             >
               <div className="flex items-start gap-3 p-3">
                 {t.image ? (
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-white/10">
+                  <div className="relative h-11 w-11 shrink-0 overflow-hidden border border-white/10 bg-white/5">
                     <Image src={t.image} alt="" fill sizes="44px" className="object-cover" />
                   </div>
                 ) : (
+                  /* One flat square, filled in the colour the message actually
+                     means: saffron for something that worked, oxblood for the
+                     wishlist heart, and a plain rule for a remark. Tinted
+                     translucent discs read as an app's status dots. */
                   <div
                     className={cn(
-                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                      "flex h-8 w-8 shrink-0 items-center justify-center",
                       t.tone === "wishlist"
-                        ? "bg-sale-500/20 text-sale-500"
+                        ? "bg-sale-600 text-white"
                         : t.tone === "info"
-                          ? "bg-white/10 text-white"
-                          : "bg-brand-400/20 text-brand-300",
+                          ? "border border-white/25 text-white"
+                          : "bg-gold-400 text-ink-950",
                     )}
                   >
                     {t.tone === "wishlist" ? (
@@ -112,9 +119,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 )}
 
                 <div className="min-w-0 flex-1 pt-0.5">
-                  <p className="text-[12.5px] font-semibold leading-snug sm:text-[13px]">{t.title}</p>
+                  <p className="text-[13px] font-semibold leading-[1.35] sm:text-[13.5px]">
+                    {t.title}
+                  </p>
                   {t.description && (
-                    <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-white/65 sm:text-xs">
+                    <p className="mt-1 line-clamp-2 text-[13px] leading-[1.4] text-white/65">
                       {t.description}
                     </p>
                   )}
@@ -122,7 +131,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     <Link
                       href={t.action.href}
                       onClick={() => dismiss(t.id)}
-                      className="tap mt-1 inline-block py-1 text-xs font-semibold text-gold-300 underline-offset-2 hover:underline sm:mt-2 sm:py-0"
+                      className="tap mt-1.5 inline-block py-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-gold-300 underline-offset-4 hover:underline sm:mt-2 sm:py-0 sm:text-[11.5px]"
                     >
                       {t.action.label}
                     </Link>
@@ -132,7 +141,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 {/* Padding and margin cancel out: same icon position, 40px target. */}
                 <button
                   onClick={() => dismiss(t.id)}
-                  className="tap -m-[13px] rounded-md p-[13px] text-white/40 transition-colors hover:bg-white/10 hover:text-white sm:-m-1 sm:p-1"
+                  className="tap -m-[13px] p-[13px] text-white/50 transition-colors duration-200 hover:bg-white/10 hover:text-white sm:-m-1 sm:p-1"
                   aria-label="Dismiss notification"
                 >
                   <X size={14} />

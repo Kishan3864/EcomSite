@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { motion } from "motion/react";
-import { CheckCircle2, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
+import { Reveal } from "@/components/ui/motion";
 import { submitContact } from "@/services/commerce";
 import { Form } from "@/components/ui/form";
 
@@ -63,24 +63,19 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="min-w-0 rounded-2xl border border-brand-200 bg-brand-50 p-5 sm:p-8"
-      >
-        <CheckCircle2 size={36} className="text-brand-600" />
-        <h2 className="mt-3 font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:mt-4 sm:text-2xl">
+      <Reveal className="min-w-0 border border-hairline bg-surface p-5 sm:p-8">
+        <span className="eyebrow">Received</span>
+        <h2 className="mt-3 font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
           Message received
         </h2>
         {/* break-words: the echoed email is one unbreakable word. */}
-        <p className="mt-2 max-w-md break-words text-[13.5px] leading-relaxed text-ink-700 sm:mt-2.5 sm:text-[14px]">
+        <p className="mt-3 max-w-[60ch] break-words text-[14px] leading-[1.65] text-ink-600 sm:text-[15px]">
           Thanks {form.name.split(" ")[0]} — we have your message about{" "}
-          <strong className="text-ink-950">{form.topic.toLowerCase()}</strong> and will reply to{" "}
-          <strong className="text-ink-950">{form.email}</strong>. Expect an answer within a few
-          minutes during working hours.
+          <strong className="font-semibold text-ink-900">{form.topic.toLowerCase()}</strong> and
+          will reply to <strong className="font-semibold text-ink-900">{form.email}</strong>. Expect
+          an answer within a few minutes during working hours.
         </p>
-        <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:flex-wrap">
+        <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-3">
           <Link href="/products" className={buttonClasses("primary", "md")}>
             Keep shopping
           </Link>
@@ -94,24 +89,21 @@ export function ContactForm() {
             Send another message
           </button>
         </div>
-      </motion.div>
+      </Reveal>
     );
   }
 
   return (
-    <Form
-      onSubmit={submit}
-      className="min-w-0 rounded-2xl border border-hairline bg-surface p-4 sm:p-8"
-    >
-      <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-2xl">
+    <Form onSubmit={submit} className="min-w-0 border border-hairline bg-surface p-4 sm:p-8">
+      <h2 className="font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
         Send us a message
       </h2>
-      <p className="mt-1.5 text-[13px] text-ink-600 sm:mt-2 sm:text-[13.5px]">
+      <p className="mt-2 max-w-[60ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[14px]">
         The more specific you are, the faster we can fix it. Include an order number if you have
         one.
       </p>
 
-      <div className="mt-4 grid gap-4 sm:mt-6 sm:grid-cols-2 sm:gap-5">
+      <div className="mt-5 grid gap-4 sm:mt-7 sm:grid-cols-2 sm:gap-5">
         <Field label="Your name" htmlFor="c-name" error={errors.name}>
           <Input
             id="c-name"
@@ -155,6 +147,7 @@ export function ContactForm() {
             value={form.orderNumber}
             onChange={(e) => setForm((f) => ({ ...f, orderNumber: e.target.value }))}
             placeholder="WKC-2026-005001"
+            className="tabular-nums"
           />
         </Field>
 
@@ -166,7 +159,7 @@ export function ContactForm() {
             onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
             placeholder="Tell us what happened…"
             // 16px on phones, as in the shared inputs: iOS zooms into smaller fields.
-            className={`w-full rounded-lg border bg-canvas px-3.5 py-3 text-[16px] leading-relaxed text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px] ${
+            className={`w-full rounded-field border bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px] ${
               errors.message
                 ? "border-sale-500 focus:border-sale-600"
                 : "border-ink-200 hover:border-ink-300 focus:border-brand-500"
@@ -176,8 +169,8 @@ export function ContactForm() {
       </div>
 
       {/* Phones: the note, then a full-width send button. */}
-      <div className="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-        <p className="max-w-sm text-[11.5px] leading-relaxed text-ink-400">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+        <p className="max-w-[46ch] text-[13px] leading-[1.6] text-ink-500">
           We use what you send only to answer you. See our{" "}
           <Link href="/legal/privacy" className="font-medium text-brand-700 hover:underline">
             privacy policy

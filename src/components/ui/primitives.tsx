@@ -1,6 +1,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { ChevronRight, Star } from "lucide-react";
+import { PaperMark } from "@/components/illustration/paper-mark";
 import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
 import type { ProductBadge } from "@/lib/types";
 
@@ -8,12 +9,19 @@ import type { ProductBadge } from "@/lib/types";
 
 type Tone = "brand" | "gold" | "sale" | "neutral" | "outline" | "success";
 
+/**
+ * Six flat stamps, each one of the ramps and nothing in between. They are
+ * printed rather than glazed: the translucent, blurred fills two of them used
+ * to carry were there to survive being laid over a photograph, and a flat ink
+ * stamp does that better — it is what the reduction in the corner of every
+ * product tile already is.
+ */
 const TONES: Record<Tone, string> = {
   brand: "bg-brand-900 text-white",
   gold: "bg-gold-400 text-ink-950",
   sale: "bg-sale-500 text-white",
-  neutral: "bg-ink-900/85 text-white backdrop-blur",
-  outline: "border border-ink-300 bg-surface/90 text-ink-700 backdrop-blur",
+  neutral: "bg-ink-950 text-white",
+  outline: "border border-ink-950 bg-surface text-ink-950",
   success: "bg-brand-100 text-brand-800",
 };
 
@@ -29,8 +37,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-1",
-        "text-[10px] font-semibold uppercase tracking-[0.08em] leading-none",
+        "inline-flex items-center gap-1 px-2 py-1",
+        "text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em]",
         TONES[tone],
         className,
       )}
@@ -247,24 +255,27 @@ export function Breadcrumbs({ items, className }: { items: Crumb[]; className?: 
     <nav aria-label="Breadcrumb" className={cn("min-w-0", className)}>
       {/* One swipeable line on phones instead of a trail wrapping over three.
           The py/-my pair keeps focus rings clear of the scroll clip. */}
-      <ol className="-my-1 flex items-center gap-x-1.5 gap-y-1 overflow-x-auto whitespace-nowrap py-1 text-[12.5px] text-ink-500 no-scrollbar sm:my-0 sm:flex-wrap sm:overflow-visible sm:whitespace-normal sm:py-0 sm:text-[13px]">
+      <ol className="-my-1 flex items-center gap-x-1.5 gap-y-1 overflow-x-auto whitespace-nowrap py-1 text-[12.5px] text-ink-500 no-scrollbar sm:my-0 sm:flex-wrap sm:overflow-visible sm:whitespace-normal sm:py-0">
         {items.map((item, i) => {
           const last = i === items.length - 1;
           return (
             <li key={item.href} className="flex items-center gap-1.5">
               {last ? (
-                <span aria-current="page" className="font-medium text-ink-800">
+                <span aria-current="page" className="font-medium text-ink-900">
                   {item.name}
                 </span>
               ) : (
                 <>
                   <Link
                     href={item.href}
-                    className="transition-colors hover:text-brand-700 hover:underline underline-offset-2"
+                    className="underline-offset-2 transition-colors duration-200 hover:text-brand-700 hover:underline"
                   >
                     {item.name}
                   </Link>
-                  <ChevronRight size={13} className="text-ink-300" aria-hidden />
+                  {/* The chevron is a glyph stroke, not a word: ink-400 is
+                      where decorative marks live, and it keeps the trail
+                      reading as names with marks between them. */}
+                  <ChevronRight size={13} className="text-ink-400" aria-hidden />
                 </>
               )}
             </li>
@@ -283,8 +294,23 @@ export function Skeleton({ className }: { className?: string }) {
 
 /* --------------------------- Empty state -------------------------- */
 
+/**
+ * The apology every empty shelf on the site is written on: cart, wishlist,
+ * orders, a search that found nothing.
+ *
+ * It is headed by the shop's own drawn mark rather than by a bought glyph in a
+ * tinted rounded square. A parcel drawn in the same hand as the rest of the
+ * site says "a shelf of ours with nothing on it just now" in a way a
+ * shopping-bag pictogram never could, and it is the same mark the masthead and
+ * the editorial band use, so an empty screen still belongs to the shop. The
+ * frame around it is a hairline: a dashed border says the thing inside is a
+ * placeholder waiting to be replaced, and none of these screens is one.
+ *
+ * `icon` is still accepted so that every caller still handing it a lucide glyph
+ * keeps working, and is deliberately not drawn: the mark is the same on all of
+ * these screens on purpose.
+ */
 export function EmptyState({
-  icon,
   title,
   body,
   action,
@@ -302,22 +328,20 @@ export function EmptyState({
         // Vertical padding is one fluid class (~32–40px on a phone, 4rem from
         // 640px up) rather than py-10 sm:py-16: callers pass a plain py-*, and
         // a surviving sm:py-16 would override theirs on desktop.
-        "flex flex-col items-center justify-center rounded-2xl border border-dashed border-ink-200 bg-surface px-4 py-[min(4rem,10vw)] text-center sm:px-6",
+        "flex flex-col items-center justify-center border border-hairline bg-surface px-4 py-[min(4rem,10vw)] text-center sm:px-6",
         className,
       )}
     >
-      {icon && (
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-600 sm:mb-5 sm:h-16 sm:w-16">
-          {icon}
-        </div>
-      )}
-      <h3 className="font-display text-[17px] tracking-[-0.01em] text-ink-950 sm:text-xl">{title}</h3>
+      <PaperMark size={120} className="text-ink-700" />
+      <h3 className="mt-5 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:mt-6 sm:text-[24px]">
+        {title}
+      </h3>
       {body && (
-        <p className="mt-1.5 max-w-sm text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-sm">
+        <p className="mt-2.5 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:text-[15px]">
           {body}
         </p>
       )}
-      {action && <div className="mt-5 sm:mt-6">{action}</div>}
+      {action && <div className="mt-6 sm:mt-7">{action}</div>}
     </div>
   );
 }

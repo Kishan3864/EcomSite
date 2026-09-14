@@ -57,11 +57,13 @@ export function AddressForm({
   }
 
   return (
-    <Form onSubmit={submit} className="space-y-3 sm:space-y-4">
+    <Form onSubmit={submit} className="space-y-4 sm:space-y-5">
       <div>
-        <span className="mb-1.5 block text-[12.5px] font-medium text-ink-800 sm:mb-2">
+        <span className="mb-2 block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Address type
         </span>
+        {/* Three square switches drawn in the same hairline as everything
+            else, so the chosen one is ink and the rest are outline. */}
         <div className="flex gap-2">
           {(["Home", "Work", "Other"] as const).map((label) => (
             <button
@@ -70,10 +72,10 @@ export function AddressForm({
               onClick={() => set("label", label)}
               aria-pressed={form.label === label}
               className={cn(
-                "tap min-h-10 rounded-lg border px-4 py-2 text-[12.5px] font-medium transition-colors sm:min-h-0 sm:text-[13px]",
+                "tap inline-flex h-10 items-center justify-center border px-4 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[11.5px]",
                 form.label === label
-                  ? "border-brand-900 bg-brand-900 text-white"
-                  : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
+                  ? "border-ink-950 bg-ink-950 text-white"
+                  : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
               )}
             >
               {label}
@@ -104,6 +106,7 @@ export function AddressForm({
             invalid={Boolean(errors.phone)}
             onChange={(e) => set("phone", e.target.value)}
             placeholder="+91 98450 12345"
+            className="tabular-nums"
           />
         </Field>
 
@@ -156,6 +159,7 @@ export function AddressForm({
             invalid={Boolean(errors.pincode)}
             onChange={(e) => set("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))}
             placeholder="560102"
+            className="tabular-nums"
           />
         </Field>
 
@@ -186,7 +190,7 @@ export function AddressForm({
         </Field>
       </div>
 
-      <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-[12.5px] text-ink-700 sm:min-h-0 sm:text-[13px]">
+      <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-[13px] text-ink-600 sm:min-h-0">
         <input
           type="checkbox"
           checked={form.isDefault}

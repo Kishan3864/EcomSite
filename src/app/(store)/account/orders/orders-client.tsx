@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { motion } from "motion/react";
-import { ArrowRight, Package, RotateCcw, Star } from "lucide-react";
+import { ArrowRight, RotateCcw, Star } from "lucide-react";
 import type { Order, OrderStatus } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
+import { Reveal } from "@/components/ui/motion";
 
 import { LiveRefresh } from "@/components/ui/live-refresh";
 import { cn, formatDate, formatINR, statusLabel } from "@/lib/utils";
@@ -19,15 +19,13 @@ const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
   { id: "cancelled", label: "Cancelled" },
 ];
 
-const STATUS_TONE: Record<string, string> = {
-  confirmed: "bg-gold-100 text-gold-800",
-  packed: "bg-gold-100 text-gold-800",
-  shipped: "bg-brand-100 text-brand-800",
-  out_for_delivery: "bg-brand-100 text-brand-800",
-  delivered: "bg-brand-100 text-brand-800",
-  cancelled: "bg-sale-100 text-sale-700",
-  returned: "bg-ink-100 text-ink-600",
-};
+/**
+ * An order that is over — cancelled, or sent back — steps out of the ink and
+ * is set in grey. Everything still in play is stated at full strength. The
+ * tinted lozenges this replaces spent three colours saying what one word says,
+ * and one of them was the oxblood the shop keeps for a price coming down.
+ */
+const SPENT: OrderStatus[] = ["cancelled", "returned"];
 
 export function OrdersClient({ orders }: { orders: Order[] }) {
 
@@ -51,13 +49,14 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
   );
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-5 sm:space-y-6">
       {settling && <LiveRefresh seconds={10} />}
       <header>
-        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+        <span className="eyebrow">Your account</span>
+        <h1 className="mt-2 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
           My orders
         </h1>
-        <p className="mt-1.5 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
+        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:text-[15px]">
           Every order on your account, newest first.
         </p>
       </header>
@@ -70,10 +69,10 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
             key={f.id}
             onClick={() => setFilter(f.id)}
             className={cn(
-              "tap h-10 whitespace-nowrap rounded-full border px-3.5 py-2 text-[12px] font-medium transition-colors sm:h-auto sm:text-[12.5px]",
+              "tap h-10 whitespace-nowrap border px-4 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[12px]",
               filter === f.id
-                ? "border-brand-900 bg-brand-900 text-white"
-                : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
+                ? "border-ink-950 bg-ink-950 text-white"
+                : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
             )}
           >
             {f.label}
@@ -83,7 +82,6 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
 
       {filtered.length === 0 ? (
         <EmptyState
-          icon={<Package size={26} />}
           title="No orders here yet"
           body="When you place an order it will appear here with live tracking and your invoice."
           className="px-4 py-8 sm:px-6 sm:py-16"
@@ -94,58 +92,61 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
           }
         />
       ) : (
-        <ul className="space-y-3 sm:space-y-4">
+        <ul className="border border-hairline bg-surface">
           {filtered.map((order, i) => (
-            <motion.li
+            <Reveal
+              as="li"
               key={order.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden rounded-xl border border-hairline bg-surface"
+              // Capped at the sixth row: a delay that keeps climbing turns a
+              // long history into a wave rolling down the page.
+              delay={Math.min(i, 5) * 0.06}
+              className="border-b border-hairline px-4 py-4 last:border-b-0 sm:px-5 sm:py-5"
             >
-              {/* On a phone the status holds the top-right corner and the figures
-                  wrap beside it. min-w-min keeps the order number whole: at 320px a
-                  long status cannot share its line, so the badge drops below. */}
-              <header className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5 border-b border-hairline bg-canvas px-4 py-2.5 sm:items-center sm:gap-3 sm:px-5 sm:py-3.5">
-                <div className="flex min-w-min flex-1 flex-wrap items-center gap-x-4 gap-y-1 sm:flex-initial sm:gap-x-5">
+              {/* min-w-min keeps the order number whole: at 320px a long status
+                  cannot share its line, so it drops below instead. */}
+              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+                <div className="flex min-w-min flex-1 flex-wrap gap-x-5 gap-y-2 sm:gap-x-7">
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Order</p>
-                    <p className="font-mono text-[12px] font-semibold text-ink-950 sm:text-[12.5px]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                      Order
+                    </p>
+                    <p className="mt-1 font-mono text-[13px] font-semibold text-ink-950">
                       {order.number}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Placed</p>
-                    <p className="text-[12px] text-ink-800 sm:text-[12.5px]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                      Placed
+                    </p>
+                    <p className="mt-1 text-[13px] tabular-nums text-ink-900">
                       {formatDate(order.placedAt, "short")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-[0.1em] text-ink-400">Total</p>
-                    <p className="text-[12px] font-semibold tabular-nums text-ink-950 sm:text-[12.5px]">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                      Total
+                    </p>
+                    <p className="mt-1 text-[13px] font-semibold tabular-nums text-ink-950">
                       {formatINR(order.totals.total)}
                     </p>
                   </div>
                 </div>
-                <span
+                <p
                   className={cn(
-                    "shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-[0.06em]",
-                    STATUS_TONE[order.status] ?? "bg-ink-100 text-ink-600",
+                    "shrink-0 whitespace-nowrap pt-0.5 text-[11.5px] font-semibold uppercase tracking-[0.12em]",
+                    SPENT.includes(order.status) ? "text-ink-500" : "text-ink-950",
                   )}
                 >
                   {statusLabel(order.status)}
-                </span>
-              </header>
+                </p>
+              </div>
 
-              <ul className="divide-y divide-hairline">
+              <ul className="mt-4 space-y-3.5">
                 {order.lines.map((line) => (
-                  <li
-                    key={line.id}
-                    className="flex items-center gap-3 px-4 py-3 sm:gap-3.5 sm:px-5 sm:py-4"
-                  >
+                  <li key={line.id} className="flex items-center gap-3 sm:gap-4">
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-[68px] sm:w-[58px]"
+                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-[68px] sm:w-[58px]"
                     >
                       <Image
                         src={line.image}
@@ -156,16 +157,16 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                       />
                     </Link>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
+                      <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
                         {line.brand}
                       </p>
                       <Link
                         href={`/p/${line.slug}`}
-                        className="line-clamp-1 text-[13px] font-medium text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
+                        className="mt-0.5 line-clamp-1 text-[13.5px] font-medium text-ink-900 transition-colors duration-200 hover:text-brand-700"
                       >
                         {line.title}
                       </Link>
-                      <p className="text-[11.5px] text-ink-500 sm:text-[12px]">
+                      <p className="mt-0.5 text-[13px] tabular-nums text-ink-500">
                         {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty {line.quantity} ·{" "}
                         {formatINR(line.price * line.quantity)}
                       </p>
@@ -188,8 +189,8 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
               </ul>
 
               {/* Phones give the two actions a full-width row of their own. */}
-              <footer className="flex flex-wrap items-center justify-between gap-2.5 border-t border-hairline px-4 py-3 sm:gap-3 sm:px-5 sm:py-3.5">
-                <p className="text-[12px] text-ink-600 sm:text-[12.5px]">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-3.5">
+                <p className="text-[13px] text-ink-600">
                   {order.status === "delivered"
                     ? `Delivered on ${formatDate(order.estimatedDelivery, "short")}`
                     : `Arriving by ${formatDate(order.estimatedDelivery, "day")}`}
@@ -220,8 +221,8 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                     </Link>
                   )}
                 </div>
-              </footer>
-            </motion.li>
+              </div>
+            </Reveal>
           ))}
         </ul>
       )}

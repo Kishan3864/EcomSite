@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { PackageSearch, SearchX } from "lucide-react";
 import type { ProductFacets, ProductQuery } from "@/lib/types";
 import type { ProductCardModel } from "@/lib/card";
 import { Breadcrumbs, EmptyState, type Crumb } from "@/components/ui/primitives";
@@ -61,22 +60,25 @@ export function ListingShell({
 
       {/* On phones the title block stays short so the first row of products
           is on screen without scrolling; the description clamps to two lines. */}
-      <header className="mb-3 sm:mb-6">
-        {eyebrow && (
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600 sm:mb-2">
-            {eyebrow}
-          </p>
-        )}
-        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h1 className="min-w-0 break-words font-display text-[24px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[36px]">
+      <header className="mb-4 border-b border-ink-950 pb-3 sm:mb-6 sm:pb-5">
+        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+        <div
+          className={cn(
+            "flex flex-wrap items-baseline gap-x-3 gap-y-1",
+            eyebrow && "mt-1.5 sm:mt-3",
+          )}
+        >
+          <h1 className="min-w-0 break-words font-display text-[24px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:text-[32px]">
             {title}
           </h1>
-          <span className="text-[12.5px] text-ink-500 tabular-nums sm:text-[13px]">
+          {/* Said once. From lg up the toolbar in the column below carries the
+              same count, and printing it twice in one eyeful reads as padding. */}
+          <span className="text-[13px] tabular-nums text-ink-500 lg:hidden">
             {total} {total === 1 ? "product" : "products"}
           </span>
         </div>
         {description && (
-          <p className="mt-1.5 line-clamp-2 max-w-3xl text-[13.5px] leading-normal text-ink-600 sm:mt-2.5 sm:line-clamp-none sm:text-[14px] sm:leading-relaxed">
+          <p className="mt-1.5 line-clamp-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:mt-2.5 sm:line-clamp-none sm:text-[15px] sm:leading-[1.6]">
             {description}
           </p>
         )}
@@ -105,8 +107,10 @@ export function ListingShell({
           </div>
 
           {products.length === 0 ? (
+            /* No icon: EmptyState draws the shop's own mark, and a lucide
+               glyph in a tinted square on top of it is two marks saying one
+               thing. */
             <EmptyState
-              icon={emptyVariant === "no-results" ? <SearchX size={26} /> : <PackageSearch size={26} />}
               title={
                 emptyVariant === "no-results"
                   ? "No products matched your search"
@@ -154,16 +158,25 @@ export function ListingShell({
 export function ListingShellSkeleton() {
   return (
     <div className="container-page py-3 sm:py-7">
-      <Shimmer className="mb-4 h-3 w-56 max-w-full sm:mb-6" />
-      <Shimmer className="h-6.5 w-52 max-w-full sm:h-9 sm:w-72" />
-      <Shimmer className="mt-2.5 h-3.5 w-96 max-w-full sm:mt-3" />
+      <Shimmer className="mb-3 h-3 w-56 max-w-full sm:mb-5" />
 
-      <div className="mt-4 grid gap-8 sm:mt-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
-        <aside className="hidden lg:block">
+      <div className="mb-4 border-b border-ink-950 pb-3 sm:mb-6 sm:pb-5">
+        <Shimmer className="h-2.5 w-32" />
+        <Shimmer className="mt-1.5 h-6.5 w-52 max-w-full sm:mt-3 sm:h-8 sm:w-72" />
+        <Shimmer className="mt-1.5 h-3.5 w-96 max-w-full sm:mt-2.5" />
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10">
+        <aside className="hidden lg:block lg:pr-2">
+          {/* The panel's own 48px header, so the rail does not shift up by the
+              height of a rule the moment the real filters arrive. */}
+          <div className="flex h-12 items-center border-b border-hairline">
+            <Shimmer className="h-3 w-20" />
+          </div>
           {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="mb-8">
+            <div key={i} className="border-b border-hairline py-4">
               <Shimmer className="h-3 w-24" />
-              <div className="mt-4 space-y-2.5">
+              <div className="mt-3.5 space-y-2.5">
                 {Array.from({ length: 5 }, (_, j) => (
                   <Shimmer key={j} className="h-3 w-full" />
                 ))}
@@ -173,16 +186,17 @@ export function ListingShellSkeleton() {
         </aside>
         <div className="min-w-0">
           <div className="-mx-3 mb-3 grid h-11 grid-cols-2 border-y border-hairline sm:-mx-6 sm:mb-5 lg:hidden">
-            <span className="flex items-center justify-center">
-              <Shimmer className="h-3 w-16" />
+            <span className="flex flex-col items-center justify-center gap-1.5">
+              <Shimmer className="h-2.5 w-9" />
+              <Shimmer className="h-3 w-20" />
             </span>
             <span className="flex items-center justify-center border-l border-hairline">
               <Shimmer className="h-3 w-16" />
             </span>
           </div>
-          <div className="mb-5 hidden items-center justify-between lg:flex">
-            <Shimmer className="h-3 w-32" />
-            <Shimmer className="h-9 w-40" />
+          <div className="mb-5 hidden h-12 items-center justify-between border-b border-hairline lg:flex">
+            <Shimmer className="h-3 w-24" />
+            <Shimmer className="h-3 w-40" />
           </div>
           <ProductGridSkeleton count={12} columns={4} />
         </div>

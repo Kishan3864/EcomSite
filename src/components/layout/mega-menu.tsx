@@ -1,14 +1,27 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "@/components/ui/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
+import { DepartmentGlyph } from "@/components/illustration/department-glyph";
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+/**
+ * The department menu.
+ *
+ * The photograph that filled the right third of the panel has gone, and with it
+ * the three promise lines printed over its scrim. A menu is a route to a shelf:
+ * somebody who has already decided to look inside a department does not need to
+ * be sold the department again, and the claims belong on the page they can be
+ * read properly rather than in a panel that closes when the pointer leaves.
+ *
+ * What is left is the department's own drawn mark, its sentence, and a ruled
+ * index of what is inside — which is both smaller and the only part anybody was
+ * aiming for.
+ */
 export function MegaMenu({ categories }: { categories: Category[] }) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -38,10 +51,10 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                 onFocus={() => open(category.slug)}
                 aria-expanded={openSlug === category.slug}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors duration-200",
+                  "relative inline-flex items-center gap-1 px-3 py-2 text-[13.5px] font-medium transition-colors duration-200",
                   openSlug === category.slug
-                    ? "bg-ink-100 text-ink-950"
-                    : "text-ink-700 hover:bg-ink-50 hover:text-ink-950",
+                    ? "text-ink-950"
+                    : "text-ink-700 hover:text-ink-950",
                 )}
               >
                 {category.name}
@@ -50,6 +63,17 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   className={cn(
                     "text-ink-400 transition-transform duration-200",
                     openSlug === category.slug && "rotate-180",
+                  )}
+                />
+                {/* The open department is marked with a rule rather than a
+                    filled pill, and the rule is drawn by an absolutely
+                    positioned span so that marking it costs the bar no height —
+                    every sticky offset below the header is measured from it. */}
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute inset-x-2 bottom-0 h-px transition-colors duration-200",
+                    openSlug === category.slug ? "bg-ink-950" : "bg-transparent",
                   )}
                 />
               </Link>
@@ -66,96 +90,91 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             onMouseEnter={() => open(active.slug)}
-            className="absolute left-0 top-[calc(100%+10px)] z-50 w-[min(1080px,calc(100vw-4rem))] overflow-hidden rounded-2xl border border-hairline bg-surface shadow-xl"
+            // An ink frame rather than a soft shadow: the panel is a sheet laid
+            // on the page, and a hairline would lose its edge against the white
+            // tiles it floats over.
+            className="absolute left-0 top-[calc(100%+10px)] z-50 w-[min(1080px,calc(100vw-4rem))] overflow-hidden border border-ink-950 bg-surface"
           >
             <div className="grid grid-cols-[minmax(0,1fr)_260px]">
               <div className="p-6">
-                <div className="mb-5 flex items-end justify-between gap-6 border-b border-hairline pb-4">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-600">
-                      {active.menuLabel}
-                    </p>
-                    <h3 className="mt-1 font-display text-xl tracking-[-0.02em] text-ink-950">
+                <div className="mb-4 flex items-end justify-between gap-6 border-b border-ink-950 pb-4">
+                  <div className="min-w-0">
+                    <span className="eyebrow">{active.menuLabel}</span>
+                    <h3 className="mt-2 font-display text-[22px] leading-none tracking-[-0.02em] text-ink-950">
                       {active.name}
                     </h3>
                   </div>
                   <Link
                     href={`/c/${active.slug}`}
-                    className="group inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-700 hover:underline underline-offset-4"
+                    className="group inline-flex shrink-0 items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors duration-200 hover:text-gold-700"
                   >
                     Shop all {active.name.toLowerCase()}
-                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+                    <ArrowRight
+                      size={14}
+                      className="transition-transform duration-200 group-hover:translate-x-1"
+                    />
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-3 gap-x-6 gap-y-1">
-                  {active.subcategories.map((sub) => (
-                    <Link
-                      key={sub.slug}
-                      href={`/c/${active.slug}/${sub.slug}`}
-                      className="group flex items-start gap-3 rounded-lg p-2 transition-colors hover:bg-ink-50"
-                    >
-                      <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-md bg-ink-100">
-                        <Image
-                          src={sub.image.url}
-                          alt=""
-                          fill
-                          sizes="44px"
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-[13.5px] font-medium text-ink-900 group-hover:text-brand-700">
-                          {sub.name}
-                        </span>
-                        <span className="mt-0.5 block line-clamp-1 text-[11.5px] text-ink-500">
-                          {sub.description}
-                        </span>
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-hairline pt-4">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-400">
-                    Top brands
-                  </span>
-                  {active.featuredBrands.map((slug) => (
-                    <Link
-                      key={slug}
-                      href={`/products?brands=${slug}&category=${active.slug}`}
-                      className="rounded-full border border-ink-200 px-3 py-1 text-xs text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700"
-                    >
-                      {slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <Link
-                href={`/c/${active.slug}`}
-                className="group relative block overflow-hidden bg-ink-950"
-              >
-                <Image
-                  src={active.image.url}
-                  alt=""
-                  fill
-                  sizes="260px"
-                  className="object-cover opacity-80 transition-transform duration-700 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-gold-300">
-                    Why we stock it
-                  </p>
-                  <ul className="mt-2 space-y-1">
-                    {active.highlights.map((h) => (
-                      <li key={h} className="text-[12.5px] leading-snug text-white/90">
-                        {h}
+                {/* One line to a collection. The second line of description each
+                    row used to carry was set at 11.5px, under the size anything
+                    on this site is allowed to be read at, and three columns of
+                    it turned the shortest route to a shelf into a page of prose. */}
+                {active.subcategories.length > 0 && (
+                  <ul className="grid grid-cols-3 gap-x-6">
+                    {active.subcategories.map((sub) => (
+                      <li key={sub.slug}>
+                        <Link
+                          href={`/c/${active.slug}/${sub.slug}`}
+                          className="group flex h-11 items-center gap-3 border-b border-hairline"
+                        >
+                          <DepartmentGlyph
+                            icon={active.icon}
+                            size={24}
+                            className="shrink-0 text-ink-400 transition-colors duration-200 group-hover:text-brand-700"
+                          />
+                          <span className="min-w-0 truncate text-[13.5px] font-medium text-ink-900 transition-colors duration-200 group-hover:text-brand-700">
+                            {sub.name}
+                          </span>
+                        </Link>
                       </li>
                     ))}
                   </ul>
-                </div>
+                )}
+
+                {active.featuredBrands.length > 0 && (
+                  <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                      Top brands
+                    </span>
+                    {active.featuredBrands.map((slug) => (
+                      <Link
+                        key={slug}
+                        href={`/products?brands=${slug}&category=${active.slug}`}
+                        className="inline-flex h-7 items-center border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                      >
+                        {slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* The mark on canvas, in place of the photograph. It is the same
+                  three kilobytes at every size and it says "department" rather
+                  than showing one product and implying the rest. */}
+              <Link
+                href={`/c/${active.slug}`}
+                className="group flex flex-col justify-center gap-5 border-l border-hairline bg-canvas p-6"
+              >
+                <DepartmentGlyph
+                  icon={active.icon}
+                  size={96}
+                  className="text-ink-900 transition-colors duration-200 group-hover:text-brand-700"
+                />
+                <span className="text-[13px] leading-[1.55] text-ink-600">
+                  {active.description}
+                </span>
               </Link>
             </div>
           </motion.div>

@@ -21,7 +21,7 @@ export function UnsubscribeForm({ email, e, t }: { email: string; e: string; t: 
   if (state.done) {
     return (
       <div>
-        <span className="flex h-11 w-11 items-center justify-center bg-brand-50 text-brand-700">
+        <span className="flex h-11 w-11 items-center justify-center border border-hairline text-ink-700">
           <MailCheck size={19} aria-hidden />
         </span>
         <p className="eyebrow mt-6">Unsubscribed</p>
@@ -54,7 +54,7 @@ export function UnsubscribeForm({ email, e, t }: { email: string; e: string; t: 
       <input type="hidden" name="e" value={e} />
       <input type="hidden" name="t" value={t} />
 
-      <span className="flex h-11 w-11 items-center justify-center bg-brand-50 text-brand-700">
+      <span className="flex h-11 w-11 items-center justify-center border border-hairline text-ink-700">
         <MailMinus size={19} aria-hidden />
       </span>
       <p className="eyebrow mt-6">Email preferences</p>

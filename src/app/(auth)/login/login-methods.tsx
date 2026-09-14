@@ -4,7 +4,14 @@ import { useState, type ReactNode } from "react";
 import { Mail, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Mobile OTP or email and password — one form at a time, mobile first. */
+/**
+ * Mobile OTP or email and password — one form at a time, mobile first.
+ *
+ * The two choices are set as tabs under a single rule rather than as a pair of
+ * pills in a tinted tray. A tray with a raised white pill inside it is the one
+ * control on these screens that still looked like a bought component, and the
+ * underline says the same thing with one line.
+ */
 export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactNode }) {
   const [method, setMethod] = useState<"phone" | "email">("phone");
   const tabs = [
@@ -14,7 +21,11 @@ export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactN
 
   return (
     <div>
-      <div role="tablist" aria-label="Sign-in method" className="mb-4 grid grid-cols-2 border border-hairline bg-ink-50 p-1 sm:mb-6">
+      <div
+        role="tablist"
+        aria-label="Sign-in method"
+        className="mb-4 grid grid-cols-2 border-b border-hairline sm:mb-6"
+      >
         {tabs.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -25,11 +36,14 @@ export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactN
             aria-controls={`login-panel-${id}`}
             onClick={() => setMethod(id)}
             className={cn(
-              "tap inline-flex h-10 items-center justify-center gap-2 text-[13px] font-semibold transition-colors sm:text-[13.5px]",
-              method === id ? "bg-surface text-ink-950 shadow-sm" : "text-ink-500 hover:text-ink-800",
+              "tap -mb-px inline-flex h-11 items-center justify-center gap-2 border-b-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[12px]",
+              method === id
+                ? "border-ink-950 text-ink-950"
+                : "border-transparent text-ink-500 hover:text-ink-900",
             )}
           >
-            <Icon size={15} /> {label}
+            <Icon size={15} className={method === id ? "text-ink-950" : "text-ink-400"} />
+            {label}
           </button>
         ))}
       </div>

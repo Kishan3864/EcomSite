@@ -2,28 +2,22 @@
 
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  FileText,
-  Headset,
-  MapPin,
-  Package,
-  RotateCcw,
-  Truck,
-  Wallet,
-} from "lucide-react";
+import { ArrowLeft, FileText, Headset, RotateCcw, Truck } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
 import { cn, formatDate, formatDateTime, formatINR } from "@/lib/utils";
 
+/** The heading every block on the account screens wears. */
+const PANEL_HEAD =
+  "border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5";
+
 export function OrderDetailClient({ order }: { order: Order | null }) {
 
   if (!order) {
     return (
       <EmptyState
-        icon={<Package size={26} />}
         title="Order not found"
         body="We could not find that order on your account. It may have been placed as a guest with a different email."
         className="px-4 py-8 sm:px-6 sm:py-16"
@@ -36,21 +30,76 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
     );
   }
 
+  /* The three standing facts about the parcel. They are rows in one block
+     rather than three small cards, which is what stops the right-hand column
+     reading as a stack of widgets. */
+  const facts: { title: string; body: React.ReactNode }[] = [
+    {
+      title: "Delivery address",
+      body: (
+        <>
+          <strong className="font-semibold text-ink-900">{order.address.fullName}</strong>
+          <br />
+          {order.address.line1}
+          {order.address.line2 ? `, ${order.address.line2}` : ""}
+          <br />
+          <span className="tabular-nums">
+            {order.address.city}, {order.address.state} {order.address.pincode}
+          </span>
+          <br />
+          <span className="tabular-nums">{order.address.phone}</span>
+        </>
+      ),
+    },
+    {
+      title: "Payment",
+      body: (
+        <>
+          <strong className="font-semibold text-ink-900">{order.paymentMethod.name}</strong>
+          <br />
+          {order.paymentMethod.description}
+        </>
+      ),
+    },
+    {
+      title: "Shipping",
+      body: (
+        <>
+          {order.awb ? (
+            <>
+              <strong className="font-semibold text-ink-900">{order.courier}</strong>
+              <br />
+              <span className="tabular-nums">AWB {order.awb}</span>
+            </>
+          ) : (
+            "Tracking number appears here once the parcel is booked."
+          )}
+          <br />
+          {order.delivery.name} · by {formatDate(order.estimatedDelivery, "short")}
+        </>
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-5 sm:space-y-6">
       <Link
         href="/account/orders"
-        className="tap -my-2 inline-flex items-center gap-1.5 py-2 text-[12.5px] font-medium text-ink-600 transition-colors hover:text-brand-700 sm:my-0 sm:py-0 sm:text-[13px]"
+        className="tap -my-2 inline-flex items-center gap-1.5 py-2 text-[13px] font-medium text-ink-600 transition-colors duration-200 hover:text-brand-700 sm:my-0 sm:py-0"
       >
         <ArrowLeft size={14} /> All orders
       </Link>
 
       <header className="flex flex-wrap items-end justify-between gap-3 sm:gap-4">
         <div className="min-w-0">
-          <h1 className="break-words font-display text-[22px] leading-tight tracking-[-0.025em] text-ink-950 sm:text-[32px]">
-            Order {order.number}
+          {/* The number leads, in the text face with tabular figures: Fraunces
+              sets its numerals proportionally and an order number is the one
+              string on this page somebody reads back over the phone. */}
+          <span className="eyebrow tabular-nums">{order.number}</span>
+          <h1 className="mt-2 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
+            Order details
           </h1>
-          <p className="mt-1 text-[13px] text-ink-600 sm:mt-1.5 sm:text-[13.5px]">
+          <p className="mt-2 text-[13px] leading-[1.55] tabular-nums text-ink-600 sm:text-[14px]">
             Placed on {formatDateTime(order.placedAt)} · {order.lines.length} item
             {order.lines.length > 1 ? "s" : ""} · {formatINR(order.totals.total)}
           </p>
@@ -74,21 +123,19 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
-          <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
-            <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:px-5 sm:py-4 sm:text-[12px]">
-              Items in this order
-            </h2>
-            <ul className="divide-y divide-hairline">
+          <section className="border border-hairline bg-surface">
+            <h2 className={PANEL_HEAD}>Items in this order</h2>
+            <ul>
               {order.lines.map((line) => (
                 // Wraps on a phone so the delivered-item actions can take a row
                 // of their own instead of squeezing beside the line total.
                 <li
                   key={line.id}
-                  className="flex flex-wrap gap-3 px-4 py-3.5 sm:flex-nowrap sm:gap-4 sm:px-5 sm:py-4"
+                  className="flex flex-wrap gap-3 border-b border-hairline px-4 py-4 last:border-b-0 sm:flex-nowrap sm:gap-4 sm:px-5"
                 >
                   <Link
                     href={`/p/${line.slug}`}
-                    className="relative h-[72px] w-[58px] shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-20 sm:w-16"
+                    className="relative h-[72px] w-[58px] shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-20 sm:w-16"
                   >
                     <Image
                       src={line.image}
@@ -99,21 +146,21 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
                     />
                   </Link>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
+                    <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
                       {line.brand}
                     </p>
                     <Link
                       href={`/p/${line.slug}`}
-                      className="line-clamp-2 text-[13px] font-medium text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
+                      className="mt-0.5 line-clamp-2 text-[13.5px] font-medium leading-[1.4] text-ink-900 transition-colors duration-200 hover:text-brand-700"
                     >
                       {line.title}
                     </Link>
-                    <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
+                    <p className="mt-1 text-[13px] tabular-nums text-ink-500">
                       {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty {line.quantity}
                     </p>
                     <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1.5" />
                     {order.status === "delivered" && (
-                      <LineActions slug={line.slug} className="mt-2.5 hidden sm:flex" />
+                      <LineActions slug={line.slug} className="mt-3 hidden sm:flex" />
                     )}
                   </div>
                   <p className="shrink-0 text-[13.5px] font-semibold tabular-nums text-ink-950 sm:text-[14px]">
@@ -127,23 +174,23 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
             </ul>
           </section>
 
-          <section className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
-            <h2 className="mb-4 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-5 sm:text-[12px]">
-              Shipment progress
-            </h2>
-            <TrackingTimeline events={order.tracking} />
+          <section className="border border-hairline bg-surface">
+            <h2 className={PANEL_HEAD}>Shipment progress</h2>
+            <div className="px-4 py-5 sm:px-5 sm:py-6">
+              <TrackingTimeline events={order.tracking} />
+            </div>
           </section>
         </div>
 
         {/* Phones stack these; tablets pair them up rather than stretch each
-            card across the full width. grid-cols-1 and min-w-0 let a long AWB
-            wrap inside its card instead of stretching the column. */}
-        <aside className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:block lg:space-y-4">
-          <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
-            <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">
-              Payment summary
-            </h2>
-            <dl className="space-y-2 px-4 py-3 text-[12.5px] sm:py-3.5 sm:text-[13px]">
+            block across the full width. grid-cols-1 and min-w-0 let a long AWB
+            wrap inside its column instead of stretching it. */}
+        <aside className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:block lg:space-y-4">
+          <section className="border border-hairline bg-surface">
+            <h2 className={PANEL_HEAD}>Payment summary</h2>
+            {/* A ledger, the same one the homepage sets under a product: label
+                left, figure right, a rule between every pair. */}
+            <dl className="divide-y divide-hairline px-4 sm:px-5">
               <Row label="Items total" value={formatINR(order.totals.mrpTotal)} />
               {order.totals.productDiscount > 0 && (
                 <Row
@@ -158,70 +205,24 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
               />
               <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
             </dl>
-            <div className="flex items-baseline justify-between gap-3 border-t border-hairline px-4 py-3">
-              <span className="text-[13px] font-semibold text-ink-950 sm:text-[13.5px]">Total</span>
-              <span className="text-[15px] font-semibold tabular-nums text-ink-950 sm:text-[16px]">
+            <div className="flex items-baseline justify-between gap-3 border-t border-hairline px-4 py-3.5 sm:px-5">
+              <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
+                Total
+              </span>
+              <span className="text-[16px] font-semibold tabular-nums text-ink-950">
                 {formatINR(order.totals.total)}
               </span>
             </div>
           </section>
 
-          {[
-            {
-              icon: MapPin,
-              title: "Delivery address",
-              body: (
-                <>
-                  <strong className="font-semibold text-ink-900">{order.address.fullName}</strong>
-                  <br />
-                  {order.address.line1}
-                  {order.address.line2 ? `, ${order.address.line2}` : ""}
-                  <br />
-                  {order.address.city}, {order.address.state} {order.address.pincode}
-                  <br />
-                  {order.address.phone}
-                </>
-              ),
-            },
-            {
-              icon: Wallet,
-              title: "Payment",
-              body: (
-                <>
-                  <strong className="font-semibold text-ink-900">
-                    {order.paymentMethod.name}
-                  </strong>
-                  <br />
-                  {order.paymentMethod.description}
-                </>
-              ),
-            },
-            {
-              icon: Truck,
-              title: "Shipping",
-              body: (
-                <>
-                  {order.awb ? (
-                    <>
-                      <strong className="font-semibold text-ink-900">{order.courier}</strong>
-                      <br />
-                      AWB {order.awb}
-                    </>
-                  ) : (
-                    "Tracking number appears here once the parcel is booked."
-                  )}
-                  <br />
-                  {order.delivery.name} · by {formatDate(order.estimatedDelivery, "short")}
-                </>
-              ),
-            },
-          ].map((card) => (
-            <section key={card.title} className="rounded-xl border border-hairline bg-surface p-4">
-              <h2 className="mb-2 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">
-                <card.icon size={13} className="text-brand-600" /> {card.title}
-              </h2>
-              {/* Long AWBs and unbroken address lines wrap instead of widening the card. */}
-              <p className="break-words text-[12.5px] leading-relaxed text-ink-600">{card.body}</p>
+          {facts.map((fact) => (
+            <section key={fact.title} className="border border-hairline bg-surface">
+              <h2 className={PANEL_HEAD}>{fact.title}</h2>
+              {/* Long AWBs and unbroken address lines wrap instead of widening
+                  the column. */}
+              <p className="break-words px-4 py-3.5 text-[13px] leading-[1.6] text-ink-600 sm:px-5 sm:py-4">
+                {fact.body}
+              </p>
             </section>
           ))}
 
@@ -260,16 +261,17 @@ function Row({
   muted?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3">
-      <dt className={muted ? "text-ink-400" : "text-ink-600"}>{label}</dt>
+    <div className="flex items-baseline justify-between gap-3 py-3">
+      <dt className={cn("text-[13px]", muted ? "text-ink-500" : "text-ink-600")}>{label}</dt>
       <dd
-        className={
+        className={cn(
+          "text-[13px] tabular-nums",
           save
-            ? "font-semibold tabular-nums text-brand-700"
+            ? "font-semibold text-sale-600"
             : muted
-              ? "tabular-nums text-ink-400"
-              : "tabular-nums text-ink-900"
-        }
+              ? "text-ink-500"
+              : "font-medium text-ink-900",
+        )}
       >
         {value}
       </dd>

@@ -4,30 +4,29 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import {
-  Check,
-  Heart,
-  Minus,
-  Package,
-  Plus,
-  RotateCcw,
-  ShieldCheck,
-  Truck,
-  Zap,
-} from "lucide-react";
+import { ArrowRight, Check, Heart, Minus, Plus } from "lucide-react";
 import type { Product } from "@/lib/types";
+import { BUSINESS } from "@/config/business";
 import { Button } from "@/components/ui/button";
 import { Price, RatingChip, Stars } from "@/components/ui/primitives";
 import { fromCard, useCommerce, type AddableProduct } from "@/store/commerce";
 import { DeliveryCheck } from "./delivery-check";
+import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
 import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
 
 export function BuyBox({
   product,
   brandName,
+  payments,
 }: {
   product: Product;
   brandName: string;
+  /**
+   * The live payment switches, read on the server. Optional only so that this
+   * still renders if a future caller forgets to pass them — in which case the
+   * payment row is left out rather than guessed at.
+   */
+  payments?: PublicPayments;
 }) {
   const [selection, setSelection] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -66,6 +65,46 @@ export function BuyBox({
   const mrp = product.mrp + (price - product.price);
   const off = discountPercent(mrp, price);
   const wished = isWishlisted(product.id);
+  // Stars and RatingChip render nothing until somebody has actually scored the
+  // product, which is every product in the shop today. The line they sit on
+  // carries a fact we can stand behind instead of an empty row.
+  const hasScore = product.reviewCount > 0 && product.rating > 0;
+
+  // Cash on delivery has to clear three gates: the shop offers it at all, this
+  // product allows it, and this price is inside the limit. Any one of them
+  // failing means it is not on the table for this basket.
+  const codHere = Boolean(
+    payments?.cod && product.codAvailable && price <= (payments?.codLimit ?? 0),
+  );
+  const paymentLine = payments
+    ? paymentSentence({ ...payments, cod: codHere })
+    : null;
+
+  // The four questions asked before anybody pays, answered in one ledger
+  // rather than in four little icon tiles. Every value comes from the
+  // product or from the operations record — nothing here is decorative.
+  const ledger: { label: string; value: string }[] = [
+    {
+      label: "Delivery",
+      value: `${product.deliveryDays} working day${product.deliveryDays > 1 ? "s" : ""}`,
+    },
+    {
+      label: "Shipping",
+      value: product.freeShipping ? "Free" : formatINR(BUSINESS.ops.shippingFee),
+    },
+    {
+      label: "Returns",
+      value: `${product.returnWindowDays} days · free pickup`,
+    },
+    { label: "Warranty", value: product.warranty },
+    // What this product can actually be paid with, according to the switches
+    // in the admin panel rather than to a flag on the product row. The page
+    // used to announce "Cash on Delivery available" on every product whose own
+    // flag was set, including on days when the owner had COD switched off —
+    // a promise the checkout would then refuse. With no live answer to hand
+    // the row is simply not shown; a blank is better than a guess.
+    ...(paymentLine ? [{ label: "Payment", value: paymentLine }] : []),
+  ];
 
   const addable: AddableProduct = fromCard({
     id: product.id,
@@ -100,54 +139,64 @@ export function BuyBox({
   }
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-5">
+    <div className="flex flex-col gap-5 sm:gap-6">
       <div>
-        <div className="mb-1.5 flex flex-wrap items-center gap-2 sm:mb-2">
+        <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
           <Link
             href={`/products?brands=${product.brandSlug}`}
-            className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-700 hover:underline underline-offset-4 sm:text-[12px]"
+            className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-500 transition-colors hover:text-brand-700"
           >
             {brandName}
           </Link>
           {product.badges.slice(0, 2).map((b) => (
             <span
               key={b}
-              className="rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-600"
+              className="border border-hairline px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600"
             >
               {b === "bestseller" ? "Bestseller" : b === "new" ? "New in" : b}
             </span>
           ))}
         </div>
 
-        {/* App scale on a phone, so under the full-width photo the price still
-            makes the first screen. The display face stays. */}
-        <h1 className="font-display text-[17px] leading-[1.3] tracking-[-0.01em] text-ink-950 sm:text-[32px] sm:leading-[1.12] sm:tracking-[-0.025em]">
+        {/* 20px is the floor for the display face anywhere on the site —
+            below it Fraunces stops being a voice and becomes a small serif —
+            so the phone gets 20px rather than the 17px it used to run. */}
+        <h1 className="font-display text-[20px] leading-[1.2] tracking-[-0.015em] text-ink-950 sm:text-[32px] sm:leading-[1.12] sm:tracking-[-0.025em]">
           {product.title}
         </h1>
-        <p className="mt-1 text-[13.5px] leading-snug text-ink-600 sm:mt-2 sm:text-[14.5px] sm:leading-relaxed">
+        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:mt-2.5 sm:text-[15px] sm:leading-[1.6]">
           {product.subtitle}
         </p>
 
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 sm:mt-3.5 sm:gap-x-4">
-          <a href="#reviews" className="tap flex items-center gap-2 hover:opacity-80">
-            <Stars value={product.rating} size={15} />
-            <RatingChip value={product.rating} count={product.reviewCount} />
-          </a>
-          <span className="text-[12px] text-ink-500 sm:text-[12.5px]">
-            {formatCompact(product.soldCount)}+ bought
-          </span>
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-ink-500 sm:mt-3.5">
+          {hasScore ? (
+            <>
+              <a href="#reviews" className="tap flex items-center gap-2 hover:opacity-80">
+                <Stars value={product.rating} size={15} />
+                <RatingChip value={product.rating} count={product.reviewCount} />
+              </a>
+              {product.soldCount > 0 && (
+                <span className="tabular-nums">{formatCompact(product.soldCount)}+ bought</span>
+              )}
+            </>
+          ) : (
+            <span className="tabular-nums">
+              Dispatched in {BUSINESS.ops.dispatchDays} working days
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Price block. Price's `xl` already drops to app scale (22px) below sm. */}
-      <div className="rounded-xl border border-hairline bg-surface p-3 sm:p-4">
+      {/* Price. Ruled top and bottom rather than boxed — `xl` is 22px on a
+          phone and 30px from 640px, in Jakarta with tabular figures. */}
+      <div className="border-y border-hairline py-3.5 sm:py-4">
         <Price price={price} mrp={mrp} size="xl" />
-        <p className="mt-1 text-[11.5px] text-ink-500 sm:mt-1.5 sm:text-[12px]">
+        <p className="mt-1.5 text-[13px] text-ink-500">
           Inclusive of all taxes
           {off > 0 && (
             <>
               {" · "}
-              <span className="font-semibold text-brand-700">
+              <span className="font-semibold tabular-nums text-sale-700">
                 You save {formatINR(mrp - price)}
               </span>
             </>
@@ -158,9 +207,9 @@ export function BuyBox({
       {/* Variants */}
       {product.variants.map((group) => (
         <section key={group.id}>
-          <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-2.5 sm:text-[12px]">
+          <h2 className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             {group.name}:{" "}
-            <span className="font-normal normal-case tracking-normal text-ink-600">
+            <span className="font-medium normal-case tracking-normal text-ink-900">
               {group.options.find((o) => o.value === selection[group.id])?.label}
             </span>
           </h2>
@@ -177,14 +226,18 @@ export function BuyBox({
                     aria-pressed={selected}
                     title={option.inStock ? option.label : `${option.label} — out of stock`}
                     className={cn(
-                      "tap relative h-10 w-10 rounded-full border-2 transition-all duration-200 sm:h-9 sm:w-9",
-                      selected
-                        ? "border-brand-700 ring-2 ring-brand-700/20 ring-offset-2"
-                        : "border-ink-200 hover:border-ink-400",
+                      // The colour sits inset inside its own frame, so the
+                      // chosen one is marked by the frame going to ink rather
+                      // than by a ring that would shift the row as it lands.
+                      "tap relative flex h-10 w-10 items-center justify-center border p-[3px] transition-colors duration-200 sm:h-9 sm:w-9",
+                      selected ? "border-ink-950" : "border-hairline hover:border-ink-400",
                       !option.inStock && "opacity-40",
                     )}
-                    style={{ backgroundColor: option.swatch }}
                   >
+                    <span
+                      className="h-full w-full"
+                      style={{ backgroundColor: option.swatch }}
+                    />
                     {!option.inStock && (
                       <span className="absolute inset-0 flex items-center justify-center">
                         <span className="h-[1.5px] w-8 rotate-45 bg-ink-500" />
@@ -200,17 +253,22 @@ export function BuyBox({
                   disabled={!option.inStock}
                   aria-pressed={selected}
                   className={cn(
-                    "tap min-h-10 min-w-[52px] rounded-lg border px-3 py-2 text-[12.5px] font-medium transition-all duration-200 sm:min-h-0 sm:px-3.5 sm:text-[13px]",
+                    "tap min-h-10 min-w-[52px] border px-3 py-2 text-[13px] font-medium transition-colors duration-200 sm:min-h-0 sm:px-3.5",
                     selected
-                      ? "border-brand-900 bg-brand-900 text-white"
-                      : "border-ink-200 bg-surface text-ink-800 hover:border-ink-500",
+                      ? "border-ink-950 bg-ink-950 text-white"
+                      : "border-hairline bg-surface text-ink-800 hover:border-ink-950",
                     !option.inStock &&
-                      "cursor-not-allowed border-dashed text-ink-300 line-through hover:border-ink-200",
+                      "cursor-not-allowed border-dashed text-ink-400 line-through hover:border-hairline",
                   )}
                 >
                   {option.label}
                   {option.priceDelta ? (
-                    <span className={cn("ml-1.5 text-[11px]", selected ? "text-white/70" : "text-ink-400")}>
+                    <span
+                      className={cn(
+                        "ml-1.5 text-[11.5px] tabular-nums",
+                        selected ? "text-white/70" : "text-ink-400",
+                      )}
+                    >
                       +{formatINR(option.priceDelta)}
                     </span>
                   ) : null}
@@ -223,38 +281,39 @@ export function BuyBox({
 
       {/* Quantity and stock */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div className="inline-flex items-center rounded-lg border border-ink-200 bg-surface">
+        <div className="inline-flex items-center border border-hairline bg-surface">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={qty <= 1}
             aria-label="Decrease quantity"
-            className="tap flex h-10 w-10 items-center justify-center rounded-l-lg text-ink-600 transition-colors hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
+            className="tap flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
           >
             <Minus size={15} />
           </button>
-          <span className="w-10 text-center text-[14px] font-semibold tabular-nums sm:w-11 sm:text-[15px]">
+          <span className="w-10 text-center text-[14px] font-semibold tabular-nums text-ink-900 sm:w-11 sm:text-[15px]">
             {qty}
           </span>
           <button
             onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
             disabled={qty >= product.stock}
             aria-label="Increase quantity"
-            className="tap flex h-10 w-10 items-center justify-center rounded-r-lg text-ink-600 transition-colors hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
+            className="tap flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
           >
             <Plus size={15} />
           </button>
         </div>
 
-        <p className="text-[12.5px] sm:text-[13px]">
+        <p className="text-[13px]">
           {!available ? (
             <span className="font-semibold text-sale-600">Currently unavailable</span>
           ) : product.stock <= 12 ? (
-            <span className="font-semibold text-sale-600">
-              Hurry — only {product.stock} left in stock
+            <span className="font-semibold tabular-nums text-sale-600">
+              Only {product.stock} left in stock
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 font-medium text-brand-700">
-              <Check size={14} strokeWidth={2.5} /> In stock, ready to ship
+            <span className="inline-flex items-center gap-1.5 font-medium text-ink-900">
+              <Check size={14} strokeWidth={2} className="text-ink-400" /> In stock, ready to
+              ship
             </span>
           )}
         </p>
@@ -306,7 +365,7 @@ export function BuyBox({
           }
           disabled={!available}
         >
-          <Zap size={16} /> Buy now
+          Buy now <ArrowRight size={15} />
         </Button>
         <Button
           size="icon"
@@ -323,31 +382,26 @@ export function BuyBox({
         </Button>
       </div>
 
-      <DeliveryCheck deliveryDays={product.deliveryDays} codAvailable={product.codAvailable} />
+      <DeliveryCheck deliveryDays={product.deliveryDays} codAvailable={codHere} />
 
-      {/* Trust row. Phones set the icon beside the words, which halves its
-          height; from sm the icon stacks over them, centred, as before. */}
-      <ul className="grid grid-cols-2 gap-x-3 gap-y-3.5 border-t border-hairline pt-4 sm:grid-cols-4 sm:gap-3 sm:pt-5">
-        {[
-          { icon: Truck, label: product.freeShipping ? "Free delivery" : "₹79 delivery", sub: `In ${product.deliveryDays} day${product.deliveryDays > 1 ? "s" : ""}` },
-          { icon: RotateCcw, label: `${product.returnWindowDays}-day returns`, sub: "Free pickup" },
-          { icon: ShieldCheck, label: "Warranty", sub: product.warranty.split(" ").slice(0, 3).join(" ") },
-          { icon: Package, label: product.codAvailable ? "COD available" : "Prepaid only", sub: product.codAvailable ? "Pay on delivery" : "Secure payment" },
-        ].map((item) => (
-          <li
-            key={item.label}
-            className="flex items-start gap-2 sm:flex-col sm:items-center sm:gap-1.5 sm:text-center"
+      {/* The ledger. Four icon tiles said less than five ruled lines do, and
+          the warranty no longer has to be cut to its first three words to fit
+          a tile — it is printed as the manufacturer wrote it. */}
+      <dl className="border-b border-hairline">
+        {ledger.map((row) => (
+          <div
+            key={row.label}
+            className="flex min-h-[44px] items-center justify-between gap-4 border-t border-hairline py-2"
           >
-            <item.icon size={18} className="shrink-0 text-brand-600" />
-            <span className="flex min-w-0 flex-col gap-0.5 sm:items-center sm:gap-1.5">
-              <span className="text-[12px] font-semibold leading-tight text-ink-900">
-                {item.label}
-              </span>
-              <span className="text-[11px] leading-tight text-ink-500">{item.sub}</span>
-            </span>
-          </li>
+            <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+              {row.label}
+            </dt>
+            <dd className="min-w-0 text-right text-[13.5px] font-medium tabular-nums text-ink-900">
+              {row.value}
+            </dd>
+          </div>
         ))}
-      </ul>
+      </dl>
     </div>
   );
 }

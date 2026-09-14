@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, Search, SearchX } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
+import { PaperMark } from "@/components/illustration/paper-mark";
 import { cn } from "@/lib/utils";
 
 interface Group {
@@ -37,8 +38,8 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
     // min-w-0: this is a grid column, and the chip rail's full width would
     // otherwise become its minimum and push the page sideways on a phone.
     <div className="min-w-0">
-      <div className="mb-3 flex h-11 items-center gap-2.5 rounded-xl border border-ink-200 bg-surface px-3.5 transition-colors focus-within:border-brand-500 sm:mb-5 sm:h-12 sm:px-4">
-        <Search size={17} className="shrink-0 text-ink-400" />
+      <div className="mb-3 flex h-11 items-center gap-2.5 rounded-field border border-ink-200 bg-canvas px-3.5 transition-colors focus-within:border-brand-500 sm:mb-5 sm:h-12 sm:px-4">
+        <Search size={16} className="shrink-0 text-ink-400" />
         <label htmlFor="faq-search" className="sr-only">
           Search the help centre
         </label>
@@ -49,21 +50,21 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
           onChange={(e) => setQuery(e.target.value)}
           type="search"
           placeholder="Search — try 'refund' or 'delivery'"
-          className="min-w-0 flex-1 bg-transparent text-[16px] text-ink-900 outline-none placeholder:text-ink-400 sm:text-sm"
+          className="min-w-0 flex-1 bg-transparent text-[16px] text-ink-900 outline-none placeholder:text-ink-400 sm:text-[14px]"
         />
       </div>
 
       {/* Runs edge to edge on phones, like any swipeable chip row. */}
-      <div className="rail -mx-3 mb-4 gap-2 px-3 sm:mx-0 sm:mb-7 sm:px-0">
+      <div className="rail -mx-3 mb-5 gap-2 px-3 sm:mx-0 sm:mb-8 sm:px-0">
         {["All", ...groups.map((g) => g.category)].map((c) => (
           <button
             key={c}
             onClick={() => setCategory(c)}
             className={cn(
-              "tap h-10 rounded-full border px-3.5 py-2 text-[12px] font-medium transition-colors sm:h-auto sm:text-[12.5px]",
+              "tap h-10 border px-3.5 text-[12px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
               category === c
-                ? "border-brand-900 bg-brand-900 text-white"
-                : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
+                ? "border-ink-950 bg-ink-950 text-white"
+                : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
             )}
           >
             {c}
@@ -72,21 +73,21 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
       </div>
 
       {total === 0 ? (
-        <div className="rounded-xl border border-dashed border-ink-200 px-4 py-8 text-center sm:px-6 sm:py-14">
-          <SearchX size={26} className="mx-auto text-ink-300" />
+        <div className="border border-hairline bg-surface px-4 py-10 text-center sm:px-6 sm:py-14">
+          <PaperMark size={120} className="mx-auto text-ink-300" />
           {/* break-words: the query is echoed back and may be one long word. */}
-          <p className="mt-3 break-words text-[14px] font-medium text-ink-900 sm:mt-4 sm:text-[15px]">
+          <h2 className="mt-5 break-words font-display text-[20px] tracking-[-0.02em] text-ink-950">
             Nothing matched &ldquo;{query}&rdquo;
-          </p>
-          <p className="mt-1.5 text-[12.5px] text-ink-500 sm:text-[13px]">
+          </h2>
+          <p className="mx-auto mt-2 max-w-[46ch] text-[13px] leading-[1.6] text-ink-500">
             Try a shorter word, or ask us directly — we answer within minutes.
           </p>
         </div>
       ) : (
-        <div className="space-y-6 sm:space-y-9">
+        <div className="space-y-7 sm:space-y-10">
           {filtered.map((group) => (
             <section key={group.category}>
-              <h2 className="mb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3">
+              <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:mb-3">
                 {group.category}
               </h2>
               <ul className="divide-y divide-hairline border-y border-hairline">
@@ -98,13 +99,18 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
                         onClick={() => setOpen(expanded ? null : item.q)}
                         aria-expanded={expanded}
                         // At least 44px per row on phones, a comfortable thumb target.
-                        className="tap flex min-h-11 w-full items-start gap-3 py-3 text-left sm:min-h-0 sm:gap-4 sm:py-4"
+                        className="tap group flex min-h-11 w-full items-start gap-3 py-3.5 text-left sm:gap-4 sm:py-4"
                       >
-                        <span className="min-w-0 flex-1 text-[13.5px] font-medium leading-snug text-ink-900 sm:text-[14.5px]">
+                        <span
+                          className={cn(
+                            "min-w-0 flex-1 text-[14px] font-medium leading-[1.4] transition-colors sm:text-[15px]",
+                            expanded ? "text-ink-950" : "text-ink-900 group-hover:text-brand-700",
+                          )}
+                        >
                           {item.q}
                         </span>
                         <ChevronDown
-                          size={17}
+                          size={16}
                           className={cn(
                             "mt-0.5 shrink-0 text-ink-400 transition-transform duration-200",
                             expanded && "rotate-180",
@@ -120,7 +126,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
                             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                             className="overflow-hidden"
                           >
-                            <p className="max-w-2xl pb-4 pr-6 text-[13.5px] leading-[1.7] text-ink-600 sm:pb-5 sm:pr-8 sm:text-[14px]">
+                            <p className="max-w-[68ch] pb-4 pr-6 text-[14px] leading-[1.75] text-ink-600 sm:pb-5 sm:pr-8 sm:text-[15px]">
                               {item.a}
                             </p>
                           </motion.div>

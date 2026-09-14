@@ -37,6 +37,15 @@ export interface AccountProfile {
   avatarUrl: string | null;
 }
 
+/**
+ * The account's own masthead and index.
+ *
+ * The list is ruled rather than pilled. A column of soft tinted lozenges is the
+ * house style of every dashboard template on the internet, and it also has to
+ * shout to show which one is current; a plain index with a single heavy rule
+ * against the live row says it once, quietly, and matches the way the shop
+ * lists departments on the homepage.
+ */
 export function AccountNav({
   profile,
   orderCount,
@@ -69,58 +78,64 @@ export function AccountNav({
   // the sub-pages carry their own title, so it would only push them down.
   const home = pathname === "/account";
 
+  // One shape for a link and for the sign-out button, so the last row of the
+  // index sits on exactly the same measure as the six above it.
+  const row =
+    "tap flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3.5 text-[13px] transition-colors duration-200 lg:h-12 lg:gap-3 lg:whitespace-normal lg:border-b-0 lg:border-l-2 lg:px-4 lg:text-[13.5px]";
+
   return (
     <div className="space-y-3 lg:space-y-4">
-      <div
-        className={cn(
-          "overflow-hidden rounded-xl border border-hairline bg-surface",
-          !home && "hidden lg:block",
-        )}
-      >
-        <div className="peacock-surface p-4 lg:p-5">
-          <div className="flex items-center gap-3">
-            <Avatar
-              src={profile?.avatarUrl}
-              seed={profile?.email ?? ""}
-              size={48}
-              className="ring-2 ring-white/20"
-            />
-            <div className="min-w-0">
-              <p className="truncate text-[14px] font-semibold text-white sm:text-[15px]">
-                {profile?.name}
-              </p>
-              <p className="truncate text-[11.5px] text-white/60 sm:text-[12px]">
-                {profile?.email}
-              </p>
-            </div>
+      <div className={cn("deep-plane p-4 lg:p-5", !home && "hidden lg:block")}>
+        <div className="flex items-center gap-3">
+          <Avatar
+            src={profile?.avatarUrl}
+            seed={profile?.email ?? ""}
+            size={48}
+            className="ring-1 ring-white/20"
+          />
+          <div className="min-w-0">
+            <p className="truncate text-[14px] font-semibold text-white sm:text-[15px]">
+              {profile?.name}
+            </p>
+            <p className="truncate text-[13px] text-white/60">{profile?.email}</p>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-white/10 px-3 py-2 backdrop-blur lg:mt-4 lg:py-2.5">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/50">
-                Membership
-              </p>
-              <p className="text-[13px] font-semibold text-gold-300">{profile?.tier}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/50">
-                Points
-              </p>
-              <p className="text-[13px] font-semibold tabular-nums text-white">
-                {(profile?.loyaltyPoints ?? 0).toLocaleString("en-IN")}
-              </p>
-            </div>
-          </div>
-          <p className="mt-2.5 text-[11px] text-white/40 lg:mt-3">
-            Member since {profile ? formatDate(profile.memberSince, "short") : "—"}
-          </p>
         </div>
+
+        {/* Two figures on one rule, rather than a frosted panel inside a
+            panel. The numerals are tabular so the points column does not
+            shift as it grows. */}
+        <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-white/10 pt-3.5">
+          <div className="min-w-0">
+            <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
+              Membership
+            </dt>
+            <dd className="mt-1 truncate text-[13.5px] font-semibold text-white">
+              {profile?.tier}
+            </dd>
+          </div>
+          <div className="min-w-0 text-right">
+            <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
+              Points
+            </dt>
+            <dd className="mt-1 text-[13.5px] font-semibold tabular-nums text-white">
+              {(profile?.loyaltyPoints ?? 0).toLocaleString("en-IN")}
+            </dd>
+          </div>
+        </dl>
+
+        <p className="mt-3 text-[13px] text-white/40">
+          Member since {profile ? formatDate(profile.memberSince, "short") : "—"}
+        </p>
       </div>
 
-      {/* A scrolling tab row below lg, the sidebar list from lg up. */}
-      <nav aria-label="Account" className="overflow-hidden rounded-xl border border-hairline bg-surface">
+      {/* A scrolling tab row below lg, the ruled index from lg up. */}
+      <nav
+        aria-label="Account"
+        className="border-b border-hairline lg:border lg:border-hairline lg:bg-surface"
+      >
         <ul
           ref={tabs}
-          className="no-scrollbar flex overflow-x-auto overscroll-x-contain lg:block lg:divide-y lg:divide-hairline lg:overflow-visible"
+          className="no-scrollbar flex overflow-x-auto overscroll-x-contain lg:block lg:overflow-visible"
         >
           {LINKS.map((link) => {
             const active = link.exact
@@ -129,22 +144,25 @@ export function AccountNav({
             const count = counts[link.href] ?? 0;
 
             return (
-              <li key={link.href} className="shrink-0">
+              <li
+                key={link.href}
+                className="shrink-0 lg:border-t lg:border-hairline lg:first:border-t-0"
+              >
                 <Link
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "tap flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3.5 text-[13px] transition-colors",
-                    "lg:h-auto lg:gap-3 lg:whitespace-normal lg:border-b-0 lg:px-4 lg:py-3 lg:text-[13.5px]",
+                    row,
+                    "-mb-px lg:mb-0",
                     active
-                      ? "border-brand-700 bg-brand-50 font-semibold text-brand-800"
-                      : "border-transparent text-ink-700 hover:bg-ink-50",
+                      ? "border-ink-950 font-semibold text-ink-950"
+                      : "border-transparent text-ink-600 hover:bg-ink-50 hover:text-ink-950",
                   )}
                 >
-                  <link.icon size={16} className={active ? "text-brand-700" : "text-ink-400"} />
+                  <link.icon size={16} className={active ? "text-ink-950" : "text-ink-400"} />
                   <span className="flex-1">{link.label}</span>
                   {count > 0 && (
-                    <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink-600">
+                    <span className="text-[11.5px] font-semibold tabular-nums text-ink-500">
                       {count}
                     </span>
                   )}
@@ -152,11 +170,14 @@ export function AccountNav({
               </li>
             );
           })}
-          <li className="shrink-0">
+          <li className="shrink-0 lg:border-t lg:border-hairline">
             <Form action={logoutAction}>
               <button
                 type="submit"
-                className="tap flex h-11 w-full items-center gap-2 whitespace-nowrap border-b-2 border-transparent px-3.5 text-left text-[13px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600 lg:h-auto lg:gap-3 lg:whitespace-normal lg:border-b-0 lg:px-4 lg:py-3 lg:text-[13.5px]"
+                className={cn(
+                  row,
+                  "-mb-px w-full border-transparent text-left text-ink-500 hover:bg-ink-50 hover:text-sale-600 lg:mb-0",
+                )}
               >
                 <LogOut size={16} className="text-ink-400" />
                 Sign out

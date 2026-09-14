@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "@/components/ui/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Check, Lock, RotateCcw, ShieldCheck, ShoppingBag } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 import { useStore } from "@/store/store";
@@ -28,6 +28,10 @@ export const CHECKOUT_STEPS = [
 ] as const;
 
 export type StepId = (typeof CHECKOUT_STEPS)[number]["id"];
+
+/** Every step draws its own 2px segment of one continuous rule. */
+const STEP_BASE =
+  "flex h-11 w-full items-center justify-center border-b-2 px-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] transition-colors duration-200 sm:h-12 sm:text-[11.5px] sm:tracking-[0.12em]";
 
 export function CheckoutShell({
   step,
@@ -61,10 +65,10 @@ export function CheckoutShell({
   if (!hydrated) {
     return (
       <div className="container-page py-6 sm:py-10">
-        <div className="skeleton h-12 rounded-xl sm:h-16" />
+        <div className="skeleton h-12 sm:h-16" />
         <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_368px]">
-          <div className="skeleton h-80 rounded-xl sm:h-96" />
-          <div className="skeleton h-72 rounded-xl" />
+          <div className="skeleton h-80 sm:h-96" />
+          <div className="skeleton h-72" />
         </div>
       </div>
     );
@@ -74,7 +78,6 @@ export function CheckoutShell({
     return (
       <div className="container-page py-8 sm:py-14">
         <EmptyState
-          icon={<ShoppingBag size={26} />}
           title="Your bag is empty"
           body="There is nothing to check out yet. Add something first and we will bring you straight back here."
           action={
@@ -89,105 +92,66 @@ export function CheckoutShell({
 
   return (
     <div className="pb-6 sm:pb-10">
-      {/* Reassurance strip — the site header already carries the logo. */}
-      <div className="border-b border-hairline bg-brand-950 py-2 text-white sm:py-2.5">
-        <div className="container-page flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11.5px] font-medium text-white/70 sm:gap-x-6">
-          <span className="flex items-center gap-1.5">
-            <Lock size={12} className="text-gold-300" />
-            Secure checkout
-          </span>
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck size={12} className="text-gold-300" />
-            256-bit encryption
-          </span>
-          <span className="hidden items-center gap-1.5 sm:flex">
-            <RotateCcw size={12} className="text-gold-300" />
-            Easy returns on everything
-          </span>
+      {/* Reassurance strip. The sentences are the reassurance; the padlock and
+          shield glyphs that used to sit beside them are the badge every scam
+          site wears, and they were spending the page's one warm colour three
+          times over on a line nobody was meant to look at. */}
+      <div className="border-b border-hairline bg-surface">
+        <div className="container-page flex flex-wrap items-center justify-center gap-x-5 gap-y-1 py-2.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-500 sm:gap-x-8 sm:py-3 sm:text-[11.5px] sm:tracking-[0.12em]">
+          <span>Secure checkout</span>
+          <span>256-bit encryption</span>
+          <span className="hidden sm:inline">Easy returns on everything</span>
         </div>
       </div>
 
-      {/* Stepper. On phones only the current step keeps its label and the
-          rules stretch between the numbers, so all five fit a 320px screen. */}
-      <nav aria-label="Checkout progress" className="border-b border-hairline bg-surface">
+      {/* The progress indicator is one rule across the page with the current
+          step marked in ink, the steps behind it in grey and the ones ahead in
+          hairline. It used to be a row of coloured pills and a sliding bar,
+          which is two indicators for one piece of information and needed a
+          horizontal scroll to fit a 320px screen. */}
+      <nav aria-label="Checkout progress" className="bg-surface">
         <div className="container-page">
-          <ol className="flex items-center gap-1 overflow-x-auto py-2 no-scrollbar sm:gap-2 sm:py-4">
+          <ol className="flex">
             {CHECKOUT_STEPS.map((s, i) => {
               const done = i < index;
               const current = i === index;
-              const content = (
-                <span
-                  className={cn(
-                    "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-1 py-1.5 text-[12px] font-medium transition-colors sm:gap-2 sm:px-2.5 sm:text-[12.5px]",
-                    current
-                      ? "bg-brand-50 pr-2 text-brand-800 sm:pr-2.5"
-                      : done
-                        ? "text-ink-700 hover:bg-ink-50"
-                        : "text-ink-400",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
-                      current
-                        ? "bg-brand-700 text-white"
-                        : done
-                          ? "bg-brand-100 text-brand-700"
-                          : "border border-ink-200 text-ink-400",
-                    )}
-                  >
-                    {done ? <Check size={12} strokeWidth={3} /> : i + 1}
-                  </span>
-                  <span className={current ? undefined : "sr-only sm:not-sr-only"}>{s.label}</span>
-                </span>
+              const classes = cn(
+                STEP_BASE,
+                current
+                  ? "border-ink-950 text-ink-950"
+                  : done
+                    ? "border-ink-400 text-ink-500 hover:text-ink-950"
+                    : "border-hairline text-ink-400",
               );
 
               return (
-                <li
-                  key={s.id}
-                  className="flex flex-auto items-center gap-1 last:flex-initial sm:flex-initial sm:gap-2"
-                >
+                <li key={s.id} className="min-w-0 flex-1">
                   {done ? (
-                    // Padding lifts the phone tap area to 40px; the negative margin keeps the row.
-                    <Link
-                      href={s.href}
-                      aria-label={`Back to ${s.label}`}
-                      className="tap -m-1.5 p-1.5 sm:m-0 sm:p-0"
-                    >
-                      {content}
+                    <Link href={s.href} aria-label={`Back to ${s.label}`} className={cn("tap", classes)}>
+                      <span className="min-w-0 truncate">{s.label}</span>
                     </Link>
                   ) : (
-                    <span aria-current={current ? "step" : undefined}>{content}</span>
-                  )}
-                  {i < CHECKOUT_STEPS.length - 1 && (
-                    <span
-                      className="h-px min-w-2 flex-1 bg-ink-200 sm:w-8 sm:flex-none"
-                      aria-hidden
-                    />
+                    <span aria-current={current ? "step" : undefined} className={classes}>
+                      <span className="min-w-0 truncate">{s.label}</span>
+                    </span>
                   )}
                 </li>
               );
             })}
           </ol>
-          <motion.div
-            className="h-0.5 rounded-full bg-brand-600"
-            initial={false}
-            animate={{ width: `${((index + 1) / CHECKOUT_STEPS.length) * 100}%` }}
-            transition={{ type: "spring", stiffness: 180, damping: 26 }}
-          />
         </div>
       </nav>
 
-      <div className="container-page pt-4 sm:pt-7">
-        <header className="mb-4 sm:mb-6">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
+      <div className="container-page pt-6 sm:pt-10">
+        <header className="mb-5 sm:mb-8">
+          <span className="eyebrow">
             Step {index + 1} of {CHECKOUT_STEPS.length}
-          </p>
-          <h1 className="mt-1 font-display text-[22px] leading-[1.1] tracking-[-0.025em] text-ink-950 sm:mt-1.5 sm:text-[32px]">
+          </span>
+          <h1 className="mt-2.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
             {title}
           </h1>
           {description && (
-            <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[14px]">
+            <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:mt-2.5 sm:text-[14px]">
               {description}
             </p>
           )}
@@ -195,10 +159,10 @@ export function CheckoutShell({
 
         <motion.div
           key={pathname}
-          initial={{ opacity: 0, x: 14 }}
+          initial={{ opacity: 0, x: 8 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-          className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_368px] lg:gap-8"
+          className="grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_368px] lg:gap-8"
         >
           <div className="min-w-0">{children}</div>
           <aside className="min-w-0 space-y-3 sm:space-y-4 lg:sticky lg:top-6 lg:h-fit">
@@ -211,12 +175,14 @@ export function CheckoutShell({
             Sticky rather than fixed: it rides along through the form and the
             summary, then parks above the footer. */}
         {action && (
-          <div className="sticky bottom-0 z-30 -mx-3 mt-4 border-t border-hairline bg-surface px-3 pb-safe sm:-mx-6 sm:px-6 lg:hidden">
+          <div className="sticky bottom-0 z-30 -mx-3 mt-4 border-t border-ink-950 bg-surface px-3 pb-safe sm:-mx-6 sm:px-6 lg:hidden">
             <div className="flex items-center justify-between gap-4 py-2.5">
               {total !== undefined && (
                 <p className="hidden min-w-0 sm:block">
-                  <span className="block text-[11.5px] text-ink-500">Total payable</span>
-                  <span className="block text-[17px] font-semibold leading-tight tabular-nums text-ink-950">
+                  <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                    Total payable
+                  </span>
+                  <span className="mt-0.5 block text-[17px] font-semibold leading-tight tabular-nums text-ink-950">
                     {formatINR(total)}
                   </span>
                 </p>
@@ -235,16 +201,16 @@ export function CheckoutAside() {
   const { cart } = useStore();
 
   return (
-    <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
-      <div className="flex items-center justify-between border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
-        <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
+    <div className="border border-hairline bg-surface">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3 sm:px-5">
+        <h2 className="min-w-0 truncate text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {cart.length} item{cart.length > 1 ? "s" : ""} in your bag
         </h2>
         {/* Padding widens the touch target; the negative margin keeps the layout.
             Off from lg, so the desktop focus ring still hugs the word. */}
         <Link
           href="/cart"
-          className="-m-2.5 p-2.5 text-[12px] font-semibold text-brand-700 hover:underline lg:m-0 lg:p-0"
+          className="-m-2.5 shrink-0 p-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors duration-200 hover:text-brand-700 lg:m-0 lg:p-0"
         >
           Edit
         </Link>
@@ -252,16 +218,19 @@ export function CheckoutAside() {
       <ul className="divide-y divide-hairline">
         {cart.map((line) => (
           <li key={line.id} className="flex items-center gap-3 px-4 py-2.5 sm:px-5 sm:py-3">
-            <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-md bg-ink-100">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={line.image} alt="" className="h-full w-full object-cover" />
+            {/* Routed through the shared image component like every other
+                picture on the site, so the remote-image policy applies here
+                too; it used to be a raw <img> with the lint rule switched off. */}
+            <span className="relative h-14 w-12 shrink-0 overflow-hidden border border-hairline bg-ink-100">
+              <Image src={line.image} alt="" fill sizes="48px" className="object-cover" />
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-[13px] font-medium text-ink-900">
                 {line.title}
               </span>
-              <span className="block text-[11.5px] text-ink-500">
-                {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty {line.quantity}
+              <span className="mt-0.5 block text-[13px] text-ink-500">
+                {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty{" "}
+                <span className="tabular-nums">{line.quantity}</span>
               </span>
             </span>
           </li>

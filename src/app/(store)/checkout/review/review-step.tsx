@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Lock, MapPin, Pencil, Truck, UserRound, Wallet } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -91,7 +91,6 @@ export function ReviewStep() {
 
   const summaryRows = [
     {
-      icon: MapPin,
       title: "Delivery address",
       href: "/checkout/address",
       body: address ? (
@@ -102,29 +101,30 @@ export function ReviewStep() {
           {address.line1}
           {address.line2 ? `, ${address.line2}` : ""}
           <br />
-          {address.city}, {address.state} {address.pincode}
+          {address.city}, {address.state}{" "}
+          <span className="tabular-nums">{address.pincode}</span>
           <br />
-          Phone: {address.phone}
+          Phone: <span className="tabular-nums">{address.phone}</span>
         </>
       ) : (
         "No address selected"
       ),
     },
     {
-      icon: Truck,
       title: "Delivery",
       // No link: there is one delivery, so there is nothing to go and change.
       body: (
         <>
           <strong className="font-semibold text-ink-900">{delivery.name}</strong> ·{" "}
-          {totals.shipping === 0 ? "Free" : formatINR(totals.shipping)}
+          <span className="tabular-nums">
+            {totals.shipping === 0 ? "Free" : formatINR(totals.shipping)}
+          </span>
           <br />
           Arriving {formatDate(eta.from, "day")} – {formatDate(eta.to, "day")}
         </>
       ),
     },
     {
-      icon: Wallet,
       title: "Payment method",
       href: "/checkout/payment",
       body: (
@@ -166,7 +166,6 @@ export function ReviewStep() {
               "w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8",
             )}
           >
-            <UserRound size={16} />
             Create an account to pay
           </Link>
         ) : (
@@ -177,34 +176,34 @@ export function ReviewStep() {
             onClick={pay}
             disabled={!address || !payment}
           >
-            <Lock size={16} />
             Pay {formatINR(totals.total)}
           </Button>
         )
       }
     >
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-6">
         {needsAccount && (
-          <section className="rounded-xl border border-brand-200 bg-brand-50 p-4 sm:p-5">
-            <h2 className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">
-              <UserRound size={16} className="shrink-0 text-brand-700" />
+          /* Ink, not a tinted panel. It is the most important thing on the page
+             and it earns that by being the only element drawn in full black. */
+          <section className="border border-ink-950 bg-surface p-4 sm:p-5">
+            <h2 className="font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
               You need an account to place this order
             </h2>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-700 sm:text-[13px]">
+            <p className="mt-2.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
               Your order history, tracking and returns all live in your account, so we ask for one
               before the payment goes through. Creating it takes a minute.
             </p>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-600 sm:text-[13px]">
+            <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
               Nothing here is lost. Your bag, address, delivery and payment choices stay exactly as
               they are and we bring you back to this page.
             </p>
-            <div className="mt-4 flex flex-wrap items-center gap-4">
+            <div className="mt-5 flex flex-wrap items-center gap-4">
               <Link href={REGISTER_HREF} className={buttonClasses("primary", "md")}>
                 Create an account
               </Link>
               <Link
                 href={SIGN_IN_HREF}
-                className="-my-2.5 py-2.5 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline lg:my-0 lg:py-0"
+                className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors duration-200 hover:text-brand-700 lg:my-0 lg:py-0"
               >
                 I already have one
               </Link>
@@ -212,15 +211,13 @@ export function ReviewStep() {
           </section>
         )}
 
-        <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
+        {/* One shared hairline grid: three panes of the same document rather
+            than three cards floating side by side. */}
+        <div className="tile-grid grid-cols-1 sm:grid-cols-3">
           {summaryRows.map((row) => (
-            <section
-              key={row.title}
-              className="min-w-0 rounded-xl border border-hairline bg-surface p-3.5 sm:p-4"
-            >
-              <div className="mb-1.5 flex items-center justify-between gap-2 sm:mb-2">
-                <h2 className="flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">
-                  <row.icon size={13} className="text-brand-600" />
+            <section key={row.title} className="min-w-0 p-3.5 sm:p-4">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <h2 className="min-w-0 truncate text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   {row.title}
                 </h2>
                 {/* A 40px target on phones; the negative margin keeps the row
@@ -230,19 +227,19 @@ export function ReviewStep() {
                   <Link
                     href={row.href}
                     aria-label={`Change ${row.title.toLowerCase()}`}
-                    className="tap -m-2.5 rounded-md p-3.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700 sm:m-0 sm:p-1"
+                    className="tap -m-2.5 shrink-0 p-3.5 text-ink-400 transition-colors duration-200 hover:text-brand-700 sm:m-0 sm:p-1"
                   >
                     <Pencil size={12} />
                   </Link>
                 )}
               </div>
-              <p className="text-[12.5px] leading-relaxed text-ink-600 wrap-break-word">{row.body}</p>
+              <p className="text-[13px] leading-[1.55] text-ink-600 wrap-break-word">{row.body}</p>
             </section>
           ))}
         </div>
 
-        <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
-          <h2 className="border-b border-hairline px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:px-5 sm:py-4">
+        <section className="border border-hairline bg-surface">
+          <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
             {cart.length} item{cart.length > 1 ? "s" : ""} in this order
           </h2>
           <ul className="divide-y divide-hairline">
@@ -250,26 +247,27 @@ export function ReviewStep() {
               <li key={line.id} className="flex gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
                 <Link
                   href={`/p/${line.slug}`}
-                  className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-ink-100"
+                  className="relative h-20 w-16 shrink-0 overflow-hidden border border-hairline bg-ink-100"
                 >
                   <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                 </Link>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
+                  <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
                     {line.brand}
                   </p>
                   <Link
                     href={`/p/${line.slug}`}
-                    className="line-clamp-2 text-[13px] font-medium text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
+                    className="mt-1 line-clamp-2 text-[13.5px] font-medium leading-[1.35] text-ink-900 transition-colors duration-200 hover:text-brand-700"
                   >
                     {line.title}
                   </Link>
-                  <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
-                    {line.variantLabel ? `${line.variantLabel} · ` : ""}Quantity {line.quantity}
+                  <p className="mt-1 text-[13px] text-ink-500">
+                    {line.variantLabel ? `${line.variantLabel} · ` : ""}Quantity{" "}
+                    <span className="tabular-nums">{line.quantity}</span>
                   </p>
-                  <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1 sm:mt-1.5" />
+                  <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1.5" />
                 </div>
-                <p className="shrink-0 text-[13.5px] font-semibold tabular-nums text-ink-950 sm:text-[14px]">
+                <p className="shrink-0 text-[14px] font-semibold tabular-nums text-ink-950">
                   {formatINR(line.price * line.quantity)}
                 </p>
               </li>
@@ -280,24 +278,22 @@ export function ReviewStep() {
         {/* The one Pay button on a desktop is in the order summary beside this;
             on a phone it is the pinned bar. This keeps only the terms — a second
             button here made two places to press for one payment. */}
-        <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
-          <p className="text-[12.5px] leading-relaxed text-ink-500">
-            By placing this order you agree to our{" "}
-            <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
-              terms
-            </Link>{" "}
-            and{" "}
-            <Link href="/legal/refunds" className="font-medium text-brand-700 hover:underline">
-              return policy
-            </Link>
-            .
-          </p>
-        </div>
+        <p className="border-t border-hairline pt-4 text-[13px] leading-[1.55] text-ink-500">
+          By placing this order you agree to our{" "}
+          <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
+            terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/refunds" className="font-medium text-brand-700 hover:underline">
+            return policy
+          </Link>
+          .
+        </p>
 
         {/* A 40px touch target on phones; the negative margin keeps the line. */}
         <Link
           href="/checkout/payment"
-          className="-my-2.5 inline-block py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
+          className="-my-2.5 inline-block py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
         >
           Back to payment
         </Link>

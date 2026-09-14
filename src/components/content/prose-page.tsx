@@ -11,18 +11,29 @@ export interface PolicySection {
   table?: { head: string[]; rows: string[][] };
 }
 
-// Below lg the contents list is a row of chips — swipeable on phones, wrapped
-// on tablets — so fifteen headings cost one line instead of a screenful. From
-// lg it is the sidebar list with a rule down its left edge. The hover colours
-// are repeated under lg: because lg: utilities sort after hover: ones and would
-// otherwise cancel the sidebar's hover state.
+// The contents list has two shapes. Below lg it is a row of square hairline
+// chips — swipeable on phones, wrapped on tablets — so fifteen headings cost
+// one line instead of a screenful. From lg it becomes what it really is: a
+// ruled index, numbered in tabular figures, each entry sitting on its own
+// rule down the left column.
+//
+// ORDER MATTERS IN THIS STRING. Every hover colour set without a breakpoint
+// has to be restated as `lg:hover:` — lg: utilities sort after hover: ones and
+// would otherwise cancel the hover state the chips set. That is why the border
+// and text colours appear twice; it is not a duplication to tidy away.
 const TOC_LINK =
-  "tap flex h-10 items-center whitespace-nowrap rounded-md border border-ink-200 bg-surface px-3.5 text-[12.5px] font-medium text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700 " +
-  "lg:-ml-px lg:block lg:h-auto lg:whitespace-normal lg:rounded-none lg:border-0 lg:border-l-2 lg:border-transparent lg:bg-transparent lg:py-1.5 lg:pl-4 lg:pr-0 lg:text-[13px] lg:font-normal lg:text-ink-600 lg:hover:border-brand-500 lg:hover:text-brand-700";
+  "tap flex h-10 items-center gap-2.5 whitespace-nowrap border border-hairline bg-surface px-3.5 text-[13px] font-medium text-ink-700 transition-colors hover:border-ink-950 hover:text-brand-700 " +
+  "lg:h-auto lg:items-baseline lg:whitespace-normal lg:border-x-0 lg:border-b-0 lg:border-t lg:border-hairline lg:bg-transparent lg:px-0 lg:py-2.5 lg:font-normal lg:text-ink-600 lg:hover:border-hairline lg:hover:text-brand-700";
 
 /**
- * Shared layout for policy and information pages: sticky contents rail on the
- * left, readable measure on the right.
+ * Shared layout for the policy pages and /services: a ruled index on the left,
+ * the document itself on the right.
+ *
+ * This is the longest reading on the site and the writing in it is the best
+ * the shop has, so it is set as a document rather than as a page of marketing:
+ * one measure of about 68 characters — wider than the 46 a headline or a
+ * product blurb wants, because a policy is read in paragraphs — a rule above
+ * every heading, and no box around anything.
  */
 export function ProsePage({
   eyebrow,
@@ -46,17 +57,15 @@ export function ProsePage({
       <BreadcrumbJsonLd items={crumbs} />
       <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-      <header className="mb-6 max-w-3xl sm:mb-10">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
-          {eyebrow}
-        </p>
-        <h1 className="mt-2 font-display text-[22px] leading-[1.1] tracking-[-0.03em] text-ink-950 sm:mt-2.5 sm:text-[42px] sm:leading-[1.06]">
+      <header className="mb-7 border-b border-ink-950 pb-6 sm:mb-10 sm:pb-8">
+        <span className="eyebrow">{eyebrow}</span>
+        <h1 className="mt-3 max-w-[22ch] font-display text-[26px] leading-[1.06] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[42px]">
           {title}
         </h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-ink-600 sm:mt-4 sm:text-[15px]">
+        <p className="mt-4 max-w-[62ch] text-[14px] leading-[1.6] text-ink-600 sm:text-[15px]">
           {intro}
         </p>
-        <p className="mt-3 text-[12px] text-ink-400 sm:mt-4 sm:text-[12.5px]">
+        <p className="mt-4 text-[13px] text-ink-500">
           Last updated {formatDate(updatedAt)} · Questions?{" "}
           <Link href="/contact" className="font-medium text-brand-700 hover:underline">
             Talk to a human
@@ -66,15 +75,21 @@ export function ProsePage({
 
       {/* min-w-0 on both columns: a table's min-content would otherwise size
           the single phone column and push the page sideways. */}
-      <div className="grid gap-6 sm:gap-8 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
+      <div className="grid gap-7 sm:gap-9 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
         <nav aria-label="On this page" className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 lg:mb-3">
+          <p className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 lg:mb-3">
             On this page
           </p>
-          <ul className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 lg:block lg:space-y-1 lg:border-l lg:border-hairline">
-            {sections.map((section) => (
+          <ul className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 lg:block lg:border-b lg:border-hairline">
+            {sections.map((section, i) => (
               <li key={section.id}>
                 <a href={`#${section.id}`} className={TOC_LINK}>
+                  <span
+                    aria-hidden
+                    className="hidden shrink-0 text-[11px] font-semibold tabular-nums text-ink-400 lg:block"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   {section.heading}
                 </a>
               </li>
@@ -82,30 +97,37 @@ export function ProsePage({
           </ul>
         </nav>
 
-        <div className="min-w-0 max-w-2xl space-y-7 sm:space-y-10">
+        <div className="min-w-0 space-y-8 sm:space-y-12">
           {sections.map((section) => (
             // The phone header is far shorter than the desktop one, so the
             // anchor offset is too.
-            <section key={section.id} id={section.id} className="scroll-mt-20 lg:scroll-mt-32">
-              <h2 className="font-display text-[18px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[26px]">
+            <section
+              key={section.id}
+              id={section.id}
+              className="scroll-mt-20 border-t border-hairline pt-6 sm:pt-9 lg:scroll-mt-32"
+            >
+              <h2 className="max-w-[34ch] font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[26px]">
                 {section.heading}
               </h2>
 
               {section.paragraphs?.map((paragraph) => (
                 <p
                   key={paragraph}
-                  className="mt-2.5 text-[14px] leading-[1.75] text-ink-600 sm:mt-3.5 sm:text-[14.5px]"
+                  className="mt-3 max-w-[68ch] text-[14px] leading-[1.75] text-ink-600 sm:mt-4 sm:text-[15px]"
                 >
                   {paragraph}
                 </p>
               ))}
 
               {section.bullets && (
-                <ul className="mt-3 space-y-2 sm:mt-4 sm:space-y-2.5">
+                // A short rule for a bullet rather than a coloured dot: the
+                // same hairline the rest of the page is built from, set at the
+                // cap height of the first line.
+                <ul className="mt-4 max-w-[68ch] space-y-2.5 sm:mt-5">
                   {section.bullets.map((bullet) => (
                     <li
                       key={bullet}
-                      className="relative pl-4 text-[14px] leading-[1.7] text-ink-600 before:absolute before:left-0 before:top-[0.7em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-brand-500 sm:pl-5 sm:text-[14.5px]"
+                      className="relative pl-6 text-[14px] leading-[1.7] text-ink-600 before:absolute before:left-0 before:top-[0.8em] before:h-px before:w-3.5 before:bg-ink-400 sm:text-[15px]"
                     >
                       {bullet}
                     </li>
@@ -117,14 +139,14 @@ export function ProsePage({
                 // Two- and three-column tables fit a phone once the cells
                 // tighten, so the 420px floor only applies from sm; the
                 // scroller stays as a guard.
-                <div className="mt-4 overflow-x-auto sm:mt-5">
-                  <table className="w-full border-collapse text-[13px] sm:min-w-[420px] sm:text-[13.5px]">
+                <div className="mt-5 overflow-x-auto sm:mt-6">
+                  <table className="w-full border-collapse text-[13.5px] tabular-nums sm:min-w-[420px] sm:text-[14px]">
                     <thead>
-                      <tr className="border-b border-ink-200">
+                      <tr className="border-b border-rule">
                         {section.table.head.map((cell) => (
                           <th
                             key={cell}
-                            className="py-2 pr-3 text-left align-bottom text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-500 sm:py-2.5 sm:pr-4 sm:align-middle"
+                            className="py-2.5 pr-3 text-left align-bottom text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:pr-4 sm:align-middle"
                           >
                             {cell}
                           </th>
@@ -141,8 +163,8 @@ export function ProsePage({
                               // uneven heights and centring reads as drift.
                               className={
                                 i === 0
-                                  ? "py-2.5 pr-3 align-top font-medium text-ink-900 sm:py-3 sm:pr-4 sm:align-middle"
-                                  : "py-2.5 pr-3 align-top text-ink-600 sm:py-3 sm:pr-4 sm:align-middle"
+                                  ? "py-3 pr-3 align-top font-medium text-ink-900 sm:pr-4 sm:align-middle"
+                                  : "py-3 pr-3 align-top text-ink-600 sm:pr-4 sm:align-middle"
                               }
                             >
                               {cell}
@@ -158,7 +180,7 @@ export function ProsePage({
           ))}
 
           {footerNote && (
-            <div className="break-words rounded-xl border border-hairline bg-surface p-4 text-[13px] leading-relaxed text-ink-600 sm:p-5 sm:text-[13.5px]">
+            <div className="max-w-[68ch] break-words border border-hairline bg-surface p-4 text-[13.5px] leading-[1.7] text-ink-600 sm:p-5">
               {footerNote}
             </div>
           )}

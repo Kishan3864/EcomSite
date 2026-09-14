@@ -44,13 +44,13 @@ export function StickyBuyBar({ product }: { product: ProductCardModel }) {
             animate={reduce ? { opacity: 1 } : { y: 0 }}
             exit={reduce ? { opacity: 0 } : { y: 90 }}
             transition={{ type: "spring", stiffness: 340, damping: 34 }}
-            className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+61px)] z-40 border-t border-hairline bg-canvas/96 backdrop-blur-xl lg:bottom-0 lg:pb-[env(safe-area-inset-bottom)]"
+            className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+61px)] z-40 border-t border-rule bg-canvas/96 backdrop-blur-xl lg:bottom-0 lg:pb-[env(safe-area-inset-bottom)]"
           >
             {/* Phones keep it to one line: the price, then two actions sized
                 for a thumb. A title truncated to a dozen letters tells the
                 shopper nothing, so it waits for the width sm brings. */}
             <div className="container-page flex items-center gap-2 py-2 sm:gap-3 sm:py-2.5">
-              <div className="relative hidden h-12 w-11 shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:block">
+              <div className="relative hidden h-12 w-11 shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:block">
                 <Image src={product.image} alt="" fill sizes="44px" className="object-cover" />
               </div>
               <div className="min-w-0 flex-1">
@@ -63,7 +63,7 @@ export function StickyBuyBar({ product }: { product: ProductCardModel }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="tap h-10 px-2.5 tracking-[0.08em] sm:h-11 sm:px-5 sm:tracking-[0.12em]"
+                  className="tap h-10 px-2.5 tracking-[0.08em] sm:h-11 sm:px-5 sm:text-[12px] sm:tracking-[0.12em]"
                   disabled={outOfStock}
                   onClick={() => addToCart(fromCard(product), { openDrawer: true })}
                 >
@@ -71,7 +71,7 @@ export function StickyBuyBar({ product }: { product: ProductCardModel }) {
                 </Button>
                 <Button
                   size="sm"
-                  className="tap h-10 px-2.5 tracking-[0.08em] sm:h-11 sm:px-5 sm:tracking-[0.12em]"
+                  className="tap h-10 px-2.5 tracking-[0.08em] sm:h-11 sm:px-5 sm:text-[12px] sm:tracking-[0.12em]"
                   disabled={outOfStock}
                   onClick={() => buyNow(fromCard(product))}
                 >

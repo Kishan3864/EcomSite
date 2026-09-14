@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Banknote, Lock, ShieldCheck, Smartphone } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { PaymentMethodId } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
@@ -19,6 +19,10 @@ const GATEWAY_METHODS = ["UPI", "Google Pay", "PhonePe", "Paytm", "Cards", "Net 
 
 /** Every UPI app can pay the QR; these are the ones people look for by name. */
 const UPI_APP_NAMES = ["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay", "Any UPI app"];
+
+/** The named apps and gateway methods, set as outlined stamps rather than pills. */
+const CHIP =
+  "border border-hairline bg-surface px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600";
 
 /**
  * How the customer would like to pay.
@@ -134,54 +138,46 @@ export function PaymentStep() {
         <ul className="space-y-2 sm:space-y-3">
           {config.paymentMethods.map((method) => {
             const disabled = method.id === "cod" && !codAllowed;
-            const Icon =
-              method.id === "cod" ? Banknote : method.id === "upi" ? Smartphone : ShieldCheck;
 
             return (
               <li key={method.id}>
+                {/* No glyph beside the name. A shield next to "pay online" is a
+                    trust seal, and a trust seal is the one decoration this page
+                    cannot afford — the words have to carry it. */}
                 <OptionCard
                   selected={selected === method.id}
                   onSelect={() => choose(method.id)}
                   disabled={disabled}
-                  title={
-                    <span className="flex items-center gap-2">
-                      <Icon size={16} className="text-brand-600" />
-                      {method.name}
-                    </span>
-                  }
-                  badge={method.badge ? <Badge tone="gold">{method.badge}</Badge> : null}
+                  title={method.name}
+                  badge={method.badge ? <Badge tone="outline">{method.badge}</Badge> : null}
                   subtitle={disabled ? codReason : method.description}
                 >
                   {method.id === "upi" && (
-                    <div className="space-y-3">
+                    <div className="space-y-3.5">
                       <ul className="flex flex-wrap gap-1.5" aria-label="Works with">
                         {UPI_APP_NAMES.map((label) => (
-                          <li
-                            key={label}
-                            className="border border-ink-200 bg-surface px-2 py-1 text-[11px] font-medium text-ink-700"
-                          >
+                          <li key={label} className={CHIP}>
                             {label}
                           </li>
                         ))}
                       </ul>
-                      <ol className="space-y-1.5 text-[12.5px] leading-relaxed text-ink-600">
-                        <li className="flex gap-2">
-                          <span className="font-semibold text-ink-900">1.</span>
-                          Scan our QR, or tap through to your UPI app on a phone.
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="font-semibold text-ink-900">2.</span>
-                          Pay {formatINR(totals.total)} and copy the 12-digit reference your app
-                          shows.
-                        </li>
-                        <li className="flex gap-2">
-                          <span className="font-semibold text-ink-900">3.</span>
-                          Enter it on the next screen. We check it against our bank and confirm —
-                          usually within a few hours, and you get an email the moment we do.
-                        </li>
+                      {/* Three ruled rows: what to do, in the order it happens. */}
+                      <ol className="border-b border-hairline">
+                        {[
+                          "Scan our QR, or tap through to your UPI app on a phone.",
+                          `Pay ${formatINR(totals.total)} and copy the 12-digit reference your app shows.`,
+                          "Enter it on the next screen. We check it against our bank and confirm — usually within a few hours, and you get an email the moment we do.",
+                        ].map((line, i) => (
+                          <li
+                            key={line}
+                            className="flex gap-3 border-t border-hairline py-2.5 text-[13px] leading-[1.55] text-ink-600"
+                          >
+                            <span className="shrink-0 tabular-nums text-ink-400">{i + 1}</span>
+                            <span className="min-w-0">{line}</span>
+                          </li>
+                        ))}
                       </ol>
-                      <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-600">
-                        <Lock size={13} className="mt-0.5 shrink-0 text-brand-600" />
+                      <p className="text-[13px] leading-[1.55] text-ink-600">
                         Your UPI PIN is entered only inside your own payment app — it never reaches
                         our servers.
                       </p>
@@ -189,19 +185,15 @@ export function PaymentStep() {
                   )}
 
                   {method.id === "online" && (
-                    <div className="space-y-3">
+                    <div className="space-y-3.5">
                       <ul className="flex flex-wrap gap-1.5" aria-label="Accepted on the next step">
                         {GATEWAY_METHODS.map((label) => (
-                          <li
-                            key={label}
-                            className="border border-ink-200 bg-surface px-2 py-1 text-[11px] font-medium text-ink-700"
-                          >
+                          <li key={label} className={CHIP}>
                             {label}
                           </li>
                         ))}
                       </ul>
-                      <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-600">
-                        <Lock size={13} className="mt-0.5 shrink-0 text-brand-600" />
+                      <p className="text-[13px] leading-[1.55] text-ink-600">
                         You pick UPI, card or net banking on PayU&apos;s checkout at the last
                         step. Card numbers, CVV and UPI PINs are entered there — they never reach
                         our servers, and we never store them.
@@ -210,7 +202,7 @@ export function PaymentStep() {
                   )}
 
                   {method.id === "cod" && (
-                    <p className="text-[12.5px] leading-relaxed text-ink-600">
+                    <p className="text-[13px] leading-[1.55] text-ink-600">
                       Keep {formatINR(totals.total)} ready, or pay the delivery partner by UPI at the
                       door. There is no extra charge for cash on delivery.
                     </p>
@@ -231,7 +223,7 @@ export function PaymentStep() {
           {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
             href="/checkout/address"
-            className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
+            className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
           >
             Back to address
           </Link>

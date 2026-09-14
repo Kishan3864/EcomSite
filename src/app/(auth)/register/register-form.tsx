@@ -11,6 +11,10 @@ import { registerAction } from "@/services/commerce";
 import { cn } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
+/** Matches the block the shared `Form` draws for a failed constraint. */
+const ERROR_BLOCK =
+  "flex items-start gap-2 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600";
+
 function strength(password: string) {
   let score = 0;
   if (password.length >= 8) score++;
@@ -21,7 +25,17 @@ function strength(password: string) {
 }
 
 const LABELS = ["Too short", "Weak", "Fair", "Good", "Strong"];
-const TONES = ["bg-ink-200", "bg-sale-500", "bg-gold-400", "bg-brand-400", "bg-brand-600"];
+
+/**
+ * The meter fills with ink, not with a traffic light.
+ *
+ * It used to run oxblood, saffron, indigo — which spent two of the three
+ * colours the shop reserves for something else entirely: saffron marks the one
+ * action worth taking on a page, and oxblood means a price has come down.
+ * Neither is a comment on a password. Graphite darkening into indigo says
+ * "stronger" just as plainly and leaves the signals intact.
+ */
+const TONES = ["bg-ink-200", "bg-ink-400", "bg-ink-500", "bg-brand-500", "bg-brand-700"];
 
 function CreateButton() {
   const { pending } = useFormStatus();
@@ -44,10 +58,7 @@ export function RegisterForm({ next }: { next?: string }) {
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.error && !state.field && (
-        <p
-          role="alert"
-          className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
-        >
+        <p role="alert" className={ERROR_BLOCK}>
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           {state.error}
         </p>
@@ -112,7 +123,7 @@ export function RegisterForm({ next }: { next?: string }) {
             aria-label={show ? "Hide password" : "Show password"}
             // 40px square on a phone, the minimum comfortable tap; from sm up
             // it shrinks back to the icon and its padding.
-            className="absolute right-0.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700 sm:right-1.5 sm:h-auto sm:w-auto sm:p-2"
+            className="absolute right-0.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center text-ink-400 transition-colors duration-200 hover:text-ink-900 sm:right-1.5 sm:h-auto sm:w-auto sm:p-2"
           >
             {show ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
@@ -127,19 +138,20 @@ export function RegisterForm({ next }: { next?: string }) {
                 key={i}
                 initial={false}
                 animate={{ opacity: i < score ? 1 : 0.25 }}
-                className={cn("h-1 flex-1 rounded-full", i < score ? TONES[score] : "bg-ink-200")}
+                className={cn("h-[3px] flex-1", i < score ? TONES[score] : "bg-ink-200")}
               />
             ))}
           </div>
-          <p className="mt-1.5 text-[11.5px] text-ink-500">
-            Password strength: <strong className="text-ink-800">{LABELS[score]}</strong> — mix in a
+          <p className="mt-2 text-[13px] leading-[1.5] text-ink-500">
+            Password strength:{" "}
+            <strong className="font-semibold text-ink-900">{LABELS[score]}</strong> — mix in a
             capital letter, a number and a symbol.
           </p>
         </div>
       )}
 
       {/* Required, so the browser blocks the submit rather than a round trip. */}
-      <label className="flex cursor-pointer items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">
+      <label className="flex cursor-pointer items-start gap-2.5 text-[13px] leading-[1.5] text-ink-600">
         <input
           type="checkbox"
           name="terms"
@@ -149,11 +161,11 @@ export function RegisterForm({ next }: { next?: string }) {
         />
         <span>
           I agree to the{" "}
-          <Link href="/legal/terms" className="font-semibold text-brand-700 hover:underline">
+          <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
             terms of service
           </Link>{" "}
           and{" "}
-          <Link href="/legal/privacy" className="font-semibold text-brand-700 hover:underline">
+          <Link href="/legal/privacy" className="font-medium text-brand-700 hover:underline">
             privacy policy
           </Link>
           .

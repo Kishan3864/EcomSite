@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowLeft, Check, Lock, PackageCheck, RotateCcw, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { BRAND, Logo } from "@/components/brand/logo";
+import { BUSINESS } from "@/config/business";
 import { AuthArt } from "@/components/auth/auth-art";
 
 const PROMISES = [
@@ -10,11 +11,17 @@ const PROMISES = [
   "Free returns within the return window",
 ];
 
-/** The line along the foot of the panel: what the shop is, in three facts. */
+/**
+ * The line along the foot of the panel: what the shop is, in three facts.
+ *
+ * The two numbers are read from the business record rather than typed out, so
+ * the promise made to somebody signing up cannot drift away from the one the
+ * shipping and returns policies make on the same site.
+ */
 const ASSURANCES = [
-  { Icon: ShieldCheck, label: "Bought and invoiced by us" },
-  { Icon: PackageCheck, label: "Dispatched in 2 days" },
-  { Icon: RotateCcw, label: "7-day returns" },
+  "Bought and invoiced by us",
+  `Dispatched in ${BUSINESS.ops.dispatchDays} working days`,
+  `${BUSINESS.ops.returnWindowDays}-day returns`,
 ];
 
 /**
@@ -31,6 +38,12 @@ const ASSURANCES = [
  * The right-hand panel is illustrated rather than photographed — see AuthArt —
  * and carries real headed copy, so the page has something to say to a reader
  * and to a search engine rather than a darkened stock photograph.
+ *
+ * What it promises is set as a ruled index rather than a list of ticks in
+ * saffron boxes. Four saffron squares repeated down one panel spend the site's
+ * only warm colour on its least important line, which is precisely what makes
+ * an accent stop meaning anything; the rules between the rows do the same work
+ * and cost nothing.
  */
 export function AuthShell({
   title,
@@ -56,7 +69,7 @@ export function AuthShell({
           <Logo href={null} size="sm" />
           <Link
             href="/"
-            className="tap -mr-2 inline-flex h-9 items-center gap-1.5 px-2 text-[12.5px] font-medium text-ink-600 transition-colors hover:text-brand-700 sm:mr-0 sm:px-0"
+            className="tap -mr-2 inline-flex h-9 items-center gap-1.5 px-2 text-[13px] font-medium text-ink-600 transition-colors duration-200 hover:text-brand-700 sm:mr-0 sm:px-0"
           >
             <ArrowLeft size={14} /> Back to the shop
           </Link>
@@ -73,7 +86,7 @@ export function AuthShell({
             <h1 className="font-display text-[26px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:text-[32px]">
               {title}
             </h1>
-            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-500 sm:mt-2 sm:text-[13.5px]">
+            <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:mt-2.5">
               {subtitle}
             </p>
 
@@ -81,63 +94,67 @@ export function AuthShell({
 
             {/* True on every screen that uses this shell: TLS on the wire,
                 bcrypt at rest. Worth saying plainly where someone is deciding
-                whether to trust the shop with an address and a card. */}
-            <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-ink-400">
-              <Lock size={11} className="shrink-0" />
+                whether to trust the shop with an address and a card — and worth
+                saying in words rather than with a padlock glyph, which is the
+                badge every phishing page in the world also wears. */}
+            <p className="mt-5 text-center text-[13px] leading-[1.5] text-ink-500">
               Encrypted connection. Your password is never stored in plain text.
             </p>
 
-            <div className="mt-4 border-t border-hairline pt-3.5 text-center text-[12.5px] text-ink-600 sm:text-[13px]">
+            <div className="mt-4 border-t border-hairline pt-4 text-center text-[13px] leading-[1.5] text-ink-600">
               {footer}
             </div>
           </div>
         </main>
 
-        <footer className="shrink-0 text-center text-[11.5px] text-ink-400 lg:text-left">
+        <footer className="shrink-0 text-center text-[13px] text-ink-500 lg:text-left">
           Trouble signing in?{" "}
-          <Link href="/contact" className="underline underline-offset-2 hover:text-ink-700">
+          <Link
+            href="/contact"
+            className="underline underline-offset-2 transition-colors duration-200 hover:text-brand-700"
+          >
             Talk to our team
           </Link>
         </footer>
       </div>
 
-      <aside className="relative hidden overflow-hidden bg-brand-950 lg:flex lg:flex-col">
+      <aside className="deep-plane relative hidden overflow-hidden lg:flex lg:flex-col">
         <AuthArt className="pointer-events-none absolute -right-12 top-2 h-[62%] w-auto opacity-95" />
 
         <div className="relative mt-auto p-10 xl:p-14">
-          <p className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-gold-300">
-            Why create an account
-          </p>
-          <h2 className="mt-3 max-w-md font-display text-[30px] leading-[1.1] tracking-[-0.025em] text-white xl:text-[34px]">
+          <span className="eyebrow eyebrow-dark">Why create an account</span>
+          <h2 className="mt-4 max-w-md font-display text-[30px] leading-[1.1] tracking-[-0.025em] text-white xl:text-[34px]">
             Your orders, addresses and wishlist in one place.
           </h2>
-          <p className="mt-2.5 max-w-sm text-[13px] leading-relaxed text-white/55">
+          <p className="mt-3 max-w-[46ch] text-[14px] leading-[1.6] text-white/70 xl:text-[15px]">
             {BRAND.name} holds its own stock and invoices every order itself, so
             what you buy, where it is and who to ask about it all live behind one
             sign-in.
           </p>
 
-          <ul className="mt-5 space-y-2">
+          <ul className="mt-7 border-b border-white/10">
             {PROMISES.map((promise) => (
-              <li key={promise} className="flex items-start gap-2.5 text-[13.5px] text-white/80">
-                <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center bg-gold-400 text-brand-950">
-                  <Check size={11} strokeWidth={3.5} />
-                </span>
+              <li
+                key={promise}
+                className="flex min-h-[46px] items-center border-t border-white/10 py-2.5 text-[13.5px] leading-[1.45] text-white/80"
+              >
                 {promise}
               </li>
             ))}
           </ul>
 
-          <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 border-t border-white/10 pt-5">
-            {ASSURANCES.map(({ Icon, label }) => (
-              <span key={label} className="flex items-center gap-1.5 text-[11.5px] text-white/45">
-                <Icon size={13} className="text-gold-400" />
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+            {ASSURANCES.map((label) => (
+              <li
+                key={label}
+                className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/50"
+              >
                 {label}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
 
-          <p className="mt-6 text-[11px] text-white/25">{BRAND.legalName}</p>
+          <p className="mt-7 text-[13px] text-white/40">{BRAND.legalName}</p>
         </div>
       </aside>
     </div>

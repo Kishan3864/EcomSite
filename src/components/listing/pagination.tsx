@@ -28,9 +28,13 @@ export function Pagination({
   // hole the list has no ellipsis for, one stands in on phones only.
   const crowded = pages.filter((p) => p !== "gap").length >= 5;
 
+  // Square cells on a hairline, one of them inked: the same language as the
+  // tile grid above it, so the foot of the page belongs to the page.
   const linkClass =
-    "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-[12.5px] font-medium transition-colors sm:text-[13px]";
-  const gapClass = "px-1 text-ink-400";
+    "inline-flex h-10 min-w-10 items-center justify-center border px-3 text-[13px] font-medium tabular-nums transition-colors duration-200";
+  const restClass = "border-hairline bg-surface text-ink-700 hover:border-ink-950 hover:text-ink-950";
+  const spentClass = "border-hairline bg-canvas text-ink-400";
+  const gapClass = "px-1 text-[13px] text-ink-400";
 
   return (
     <nav
@@ -42,12 +46,12 @@ export function Pagination({
           href={hrefFor(page - 1)}
           rel="prev"
           aria-label="Previous page"
-          className={cn(linkClass, "tap border-ink-200 bg-surface text-ink-700 hover:border-ink-400")}
+          className={cn(linkClass, "tap", restClass)}
         >
           <ChevronLeft size={16} />
         </Link>
       ) : (
-        <span className={cn(linkClass, "border-ink-100 bg-ink-50 text-ink-300")}>
+        <span className={cn(linkClass, spentClass)}>
           <ChevronLeft size={16} />
         </span>
       )}
@@ -76,11 +80,9 @@ export function Pagination({
               aria-current={p === page ? "page" : undefined}
               className={cn(
                 linkClass,
-                "tap tabular-nums",
+                "tap",
                 neighbour && "hidden sm:inline-flex",
-                p === page
-                  ? "border-brand-900 bg-brand-900 text-white"
-                  : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
+                p === page ? "border-ink-950 bg-ink-950 font-semibold text-white" : restClass,
               )}
             >
               {p}
@@ -94,12 +96,12 @@ export function Pagination({
           href={hrefFor(page + 1)}
           rel="next"
           aria-label="Next page"
-          className={cn(linkClass, "tap border-ink-200 bg-surface text-ink-700 hover:border-ink-400")}
+          className={cn(linkClass, "tap", restClass)}
         >
           <ChevronRight size={16} />
         </Link>
       ) : (
-        <span className={cn(linkClass, "border-ink-100 bg-ink-50 text-ink-300")}>
+        <span className={cn(linkClass, spentClass)}>
           <ChevronRight size={16} />
         </span>
       )}

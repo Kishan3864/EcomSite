@@ -37,9 +37,9 @@ export default async function NewsletterUnsubscribePage({ searchParams }: { sear
             <UnsubscribeForm email={email} e={e} t={t} />
           ) : (
             <div>
-              <span className="flex h-11 w-11 items-center justify-center bg-brand-50 text-brand-700">
-                <Link2Off size={19} aria-hidden />
-              </span>
+              {/* The glyph stands on the page rather than inside a tinted
+                  square: nothing else on this sheet is a coloured panel. */}
+              <Link2Off size={24} strokeWidth={1.5} className="text-ink-900" aria-hidden />
               <p className="eyebrow mt-6">Email preferences</p>
               <h1 className="mt-3 font-display text-[26px] leading-[1.12] tracking-[-0.02em] text-ink-950 sm:text-[32px]">
                 This link is not working

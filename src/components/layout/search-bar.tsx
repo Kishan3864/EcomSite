@@ -155,7 +155,7 @@ export function SearchBar({
             variant === "header" ? "h-11" : "h-12",
             open
               ? "border-brand-500 shadow-[0_0_0_3px_rgb(74_93_168/0.18)]"
-              : "border-ink-200 hover:border-ink-300",
+              : "border-hairline hover:border-ink-950",
           )}
         >
           <Search size={17} className="shrink-0 text-ink-400" />
@@ -192,13 +192,16 @@ export function SearchBar({
                 input.current?.focus();
               }}
               aria-label="Clear search"
-              className="tap -mr-2 flex h-10 w-10 items-center justify-center rounded-md text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700 sm:mr-0 sm:h-auto sm:w-auto sm:p-1"
+              className="tap -mr-2 flex h-10 w-10 items-center justify-center text-ink-400 transition-colors duration-200 hover:text-ink-950 sm:mr-0 sm:h-auto sm:w-auto sm:p-1"
             >
               <X size={15} />
             </button>
           )}
           {variant === "header" && !term && (
-            <kbd className="hidden shrink-0 rounded border border-ink-200 bg-ink-50 px-1.5 py-0.5 font-sans text-[10px] font-medium text-ink-400 lg:block">
+            // The shortcut hint is a legend a reader is expected to act on, so
+            // it comes up off the 10px it was set at and onto the small-caps
+            // label the rest of the site labels things with.
+            <kbd className="hidden shrink-0 border border-hairline bg-canvas px-1.5 py-0.5 font-sans text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 lg:block">
               Ctrl K
             </kbd>
           )}
@@ -213,8 +216,11 @@ export function SearchBar({
             animate={{ opacity: 1, y: 0 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            // An ink frame rather than a shadow, exactly as the department menu
+            // is drawn: both are sheets laid over the same page, and a hairline
+            // would lose its edge against the white tiles below the header.
             className={cn(
-              "z-50 overflow-hidden rounded-xl border border-hairline bg-surface shadow-xl",
+              "z-50 overflow-hidden border border-ink-950 bg-surface",
               variant === "header"
                 ? "absolute inset-x-0 top-[calc(100%+8px)]"
                 : "mt-3 flex min-h-0 flex-col",
@@ -228,7 +234,7 @@ export function SearchBar({
             >
               {term.trim() ? (
                 hits.length > 0 ? (
-                  <ul role="listbox" className="p-1.5">
+                  <ul role="listbox">
                     {hits.map((hit, i) => (
                       <SuggestionRow
                         key={`${hit.type}-${hit.href}-${i}`}
@@ -240,7 +246,7 @@ export function SearchBar({
                     <li>
                       <button
                         onClick={() => go(`/search?q=${encodeURIComponent(term.trim())}`, term.trim())}
-                        className="tap mt-1 flex w-full items-center justify-between gap-3 rounded-lg border-t border-hairline px-3 py-3 text-left text-[12.5px] font-semibold text-brand-700 transition-colors hover:bg-brand-50 sm:text-[13px]"
+                        className="tap flex w-full items-center justify-between gap-3 px-3 py-3 text-left text-[13px] font-semibold text-ink-950 transition-colors duration-200 hover:text-brand-700"
                       >
                         <span className="min-w-0 break-words">
                           See all results for &ldquo;{term.trim()}&rdquo;
@@ -254,7 +260,7 @@ export function SearchBar({
                     <p className="break-words text-[13.5px] font-medium text-ink-900 sm:text-sm">
                       Nothing matched &ldquo;{term.trim()}&rdquo;
                     </p>
-                    <p className="mt-1 text-[12.5px] text-ink-500 sm:text-xs">
+                    <p className="mt-1.5 text-[13px] leading-[1.5] text-ink-500">
                       Try a shorter term, or browse a category below.
                     </p>
                     {terms.length > 0 && (
@@ -263,7 +269,7 @@ export function SearchBar({
                           <button
                             key={s}
                             onClick={() => setTerm(s)}
-                            className="tap max-w-full truncate rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
+                            className="tap inline-flex h-8 max-w-full items-center truncate border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
                           >
                             {s}
                           </button>
@@ -279,7 +285,7 @@ export function SearchBar({
                   <p className="text-[13.5px] font-medium text-ink-900 sm:text-sm">
                     There is nothing to search yet
                   </p>
-                  <p className="mt-1 text-[12.5px] text-ink-500 sm:text-xs">
+                  <p className="mt-1.5 text-[13px] leading-[1.5] text-ink-500">
                     The first products go up shortly.
                   </p>
                 </div>
@@ -288,14 +294,14 @@ export function SearchBar({
                   {recentSearches.length > 0 && (
                     <section className="mb-4 sm:mb-5">
                       <header className="mb-2 flex items-center justify-between">
-                        <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                        <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                           Recent searches
                         </h3>
                         {/* The negative margin gives a finger a real target
                             without moving the word. */}
                         <button
                           onClick={() => dispatch({ type: "search/clear" })}
-                          className="-m-2 p-2 text-[11px] font-medium text-ink-400 hover:text-sale-600 lg:m-0 lg:p-0"
+                          className="-m-2 p-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-sale-600 lg:m-0 lg:p-0"
                         >
                           Clear
                         </button>
@@ -305,9 +311,9 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex max-w-full items-center gap-1.5 rounded-full bg-ink-100 px-3 py-1.5 text-[11.5px] text-ink-700 transition-colors hover:bg-ink-200 sm:text-xs"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
                             >
-                              <Clock size={11} className="shrink-0" />
+                              <Clock size={12} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>
                             </button>
                           </li>
@@ -318,10 +324,14 @@ export function SearchBar({
 
                   {browse.length > 0 && (
                     <section className="mb-4 sm:mb-5">
-                      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                      <h3 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                         Browse the store
                       </h3>
-                      <ul className="grid grid-cols-2 gap-0.5">
+                      {/* A ruled index, as the department menu draws its
+                          collections: a rule under each name says "list" at no
+                          cost in height, where a tinted hover block says
+                          "button" and puts a second shape on the sheet. */}
+                      <ul className="grid grid-cols-2 gap-x-4">
                         {browse.map((t) => (
                           <li key={t.href} className="min-w-0">
                             <Link
@@ -330,9 +340,12 @@ export function SearchBar({
                                 setOpen(variant === "sheet");
                                 onNavigate?.();
                               }}
-                              className="tap flex items-center gap-2 rounded-lg px-2 py-2 text-[12.5px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-brand-700 sm:gap-2.5 sm:px-2.5 sm:text-[13px]"
+                              className="tap group flex h-10 items-center gap-2.5 border-b border-hairline text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700"
                             >
-                              <TrendingUp size={13} className="shrink-0 text-brand-500" />
+                              <TrendingUp
+                                size={14}
+                                className="shrink-0 text-ink-400 transition-colors duration-200 group-hover:text-brand-700"
+                              />
                               <span className="min-w-0 truncate">{t.label}</span>
                             </Link>
                           </li>
@@ -343,7 +356,7 @@ export function SearchBar({
 
                   {terms.length > 0 && (
                     <section>
-                      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-400">
+                      <h3 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                         Popular searches
                       </h3>
                       <ul className="flex flex-wrap gap-1.5">
@@ -351,9 +364,9 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex max-w-full items-center gap-1.5 rounded-full border border-ink-200 px-3 py-1.5 text-[11.5px] text-ink-600 transition-colors hover:border-brand-500 hover:text-brand-700 sm:text-xs"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
                             >
-                              <Tag size={11} className="shrink-0" />
+                              <Tag size={12} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>
                             </button>
                           </li>
@@ -385,16 +398,19 @@ function SuggestionRow({
       <button
         onClick={onSelect}
         className={cn(
-          "tap flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors sm:gap-3 sm:px-2.5 sm:py-2",
-          active ? "bg-brand-50" : "hover:bg-ink-50",
+          // The keyboard's position is marked by the paper changing plane
+          // rather than by a tinted pill: canvas against surface is the same
+          // contrast every white tile on the site is picked out with.
+          "tap flex w-full items-center gap-2.5 border-b border-hairline px-3 py-2 text-left transition-colors duration-200 sm:gap-3",
+          active ? "bg-canvas" : "hover:bg-canvas",
         )}
       >
         {hit.image ? (
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-ink-100 sm:h-11 sm:w-11">
+          <span className="relative h-10 w-10 shrink-0 overflow-hidden border border-hairline bg-canvas sm:h-11 sm:w-11">
             <Image src={hit.image} alt="" fill sizes="44px" className="object-cover" />
           </span>
         ) : (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-brand-50 text-brand-600 sm:h-11 sm:w-11">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-hairline bg-canvas text-ink-400 sm:h-11 sm:w-11">
             <Search size={15} />
           </span>
         )}
@@ -402,10 +418,10 @@ function SuggestionRow({
           <span className="block truncate text-[13px] font-medium text-ink-900 sm:text-[13.5px]">
             {hit.label}
           </span>
-          <span className="block truncate text-[11.5px] text-ink-500">{hit.sublabel}</span>
+          <span className="block truncate text-[13px] text-ink-500">{hit.sublabel}</span>
         </span>
         {hit.price != null && (
-          <span className="shrink-0 text-[12.5px] font-semibold tabular-nums text-ink-900 sm:text-[13px]">
+          <span className="shrink-0 text-[13px] font-semibold tabular-nums text-ink-900">
             {formatINR(hit.price)}
           </span>
         )}

@@ -16,18 +16,24 @@ type Size = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
  *
  * The old set leaned on shadows, soft corners and a scale-down press, which
  * read as consumer-app rather than considered retail. Colour now does the
- * work: near-black for the primary action, brass for the one accent, a plain
- * rule for everything secondary.
+ * work: near-black ink for the action we want pressed, warming into indigo as
+ * the pointer lands on it; saffron for the single filled accent a page is
+ * allowed; a plain ink rule for everything secondary.
+ *
+ * No variant carries its own disabled colour. Dimming is done once, in
+ * `buttonClasses` — the pale greys that used to sit here were applied on top of
+ * that opacity, so a disabled primary ended up as white lettering on something
+ * barely darker than the page it stood on.
  */
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-ink-950 text-white hover:bg-brand-800 active:bg-brand-900 disabled:bg-ink-300",
-  accent: "bg-gold-400 text-ink-950 hover:bg-gold-300 active:bg-gold-500 disabled:bg-ink-200",
+  primary: "bg-ink-950 text-white hover:bg-brand-800 active:bg-brand-900",
+  accent: "bg-gold-400 text-ink-950 hover:bg-gold-300 active:bg-gold-500",
   outline:
     "border border-ink-950 bg-transparent text-ink-950 hover:bg-ink-950 hover:text-white",
   ghost: "text-ink-700 hover:bg-ink-100 hover:text-ink-950 active:bg-ink-200",
   subtle: "bg-ink-100 text-ink-950 hover:bg-ink-200 active:bg-ink-300",
   danger: "bg-sale-600 text-white hover:bg-sale-700 active:bg-sale-700",
-  link: "text-brand-700 underline-offset-4 hover:underline p-0 h-auto normal-case tracking-normal",
+  link: "text-brand-700 underline-offset-4 hover:underline normal-case tracking-normal",
 };
 
 const SIZES: Record<Size, string> = {
@@ -53,6 +59,11 @@ export function buttonClasses(
     "tap",
     VARIANTS[variant],
     SIZES[size],
+    // `link` is a word inside a sentence rather than a control, so it gives the
+    // box back after the size has been applied. tailwind-merge keeps the last
+    // class it is handed, and the size above would otherwise leave a link
+    // sitting in a 44px-tall well with 24px of padding on either side.
+    variant === "link" && "h-auto p-0",
     className,
   );
 }

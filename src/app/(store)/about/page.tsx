@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { ArrowRight, Headset, IndianRupee, PackageCheck, ShieldCheck } from "lucide-react";
-import { Breadcrumbs, SectionHeader } from "@/components/ui/primitives";
+import { ArrowRight } from "lucide-react";
+import { Breadcrumbs } from "@/components/ui/primitives";
 import { Reveal, StaggerGroup, StaggerItem } from "@/components/ui/motion";
 import { buttonClasses } from "@/components/ui/button";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
@@ -18,6 +18,14 @@ import { BUSINESS, formatAddress, isFilled, operatorDescription } from "@/config
  * headcount, no invented history, no invented scale — a payment aggregator or
  * Google reviewer reads this page alongside the KYC application, and an
  * unverifiable boast is a rejection waiting to happen. Say less, truthfully.
+ *
+ * It used to open with a photograph of a kitchen, a near-black gradient poured
+ * over it and the page's title written across the middle. That is the masthead
+ * every bought template ships with, and it says nothing: the reader cannot see
+ * the photograph, and the words would have been easier to read on paper. So
+ * this opens the way the homepage does — ink on a cool white sheet, the
+ * business's own sentences, and the photograph beside them in a hairline frame
+ * with nothing written on top of it.
  */
 
 export const metadata: Metadata = {
@@ -44,22 +52,18 @@ const O = BUSINESS.ops;
 /** Commitments the business can actually keep, phrased as commitments. */
 const PRINCIPLES = [
   {
-    icon: IndianRupee,
     title: "The price you see is the price you pay",
     body: "Every price on this site is in rupees and includes tax. Delivery, if any, is shown in your cart before you pay. We add no convenience fee, no handling charge and no surprise at the last step.",
   },
   {
-    icon: PackageCheck,
     title: "We stock what we sell",
     body: "We are a first-party retailer, not a marketplace. We buy the stock, hold it ourselves and invoice you directly. There are no third-party sellers here, so there is never any question about who is responsible for your order.",
   },
   {
-    icon: ShieldCheck,
     title: "Returns that are actually usable",
     body: `You have ${O.returnWindowDays} days from delivery. No restocking fee. If an item arrives damaged or is not what you ordered, we cover the delivery charge both ways.`,
   },
   {
-    icon: Headset,
     title: "A person answers",
     body: `Support runs ${BUSINESS.supportHours}. Our full postal address, phone number and grievance officer are published on the contact page — not hidden behind a form.`,
   },
@@ -85,6 +89,58 @@ const HOW_IT_WORKS = [
   },
 ];
 
+/**
+ * The band head the homepage uses, kept here rather than imported: it is four
+ * elements and a rule, and copying it is cheaper than exporting a layout
+ * primitive that only two pages would ever share.
+ */
+function Band({
+  eyebrow,
+  title,
+  description,
+  href,
+  linkLabel = "View all",
+  className,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  href?: string;
+  linkLabel?: string;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-b border-ink-950 pb-3 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:pb-5">
+        <div className="contents sm:block">
+          <span className="eyebrow col-span-2">{eyebrow}</span>
+          <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
+            {title}
+          </h2>
+          {description && (
+            <p className="col-span-2 mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500 sm:mt-2.5 sm:text-[14px]">
+              {description}
+            </p>
+          )}
+        </div>
+        {href && (
+          <Link
+            href={href}
+            className="tap group col-start-2 row-start-2 inline-flex h-10 shrink-0 items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors hover:text-gold-700 sm:h-auto sm:text-[12px]"
+          >
+            {linkLabel}
+            <ArrowRight
+              size={14}
+              className="transition-transform duration-200 group-hover:translate-x-1"
+            />
+          </Link>
+        )}
+      </div>
+      <div aria-hidden className="mt-[3px] h-px w-full bg-rule" />
+    </div>
+  );
+}
+
 export default function AboutPage() {
   return (
     <>
@@ -92,44 +148,60 @@ export default function AboutPage() {
         <BreadcrumbJsonLd items={crumbs} />
         <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-        <header className="overflow-hidden rounded-2xl sm:rounded-3xl">
-          <div className="relative">
-            {/* The copy sits on the image, so the frame has to be tall enough to
-                hold it: 21:9 clipped the eyebrow below about 800px wide. */}
-            <div className="relative aspect-[4/3] sm:aspect-[2/1] lg:aspect-[21/9]">
-              <Image
-                src={img(POOL.lifestyle[1], { fit: "ultrawide", w: 1800 })}
-                alt={`${BUSINESS.brandName} product range`}
-                fill
-                loading="eager"
-                fetchPriority="high"
-                sizes="100vw"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/70 to-brand-950/25" />
-            </div>
-            <div className="absolute inset-x-0 bottom-0 p-4 sm:p-8 lg:p-12">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-300">
-                About us
-              </p>
-              <h1 className="mt-2 max-w-3xl font-display text-[24px] leading-[1.05] tracking-[-0.03em] text-white sm:mt-3 sm:text-[36px] lg:text-[48px]">
-                Everyday things, honestly priced.
+        <header className="border-b border-ink-950 pb-8 sm:pb-14">
+          <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-8">
+            <div className="min-w-0 lg:col-span-6">
+              <span className="eyebrow">About us · {BUSINESS.address.city}</span>
+              <h1 className="mt-3 font-display leading-[1.02] tracking-[-0.035em] text-ink-950 sm:mt-5">
+                <span className="text-[clamp(30px,8.5vw,38px)] lg:text-[58px]">
+                  Everyday things,
+                  <br className="hidden sm:block" /> honestly priced.
+                </span>
               </h1>
-              <p className="mt-2 max-w-xl text-[13px] leading-normal text-white/70 sm:mt-4 sm:text-[14.5px] sm:leading-relaxed">
+              <p className="mt-4 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:mt-5 sm:text-[15px] sm:leading-[1.6]">
                 {BRAND.description}
               </p>
+              <div className="mt-6 flex flex-col gap-2.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+                <Link href="/products" className={buttonClasses("primary", "lg")}>
+                  Browse the catalogue <ArrowRight size={15} />
+                </Link>
+                <Link href="/contact" className={buttonClasses("outline", "lg")}>
+                  Talk to us
+                </Link>
+              </div>
+            </div>
+
+            {/* The photograph, framed and captioned, with nothing written over
+                it. A caption a reader can check beats a slogan they cannot. */}
+            <div className="min-w-0 lg:col-span-5 lg:col-start-8">
+              <div className="border border-hairline bg-surface">
+                <div className="relative aspect-[3/4] overflow-hidden bg-ink-100 lg:aspect-[4/5]">
+                  <Image
+                    src={img(POOL.lifestyle[1], { fit: "portrait", w: 900 })}
+                    alt={`${BUSINESS.brandName} product range`}
+                    fill
+                    loading="eager"
+                    fetchPriority="high"
+                    sizes="(min-width:1024px) 460px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+                <p className="border-t border-hairline px-4 py-3.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
+                  Stocked and shipped from {BUSINESS.address.city}
+                </p>
+              </div>
             </div>
           </div>
         </header>
 
         {/* Who is actually behind the shop. Reviewers look for this. */}
-        <section className="mt-6 border-y border-hairline py-6 sm:mt-10 sm:py-10">
-          <div className="grid gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-14">
+        <section className="py-8 sm:py-14">
+          <div className="grid gap-7 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-14">
             <div className="min-w-0">
-              <h2 className="font-display text-[18px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
+              <h2 className="font-display text-[22px] leading-[1.1] tracking-[-0.03em] text-ink-950 sm:text-[32px]">
                 Who runs this shop
               </h2>
-              <div className="mt-3 space-y-3 text-[14px] leading-[1.75] text-ink-600 sm:mt-4 sm:space-y-3.5 sm:text-[14.5px]">
+              <div className="mt-4 max-w-[68ch] space-y-3.5 text-[14px] leading-[1.75] text-ink-600 sm:text-[15px]">
                 <p>
                   {BUSINESS.brandName} is owned and operated by {operatorDescription()}. We sell{" "}
                   {BUSINESS.categoriesSold.join(", ").toLowerCase()} to customers across India.
@@ -148,86 +220,92 @@ export default function AboutPage() {
               </div>
             </div>
 
-            <aside className="min-w-0 rounded-2xl border border-hairline bg-surface p-4 sm:p-6">
-              <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+            {/* The registration facts, set as a ledger. It is the part of this
+                page a payment aggregator reads, so it is drawn to be read
+                quickly rather than to look designed. */}
+            <aside className="min-w-0">
+              <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 Business details
               </h3>
-              {/* Two columns until the card becomes a narrow sidebar at lg, so
-                  the short facts do not each take a full-width row. */}
-              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 break-words text-[12.5px] sm:mt-4 sm:text-[13px] lg:block lg:space-y-3.5">
-                <div className="min-w-0">
-                  <dt className="text-ink-500">Trading name</dt>
-                  <dd className="mt-0.5 font-medium text-ink-900">{BUSINESS.legalName}</dd>
+              <dl className="mt-3 border-b border-hairline">
+                <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+                  <dt className="shrink-0 text-[13px] text-ink-500">Trading name</dt>
+                  <dd className="min-w-0 text-right text-[13px] font-medium text-ink-900 wrap-break-word">
+                    {BUSINESS.legalName}
+                  </dd>
                 </div>
-                <div className="min-w-0">
-                  <dt className="text-ink-500">Operated by</dt>
-                  <dd className="mt-0.5 font-medium text-ink-900">{BUSINESS.proprietorName}</dd>
+                <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+                  <dt className="shrink-0 text-[13px] text-ink-500">Operated by</dt>
+                  <dd className="min-w-0 text-right text-[13px] font-medium text-ink-900 wrap-break-word">
+                    {BUSINESS.proprietorName}
+                  </dd>
                 </div>
                 {isFilled(BUSINESS.gstin) ? (
-                  <div className="min-w-0">
-                    <dt className="text-ink-500">GSTIN</dt>
-                    <dd className="mt-0.5 font-medium tabular-nums text-ink-900">
+                  <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+                    <dt className="shrink-0 text-[13px] text-ink-500">GSTIN</dt>
+                    <dd className="min-w-0 text-right text-[13px] font-medium tabular-nums text-ink-900 wrap-break-word">
                       {BUSINESS.gstin}
                     </dd>
                   </div>
                 ) : null}
-                <div className="col-span-2 min-w-0">
-                  <dt className="text-ink-500">Business address</dt>
-                  <dd className="mt-0.5 font-medium leading-relaxed text-ink-900">
+                <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+                  <dt className="shrink-0 text-[13px] text-ink-500">Business address</dt>
+                  <dd className="min-w-0 text-right text-[13px] font-medium leading-[1.55] text-ink-900 wrap-break-word">
                     {formatAddress()}
                   </dd>
                 </div>
               </dl>
               <Link
                 href="/contact"
-                className="tap mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-700 hover:underline sm:mt-5"
+                className="tap group mt-4 inline-flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors hover:text-gold-700"
               >
-                Contact details and grievance officer <ArrowRight size={14} />
+                Contact details and grievance officer
+                <ArrowRight
+                  size={14}
+                  className="transition-transform duration-200 group-hover:translate-x-1"
+                />
               </Link>
             </aside>
           </div>
         </section>
 
-        <section className="py-7 sm:py-12">
+        <section className="py-8 sm:py-14">
           <Reveal>
-            <SectionHeader
+            <Band
               eyebrow="What we commit to"
               title="Four things we will not compromise on"
               description="Each one is written into a policy page you can hold us to, not just stated here."
-              className="mb-4 sm:mb-8"
+              className="mb-6 sm:mb-10"
             />
           </Reveal>
 
-          <StaggerGroup className="grid gap-2.5 sm:grid-cols-2 sm:gap-6">
-            {PRINCIPLES.map((principle) => (
-              <StaggerItem key={principle.title}>
-                {/* Icon beside the text on phones, above it from sm. */}
-                <div className="flex h-full items-start gap-3.5 rounded-2xl border border-hairline bg-surface p-4 sm:block sm:p-6">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 sm:h-11 sm:w-11">
-                    <principle.icon size={19} />
-                  </span>
-                  <div className="min-w-0">
-                    <h3 className="font-display text-[17px] tracking-[-0.015em] text-ink-950 sm:mt-4 sm:text-xl">
-                      {principle.title}
-                    </h3>
-                    <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-600 sm:mt-2.5 sm:text-[14px]">
-                      {principle.body}
-                    </p>
-                  </div>
-                </div>
+          {/* Numbered rather than illustrated: four icons in four boxes is the
+              look of a template, and a numeral says the same thing in ink. */}
+          <StaggerGroup className="tile-grid grid-cols-1 sm:grid-cols-2">
+            {PRINCIPLES.map((principle, i) => (
+              <StaggerItem key={principle.title} className="p-4 sm:p-6">
+                <p className="text-[11.5px] font-semibold tabular-nums tracking-[0.12em] text-ink-400">
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-2 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[22px]">
+                  {principle.title}
+                </h3>
+                <p className="mt-2.5 max-w-[52ch] text-[14px] leading-[1.65] text-ink-600 sm:text-[15px]">
+                  {principle.body}
+                </p>
               </StaggerItem>
             ))}
           </StaggerGroup>
         </section>
 
-        <section className="py-7 sm:py-12">
+        <section className="py-8 sm:py-14">
           <Reveal>
-            <SectionHeader
+            <Band
               eyebrow="How it works"
               title="From your cart to your door"
               href="/services"
               linkLabel="Read the full detail"
-              className="mb-4 sm:mb-8"
+              className="mb-6 sm:mb-10"
             />
           </Reveal>
 
@@ -237,18 +315,21 @@ export default function AboutPage() {
                 key={item.step}
                 as="li"
                 delay={i * 0.06}
-                className="relative pb-6 last:pb-0 sm:pb-10"
+                className="relative pb-7 last:pb-0 sm:pb-10"
               >
-                <span className="absolute -left-[30px] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 ring-4 ring-canvas sm:-left-[38px]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                </span>
-                <p className="font-display text-[12.5px] font-semibold tabular-nums text-brand-600 sm:text-[13px]">
+                {/* A square on the rule, with the page colour ringed around it
+                    so the rule appears to pass behind rather than through. */}
+                <span
+                  aria-hidden
+                  className="absolute -left-[29px] top-[7px] h-2 w-2 bg-ink-950 ring-4 ring-canvas sm:-left-[37px]"
+                />
+                <p className="text-[11.5px] font-semibold uppercase tabular-nums tracking-[0.12em] text-ink-500">
                   Step {i + 1}
                 </p>
-                <h3 className="mt-0.5 font-display text-[17px] tracking-[-0.015em] text-ink-950 sm:mt-1 sm:text-xl">
+                <h3 className="mt-1.5 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[22px]">
                   {item.step}
                 </h3>
-                <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[14px]">
+                <p className="mt-2 max-w-[60ch] text-[14px] leading-[1.65] text-ink-600 sm:text-[15px]">
                   {item.body}
                 </p>
               </Reveal>
@@ -256,31 +337,32 @@ export default function AboutPage() {
           </ol>
         </section>
 
-        <section className="py-7 sm:py-12">
+        <section className="py-8 sm:py-14">
           <Reveal>
-            <SectionHeader
+            <Band
               eyebrow="Our catalogue"
               title="Brands we stock"
               description="Product names and logos belong to their respective owners and appear here only to identify the goods we sell."
               href="/products"
               linkLabel="Browse everything"
-              className="mb-4 sm:mb-8"
+              className="mb-6 sm:mb-10"
             />
           </Reveal>
 
-          {/* Sixteen brands stacked one per row ran well over a screen on a
-              phone; there they swipe edge to edge, and become a grid from sm. */}
-          <StaggerGroup className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:px-0 lg:grid-cols-4">
+          {/* Sixteen names on one hairline grid. The tagline is the first thing
+              to go on a phone, where two columns of it would run past a
+              screen and a half for a list nobody reads end to end. */}
+          <StaggerGroup className="tile-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
             {brands.map((brand) => (
-              <StaggerItem key={brand.slug} className="w-[152px] sm:w-auto">
+              <StaggerItem key={brand.slug}>
                 <Link
                   href={`/products?brands=${brand.slug}`}
-                  className="tap flex h-full flex-col rounded-xl border border-hairline bg-surface p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md sm:p-5"
+                  className="tap flex h-full flex-col gap-1.5 px-3 py-3.5 transition-colors duration-200 sm:p-5 [@media(hover:hover)]:hover:bg-ink-50"
                 >
-                  <span className="font-display text-[14px] tracking-[-0.01em] text-ink-950 sm:text-[15px]">
+                  <span className="text-[13.5px] font-medium leading-[1.35] text-ink-950 sm:text-[14px]">
                     {brand.name}
                   </span>
-                  <span className="mt-1 text-[12px] leading-snug text-ink-500 sm:mt-1.5 sm:text-[12.5px] sm:leading-relaxed">
+                  <span className="hidden text-[12.5px] leading-[1.5] text-ink-500 sm:block">
                     {brand.tagline}
                   </span>
                 </Link>
@@ -288,26 +370,39 @@ export default function AboutPage() {
             ))}
           </StaggerGroup>
         </section>
-
-        <section className="mb-4 rounded-2xl border border-hairline bg-brand-50 p-5 sm:p-12">
-          <h2 className="max-w-2xl font-display text-[20px] leading-tight tracking-[-0.025em] text-brand-950 sm:text-[32px]">
-            Anything you want to ask before you buy?
-          </h2>
-          <p className="mt-2 max-w-xl text-[13.5px] leading-relaxed text-brand-800 sm:mt-3 sm:text-[14.5px]">
-            Our address, phone number, email and grievance officer are all published. Call or write
-            and a person will answer.
-          </p>
-          {/* Stacked full width on phones: side by side the pair overflows 320px. */}
-          <div className="mt-4 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:flex-wrap sm:gap-3">
-            <Link href="/contact" className={buttonClasses("primary")}>
-              Contact us <ArrowRight size={15} />
-            </Link>
-            <Link href="/faq" className={buttonClasses("outline")}>
-              Read the FAQ
-            </Link>
-          </div>
-        </section>
       </div>
+
+      {/* The full stop: the page's one dark plane and its one filled saffron
+          call to action, placed last so it lands as an ending rather than
+          competing with the masthead. */}
+      <section className="deep-plane">
+        <div className="container-page py-12 sm:py-20">
+          <div className="max-w-xl">
+            <span className="eyebrow eyebrow-dark">Before you buy</span>
+            <h2 className="mt-4 font-display text-[24px] leading-[1.1] tracking-[-0.02em] text-white sm:mt-5 sm:text-[36px]">
+              Anything you want to ask before you buy?
+            </h2>
+            <p className="mt-4 max-w-[46ch] text-[14px] leading-[1.6] text-white/70 sm:text-[15px]">
+              Our address, phone number, email and grievance officer are all published. Call or
+              write and a person will answer.
+            </p>
+            <div className="mt-7 flex flex-col gap-2.5 sm:mt-9 sm:flex-row sm:gap-3">
+              <Link
+                href="/contact"
+                className="tap inline-flex h-12 items-center justify-center gap-2 bg-gold-400 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-gold-300 sm:px-8 sm:text-[12px]"
+              >
+                Contact us <ArrowRight size={15} />
+              </Link>
+              <Link
+                href="/faq"
+                className="tap inline-flex h-12 items-center justify-center border border-white/30 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-white hover:text-ink-950 sm:px-8 sm:text-[12px]"
+              >
+                Read the FAQ
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

@@ -225,9 +225,13 @@ export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form(
           role="alert"
           aria-live="assertive"
           tabIndex={-1}
+          // A rule down the left margin and the words set in oxblood, with no
+          // tinted panel behind them. On a sheet this quiet a marginal rule is
+          // already the loudest mark on the page, and it leaves the summary
+          // sitting in the form rather than in a box bolted above it.
           className={cn(
-            "mb-5 border-l-2 border-sale-600 bg-sale-50 px-4 py-3.5",
-            "text-[13px] leading-relaxed text-sale-700",
+            "mb-5 border-l-2 border-sale-600 py-0.5 pl-4",
+            "text-[13px] leading-[1.55] text-sale-700",
           )}
         >
           <p className="flex items-center gap-2 font-semibold text-sale-700">

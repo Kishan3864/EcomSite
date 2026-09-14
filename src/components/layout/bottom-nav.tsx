@@ -66,32 +66,39 @@ export function BottomNav() {
                   aria-current={active ? "page" : undefined}
                   className="tap relative flex h-[60px] flex-col items-center justify-center gap-1"
                 >
+                  {/* The current tab is marked by a full-width ink rule sitting
+                      on the bar's own hairline, not by a coloured pill. It is
+                      the same device the rest of the site uses to say "this
+                      one", and it survives being read at arm's length. */}
                   {active && (
                     <motion.span
                       layoutId="bottom-nav-active"
                       transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                      className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-brand-700"
+                      className="absolute inset-x-0 top-0 h-0.5 bg-ink-950"
                     />
                   )}
                   <span className="relative">
                     <Icon
                       size={20}
-                      strokeWidth={active ? 2.2 : 1.7}
+                      strokeWidth={active ? 2 : 1.5}
                       className={cn(
                         "transition-colors duration-200",
-                        active ? "text-brand-800" : "text-ink-500",
+                        active ? "text-ink-950" : "text-ink-500",
                       )}
                     />
                     {count > 0 && (
-                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-sale-500 px-1 text-[10px] font-bold leading-none text-white tabular-nums">
+                      /* Ink, to match the header's own count. A bag count is
+                         a fact, not a reduction, and the two badges are on
+                         screen together on a phone. */
+                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink-950 px-1 text-[10px] font-bold leading-none text-white tabular-nums">
                         {count > 9 ? "9+" : count}
                       </span>
                     )}
                   </span>
                   <span
                     className={cn(
-                      "text-[10.5px] transition-colors duration-200",
-                      active ? "font-semibold text-brand-800" : "font-medium text-ink-500",
+                      "text-[11px] transition-colors duration-200",
+                      active ? "font-semibold text-ink-950" : "font-medium text-ink-500",
                     )}
                   >
                     {item.label}

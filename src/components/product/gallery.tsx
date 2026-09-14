@@ -110,8 +110,11 @@ export function Gallery({
   return (
     <>
       <div className="flex flex-col-reverse gap-3 md:flex-row md:gap-4">
-        {/* Thumbnails — phones swipe the photos themselves instead */}
-        <div className="rail hidden gap-2 sm:flex md:w-[74px] md:flex-col md:overflow-visible">
+        {/* Thumbnails — phones swipe the photos themselves instead. One
+            hairline grid holds them: a row that scrolls below 768px, a column
+            beside the stage above it. The current frame is marked with a rule
+            drawn inside the cell, so selecting one moves nothing. */}
+        <div className="tile-grid hidden grid-flow-col auto-cols-[58px] overflow-x-auto no-scrollbar sm:grid md:w-[74px] md:grid-flow-row md:auto-cols-auto md:overflow-visible">
           {slides.map((s, i) => (
             <button
               key={s.url + i}
@@ -120,17 +123,18 @@ export function Gallery({
               aria-label={`View ${s.kind} ${i + 1}`}
               aria-current={i === index}
               className={cn(
-                "relative h-[68px] w-[58px] shrink-0 overflow-hidden rounded-lg border-2 bg-ink-100 transition-all duration-200 md:h-[86px] md:w-full",
-                i === index
-                  ? "border-brand-700"
-                  : "border-transparent opacity-70 hover:opacity-100",
+                "relative h-[68px] w-full overflow-hidden bg-ink-100 transition-opacity duration-200 md:h-[86px]",
+                i === index ? "opacity-100" : "opacity-60 hover:opacity-100",
               )}
             >
               <Image src={s.url} alt="" fill sizes="74px" className="object-cover" />
               {s.kind === "video" && (
-                <span className="absolute inset-0 flex items-center justify-center bg-ink-950/40">
+                <span className="absolute inset-0 flex items-center justify-center bg-brand-950/45">
                   <Play size={16} className="text-white" fill="currentColor" />
                 </span>
+              )}
+              {i === index && (
+                <span aria-hidden className="absolute inset-0 border-2 border-ink-950" />
               )}
             </button>
           ))}
@@ -168,7 +172,7 @@ export function Gallery({
             <button
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-surface/90 text-ink-600 shadow-sm backdrop-blur"
+              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center border border-hairline bg-surface/95 text-ink-700 backdrop-blur"
             >
               <Expand size={16} />
             </button>
@@ -180,7 +184,7 @@ export function Gallery({
             onMouseMove={onMove}
             onMouseLeave={() => setZoom(null)}
             {...swipe}
-            className="group relative hidden aspect-[4/5] overflow-hidden rounded-2xl border border-hairline bg-surface sm:block"
+            className="group relative hidden aspect-[4/5] overflow-hidden border border-hairline bg-surface sm:block"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -215,15 +219,15 @@ export function Gallery({
 
             {/* Zoom affordance */}
             {slide.kind === "image" && (
-              <span className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-[11px] font-medium text-ink-600 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 md:flex">
-                <ZoomIn size={12} /> Hover to zoom
+              <span className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 border border-hairline bg-surface/95 px-2.5 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 md:flex">
+                <ZoomIn size={12} className="text-ink-400" /> Hover to zoom
               </span>
             )}
 
             <button
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink-600 shadow-sm backdrop-blur transition-colors hover:text-ink-950"
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center border border-hairline bg-surface/95 text-ink-700 backdrop-blur transition-colors duration-200 hover:bg-ink-950 hover:text-white"
             >
               <Expand size={15} />
             </button>
@@ -235,14 +239,14 @@ export function Gallery({
                 <button
                   onClick={() => step(-1)}
                   aria-label="Previous image"
-                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink-700 opacity-0 shadow-sm backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={() => step(1)}
                   aria-label="Next image"
-                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink-700 opacity-0 shadow-sm backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -254,15 +258,15 @@ export function Gallery({
               height, and under the stage on small tablets. */}
           {count > 1 && (
             <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center sm:pointer-events-auto sm:static sm:mt-3 md:hidden">
-              <div className="pointer-events-auto flex gap-1.5 bg-surface/85 px-2 py-1.5 sm:bg-transparent sm:p-0">
+              <div className="pointer-events-auto flex gap-1.5 bg-surface/90 px-2 py-1.5 sm:bg-transparent sm:p-0">
                 {slides.map((s, i) => (
                   <button
                     key={s.url + i}
                     onClick={() => setIndex(i)}
                     aria-label={`Go to image ${i + 1}`}
                     className={cn(
-                      "h-1.5 rounded-full transition-all duration-300",
-                      i === index ? "w-6 bg-brand-700" : "w-1.5 bg-ink-300",
+                      "h-1.5 transition-all duration-300",
+                      i === index ? "w-6 bg-ink-950" : "w-1.5 bg-ink-300",
                     )}
                   />
                 ))}
@@ -282,7 +286,7 @@ export function Gallery({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[95] flex flex-col bg-ink-950/95 outline-none"
+              className="fixed inset-0 z-[95] flex flex-col bg-brand-950/95 outline-none"
               onClick={() => setLightbox(false)}
               role="dialog"
               aria-modal="true"
@@ -290,13 +294,13 @@ export function Gallery({
             >
               {/* Full screen, so clear of the notch and the home indicator. */}
               <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
-                <p className="text-[13px] tabular-nums text-white/70">
+                <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-white/70">
                   {index + 1} of {count}
                 </p>
                 <button
                   onClick={() => setLightbox(false)}
                   aria-label="Close"
-                  className="rounded-full bg-white/10 p-2.5 text-white transition-colors hover:bg-white/20"
+                  className="border border-white/25 bg-white/10 p-2.5 text-white transition-colors duration-200 hover:bg-white/20"
                 >
                   <X size={20} />
                 </button>
@@ -331,7 +335,7 @@ export function Gallery({
                         step(-1);
                       }}
                       aria-label="Previous image"
-                      className="absolute left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:left-3"
+                      className="absolute left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:left-3"
                     >
                       <ChevronLeft size={20} />
                     </button>
@@ -341,7 +345,7 @@ export function Gallery({
                         step(1);
                       }}
                       aria-label="Next image"
-                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-3"
+                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:right-3"
                     >
                       <ChevronRight size={20} />
                     </button>
@@ -363,9 +367,11 @@ export function Gallery({
                       aria-label={`Show image ${i + 1}`}
                       aria-current={i === index}
                       className={cn(
-                        "relative h-14 w-12 shrink-0 overflow-hidden rounded-md border-2 transition-opacity",
+                        // White, not saffron: the accent is spent on the page
+                        // itself, and a lit frame reads as "this one" anyway.
+                        "relative h-14 w-12 shrink-0 overflow-hidden border-2 transition-opacity duration-200",
                         i === index
-                          ? "border-gold-400"
+                          ? "border-white"
                           : "border-transparent opacity-50 hover:opacity-90",
                       )}
                     >
@@ -385,11 +391,13 @@ export function Gallery({
 /** The video slide is only a poster for now, and says so. */
 function VideoNotice() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/45 backdrop-blur-[1px]">
-      <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-ink-950 shadow-lg transition-transform duration-300 group-hover:scale-105">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-brand-950/50 backdrop-blur-[1px]">
+      <span className="flex h-16 w-16 items-center justify-center bg-white text-ink-950 transition-transform duration-300 group-hover:scale-[1.03]">
         <Play size={24} fill="currentColor" className="ml-1" />
       </span>
-      <p className="text-[12.5px] font-medium text-white/85">Product video — coming soon</p>
+      <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/85">
+        Product video — coming soon
+      </p>
     </div>
   );
 }

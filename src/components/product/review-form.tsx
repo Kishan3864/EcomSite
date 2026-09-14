@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { Check, Clock, PenLine, ShieldCheck, Star } from "lucide-react";
+import { PenLine, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { reviewEligibility, submitReview, type ReviewEligibility } from "@/services/commerce";
@@ -10,12 +10,30 @@ import { useStore } from "@/store/store";
 import { cn, formatDate } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
-/** The same panel however it is filled, so the section never jumps about. */
-function Note({ icon, children }: { icon?: React.ReactNode; children: React.ReactNode }) {
+/**
+ * The same ruled note however it is filled, so the section never jumps about.
+ *
+ * A note here is a paragraph under a rule with a small-caps kicker over it,
+ * not a tinted box with an icon in the corner: four different coloured panels
+ * stacked under a list of reviews made the explanation look like a warning,
+ * when in every case it is simply the shop saying who may write one.
+ */
+function Note({ label, children }: { label?: string; children: React.ReactNode }) {
   return (
-    <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-hairline bg-surface p-3.5 text-[12.5px] leading-relaxed text-ink-600 sm:mt-6 sm:p-4 sm:text-[13px]">
-      {icon}
-      <span>{children}</span>
+    <div className="mt-5 border-t border-hairline pt-4 sm:mt-6 sm:pt-5">
+      {label && (
+        <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+          {label}
+        </p>
+      )}
+      <p
+        className={cn(
+          "max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]",
+          label && "mt-2",
+        )}
+      >
+        {children}
+      </p>
     </div>
   );
 }
@@ -61,13 +79,10 @@ export function ReviewForm({ productId }: { productId: string }) {
 
   if (sent) {
     return (
-      <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-brand-200 bg-brand-50 p-3.5 text-[12.5px] leading-relaxed text-brand-900 sm:mt-6 sm:p-4 sm:text-[13px]">
-        <Check size={16} className="mt-0.5 shrink-0 text-brand-600" />
-        <span>
-          Thank you — your review is with our team. Once it is checked it will show up on this
-          page, usually within a day.
-        </span>
-      </div>
+      <Note label="Review received">
+        Thank you — your review is with our team. Once it is checked it will show up on this
+        page, usually within a day.
+      </Note>
     );
   }
 
@@ -78,7 +93,7 @@ export function ReviewForm({ productId }: { productId: string }) {
   if (status.can === false) {
     if (status.reason === "signin") {
       return (
-        <Note icon={<ShieldCheck size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
+        <Note label="Sign in to review">
           Every review here is from someone who bought this and had it delivered.{" "}
           <Link href="/login" className="font-semibold text-brand-700 underline-offset-2 hover:underline">
             Sign in
@@ -89,8 +104,9 @@ export function ReviewForm({ productId }: { productId: string }) {
     }
     if (status.reason === "awaiting-delivery") {
       return (
-        <Note icon={<Clock size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
-          Your order <strong className="font-medium text-ink-900">{status.orderNumber}</strong> is on
+        <Note label="Your order">
+          Your order{" "}
+          <strong className="font-semibold tabular-nums text-ink-900">{status.orderNumber}</strong> is on
           its way — expected by {formatDate(status.expected, "day")}. You can write a review here
           once it has been delivered.
         </Note>
@@ -98,7 +114,7 @@ export function ReviewForm({ productId }: { productId: string }) {
     }
     if (status.reason === "already") {
       return (
-        <Note icon={<Check size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
+        <Note label="Your review">
           {status.status === "published"
             ? "You have already reviewed this product — thank you. It is on this page."
             : status.status === "pending"
@@ -108,7 +124,7 @@ export function ReviewForm({ productId }: { productId: string }) {
       );
     }
     return (
-      <Note icon={<ShieldCheck size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
+      <Note label="Who can review">
         Only customers who have bought this and had it delivered can review it — which is why every
         review below is from someone who owns it.
       </Note>
@@ -117,20 +133,23 @@ export function ReviewForm({ productId }: { productId: string }) {
 
   if (!open) {
     return (
-      <div className="mt-4 sm:mt-6">
+      <div className="mt-5 border-t border-hairline pt-4 sm:mt-6 sm:pt-5">
+        <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+          Write a review
+        </p>
+        <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]">
+          You bought this on order{" "}
+          <span className="font-semibold tabular-nums text-ink-900">{status.orderNumber}</span> —
+          your review will be marked a verified purchase.
+        </p>
         <Button
           variant="outline"
           size="md"
-          className="tap w-full sm:w-auto"
+          className="tap mt-4 w-full sm:w-auto"
           onClick={() => setOpen(true)}
         >
           <PenLine size={15} /> Write a review
         </Button>
-        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-ink-500">
-          <ShieldCheck size={13} className="shrink-0 text-brand-600" />
-          You bought this on order {status.orderNumber} — your review will be marked a verified
-          purchase.
-        </p>
       </div>
     );
   }
@@ -157,17 +176,25 @@ export function ReviewForm({ productId }: { productId: string }) {
   }
 
   return (
-    <Form onSubmit={submit} className="mt-4 rounded-xl border border-hairline bg-surface p-4 sm:mt-6 sm:p-5">
-      <h3 className="text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">Write a review</h3>
-      <p className="mt-1 text-[12.5px] text-ink-500">
+    <Form
+      onSubmit={submit}
+      className="mt-5 border border-hairline bg-surface p-4 sm:mt-6 sm:p-5"
+    >
+      <h3 className="text-[14px] font-semibold text-ink-950 sm:text-[15px]">Write a review</h3>
+      <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500">
         Posting as {customer?.name ?? "your account"}. Reviews are checked before they appear.
       </p>
 
       <fieldset className="mt-4">
-        <legend className="mb-1.5 text-[12.5px] font-medium text-ink-800">Your rating</legend>
+        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+          Your rating
+        </legend>
         {/* Phones: each star a 40px target; the row is pulled back by the
-            padding so the first star still lines up under the legend. */}
-        <div className="-ml-2 flex sm:ml-0 sm:gap-1" onMouseLeave={() => setHover(0)}>
+            padding so the first star still lines up under the legend.
+            The stars fill as the pointer crosses them, which is feedback
+            enough — a star that also grew was the one thing on the page
+            bouncing under the cursor. */}
+        <div className="-ml-2 mt-1 flex sm:ml-0 sm:gap-1" onMouseLeave={() => setHover(0)}>
           {[1, 2, 3, 4, 5].map((value) => (
             <button
               key={value}
@@ -176,16 +203,14 @@ export function ReviewForm({ productId }: { productId: string }) {
               aria-pressed={rating === value}
               onMouseEnter={() => setHover(value)}
               onClick={() => setRating(value)}
-              className="tap rounded-md p-2 transition-transform hover:scale-110 sm:p-1"
+              className="tap p-2 sm:p-1"
             >
               <Star
                 size={24}
                 strokeWidth={1.75}
                 className={cn(
-                  "transition-colors",
-                  value <= (hover || rating)
-                    ? "fill-gold-400 text-gold-500"
-                    : "text-ink-300",
+                  "transition-colors duration-200",
+                  value <= (hover || rating) ? "fill-gold-400 text-gold-500" : "text-ink-300",
                 )}
               />
             </button>
@@ -205,17 +230,17 @@ export function ReviewForm({ productId }: { productId: string }) {
           maxLength={1200}
           placeholder="How does it feel to use? Would you buy it again?"
           // 16px on phones: iOS zooms the page into any smaller field.
-          className="w-full rounded-lg border border-ink-200 bg-canvas px-3.5 py-3 text-[16px] leading-relaxed text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500 sm:text-[14px]"
+          className="w-full rounded-field border border-ink-200 bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500 sm:text-[14px]"
         />
       </Field>
 
       {error && (
-        <p role="alert" className="mt-3 text-[12.5px] font-medium text-sale-600">
+        <p role="alert" className="mt-3 text-[13px] font-medium text-sale-600">
           {error}
         </p>
       )}
 
-      <div className="mt-4 flex gap-2">
+      <div className="mt-5 flex gap-2">
         <Button type="submit" size="sm" loading={pending} className="tap h-10 sm:h-9">
           Submit review
         </Button>

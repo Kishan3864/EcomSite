@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowRight, Pencil, Plus, Trash2 } from "lucide-react";
 import type { Address } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
@@ -72,8 +72,8 @@ export function AddressStep() {
           {addresses.map((address) => (
             <li key={address.id}>
               {editing?.id === address.id ? (
-                <div className="rounded-xl border border-brand-700 bg-surface p-4 sm:p-5">
-                  <h3 className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-4 sm:text-[13px]">
+                <div className="border border-ink-950 bg-surface p-4 sm:p-5">
+                  <h3 className="mb-4 border-b border-hairline pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     Edit address
                   </h3>
                   <AddressForm
@@ -97,7 +97,10 @@ export function AddressStep() {
                   title={
                     <span className="flex flex-wrap items-center gap-x-2 gap-y-1 lg:flex-nowrap">
                       {address.fullName}
-                      <span className="rounded-md bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-600">
+                      {/* An outlined stamp rather than a grey pill: the chip is a
+                          label on a repeating row and has no business carrying a
+                          fill of its own. */}
+                      <span className="border border-hairline px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-500">
                         {address.label}
                       </span>
                       {address.isDefault && <Badge tone="success">Default</Badge>}
@@ -109,9 +112,12 @@ export function AddressStep() {
                       {address.line2 ? `, ${address.line2}` : ""}
                       {address.landmark ? `, ${address.landmark}` : ""}
                       <br />
-                      {address.city}, {address.state} {address.pincode}
+                      {address.city}, {address.state}{" "}
+                      <span className="tabular-nums">{address.pincode}</span>
                       <br />
-                      <span className="text-ink-500">Phone: {address.phone}</span>
+                      <span className="text-ink-500">
+                        Phone: <span className="tabular-nums">{address.phone}</span>
+                      </span>
                     </>
                   }
                 >
@@ -167,9 +173,8 @@ export function AddressStep() {
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden"
             >
-              <div className="rounded-xl border border-brand-700 bg-surface p-4 sm:p-5">
-                <h3 className="mb-3 flex items-center gap-2 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-4 sm:text-[13px]">
-                  <MapPin size={15} className="text-brand-600" />
+              <div className="border border-ink-950 bg-surface p-4 sm:p-5">
+                <h3 className="mb-4 border-b border-hairline pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   New delivery address
                 </h3>
                 <AddressForm
@@ -189,21 +194,25 @@ export function AddressStep() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setAdding(true)}
-              className="tap flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-ink-300 bg-surface/60 py-3 text-[13px] font-semibold text-brand-700 transition-colors hover:border-brand-500 hover:bg-brand-50 sm:py-4 sm:text-[13.5px]"
+              className="tap flex w-full items-center justify-center gap-2 border border-dashed border-rule bg-surface py-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50"
             >
-              <Plus size={16} />
+              <Plus size={15} />
               Add a new address
             </motion.button>
           )}
         </AnimatePresence>
 
-        {error && <p className="text-[13px] font-medium text-sale-600">{error}</p>}
+        {error && (
+          <p role="alert" className="text-[13px] font-medium text-sale-600">
+            {error}
+          </p>
+        )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
             href="/checkout/contact"
-            className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
+            className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
           >
             Back to contact
           </Link>

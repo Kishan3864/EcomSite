@@ -4,64 +4,50 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { motion } from "motion/react";
-import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import {
-  ArrowRight,
-  Copy,
-  FileText,
-  Check,
-  MapPin,
-  Package,
-  Truck,
-  Wallet,
-} from "lucide-react";
+import { ArrowRight, Check, Copy, FileText } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
+import { Ink, drawnPath } from "@/components/illustration/ink";
+import { DrawIn, Reveal } from "@/components/ui/motion";
 
 import { LiveRefresh } from "@/components/ui/live-refresh";
-import { formatDate, formatINR } from "@/lib/utils";
+import { cn, formatDate, formatINR } from "@/lib/utils";
 
-/** Celebratory tick — drawn, not animated with a library, so it stays cheap. */
+/**
+ * The stamp on a finished order.
+ *
+ * It used to be a white tick inside a filled indigo disc with a ring pulsing
+ * out of it — the mark every checkout on the internet ends with, and the one
+ * shape this shop never draws: nothing here is round, nothing is filled and
+ * nothing pulses. So the tick is ruled across a square instead, with the
+ * offset register frame the homepage puts behind its drawn marks, and it
+ * draws itself once. It is the last thing a customer sees of the purchase,
+ * and it should look like it was made by the same hand as the rest.
+ */
 function SuccessMark() {
-  const reduce = usePrefersReducedMotion();
   return (
-    <div className="relative mx-auto flex h-16 w-16 items-center justify-center sm:h-20 sm:w-20">
-      <motion.span
-        initial={reduce ? { opacity: 0 } : { scale: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 18 }}
-        className="absolute inset-0 rounded-full bg-brand-600"
-      />
-      {!reduce && (
-        <motion.span
-          initial={{ scale: 0.6, opacity: 0.5 }}
-          animate={{ scale: 1.9, opacity: 0 }}
-          transition={{ duration: 1.1, ease: "easeOut", delay: 0.15 }}
-          className="absolute inset-0 rounded-full border-2 border-brand-500"
-        />
-      )}
-      <motion.svg
-        viewBox="0 0 40 40"
-        className="relative h-7 w-7 sm:h-9 sm:w-9"
-        fill="none"
+    <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20">
+      <span
         aria-hidden
-      >
-        <motion.path
-          d="M9 20.5 17 28 31 13"
-          stroke="white"
-          strokeWidth="3.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          initial={reduce ? { pathLength: 1 } : { pathLength: 0 }}
-          animate={{ pathLength: 1 }}
-          transition={{ duration: 0.5, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
-        />
-      </motion.svg>
+        className="absolute inset-[10%] translate-x-[8px] translate-y-[8px] border border-rule"
+      />
+      <span aria-hidden className="absolute inset-0 border border-ink-950 bg-surface" />
+      <Ink viewBox="0 0 64 64" strokeWidth={1.5} className="relative h-full w-full text-brand-700">
+        <DrawIn duration={700} delay={180}>
+          <path d="M18 33L28 43L46 21" {...drawnPath} />
+        </DrawIn>
+      </Ink>
     </div>
   );
 }
+
+/* A notice above the order: a single heavy rule down its left edge and no box.
+   The same shape the form summary uses, so an unpaid order and a failed field
+   speak in one voice. */
+const NOTICE =
+  "flex flex-wrap items-center justify-between gap-3 border-l-2 px-4 py-4 sm:gap-4 sm:px-5 sm:py-5";
+const NOTICE_LABEL = "text-[11px] font-semibold uppercase tracking-[0.12em]";
 
 export function OrderClient({ order }: { order: Order | null }) {
 
@@ -89,7 +75,6 @@ export function OrderClient({ order }: { order: Order | null }) {
     return (
       <div className="container-page py-8 sm:py-14">
         <EmptyState
-          icon={<Package size={26} />}
           title="We could not find that order"
           body="The link may be old, or the order was placed on another device. Your order history lives in your account."
           action={
@@ -119,17 +104,12 @@ export function OrderClient({ order }: { order: Order | null }) {
     <div className="container-page py-6 sm:py-12">
       {settling && order.status !== "cancelled" && <LiveRefresh seconds={8} />}
       <div className="mx-auto max-w-3xl">
-        <motion.header
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center"
-        >
+        <header className="text-center">
           <SuccessMark />
-          <h1 className="mt-4 font-display text-[26px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:mt-6 sm:text-[40px]">
+          <h1 className="mt-5 font-display text-[26px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:mt-7 sm:text-[40px]">
             {justPlaced ? "Order confirmed" : "Order details"}
           </h1>
-          <p className="mt-2 text-[14px] leading-relaxed text-ink-600 sm:mt-3 sm:text-[15px]">
+          <p className="mx-auto mt-3 max-w-[46ch] text-[14px] leading-[1.6] text-ink-600 sm:text-[15px]">
             {justPlaced ? (
               <>
                 Thank you, {order.address.fullName.split(" ")[0]}. We have emailed your invoice and
@@ -140,11 +120,11 @@ export function OrderClient({ order }: { order: Order | null }) {
             )}
           </p>
 
-          <div className="mt-4 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-3 py-2.5 sm:mt-5 sm:px-4 sm:py-3">
-            <span className="text-[11.5px] uppercase tracking-[0.1em] text-ink-400 sm:text-[12px]">
+          <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 border border-hairline bg-surface px-3 py-2.5 sm:mt-6 sm:px-4">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Order number
             </span>
-            <span className="min-w-0 font-mono text-[14px] font-bold tracking-[0.04em] text-ink-950 wrap-anywhere sm:text-[15px]">
+            <span className="min-w-0 font-mono text-[14px] font-semibold text-ink-950 wrap-anywhere sm:text-[15px]">
               {order.number}
             </span>
             {/* 40px to the thumb on phones; the negative margin keeps the pill compact. */}
@@ -154,40 +134,30 @@ export function OrderClient({ order }: { order: Order | null }) {
                 setCopied(true);
               }}
               aria-label="Copy order number"
-              className="tap -m-2 rounded-md p-3.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700 sm:m-0 sm:p-1.5"
+              className="tap -m-2 p-3.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700 sm:m-0 sm:p-1.5"
             >
-              {copied ? <Check size={14} className="text-brand-600" /> : <Copy size={14} />}
+              {copied ? <Check size={14} className="text-brand-700" /> : <Copy size={14} />}
             </button>
           </div>
-        </motion.header>
+        </header>
 
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 space-y-3 sm:mt-8 sm:space-y-4"
-        >
-          {/* Unpaid UPI: the one thing this page must offer is a way back to
-              paying. Above the delivery promise, because a promise means
+        <Reveal delay={0.08} className="mt-7 space-y-3 sm:mt-10 sm:space-y-4">
+          {/* An unpaid order: the one thing this page must offer is a way back
+              to paying. Above the delivery promise, because a promise means
               nothing until the order is paid for. */}
           {order.paymentMethod.id !== "cod" &&
             order.paymentMethod.id !== "upi" &&
             (order.paymentStatus === "pending" || order.paymentStatus === "failed") &&
             order.status !== "cancelled" && (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sale-200 bg-sale-50 p-4 sm:gap-4 sm:p-5">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sale-600 text-white sm:h-11 sm:w-11">
-                    <Wallet size={19} />
-                  </span>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-sale-700">
-                      {paymentFailed ? "Payment not completed" : "Waiting for payment"}
-                    </p>
-                    <p className="text-[13.5px] text-ink-800">
-                      Nothing has been charged. Your items are still reserved — try again to
-                      confirm this order.
-                    </p>
-                  </div>
+              <div className={cn(NOTICE, "border-sale-600 bg-sale-50")}>
+                <div className="min-w-0">
+                  <p className={cn(NOTICE_LABEL, "text-sale-700")}>
+                    {paymentFailed ? "Payment not completed" : "Waiting for payment"}
+                  </p>
+                  <p className="mt-1.5 max-w-[46ch] text-[13.5px] leading-[1.55] text-ink-800">
+                    Nothing has been charged. Your items are still reserved — try again to confirm
+                    this order.
+                  </p>
                 </div>
                 <Link
                   href={`/checkout/payu/${order.id}`}
@@ -200,20 +170,16 @@ export function OrderClient({ order }: { order: Order | null }) {
             )}
 
           {order.paymentMethod.id === "upi" && order.paymentStatus === "pending" && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold-300 bg-gold-50 p-4 sm:gap-4 sm:p-5">
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-600 text-white sm:h-11 sm:w-11">
-                  <Wallet size={19} />
-                </span>
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-800">
-                    Waiting for payment
-                  </p>
-                  <p className="text-[13.5px] text-ink-800">
-                    Your items are reserved. Pay {formatINR(order.totals.total)} to confirm this
-                    order.
-                  </p>
-                </div>
+            <div className={cn(NOTICE, "border-ink-950 bg-surface")}>
+              <div className="min-w-0">
+                <p className={cn(NOTICE_LABEL, "text-ink-500")}>Waiting for payment</p>
+                <p className="mt-1.5 max-w-[46ch] text-[13.5px] leading-[1.55] text-ink-800">
+                  Your items are reserved. Pay{" "}
+                  <span className="font-semibold tabular-nums text-ink-950">
+                    {formatINR(order.totals.total)}
+                  </span>{" "}
+                  to confirm this order.
+                </p>
               </div>
               <Link
                 href={`/checkout/upi/${order.id}`}
@@ -226,9 +192,9 @@ export function OrderClient({ order }: { order: Order | null }) {
           )}
 
           {order.paymentMethod.id === "upi" && order.paymentStatus === "verifying" && (
-            <div className="rounded-xl border border-brand-200 bg-brand-50 p-4 text-[13.5px] leading-relaxed text-brand-900 sm:p-5">
-              <p className="font-semibold">We are checking your payment</p>
-              <p className="mt-1 text-brand-800/80">
+            <div className="border-l-2 border-ink-950 bg-surface px-4 py-4 sm:px-5 sm:py-5">
+              <p className={cn(NOTICE_LABEL, "text-ink-500")}>We are checking your payment</p>
+              <p className="mt-1.5 max-w-[60ch] text-[13.5px] leading-[1.6] text-ink-600">
                 Your reference is with us and we are matching it against our bank. You will get an
                 email the moment it is confirmed — usually within a few hours.
               </p>
@@ -236,19 +202,14 @@ export function OrderClient({ order }: { order: Order | null }) {
           )}
 
           {/* Delivery promise */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 sm:gap-4 sm:p-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white sm:h-11 sm:w-11">
-                <Truck size={19} />
-              </span>
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-700">
-                  Estimated delivery
-                </p>
-                <p className="text-[16px] font-semibold text-brand-900 sm:text-[17px]">
-                  {formatDate(order.estimatedDelivery, "day")}
-                </p>
-              </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-surface p-4 sm:gap-4 sm:p-5">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                Estimated delivery
+              </p>
+              <p className="mt-1 text-[18px] font-semibold tabular-nums text-ink-950 sm:text-[20px]">
+                {formatDate(order.estimatedDelivery, "day")}
+              </p>
             </div>
             {/* Wraps under the date on phones, so it takes the full width there. */}
             <Link
@@ -261,33 +222,34 @@ export function OrderClient({ order }: { order: Order | null }) {
           </div>
 
           {/* Items */}
-          <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
-            <h2 className="border-b border-hairline px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:px-5 sm:py-4">
-              {order.lines.length} item{order.lines.length > 1 ? "s" : ""}
+          <section className="border border-hairline bg-surface">
+            <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
+              <span className="tabular-nums">{order.lines.length}</span> item
+              {order.lines.length > 1 ? "s" : ""}
             </h2>
             <ul className="divide-y divide-hairline">
               {order.lines.map((line) => (
-                <li key={line.id} className="flex gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
+                <li key={line.id} className="flex gap-3 px-4 py-4 sm:gap-4 sm:px-5">
                   <Link
                     href={`/p/${line.slug}`}
-                    className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-ink-100"
+                    className="relative h-20 w-16 shrink-0 overflow-hidden border border-hairline bg-ink-100"
                   >
                     <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                   </Link>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-400">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
                       {line.brand}
                     </p>
                     <Link
                       href={`/p/${line.slug}`}
-                      className="line-clamp-2 text-[13px] font-medium text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
+                      className="mt-0.5 line-clamp-2 block text-[13px] font-medium leading-[1.4] text-ink-950 hover:text-brand-700 sm:text-[13.5px]"
                     >
                       {line.title}
                     </Link>
-                    <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
+                    <p className="mt-1 text-[13px] tabular-nums text-ink-500">
                       {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty {line.quantity}
                     </p>
-                    <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1 sm:mt-1.5" />
+                    <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1.5" />
                   </div>
                   <p className="shrink-0 text-[13.5px] font-semibold tabular-nums text-ink-950 sm:text-[14px]">
                     {formatINR(line.price * line.quantity)}
@@ -297,29 +259,31 @@ export function OrderClient({ order }: { order: Order | null }) {
             </ul>
           </section>
 
-          {/* Details grid */}
-          <div className="grid gap-2 sm:grid-cols-3 sm:gap-3">
-            <section className="min-w-0 rounded-xl border border-hairline bg-surface p-3.5 sm:p-4">
-              <h2 className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 sm:mb-2">
-                <MapPin size={13} className="text-brand-600" /> Delivering to
+          {/* Where it is going, how it was paid for, who is carrying it. One
+              hairline grid rather than three floating cards. */}
+          <div className="tile-grid grid-cols-1 sm:grid-cols-3">
+            <section className="min-w-0 p-4">
+              <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                Delivering to
               </h2>
-              <p className="text-[12.5px] leading-relaxed text-ink-600 wrap-break-word">
+              <p className="mt-2 text-[13px] leading-[1.6] text-ink-600 wrap-break-word">
                 <strong className="font-semibold text-ink-900">{order.address.fullName}</strong>
                 <br />
                 {order.address.line1}
                 {order.address.line2 ? `, ${order.address.line2}` : ""}
                 <br />
-                {order.address.city}, {order.address.state} {order.address.pincode}
+                {order.address.city}, {order.address.state}{" "}
+                <span className="tabular-nums">{order.address.pincode}</span>
                 <br />
-                {order.address.phone}
+                <span className="tabular-nums">{order.address.phone}</span>
               </p>
             </section>
 
-            <section className="min-w-0 rounded-xl border border-hairline bg-surface p-3.5 sm:p-4">
-              <h2 className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 sm:mb-2">
-                <Wallet size={13} className="text-brand-600" /> Payment
+            <section className="min-w-0 p-4">
+              <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                Payment
               </h2>
-              <p className="text-[12.5px] leading-relaxed text-ink-600">
+              <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">
                 <strong className="font-semibold text-ink-900">{order.paymentMethod.name}</strong>
                 <br />
                 {order.paymentMethod.description}
@@ -330,17 +294,17 @@ export function OrderClient({ order }: { order: Order | null }) {
               </p>
             </section>
 
-            <section className="min-w-0 rounded-xl border border-hairline bg-surface p-3.5 sm:p-4">
-              <h2 className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 sm:mb-2">
-                <Package size={13} className="text-brand-600" /> Shipment
+            <section className="min-w-0 p-4">
+              <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                Shipment
               </h2>
               {/* AWBs are one long unbroken code; let them wrap rather than overflow. */}
-              <p className="text-[12.5px] leading-relaxed text-ink-600 wrap-anywhere">
+              <p className="mt-2 text-[13px] leading-[1.6] text-ink-600 wrap-anywhere">
                 {order.awb ? (
                   <>
                     <strong className="font-semibold text-ink-900">{order.courier}</strong>
                     <br />
-                    AWB {order.awb}
+                    AWB <span className="tabular-nums">{order.awb}</span>
                   </>
                 ) : (
                   "Courier and tracking number appear here once your parcel is booked."
@@ -352,11 +316,11 @@ export function OrderClient({ order }: { order: Order | null }) {
           </div>
 
           {/* Totals */}
-          <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
-            <h2 className="border-b border-hairline px-4 py-3 text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:px-5 sm:py-4">
+          <section className="border border-hairline bg-surface">
+            <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
               Payment summary
             </h2>
-            <dl className="space-y-2 px-4 py-3 text-[13px] sm:space-y-2.5 sm:px-5 sm:py-4 sm:text-[13.5px]">
+            <dl className="space-y-2.5 px-4 py-3.5 text-[13px] sm:px-5 sm:py-4 sm:text-[13.5px]">
               <Row label="Items total" value={formatINR(order.totals.mrpTotal)} />
               {order.totals.productDiscount > 0 && (
                 <Row
@@ -372,9 +336,11 @@ export function OrderClient({ order }: { order: Order | null }) {
               />
               <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
             </dl>
-            <div className="flex items-baseline justify-between gap-4 border-t border-hairline px-4 py-3 sm:px-5 sm:py-4">
-              <span className="text-[14px] font-semibold text-ink-950 sm:text-[15px]">Total paid</span>
-              <span className="text-[18px] font-semibold tabular-nums text-ink-950 sm:text-xl">
+            <div className="flex items-baseline justify-between gap-4 border-t border-hairline px-4 py-3.5 sm:px-5 sm:py-4">
+              <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
+                Total paid
+              </span>
+              <span className="text-[19px] font-semibold tabular-nums text-ink-950 sm:text-[22px]">
                 {formatINR(order.totals.total)}
               </span>
             </div>
@@ -403,7 +369,7 @@ export function OrderClient({ order }: { order: Order | null }) {
             </Link>
           </div>
 
-          <p className="text-center text-[12.5px] leading-relaxed text-ink-400 sm:text-[12px]">
+          <p className="text-center text-[13px] leading-[1.6] text-ink-500">
             Need help with this order?{" "}
             <Link href="/contact" className="font-medium text-brand-700 hover:underline">
               Contact support
@@ -414,7 +380,7 @@ export function OrderClient({ order }: { order: Order | null }) {
             </Link>
             .
           </p>
-        </motion.div>
+        </Reveal>
       </div>
     </div>
   );
@@ -433,13 +399,13 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <dt className={muted ? "text-ink-400" : "text-ink-600"}>{label}</dt>
+      <dt className={muted ? "text-ink-500" : "text-ink-600"}>{label}</dt>
       <dd
         className={
           save
-            ? "font-semibold tabular-nums text-brand-700"
+            ? "font-semibold tabular-nums text-sale-600"
             : muted
-              ? "tabular-nums text-ink-400"
+              ? "tabular-nums text-ink-500"
               : "tabular-nums text-ink-900"
         }
       >

@@ -78,10 +78,15 @@ export function useDialogFocus(active: boolean, ref: React.RefObject<HTMLElement
   }, [active, ref]);
 }
 
+/**
+ * Each side carries the hairline of the edge it enters from. With no shadow
+ * under the panel — there are none anywhere on this site — that rule is what
+ * separates a sheet of paper from the dimmed page it has slid over.
+ */
 const SIDE_STYLES = {
-  right: { class: "inset-y-0 right-0 h-full", axis: "x", from: "100%" },
-  left: { class: "inset-y-0 left-0 h-full", axis: "x", from: "-100%" },
-  bottom: { class: "inset-x-0 bottom-0 w-full rounded-t-2xl", axis: "y", from: "100%" },
+  right: { class: "inset-y-0 right-0 h-full border-l border-hairline", axis: "x", from: "100%" },
+  left: { class: "inset-y-0 left-0 h-full border-r border-hairline", axis: "x", from: "-100%" },
+  bottom: { class: "inset-x-0 bottom-0 w-full border-t border-hairline", axis: "y", from: "100%" },
 } as const;
 
 export function Drawer({
@@ -139,7 +144,7 @@ export function Drawer({
               exit={reduce ? { opacity: 0 } : hidden}
               transition={{ type: "spring", stiffness: 380, damping: 40 }}
               className={cn(
-                "absolute flex flex-col bg-canvas shadow-xl",
+                "absolute flex flex-col bg-canvas",
                 meta.class,
                 // Side drawers already fill a phone edge to edge (w-full up to
                 // 28rem); a bottom sheet stops short of the top edge.
@@ -149,16 +154,19 @@ export function Drawer({
               )}
             >
               {side === "bottom" && (
-                <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-ink-300" />
+                <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 bg-ink-300" />
               )}
               {title && (
                 <header className="flex shrink-0 items-start justify-between gap-4 border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
                   <div className="min-w-0">
-                    <h2 className="font-display text-[16px] tracking-[-0.01em] text-ink-950 sm:text-lg">
+                    {/* Fraunces is never set below 20px anywhere on the site:
+                        smaller than that its detail closes up and it reads as
+                        whatever serif the device happened to fall back to. */}
+                    <h2 className="font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950">
                       {title}
                     </h2>
                     {description && (
-                      <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-xs">{description}</p>
+                      <p className="mt-1 text-[13px] leading-[1.5] text-ink-500">{description}</p>
                     )}
                   </div>
                   {/* The negative margin cancels the padding, so the icon sits where
@@ -166,7 +174,7 @@ export function Drawer({
                   <button
                     onClick={onClose}
                     aria-label="Close"
-                    className="tap -m-3 shrink-0 rounded-lg p-3 text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900 sm:-m-1.5 sm:p-1.5"
+                    className="tap -m-3 shrink-0 p-3 text-ink-500 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 sm:-m-1.5 sm:p-1.5"
                   >
                     <X size={18} />
                   </button>
@@ -235,21 +243,23 @@ export function Modal({
               className="absolute inset-0 bg-ink-950/50 backdrop-blur-[2px]"
             />
             <motion.div
-              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.97 }}
+              // Nothing on the site travels more than 8px to arrive; the old
+              // 24px rise read as a card being thrown at the reader.
+              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
+              exit={reduce ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 380, damping: 34 }}
               // A bottom sheet on phones, clear of the home indicator; a centred
               // dialog from sm up.
               className={cn(
-                "relative flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-2xl bg-canvas pb-safe shadow-xl sm:max-h-[92vh] sm:max-w-2xl sm:rounded-2xl sm:pb-0",
+                "relative flex max-h-[90dvh] w-full flex-col overflow-hidden border-t border-hairline bg-canvas pb-safe sm:max-h-[92vh] sm:max-w-2xl sm:border sm:pb-0",
                 className,
               )}
             >
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="tap absolute right-2 top-2 z-10 rounded-full bg-surface/90 p-3 text-ink-600 shadow-sm backdrop-blur transition-colors hover:text-ink-950 sm:right-3 sm:top-3 sm:p-2"
+                className="tap absolute right-2 top-2 z-10 border border-hairline bg-surface p-3 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:right-3 sm:top-3 sm:p-2"
               >
                 <X size={16} />
               </button>

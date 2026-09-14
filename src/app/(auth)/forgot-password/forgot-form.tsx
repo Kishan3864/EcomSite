@@ -4,11 +4,12 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { motion } from "motion/react";
-import { ArrowLeft, Headset, Send } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import { buttonClasses, Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { requestPasswordHelp } from "@/services/commerce";
 import { BRAND } from "@/components/brand/logo";
+import { BUSINESS } from "@/config/business";
 import { Form } from "@/components/ui/form";
 
 function SendButton() {
@@ -29,30 +30,37 @@ export function ForgotForm() {
 
   if (state.ok) {
     return (
+      // An enter animation rather than a scroll reveal: the block replaces the
+      // form in place after a submit, and `Reveal` would wait for an
+      // intersection that has, in the awkward cases, already happened.
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-xl border border-brand-200 bg-brand-50 p-4 sm:p-6"
+        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
+        className="border border-hairline bg-surface p-4 sm:p-5"
       >
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
-          <Headset size={20} />
-        </span>
-        <h2 className="mt-3 font-display text-[17px] tracking-[-0.015em] text-ink-950 sm:mt-4 sm:text-xl">
+        <span className="eyebrow">Request received</span>
+        <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950">
           Our team will get back to you
         </h2>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-ink-700 sm:mt-2 sm:text-[13.5px]">
+        <p className="mt-2.5 text-[14px] leading-[1.55] text-ink-600">
           If there is an account for that address, your request is with support now. They will
           verify who you are and set a new password with you, usually within a few working hours.
         </p>
-        <p className="mt-3 text-[12.5px] leading-relaxed text-ink-600">
+        <p className="mt-3 text-[13px] leading-[1.5] text-ink-500">
           In a hurry? Call{" "}
-          <a href={`tel:${BRAND.supportPhone}`} className="font-semibold text-brand-700 hover:underline">
+          <a
+            href={`tel:${BRAND.supportPhone}`}
+            className="font-medium tabular-nums text-brand-700 hover:underline"
+          >
             {BRAND.supportPhone}
-          </a>{" "}
-          between 8am and 10pm, any day.
+          </a>
+          . Support runs {BUSINESS.supportHours}.
         </p>
-        <Link href="/login" className={buttonClasses("outline", "md", "mt-4 w-full sm:mt-5 sm:w-auto")}>
+        <Link
+          href="/login"
+          className={buttonClasses("outline", "md", "mt-5 h-10 w-full sm:w-auto")}
+        >
           <ArrowLeft size={15} /> Back to sign in
         </Link>
       </motion.div>
@@ -79,7 +87,9 @@ export function ForgotForm() {
         />
       </Field>
 
-      <p className="rounded-lg bg-ink-50 p-3 text-[12.5px] leading-relaxed text-ink-600 sm:text-[12px]">
+      {/* A rule rather than a tinted tray: the sentence is an aside, not an
+          alarm, and the shop draws asides with a line down the side. */}
+      <p className="border-l border-rule pl-3.5 text-[13px] leading-[1.55] text-ink-600">
         Automatic reset emails are not switched on yet, so a person handles this rather than a
         link landing in your inbox.
       </p>
@@ -88,7 +98,7 @@ export function ForgotForm() {
 
       <Link
         href="/login"
-        className="-my-2 inline-flex items-center gap-1.5 py-2 text-[13px] font-medium text-ink-600 transition-colors hover:text-brand-700 sm:my-0 sm:py-0"
+        className="tap -my-2 inline-flex items-center gap-1.5 py-2 text-[13px] font-medium text-ink-600 transition-colors duration-200 hover:text-brand-700 sm:my-0 sm:py-0"
       >
         <ArrowLeft size={14} /> Back to sign in
       </Link>

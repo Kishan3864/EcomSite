@@ -3,13 +3,21 @@
 import { useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { Plus } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
 import { Button } from "@/components/ui/button";
 import { fromCard, useCommerce } from "@/store/commerce";
 import { cn, formatINR } from "@/lib/utils";
 
-/** Frequently bought together — the anchor product plus its cross-sells. */
+/**
+ * Frequently bought together — the anchor product plus its cross-sells.
+ *
+ * It used to be a scrolling row of photographs on one side and the very same
+ * products listed again as ticked lines on the other, so every name and every
+ * price was printed twice. One ruled line per product carries the picture, the
+ * name, the price and the switch together, and a list of lines cannot come out
+ * ragged however many cross-sells the shop has attached — which a row of tiles
+ * three or five across certainly can.
+ */
 export function BundleSection({
   anchor,
   extras,
@@ -30,98 +38,105 @@ export function BundleSection({
   if (extras.length === 0) return null;
 
   return (
-    <section className="rounded-2xl border border-hairline bg-surface p-4 sm:p-7">
-      <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[26px]">
-        Frequently bought together
-      </h2>
-      <p className="mt-1 text-[12.5px] text-ink-500 sm:mt-1.5 sm:text-[13px]">
-        Customers who bought this usually add these to the same order.
-      </p>
+    <section>
+      <div className="border-b border-ink-950 pb-3 sm:pb-4">
+        <span className="eyebrow">Add to the order</span>
+        <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
+          Frequently bought together
+        </h2>
+        <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500 sm:mt-2.5 sm:text-[14px]">
+          Customers who bought this usually add these to the same order.
+        </p>
+      </div>
+      {/* The thick rule and the thin one, three pixels apart, that heads every
+          band on the site. */}
+      <div aria-hidden className="mt-[3px] h-px w-full bg-rule" />
 
-      <div className="mt-4 flex flex-col gap-4 sm:mt-6 sm:gap-6 lg:flex-row lg:items-center">
-        {/* One scrolling line of photos on a phone instead of a ragged wrap
-            that starts a row with a stray plus. */}
-        <div className="no-scrollbar -mx-4 flex flex-1 items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:gap-3 sm:overflow-visible sm:px-0">
+      <div className="mt-5 grid gap-5 sm:mt-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
+        <ul className="tile-grid grid-cols-1">
           {all.map((product, i) => (
-            <div key={product.id} className="flex shrink-0 items-center gap-2 sm:gap-3">
-              {i > 0 && <Plus size={18} className="shrink-0 text-ink-300" />}
+            <li key={product.id} className="flex items-center gap-3 p-2.5 sm:gap-4 sm:p-3.5">
               <Link
                 href={`/p/${product.slug}`}
-                className={cn(
-                  "tap relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border-2 bg-ink-100 transition-all sm:h-24 sm:w-20",
-                  picked[product.id] ? "border-brand-600" : "border-ink-200 opacity-45",
-                )}
+                className="tap relative h-[70px] w-14 shrink-0 overflow-hidden bg-ink-100 sm:h-20 sm:w-16"
               >
+                {/* A dropped product keeps its line and loses its colour, so
+                    the shape of the list never moves as things are ticked. */}
                 <Image
                   src={product.image}
-                  alt={product.title}
+                  alt={product.imageAlt || product.title}
                   fill
-                  sizes="80px"
-                  className="object-cover"
+                  sizes="64px"
+                  className={cn(
+                    "object-cover transition-opacity duration-200",
+                    !picked[product.id] && "opacity-40 grayscale",
+                  )}
                 />
               </Link>
-            </div>
-          ))}
-        </div>
 
-        <div className="lg:w-[300px] lg:shrink-0">
-          <ul className="space-y-2 sm:space-y-2.5">
-            {all.map((product, i) => (
-              <li key={product.id}>
-                <label className="flex cursor-pointer items-start gap-2.5">
-                  <input
-                    type="checkbox"
-                    checked={picked[product.id] ?? false}
-                    disabled={i === 0}
-                    onChange={() =>
-                      setPicked((p) => ({ ...p, [product.id]: !p[product.id] }))
-                    }
-                    className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-700)] disabled:opacity-60"
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[12.5px] font-medium text-ink-900 sm:text-[13px]">
-                      {i === 0 && (
-                        <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.06em] text-brand-600">
-                          This item:
-                        </span>
-                      )}
-                      {product.title}
+              <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 sm:gap-3">
+                <input
+                  type="checkbox"
+                  checked={picked[product.id] ?? false}
+                  disabled={i === 0}
+                  onChange={() =>
+                    setPicked((p) => ({ ...p, [product.id]: !p[product.id] }))
+                  }
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-700)] disabled:opacity-60"
+                />
+                <span className="min-w-0 flex-1">
+                  {/* Ink, not indigo. The one coloured word in the whole band
+                      was sitting on its least important line — the label that
+                      only says which of these is the product already open. */}
+                  {i === 0 && (
+                    <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+                      This item
                     </span>
-                    <span className="text-[12px] font-semibold tabular-nums text-ink-700 sm:text-[12.5px]">
-                      {formatINR(product.price)}
-                    </span>
+                  )}
+                  <span className="block text-[13px] font-medium leading-[1.4] text-ink-900 sm:text-[13.5px]">
+                    {product.title}
                   </span>
-                </label>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-3 border-t border-hairline pt-3 sm:mt-4 sm:pt-4">
-            <p className="text-[11.5px] uppercase tracking-[0.08em] text-ink-400 sm:text-[12px]">
-              Total for {selected.length} item{selected.length > 1 ? "s" : ""}
-            </p>
-            <p className="mt-1 flex items-baseline gap-2">
-              <span className="text-[20px] font-semibold tabular-nums text-ink-950 sm:text-2xl">
-                {formatINR(total)}
-              </span>
-              {mrpTotal > total && (
-                <span className="text-[12.5px] text-ink-400 line-through tabular-nums sm:text-[13px]">
-                  {formatINR(mrpTotal)}
+                  <span className="mt-1 block text-[13px] font-semibold leading-none tabular-nums text-ink-900 sm:text-[13.5px]">
+                    {formatINR(product.price)}
+                  </span>
                 </span>
-              )}
-            </p>
-            <Button
-              className="mt-3 w-full"
-              disabled={selected.length === 0}
-              onClick={() =>
-                selected.forEach((p, i) =>
-                  addToCart(fromCard(p), { silent: i < selected.length - 1 }),
-                )
-              }
-            >
-              Add {selected.length} to bag
-            </Button>
-          </div>
+              </label>
+            </li>
+          ))}
+        </ul>
+
+        {/* The total is ruled off from the list rather than boxed: a hairline
+            above it on a phone, and beside it once there is room for a column. */}
+        <div className="border-t border-hairline pt-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+          <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+            Total for {selected.length} item{selected.length > 1 ? "s" : ""}
+          </p>
+          <p className="mt-2.5 flex items-baseline gap-3">
+            <span className="text-[24px] font-semibold leading-none tabular-nums text-ink-950 sm:text-[28px]">
+              {formatINR(total)}
+            </span>
+            {mrpTotal > total && (
+              <span className="text-[13.5px] leading-none tabular-nums text-ink-400 line-through sm:text-[15px]">
+                {formatINR(mrpTotal)}
+              </span>
+            )}
+          </p>
+          <Button
+            className="mt-5 w-full"
+            disabled={selected.length === 0}
+            onClick={() =>
+              selected.forEach((p, i) =>
+                addToCart(fromCard(p), { silent: i < selected.length - 1 }),
+              )
+            }
+          >
+            {/* One span, not three children: the button is a flex row with a
+                gap, and a bare numeral between two text nodes would be spaced
+                off from its own sentence. */}
+            <span>
+              Add <span className="tabular-nums">{selected.length}</span> to bag
+            </span>
+          </Button>
         </div>
       </div>
     </section>

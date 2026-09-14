@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock, Mail, MapPin, MessageCircle, Package, Phone, UserRound } from "lucide-react";
+import { ArrowUpRight, Mail, MessageCircle, Phone } from "lucide-react";
 import { Breadcrumbs } from "@/components/ui/primitives";
 import { ContactForm } from "./contact-form";
 import { BreadcrumbJsonLd } from "@/components/seo/json-ld";
 import { BRAND } from "@/components/brand/logo";
+import { buttonClasses } from "@/components/ui/button";
 import { BUSINESS, addressLines, isFilled } from "@/config/business";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Contact us",
@@ -51,101 +53,110 @@ const CHANNELS = [
   },
 ];
 
+/** The small-caps rule every block in the sidebar is headed with. */
+const ASIDE_LABEL = "text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500";
+
 export default function ContactPage() {
   return (
     <div className="container-page py-5 sm:py-7">
       <BreadcrumbJsonLd items={crumbs} />
       <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-      <header className="mb-5 max-w-2xl sm:mb-10">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
-          Support
-        </p>
-        <h1 className="mt-2 font-display text-[22px] leading-[1.1] tracking-[-0.03em] text-ink-950 sm:mt-2.5 sm:text-[42px] sm:leading-[1.06]">
+      <header className="mb-6 border-b border-ink-950 pb-6 sm:mb-8 sm:pb-8">
+        <span className="eyebrow">Support</span>
+        <h1 className="mt-3 font-display text-[26px] leading-[1.06] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[42px]">
           Talk to a person
         </h1>
-        <p className="mt-3 text-[14px] leading-relaxed text-ink-600 sm:mt-4 sm:text-[15px]">
+        <p className="mt-4 max-w-[62ch] text-[14px] leading-[1.6] text-ink-600 sm:text-[15px]">
           Support runs {BUSINESS.supportHours}. Write, call or message us and a person will
           answer — no scripts, no chatbot maze. Our full postal address and grievance officer are
           listed below.
         </p>
       </header>
 
-      <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-4">
+      {/* The ways through to us, on one hairline grid. The track narrows to the
+          number of channels actually switched on, so a shop without WhatsApp
+          does not show an empty cell where a third one would have been. */}
+      <div
+        className={cn(
+          "tile-grid grid-cols-1",
+          CHANNELS.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3",
+        )}
+      >
         {CHANNELS.map((channel) => (
           <a
             key={channel.title}
             href={channel.href}
             target={channel.href.startsWith("http") ? "_blank" : undefined}
             rel={channel.href.startsWith("http") ? "noreferrer noopener" : undefined}
-            // A compact row with the icon on the left on phones; the stacked
-            // card from sm, where the three sit side by side.
-            className="tap group flex items-start gap-3.5 rounded-xl border border-hairline bg-surface p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md sm:flex-col sm:items-stretch sm:gap-0 sm:p-5"
+            className="tap group flex items-start gap-3.5 p-4 transition-colors duration-200 sm:flex-col sm:items-stretch sm:gap-0 sm:p-5 [@media(hover:hover)]:hover:bg-ink-50"
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 sm:h-11 sm:w-11">
-              <channel.icon size={19} />
-            </span>
+            <channel.icon
+              size={22}
+              strokeWidth={1.5}
+              className="shrink-0 text-ink-900 transition-colors duration-200 group-hover:text-brand-700"
+            />
             <div className="flex min-w-0 flex-1 flex-col">
-              <h2 className="font-display text-[16px] tracking-[-0.015em] text-ink-950 sm:mt-4 sm:text-lg">
+              <h2 className="font-display text-[20px] leading-tight tracking-[-0.02em] text-ink-950 sm:mt-4">
                 {channel.title}
               </h2>
-              <p className="mt-1 flex-1 text-[12.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[13px]">
+              <p className="mt-1.5 flex-1 text-[13px] leading-[1.6] text-ink-600 sm:mt-2">
                 {channel.body}
               </p>
-              <p className="mt-1.5 break-words text-[13px] font-semibold text-brand-700 group-hover:underline sm:mt-3">
+              <p className="mt-2 break-words text-[13px] font-semibold tabular-nums text-brand-700 sm:mt-3">
                 {channel.action}
+                <ArrowUpRight
+                  size={13}
+                  className="ml-1 inline-block align-[-1px] transition-transform duration-200 group-hover:translate-x-0.5"
+                />
               </p>
             </div>
           </a>
         ))}
       </div>
 
-      <div className="mt-6 grid gap-6 sm:mt-10 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
+      <div className="mt-8 grid gap-8 sm:mt-10 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
         <ContactForm />
 
-        <aside className="min-w-0 space-y-2.5 sm:space-y-4">
-          <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
-            <h2 className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
-              <Clock size={14} className="text-brand-600" /> When we are around
-            </h2>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-ink-600 sm:mt-3 sm:text-[13px]">
+        <aside className="min-w-0 space-y-6">
+          <section className="border-t border-hairline pt-4">
+            <h2 className={ASIDE_LABEL}>When we are around</h2>
+            <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">
               {BUSINESS.supportHours}. Messages that arrive outside those hours are answered the
               next working day.
             </p>
-          </div>
+          </section>
 
-          <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
-            <h2 className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
-              <MapPin size={14} className="text-brand-600" /> Business address
-            </h2>
-            <address className="mt-2 text-[12.5px] not-italic leading-relaxed text-ink-600 sm:mt-3 sm:text-[13px]">
-              {BRAND.legalName}
+          <section className="border-t border-hairline pt-4">
+            <h2 className={ASIDE_LABEL}>Business address</h2>
+            <address className="mt-2 text-[13px] not-italic leading-[1.6] text-ink-600">
+              <strong className="font-semibold text-ink-900">{BRAND.legalName}</strong>
               <br />
-              <span className="text-ink-500">Operated by {BUSINESS.proprietorName}</span>
+              Operated by {BUSINESS.proprietorName}
               {addressLines().map((line) => (
                 <span key={line}>
                   <br />
-                  {line}
+                  <span className="tabular-nums">{line}</span>
                 </span>
               ))}
               {isFilled(BUSINESS.gstin) ? (
                 <>
                   <br />
-                  <span className="text-ink-400">GSTIN {BUSINESS.gstin}</span>
+                  <span className="tabular-nums">GSTIN {BUSINESS.gstin}</span>
                 </>
               ) : null}
             </address>
-          </div>
+          </section>
 
           {/* Required by the Consumer Protection (E-Commerce) Rules, 2020. */}
-          <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
-            <h2 className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
-              <UserRound size={14} className="text-brand-600" /> Grievance officer
-            </h2>
-            <p className="mt-2 break-words text-[12.5px] leading-relaxed text-ink-600 sm:mt-3 sm:text-[13px]">
-              {BUSINESS.grievanceOfficer.name}
+          <section className="border-t border-hairline pt-4">
+            <h2 className={ASIDE_LABEL}>Grievance officer</h2>
+            <p className="mt-2 break-words text-[13px] leading-[1.6] text-ink-600">
+              <strong className="font-semibold text-ink-900">
+                {BUSINESS.grievanceOfficer.name}
+              </strong>
               <br />
-              <span className="text-ink-500">{BUSINESS.grievanceOfficer.designation}</span>
+              {BUSINESS.grievanceOfficer.designation}
               <br />
               <a
                 href={`mailto:${BUSINESS.grievanceEmail}`}
@@ -156,41 +167,34 @@ export default function ContactPage() {
               <br />
               <a
                 href={`tel:${BUSINESS.supportPhoneDigits}`}
-                className="font-medium text-brand-700 hover:underline"
+                className="font-medium tabular-nums text-brand-700 hover:underline"
               >
                 {BUSINESS.supportPhone}
               </a>
             </p>
-            <p className="mt-2 text-[12px] leading-relaxed text-ink-500 sm:mt-3">
+            <p className="mt-2.5 text-[13px] leading-[1.6] text-ink-500">
               Complaints are acknowledged within 48 hours and resolved within one month. If we
-              cannot resolve yours, escalate to the National Consumer Helpline on 1915.
+              cannot resolve yours, escalate to the National Consumer Helpline on{" "}
+              <span className="tabular-nums">1915</span>.
             </p>
-          </div>
+          </section>
 
-          <div className="rounded-xl border border-hairline bg-brand-50 p-4 sm:p-5">
-            <h2 className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-brand-900 sm:text-[12px]">
-              <Package size={14} /> Faster than a message
-            </h2>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-brand-800 sm:mt-2.5 sm:text-[13px]">
+          <section className="border-t border-hairline pt-4">
+            <h2 className={ASIDE_LABEL}>Faster than a message</h2>
+            <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">
               Most questions are about where a parcel is. You can see that yourself in about five
               seconds.
             </p>
-            {/* An even pair of 40px buttons on phones; natural width from sm. */}
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              <Link
-                href="/track"
-                className="tap flex min-h-10 items-center justify-center rounded-lg bg-brand-900 px-3.5 py-2 text-center text-[12.5px] font-semibold text-white transition-colors hover:bg-brand-800 sm:block sm:min-h-0 sm:text-left"
-              >
+            {/* An even pair of buttons on phones; natural width from sm. */}
+            <div className="mt-3.5 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <Link href="/track" className={buttonClasses("outline", "sm", "w-full sm:w-auto")}>
                 Track an order
               </Link>
-              <Link
-                href="/faq"
-                className="tap flex min-h-10 items-center justify-center rounded-lg border border-brand-300 px-3.5 py-2 text-center text-[12.5px] font-semibold text-brand-800 transition-colors hover:bg-brand-100 sm:block sm:min-h-0 sm:text-left"
-              >
+              <Link href="/faq" className={buttonClasses("ghost", "sm", "w-full sm:w-auto")}>
                 Read the FAQ
               </Link>
             </div>
-          </div>
+          </section>
         </aside>
       </div>
     </div>

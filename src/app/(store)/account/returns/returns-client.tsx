@@ -5,7 +5,7 @@ import Image from "@/components/ui/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Check, CircleDollarSign, PackageOpen, RotateCcw, Truck } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import type { Order, ReturnRequest } from "@/lib/types";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
@@ -38,10 +38,23 @@ const REASONS = [
   "Found a better price elsewhere",
 ];
 
+/** The heading every block on the account screens wears. */
+const PANEL_HEAD =
+  "border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5";
+
+/** The same heading, standing on its own above a block that draws its own box. */
+const LOOSE_HEAD =
+  "mb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500";
+
 /**
  * `requests` and `orders` are the customer's real records. Raising a return
  * writes to the database and refreshes the page, so what is on screen is always
  * what the warehouse sees.
+ *
+ * The four stages of a return are drawn the way the shipment timeline draws its
+ * stops: square nodes on one rule, inked as far as the parcel has actually got.
+ * It is the same journey as the one on the order page, so it is the same
+ * picture, turned on its side.
  */
 export function ReturnsClient({
   requests,
@@ -87,30 +100,31 @@ export function ReturnsClient({
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-7">
       <header>
-        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+        <span className="eyebrow">Your account</span>
+        <h1 className="mt-2 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
           Returns and refunds
         </h1>
-        <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-ink-600 sm:mt-2 sm:text-[14px]">
+        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:text-[15px]">
           Free pickup from every serviceable pincode. Refunds start within 48 hours of the item
           reaching our warehouse.
         </p>
       </header>
 
-      <section>
-        <h2 className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:mb-3 sm:text-[12px]">
-          Your return requests
-        </h2>
-        {requests.length === 0 ? (
+      {requests.length === 0 ? (
+        <section>
+          <h2 className={LOOSE_HEAD}>Your return requests</h2>
           <EmptyState
-            icon={<RotateCcw size={24} />}
             title="No returns yet"
             body="Nothing to see here — which is usually a good sign."
             className="px-4 py-8 sm:px-6 sm:py-10"
           />
-        ) : (
-          <ul className="space-y-2.5 sm:space-y-3">
+        </section>
+      ) : (
+        <section className="border border-hairline bg-surface">
+          <h2 className={PANEL_HEAD}>Your return requests</h2>
+          <ul>
             <AnimatePresence initial={false}>
               {requests.map((request) => {
                 const stepIndex = STATUS_STEPS.indexOf(request.status);
@@ -118,12 +132,12 @@ export function ReturnsClient({
                   <motion.li
                     key={request.id}
                     layout
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="overflow-hidden rounded-xl border border-hairline bg-surface"
+                    className="border-b border-hairline last:border-b-0"
                   >
-                    <div className="flex gap-3 p-3.5 sm:gap-4 sm:p-4">
-                      <span className="relative h-[72px] w-[58px] shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-20 sm:w-16">
+                    <div className="flex gap-3 px-4 py-4 sm:gap-4 sm:px-5">
+                      <span className="relative h-[72px] w-[58px] shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-20 sm:w-16">
                         <Image
                           src={request.image}
                           alt=""
@@ -133,48 +147,48 @@ export function ReturnsClient({
                         />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="line-clamp-2 text-[13px] font-medium text-ink-950 sm:line-clamp-none sm:text-[13.5px]">
+                        <p className="line-clamp-2 text-[13.5px] font-medium leading-[1.4] text-ink-950 sm:line-clamp-none">
                           {request.productTitle}
                         </p>
-                        <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
+                        <p className="mt-1 text-[13px] leading-[1.5] tabular-nums text-ink-500">
                           Order {request.orderNumber} · {request.reason}
                         </p>
-                        <p className="mt-0.5 text-[11.5px] text-ink-500 sm:text-[12px]">
+                        <p className="text-[13px] leading-[1.5] tabular-nums text-ink-500">
                           Requested {formatDate(request.requestedAt, "short")}
                         </p>
-                        <p className="mt-1.5 flex items-center gap-1.5 text-[12px] font-semibold text-brand-700 sm:text-[12.5px]">
-                          <CircleDollarSign size={13} className="shrink-0" />
-                          {formatINR(request.refundAmount)} to {request.refundMode}
+                        <p className="mt-1.5 text-[13px] text-ink-600">
+                          Refund{" "}
+                          <span className="font-semibold tabular-nums text-ink-950">
+                            {formatINR(request.refundAmount)}
+                          </span>{" "}
+                          to {request.refundMode}
                         </p>
                       </div>
                     </div>
 
-                    <div className="border-t border-hairline bg-canvas px-3.5 py-2.5 sm:px-4 sm:py-3">
+                    <div className="border-t border-hairline px-4 py-3.5 sm:px-5">
                       {request.status === "rejected" ? (
-                        <p className="text-[12.5px] font-medium text-sale-600">
+                        <p className="text-[13px] font-medium text-sale-600">
                           This return was not approved. Contact support for details.
                         </p>
                       ) : (
-                        <ol className="flex items-center">
+                        <ol className="flex items-start">
                           {STATUS_STEPS.map((step, i) => {
                             const done = i <= stepIndex;
                             return (
-                              <li key={step} className="flex flex-1 items-center last:flex-none">
-                                <span className="flex flex-col items-center gap-1.5">
+                              <li key={step} className="flex flex-1 items-start last:flex-none">
+                                <span className="flex flex-col items-center gap-2">
                                   <span
+                                    aria-hidden
                                     className={cn(
-                                      "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold",
-                                      done
-                                        ? "bg-brand-600 text-white"
-                                        : "border border-ink-200 text-ink-300",
+                                      "h-[11px] w-[11px] shrink-0",
+                                      done ? "bg-brand-700" : "border border-rule bg-surface",
                                     )}
-                                  >
-                                    {done ? <Check size={11} strokeWidth={3} /> : i + 1}
-                                  </span>
+                                  />
                                   <span
                                     className={cn(
-                                      "whitespace-nowrap text-[10.5px]",
-                                      done ? "font-medium text-ink-800" : "text-ink-400",
+                                      "whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.1em]",
+                                      done ? "text-ink-900" : "text-ink-500",
                                     )}
                                   >
                                     {STATUS_LABEL[step]}
@@ -182,9 +196,10 @@ export function ReturnsClient({
                                 </span>
                                 {i < STATUS_STEPS.length - 1 && (
                                   <span
+                                    aria-hidden
                                     className={cn(
-                                      "mx-1 -mt-4 h-0.5 flex-1 rounded-full",
-                                      i < stepIndex ? "bg-brand-600" : "bg-ink-200",
+                                      "mx-2 mt-[5px] h-px flex-1",
+                                      i < stepIndex ? "bg-brand-700" : "bg-rule",
                                     )}
                                   />
                                 )}
@@ -199,20 +214,13 @@ export function ReturnsClient({
               })}
             </AnimatePresence>
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
-      <section>
-        <h2 className="mb-1 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
-          Start a new return
-        </h2>
-        <p className="mb-2.5 text-[12.5px] text-ink-500 sm:mb-3 sm:text-[13px]">
-          Delivered items are eligible for the return window shown on each product page.
-        </p>
-
-        {eligible.length === 0 ? (
+      {eligible.length === 0 ? (
+        <section>
+          <h2 className={LOOSE_HEAD}>Start a new return</h2>
           <EmptyState
-            icon={<PackageOpen size={24} />}
             title="Nothing eligible right now"
             body="Once an order is delivered it will show up here for the length of its return window."
             action={
@@ -222,23 +230,34 @@ export function ReturnsClient({
             }
             className="px-4 py-8 sm:px-6 sm:py-10"
           />
-        ) : (
-          <ul className="space-y-2.5 sm:space-y-3">
+        </section>
+      ) : (
+        <section className="border border-hairline bg-surface">
+          <header className="border-b border-hairline px-4 py-3 sm:px-5 sm:py-3.5">
+            <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+              Start a new return
+            </h2>
+            <p className="mt-1.5 text-[13px] leading-[1.5] text-ink-500">
+              Delivered items are eligible for the return window shown on each product page.
+            </p>
+          </header>
+
+          <ul>
             {eligible.map(({ order, line }) => (
               <li
                 key={`${order.id}-${line.id}`}
-                className="overflow-hidden rounded-xl border border-hairline bg-surface"
+                className="border-b border-hairline last:border-b-0"
               >
-                <div className="flex items-center gap-3 p-3.5 sm:gap-4 sm:p-4">
-                  <span className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg bg-ink-100">
+                <div className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5">
+                  <span className="relative h-16 w-14 shrink-0 overflow-hidden border border-hairline bg-ink-100">
                     <Image src={line.image} alt="" fill sizes="56px" className="object-cover" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-1 text-[13px] font-medium text-ink-950 sm:text-[13.5px]">
+                    <p className="line-clamp-1 text-[13.5px] font-medium text-ink-950">
                       {line.title}
                     </p>
                     {/* At 320px the order number is wider than this column. */}
-                    <p className="break-words text-[11.5px] text-ink-500 sm:text-[12px]">
+                    <p className="mt-0.5 break-words text-[13px] leading-[1.5] tabular-nums text-ink-500">
                       Order {order.number} · delivered{" "}
                       {formatDate(order.estimatedDelivery, "short")}
                     </p>
@@ -266,7 +285,7 @@ export function ReturnsClient({
                       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-hairline p-3.5 sm:p-4">
+                      <div className="border-t border-hairline px-4 py-4 sm:px-5">
                         <Field label="Why are you returning this?" htmlFor={`reason-${line.id}`}>
                           <Select
                             id={`reason-${line.id}`}
@@ -280,17 +299,19 @@ export function ReturnsClient({
                             ))}
                           </Select>
                         </Field>
-                        <p className="mt-3 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12.5px] leading-relaxed text-ink-600 sm:text-[12px]">
-                          <Truck size={13} className="mt-px shrink-0 text-brand-600" />
+                        <p className="mt-3.5 border-l border-rule pl-3.5 text-[13px] leading-[1.55] text-ink-600">
                           A pickup will be scheduled within 24 hours. Keep the item in its original
                           packaging with all tags attached.
                         </p>
                         {error && (
-                          <p role="alert" className="mt-3 text-[12.5px] font-medium text-sale-600">
+                          <p
+                            role="alert"
+                            className="mt-3.5 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
+                          >
                             {error}
                           </p>
                         )}
-                        <div className="mt-3 flex gap-2">
+                        <div className="mt-4 flex gap-2">
                           <Button
                             size="sm"
                             loading={pending}
@@ -315,12 +336,12 @@ export function ReturnsClient({
               </li>
             ))}
           </ul>
-        )}
-      </section>
+        </section>
+      )}
 
-      <p className="rounded-xl border border-hairline bg-surface p-3.5 text-[12.5px] leading-relaxed text-ink-600 sm:p-4">
+      <p className="border-l border-rule pl-3.5 text-[13px] leading-[1.6] text-ink-600">
         Read the full{" "}
-        <Link href="/legal/refunds" className="font-semibold text-brand-700 hover:underline">
+        <Link href="/legal/refunds" className="font-medium text-brand-700 hover:underline">
           return policy
         </Link>{" "}
         for category-specific windows. Beauty and personal care items can only be returned

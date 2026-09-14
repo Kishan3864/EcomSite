@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Info, Pencil, UserRound } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { computeTotals } from "@/lib/pricing";
+import { cn } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
 
@@ -88,11 +89,10 @@ export function ContactStep() {
         </Button>
       }
     >
-      <Form id="checkout-contact" onSubmit={submit} className="space-y-4 sm:space-y-5">
-        <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
-          <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
-            <h2 className="flex items-center gap-2 text-[12.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[13px]">
-              <UserRound size={15} className="text-brand-600" />
+      <Form id="checkout-contact" onSubmit={submit} className="space-y-6">
+        <section className="border border-hairline bg-surface p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 border-b border-hairline pb-3">
+            <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Contact details
             </h2>
             {confirming && (
@@ -103,30 +103,47 @@ export function ContactStep() {
                 className="h-10 sm:h-8"
                 onClick={() => setEditing(true)}
               >
-                <Pencil size={12} /> Edit
+                Edit
               </Button>
             )}
           </div>
 
           {confirming ? (
-            <dl className="space-y-2 sm:space-y-2.5">
-              {[
-                { label: "Name", value: form.name },
-                { label: "Email", value: form.email },
-                { label: "Mobile", value: form.phone },
-              ].map((row) => (
-                <div key={row.label} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
-                  <dt className="w-16 shrink-0 text-[12px] text-ink-500 sm:text-[12.5px]">
+            /* Read back as a ledger: the label in the left column, the value
+               right of it, one ruled row apiece. An email longer than the row
+               wraps rather than pushing the column about. */
+            <dl className="pt-1">
+              {(
+                [
+                  { label: "Name", value: form.name },
+                  { label: "Email", value: form.email },
+                  // Every digit the same width, so the number reads as a number.
+                  { label: "Mobile", value: form.phone, numeric: true },
+                ] as { label: string; value: string; numeric?: boolean }[]
+              ).map((row, i) => (
+                <div
+                  key={row.label}
+                  className={cn(
+                    "flex min-h-11 flex-wrap items-center gap-x-4 gap-y-0.5 py-2",
+                    i > 0 && "border-t border-hairline",
+                  )}
+                >
+                  <dt className="w-[72px] shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     {row.label}
                   </dt>
-                  <dd className="min-w-0 text-[13.5px] font-medium text-ink-950 wrap-anywhere sm:text-[14px]">
+                  <dd
+                    className={cn(
+                      "min-w-0 flex-1 text-[13.5px] font-medium text-ink-950 wrap-anywhere",
+                      row.numeric && "tabular-nums",
+                    )}
+                  >
                     {row.value}
                   </dd>
                 </div>
               ))}
             </dl>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+            <div className="grid gap-4 pt-4 sm:grid-cols-2">
               <Field label="Full name" htmlFor="name" error={errors.name} className="sm:col-span-2">
                 <Input
                   id="name"
@@ -173,13 +190,15 @@ export function ContactStep() {
                   invalid={Boolean(errors.phone)}
                   onChange={(e) => setForm({ phone: e.target.value })}
                   placeholder="+91 98450 12345"
+                  className="tabular-nums"
                 />
               </Field>
             </div>
           )}
 
-          <p className="mt-3 flex items-start gap-2 rounded-lg bg-ink-50 p-3 text-[12.5px] leading-relaxed text-ink-600 sm:mt-4 sm:text-[12px]">
-            <Info size={13} className="mt-px shrink-0 text-brand-600" />
+          {/* A rule and a paragraph, rather than a tinted box: the note is read
+              in the same ink as everything else on the page. */}
+          <p className="mt-4 border-t border-hairline pt-3.5 text-[13px] leading-[1.55] text-ink-600">
             {customer ? (
               <span className="min-w-0">
                 Signed in as{" "}
@@ -201,13 +220,13 @@ export function ContactStep() {
               </span>
             )}
           </p>
-        </div>
+        </section>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
             href="/cart"
-            className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
+            className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
           >
             Back to bag
           </Link>

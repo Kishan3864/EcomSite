@@ -68,6 +68,15 @@ export function ProductRail({
   );
 }
 
+/**
+ * The catalogue grid behind every listing route.
+ *
+ * It is `.tile-grid` — one shared hairline between tiles — and not a gapped
+ * row of cards, because the loading skeleton every listing route renders has
+ * always been drawn that way. A grid of gaps settling into a grid of rules on
+ * every navigation to a listing read as a glitch rather than as a page
+ * arriving, and it was the grid that was wrong, not the skeleton.
+ */
 export function ProductGrid({
   products,
   className,
@@ -80,7 +89,7 @@ export function ProductGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5",
+        "tile-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
         className,
       )}
     >

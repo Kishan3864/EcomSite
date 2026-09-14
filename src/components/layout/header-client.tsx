@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "@/components/ui/image";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
@@ -27,6 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { DepartmentGlyph } from "@/components/illustration/department-glyph";
 import { MegaMenu } from "./mega-menu";
 import { SearchBar } from "./search-bar";
 import { isFunnelRoute } from "./bottom-nav";
@@ -94,10 +94,13 @@ export function HeaderClient({
     <>
       <AnnouncementBar />
 
+      {/* Scrolling draws a rule under the chrome and nothing else. The soft
+          shadow that used to lift it off the page was the one piece of the old
+          header that made a printed sheet look like a floating widget. */}
       <header
         className={cn(
-          "sticky top-0 z-50 border-b bg-canvas/85 backdrop-blur-xl transition-shadow duration-300",
-          scrolled ? "border-hairline shadow-sm" : "border-transparent",
+          "sticky top-0 z-50 border-b bg-canvas/85 backdrop-blur-xl transition-colors duration-300",
+          scrolled ? "border-rule" : "border-transparent",
         )}
       >
         <div className="container-page">
@@ -125,7 +128,12 @@ export function HeaderClient({
                   <CountBubble count={count} />
                 </span>
                 <span className="hidden xl:block">
-                  <span className="block text-[10px] uppercase tracking-[0.1em] text-ink-400">
+                  {/* The three controls in this row all carry a sublabel over a
+                      name, so all three are set as the site's small-caps label
+                      rather than as 10px of decorative ink-400: at that size
+                      and that contrast it was the one line in the masthead
+                      nobody could actually read. */}
+                  <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     Your bag
                   </span>
                   <span className="block text-[13px] font-semibold text-ink-900">
@@ -143,10 +151,10 @@ export function HeaderClient({
           <div className="hidden border-t border-hairline lg:block">
             <div className="flex items-center justify-between py-1.5">
               <MegaMenu categories={categories} />
-              <div className="flex items-center gap-4 text-[12.5px]">
+              <div className="flex items-center gap-4 text-[13px]">
                 <Link
                   href="/track"
-                  className="inline-flex items-center gap-1.5 text-ink-600 transition-colors hover:text-brand-700"
+                  className="inline-flex items-center gap-1.5 text-ink-600 transition-colors duration-200 hover:text-brand-700"
                 >
                   <Package size={14} /> Track order
                 </Link>
@@ -248,7 +256,7 @@ function SearchField({ onOpen, className }: { onOpen: () => void; className?: st
       onClick={onOpen}
       aria-haspopup="dialog"
       className={cn(
-        "tap flex h-10 min-w-0 items-center gap-2.5 rounded-xl border border-ink-200 bg-surface px-3.5 text-left transition-colors hover:border-ink-300",
+        "tap flex h-10 min-w-0 items-center gap-2.5 rounded-xl border border-hairline bg-surface px-3.5 text-left transition-colors duration-200 hover:border-ink-950",
         className,
       )}
     >
@@ -268,7 +276,10 @@ function CountBubble({ count }: { count: number }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={reduce ? { opacity: 0 } : { scale: 0.4, opacity: 0 }}
           transition={{ type: "spring", stiffness: 560, damping: 20 }}
-          className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-sale-500 px-1 text-[10px] font-bold leading-none text-white tabular-nums"
+          // Ink, not oxblood. A bag count is a fact, not a reduction, and sale
+          // colour spent on it is the reason a genuine price cut further down
+          // the page stops being believed.
+          className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-ink-950 px-1 text-[10px] font-bold leading-none text-white tabular-nums"
         >
           {count > 99 ? "99+" : count}
         </motion.span>
@@ -300,7 +311,7 @@ function HeaderAction({
         <CountBubble count={count} />
       </span>
       <span className="hidden xl:block">
-        <span className="block text-[10px] uppercase tracking-[0.1em] text-ink-400">
+        <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {sublabel}
         </span>
         <span className="block text-[13px] font-semibold text-ink-900">{label}</span>
@@ -325,9 +336,15 @@ function MenuLink({
       href={href}
       role="menuitem"
       onClick={onSelect}
-      className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-950 focus-visible:bg-ink-50 focus-visible:text-ink-950"
+      // Ruled rows, as the department menu indexes its collections: the rule
+      // is what makes eight destinations read as one list rather than as eight
+      // separate things floating in a panel.
+      className="group flex h-10 items-center gap-2.5 border-b border-hairline px-4 text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700 focus-visible:text-brand-700"
     >
-      <Icon size={15} className="text-ink-400" />
+      <Icon
+        size={15}
+        className="shrink-0 text-ink-400 transition-colors duration-200 group-hover:text-brand-700"
+      />
       {label}
     </Link>
   );
@@ -451,7 +468,7 @@ function AccountMenu() {
         </span>
         <span className="sr-only xl:hidden">Account</span>
         <span className="hidden xl:block">
-          <span className="block text-[10px] uppercase tracking-[0.1em] text-ink-400">
+          <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             {customer ? "Your account" : sessionChecked ? "Sign in" : ""}
           </span>
           <span className="block text-[13px] font-semibold text-ink-900">
@@ -477,10 +494,13 @@ function AccountMenu() {
             animate={{ opacity: 1, y: 0 }}
             exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-hairline bg-surface shadow-xl"
+            // The same sheet the department menu is drawn on, a quarter of the
+            // width: an ink frame and no shadow, so the two panels that can
+            // open from this one bar are plainly the same object.
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden border border-ink-950 bg-surface"
           >
             {!sessionChecked ? (
-              <p className="px-4 py-6 text-center text-[12.5px] text-ink-500">
+              <p className="px-4 py-6 text-center text-[13px] text-ink-500">
                 Checking your session&hellip;
               </p>
             ) : customer ? (
@@ -491,35 +511,40 @@ function AccountMenu() {
                     <span className="block truncate text-[13.5px] font-semibold text-ink-950">
                       {customer.name}
                     </span>
-                    <span className="block truncate text-[11.5px] text-ink-500">
+                    <span className="block truncate text-[13px] text-ink-500">
                       {customer.email}
                     </span>
                   </span>
                 </div>
-                <div role="none" className="p-1.5">
+                <div role="none">
                   {ACCOUNT_LINKS.map((link) => (
                     <MenuLink key={link.href} {...link} onSelect={close} />
                   ))}
                 </div>
-                <div role="none" className="border-t border-hairline p-1.5">
+                {/* The last row closes the list, so it drops the rule it would
+                    otherwise draw a hair above the panel's own bottom edge. */}
+                <div role="none">
                   <SignOutForm
                     role="menuitem"
                     onSignOut={close}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600 focus-visible:bg-ink-50"
+                    className="flex h-10 w-full items-center gap-2.5 px-4 text-left text-[13px] text-ink-500 transition-colors duration-200 hover:text-sale-600 focus-visible:text-sale-600"
                   >
-                    <LogOut size={15} className="text-ink-400" />
+                    <LogOut size={15} className="shrink-0 text-ink-400" />
                     Sign out
                   </SignOutForm>
                 </div>
               </>
             ) : (
               <>
-                <div role="none" className="p-1.5">
+                <div role="none">
                   {GUEST_LINKS.map((link) => (
                     <MenuLink key={link.href} {...link} onSelect={close} />
                   ))}
                 </div>
-                <div role="none" className="border-t border-hairline p-1.5">
+                {/* The rule under the row above already separates signing in
+                    from getting help; the last row of the panel draws none, so
+                    that it does not double up with the frame's own edge. */}
+                <div role="none" className="[&>a:last-child]:border-b-0">
                   {GUEST_HELP_LINKS.map((link) => (
                     <MenuLink key={link.href} {...link} onSelect={close} />
                   ))}
@@ -548,16 +573,22 @@ function AnnouncementBar() {
   ];
 
   return (
-    <div className="overflow-hidden bg-brand-950 py-1.5 text-white sm:py-2">
-      <div className="flex w-max animate-[marquee_38s_linear_infinite] motion-reduce:animate-none">
+    <div className="deep-plane overflow-hidden py-1.5 text-white sm:py-2">
+      {/* The speed is the one declared in globals.css. Hand-rolled at 38s this
+          read as a news ticker, which is the opposite of what a shop wants:
+          a sign is something you can finish reading. */}
+      <div className="flex w-max animate-marquee motion-reduce:animate-none">
         {[0, 1].map((dup) => (
           <ul key={dup} className="flex shrink-0 items-center" aria-hidden={dup === 1}>
             {items.map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-3 whitespace-nowrap px-4 text-[11.5px] font-medium tracking-[0.02em] text-white/80 sm:px-6"
+                className="flex items-center gap-3 whitespace-nowrap px-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-white/80 sm:px-6"
               >
-                <span className="h-1 w-1 rounded-full bg-gold-400" />
+                {/* Saffron is worth something only while it is rare, and a
+                    strip that repeats it six times a loop on every page of the
+                    shop spends it faster than anything else could. */}
+                <span aria-hidden className="h-px w-3 shrink-0 bg-white/35" />
                 {item}
               </li>
             ))}
@@ -620,27 +651,34 @@ function MobileMenu({
         </button>
       </div>
 
-      <div className="border-b border-hairline bg-brand-950 px-4 py-4 text-white">
-        <p className="font-display text-base tracking-[-0.01em]">
+      {/* The drawer's one dark plane. The greeting is set in the text face:
+          Fraunces draws band titles and product titles, and at the 16px this
+          line used to be it was neither — just the display face borrowed for a
+          label, which is how a type system comes apart. */}
+      <div className="deep-plane border-b border-hairline px-4 py-4 text-white">
+        <p className="text-[15px] font-semibold tracking-[-0.01em]">
           {customer ? `Hello, ${customer.name.split(" ")[0]}` : "Welcome back"}
         </p>
-        <p className="mt-0.5 break-words text-[12.5px] text-white/60">
+        <p className="mt-0.5 break-words text-[13px] leading-[1.5] text-white/70">
           {customer
             ? customer.email
             : "Sign in for faster checkout and order tracking."}
         </p>
+        {/* Sentence case, not the uppercase tracking the shop's calls to action
+            wear: the drawer is never wider than 330px, and "Create account" set
+            in small caps overruns its half of the row on a 320px phone. */}
         <div className="mt-3 flex gap-2">
           {customer ? (
             <>
               <Link
                 href="/account"
-                className="tap flex h-10 flex-1 items-center justify-center rounded-lg bg-white px-3 text-center text-[12.5px] font-semibold text-ink-950"
+                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap bg-white px-2.5 text-center text-[13px] font-semibold text-ink-950"
               >
                 My account
               </Link>
               <Link
                 href="/account/settings"
-                className="tap flex h-10 flex-1 items-center justify-center rounded-lg border border-white/25 px-3 text-center text-[12.5px] font-semibold text-white"
+                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap border border-white/30 px-2.5 text-center text-[13px] font-semibold text-white"
               >
                 Settings
               </Link>
@@ -649,13 +687,13 @@ function MobileMenu({
             <>
               <Link
                 href="/login"
-                className="tap flex h-10 flex-1 items-center justify-center rounded-lg bg-white px-3 text-center text-[12.5px] font-semibold text-ink-950"
+                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap bg-white px-2.5 text-center text-[13px] font-semibold text-ink-950"
               >
                 Sign in
               </Link>
               <Link
                 href="/register"
-                className="tap flex h-10 flex-1 items-center justify-center rounded-lg border border-white/25 px-3 text-center text-[12.5px] font-semibold text-white"
+                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap border border-white/30 px-2.5 text-center text-[13px] font-semibold text-white"
               >
                 Create account
               </Link>
@@ -669,7 +707,7 @@ function MobileMenu({
         aria-label="Mobile navigation"
       >
         {categories.length > 0 && (
-        <p className="px-2 pb-1 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+        <p className="px-2 pb-1 pt-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Shop by category
         </p>
         )}
@@ -681,11 +719,17 @@ function MobileMenu({
                   setExpanded((s) => (s === category.slug ? null : category.slug))
                 }
                 aria-expanded={expanded === category.slug}
-                className="tap flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-ink-50"
+                className="tap flex min-h-10 w-full items-center gap-3 px-2 py-1.5 text-left transition-colors duration-200 hover:bg-ink-50"
               >
-                <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md bg-ink-100">
-                  <Image src={category.image.url} alt="" fill sizes="36px" className="object-cover" />
-                </span>
+                {/* The 36px photograph each of these rows used to carry has gone
+                    everywhere else in the shop; left here it would read as a
+                    redesign somebody abandoned halfway down the drawer. The row
+                    keeps a 40px minimum so the target stays the size it was. */}
+                <DepartmentGlyph
+                  icon={category.icon}
+                  size={20}
+                  className="shrink-0 text-ink-400"
+                />
                 <span className="min-w-0 flex-1 text-[13.5px] font-medium text-ink-900">
                   {category.name}
                 </span>
@@ -704,13 +748,16 @@ function MobileMenu({
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                    className="overflow-hidden pl-12"
+                    // 32px, not 48: the indent exists to hang the collections
+                    // off the department's own name, and the name moved left
+                    // when the 36px thumbnail became a 20px mark.
+                    className="overflow-hidden pl-8"
                   >
                     <li>
                       <Link
                         href={`/c/${category.slug}`}
                         onClick={onClose}
-                        className="tap flex min-h-10 items-center rounded-md px-2 py-1.5 text-[12.5px] font-semibold text-brand-700 hover:bg-brand-50"
+                        className="tap flex min-h-10 items-center px-2 py-1.5 text-[13px] font-semibold text-brand-700 transition-colors duration-200 hover:bg-ink-50"
                       >
                         All {category.name}
                       </Link>
@@ -720,7 +767,7 @@ function MobileMenu({
                         <Link
                           href={`/c/${category.slug}/${sub.slug}`}
                           onClick={onClose}
-                          className="tap flex min-h-10 items-center rounded-md px-2 py-1.5 text-[12.5px] text-ink-600 hover:bg-ink-50 hover:text-ink-900"
+                          className="tap flex min-h-10 items-center px-2 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:bg-ink-50 hover:text-ink-900"
                         >
                           {sub.name}
                         </Link>
@@ -733,7 +780,7 @@ function MobileMenu({
           ))}
         </ul>
 
-        <p className="px-2 pb-1 pt-4 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-400">
+        <p className="px-2 pb-1 pt-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Your account
         </p>
         <ul>
@@ -742,7 +789,7 @@ function MobileMenu({
               <Link
                 href={item.href}
                 onClick={onClose}
-                className="tap flex min-h-10 items-center rounded-lg px-2 py-1.5 text-[13.5px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-950"
+                className="tap flex min-h-10 items-center px-2 py-1.5 text-[13.5px] text-ink-700 transition-colors duration-200 hover:bg-ink-50 hover:text-ink-950"
               >
                 {item.label}
               </Link>
@@ -752,7 +799,7 @@ function MobileMenu({
             <li>
               <SignOutForm
                 onSignOut={onClose}
-                className="tap flex min-h-10 w-full items-center rounded-lg px-2 py-1.5 text-left text-[13.5px] text-ink-500 transition-colors hover:bg-ink-50 hover:text-sale-600"
+                className="tap flex min-h-10 w-full items-center px-2 py-1.5 text-left text-[13.5px] text-ink-500 transition-colors duration-200 hover:bg-ink-50 hover:text-sale-600"
               >
                 Sign out
               </SignOutForm>

@@ -20,7 +20,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { Address, PaymentMethodId } from "@/lib/types";
-import { Badge, Skeleton } from "@/components/ui/primitives";
+import { Skeleton } from "@/components/ui/primitives";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input, OptionCard } from "@/components/ui/field";
 import {
@@ -61,12 +61,13 @@ export function SettingsClient({
   signInPhone?: string | null;
 }) {
   return (
-    <div className="space-y-3 sm:space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <header className="pb-1 sm:pb-0">
-        <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
+        <span className="eyebrow">Your account</span>
+        <h1 className="mt-2 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
           Settings
         </h1>
-        <p className="mt-1.5 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
+        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:text-[15px]">
           Your details, where we deliver by default, and how you prefer to pay.
         </p>
       </header>
@@ -100,28 +101,33 @@ function Section({
   description: string;
   children: React.ReactNode;
 }) {
+  // The one block shape the whole account area is built from: a hairline
+  // rectangle on the white sheet, small caps on a rule across the top.
   return (
-    <section
-      id={id}
-      className="scroll-mt-32 overflow-hidden rounded-xl border border-hairline bg-surface"
-    >
-      <header className="border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
-        <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-900 sm:text-[12px]">
+    <section id={id} className="scroll-mt-32 border border-hairline bg-surface">
+      <header className="border-b border-hairline px-4 py-3 sm:px-5 sm:py-3.5">
+        <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {title}
         </h2>
-        <p className="mt-0.5 text-[12.5px] leading-relaxed text-ink-500 sm:mt-1">{description}</p>
+        <p className="mt-1.5 text-[13px] leading-[1.5] text-ink-500">{description}</p>
       </header>
       <div className="p-4 sm:p-5">{children}</div>
     </section>
   );
 }
 
+/**
+ * Both answers a form can give, drawn as the shop draws every other aside: a
+ * rule down the left and the sentence beside it. The oxblood one matches the
+ * block the shared `Form` puts up when a field fails its own constraint, so a
+ * server saying no and a browser saying no look like one thing.
+ */
 function Feedback({ state }: { state: AccountFormState }) {
   if (state.error && !state.field)
     return (
       <p
         role="alert"
-        className="flex items-start gap-2 rounded-lg border border-sale-100 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
+        className="flex items-start gap-2 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
       >
         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
         {state.error}
@@ -132,7 +138,7 @@ function Feedback({ state }: { state: AccountFormState }) {
     return (
       <p
         role="status"
-        className="flex items-start gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-[12.5px] text-brand-800 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
+        className="flex items-start gap-2 border-l-2 border-brand-700 bg-brand-50 px-3.5 py-3 text-[13px] leading-[1.5] text-brand-800"
       >
         <Check size={14} className="mt-0.5 shrink-0" />
         {state.message}
@@ -268,7 +274,7 @@ function PhotoSection() {
               </Button>
             )}
           </div>
-          <p className="text-[12px] leading-relaxed text-ink-500">
+          <p className="text-[13px] leading-[1.5] text-ink-500">
             JPG, PNG or WebP. We crop it square and strip location data from it.
           </p>
           <input
@@ -284,13 +290,13 @@ function PhotoSection() {
       </div>
 
       {state.error && (
-        <p role="alert" className="mt-4 flex items-start gap-1.5 text-[12.5px] text-sale-600">
-          <AlertCircle size={13} className="mt-px shrink-0" />
+        <p role="alert" className="mt-4 flex items-start gap-1.5 text-[13px] text-sale-600">
+          <AlertCircle size={13} className="mt-0.5 shrink-0" />
           {state.error}
         </p>
       )}
       {state.ok && state.message && (
-        <p role="status" className="mt-4 flex items-center gap-1.5 text-[12.5px] text-brand-700">
+        <p role="status" className="mt-4 flex items-center gap-1.5 text-[13px] text-brand-700">
           <Check size={13} className="shrink-0" />
           {state.message}
         </p>
@@ -408,8 +414,10 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
         title="Default delivery address"
         description="Save one address as the default and checkout will start there every time."
       >
-        <p className="text-[13px] text-ink-600 sm:text-[13.5px]">You have not saved an address yet.</p>
-        <Link href="/account/addresses" className={buttonClasses("outline", "sm", "mt-3 h-10 sm:h-9")}>
+        <p className="text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
+          You have not saved an address yet.
+        </p>
+        <Link href="/account/addresses" className={buttonClasses("outline", "sm", "mt-4 h-10 sm:h-9")}>
           <MapPin size={14} /> Add an address
         </Link>
       </Section>
@@ -428,12 +436,16 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
                 selected={selected === address.id}
                 onSelect={() => setSelected(address.id)}
                 title={
-                  <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     {address.fullName}
-                    <span className="rounded-md bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-600">
+                    <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                       {address.label}
                     </span>
-                    {address.isDefault && <Badge tone="success">Default</Badge>}
+                    {address.isDefault && (
+                      <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-700">
+                        Default
+                      </span>
+                    )}
                   </span>
                 }
                 subtitle={
@@ -455,7 +467,7 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
           <SaveButton disabled={!selected}>Set as default</SaveButton>
           <Link
             href="/account/addresses"
-            className="py-2 text-[13px] font-semibold text-brand-700 underline-offset-4 hover:underline sm:py-0"
+            className="py-2 text-[13px] font-medium text-brand-700 underline-offset-4 hover:underline sm:py-0"
           >
             Add or edit addresses
           </Link>
@@ -500,11 +512,17 @@ function PaymentSection() {
                     onSelect={() => setMethod(option.id)}
                     title={
                       <span className="flex items-center gap-2">
-                        <Icon size={16} className="text-brand-600" />
+                        <Icon size={16} className="text-ink-400" />
                         {option.name}
                       </span>
                     }
-                    badge={option.badge ? <Badge tone="gold">{option.badge}</Badge> : null}
+                    badge={
+                      option.badge ? (
+                        <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-700">
+                          {option.badge}
+                        </span>
+                      ) : null
+                    }
                     subtitle={option.description}
                   />
                 </li>
@@ -522,7 +540,7 @@ function PaymentSection() {
         ) : (
           <div className="space-y-2 sm:space-y-3">
             {config.paymentMethods.map((option) => (
-              <Skeleton key={option.id} className="h-[78px] rounded-xl" />
+              <Skeleton key={option.id} className="h-[78px]" />
             ))}
           </div>
         )}
@@ -530,8 +548,8 @@ function PaymentSection() {
         <input type="hidden" name="method" value={method} />
 
         {state.field === "method" && (
-          <p role="alert" className="flex items-start gap-1.5 text-[12px] text-sale-600">
-            <AlertCircle size={12} className="mt-px shrink-0" />
+          <p role="alert" className="flex items-start gap-1.5 text-[13px] text-sale-600">
+            <AlertCircle size={13} className="mt-0.5 shrink-0" />
             {state.error}
           </p>
         )}
@@ -561,19 +579,21 @@ function MoreSection() {
 
   return (
     <Section title="More" description="The rest of what you might be looking for.">
-      <ul className="grid gap-2 sm:grid-cols-2 sm:gap-3">
+      {/* The shop's hairline grid, so two links share one rule rather than
+          drawing a box each. */}
+      <ul className="tile-grid grid-cols-1 sm:grid-cols-2">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="tap flex h-full items-start gap-3 rounded-lg border border-hairline p-3.5 transition-colors hover:border-ink-200 hover:bg-ink-50 sm:p-4"
+              className="tap flex h-full items-start gap-3 p-3.5 transition-colors duration-200 [@media(hover:hover)]:hover:bg-ink-50 sm:p-4"
             >
-              <link.icon size={17} className="mt-0.5 shrink-0 text-brand-600" />
+              <link.icon size={17} className="mt-0.5 shrink-0 text-ink-400" />
               <span className="min-w-0">
-                <span className="block text-[13px] font-semibold text-ink-950 sm:text-[13.5px]">
-                  {link.label}
+                <span className="block text-[13.5px] font-medium text-ink-950">{link.label}</span>
+                <span className="mt-1 block text-[13px] leading-[1.5] text-ink-500">
+                  {link.description}
                 </span>
-                <span className="mt-0.5 block text-[12.5px] text-ink-500">{link.description}</span>
               </span>
             </Link>
           </li>
