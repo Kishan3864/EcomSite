@@ -361,7 +361,7 @@ AUTH_SECRET="<a different 64 random chars>"
 NEXT_PUBLIC_SITE_URL="https://staging.weekendcart.com"
 ADMIN_SEED_EMAIL="<your email>"
 ADMIN_SEED_PASSWORD="<a password you do not use on production>"
-RAZORPAY_KEY_ID="rzp_test_xxxxxxxxxxxx"   # test keys only — never the live pair
+PAYU_KEY="…"
 ```
 
 `deploy/deploy.sh staging` refuses to run if `DATABASE_URL` still points at the production
@@ -454,7 +454,7 @@ Rules worth keeping:
 - **Migrations only roll forward.** `prisma migrate deploy` never drops or resets. If a
   migration has to come out, restore the dump from immediately before it.
 - **Test keys on staging, live keys on production.** Staging's `.env` should never hold a
-  live Razorpay secret; a rehearsal that charges a real card is not a rehearsal.
+  live PayU secret; a rehearsal that charges a real card is not a rehearsal.
 
 ## Backups
 

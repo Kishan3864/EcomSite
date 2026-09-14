@@ -135,7 +135,7 @@ Everything comes from the order and from `src/config/business.ts`:
 | `scripts/check-delhivery.ts` | The connection check. |
 
 Every call goes through `httpsFetch` in `src/lib/net/outbound.ts` rather than
-`fetch`, for the same reason the Google and Razorpay calls do: this server's
+`fetch`, for the same reason the Google and PayU calls do: this server's
 outbound connections are unreliable and the helper races both address families.
 
 ## When Delhivery changes something

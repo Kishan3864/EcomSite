@@ -213,7 +213,7 @@ export interface DeliveryOption {
 }
 
 /**
- * What the checkout offers is "online" (Razorpay, which itself covers UPI,
+ * What the checkout offers is "online" (PayU, which itself covers UPI,
  * cards, net banking and wallets) and "cod". The narrower ids remain because a
  * paid order is recorded as what the customer actually used.
  */

@@ -13,6 +13,7 @@ import {
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { delhiveryConfig } from "@/lib/shipping/delhivery";
+import { LiveRefresh } from "@/components/ui/live-refresh";
 import { buttonClasses } from "@/components/ui/button";
 import {
   Card,
@@ -429,6 +430,8 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
+      {/* A payment confirming while this page is open shows up on its own. */}
+      <LiveRefresh seconds={12} />
       <dt className={muted ? "text-ink-400" : "text-ink-600"}>{label}</dt>
       <dd
         className={

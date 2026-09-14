@@ -26,7 +26,7 @@ const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
   // No offerText on either: there is no cashback scheme and no bank
   // arrangement behind one. An inducement we cannot honour is the kind of
   // claim a payment reviewer treats as a red flag, and a customer as a lie.
-  // One option for everything the gateway takes. Razorpay's own checkout then
+  // One option for everything the gateway takes. PayU's own checkout then
   // offers UPI (Google Pay, PhonePe, Paytm), cards, net banking and wallets, so
   // repeating those choices here would only add a step and a chance to pick
   // the wrong one.

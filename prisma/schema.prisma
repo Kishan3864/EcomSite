@@ -788,9 +788,9 @@ model PaymentAttempt {
   orderId String
   order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  /// Razorpay's order id (order_xxx). Created before the customer pays.
+  /// Our transaction id, sent to the gateway before the customer pays.
   gatewayOrderId   String  @unique
-  /// Razorpay's payment id (pay_xxx). Only exists once a payment is attempted.
+  /// The gateway's own payment id, once there is a payment to have one.
   gatewayPaymentId String? @unique
 
   /// Paise, as the gateway counts it — never rupees. Storing what was actually
@@ -816,25 +816,6 @@ model PaymentAttempt {
 
   @@index([orderId])
   @@index([status])
-}
-
-/// Every webhook the gateway has delivered.
-///
-/// Razorpay retries a webhook until it gets a 2xx, so the same event arrives
-/// several times as a matter of course. The unique event id is what makes
-/// processing idempotent: without it, one payment would confirm one order
-/// repeatedly, decrementing stock and sending mail each time.
-model WebhookEvent {
-  id        String    @id @default(cuid())
-  /// x-razorpay-event-id header. Unique, and that is the entire point.
-  eventId   String    @unique
-  event     String
-  payload   Json
-  /// Set once the event has been acted on; a redelivery then short-circuits.
-  handledAt DateTime?
-  createdAt DateTime  @default(now())
-
-  @@index([event])
 }
 
 /// A profile photo the customer uploaded.

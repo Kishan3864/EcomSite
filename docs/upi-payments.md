@@ -7,7 +7,7 @@ page is how it works, what it costs, and what it cannot do.
 ## Why this exists
 
 In India a website cannot collect money online by itself. Either a licensed
-payment aggregator (Razorpay, Cashfree, PhonePe PG, Paytm PG) collects it and
+payment aggregator (PayU, Cashfree, PhonePe PG, Paytm PG) collects it and
 passes it on, or the customer pays you directly by UPI and somebody checks the
 bank. Google Pay is not a third option — it is a UPI app, and every gateway
 already offers it as one of its methods.

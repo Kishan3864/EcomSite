@@ -29,7 +29,7 @@ import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
 import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
 import { upiConfigured } from "@/lib/payments/upi";
-import { expireStalePendingOrders } from "./payment-core";
+import { expireStalePendingOrders } from "./order-expiry";
 import { after } from "next/server";
 import { mailConfigured, sendMail } from "@/lib/mail";
 import { buildWelcomeEmail } from "@/lib/emails/welcome";

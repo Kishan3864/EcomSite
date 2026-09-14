@@ -4,6 +4,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/admin";
 import { ParamSelect, SearchBox } from "@/components/admin/client";
+import { LiveRefresh } from "@/components/ui/live-refresh";
 import {
   AdminPagination,
   DateCell,
@@ -114,6 +115,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
 
   return (
     <>
+      {/* New orders and payment confirmations appear on their own. */}
+      <LiveRefresh seconds={12} />
       <PageHeader
         title="Orders"
         description="Every order placed on the storefront, from payment through to delivery."

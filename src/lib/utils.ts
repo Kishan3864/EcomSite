@@ -36,6 +36,17 @@ export function slugify(input: string) {
     .replace(/-+/g, "-");
 }
 
+/**
+ * Every date on this site is shown in Indian Standard Time.
+ *
+ * Without this the server formats in its own zone — UTC on the VPS — and the
+ * browser formats in the visitor's, so the same order read "10:14 am" in the
+ * admin panel and "3:44 pm" on the phone that placed it. The shop, its
+ * customers and its couriers are all in one timezone; the machines are not,
+ * and this is where that is settled.
+ */
+const IST = "Asia/Kolkata";
+
 export function formatDate(
   date: string | Date,
   style: "long" | "short" | "day" = "long",
@@ -46,11 +57,13 @@ export function formatDate(
       weekday: "short",
       day: "numeric",
       month: "short",
+      timeZone: IST,
     }).format(d);
   return new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: style === "short" ? "short" : "long",
     year: "numeric",
+    timeZone: IST,
   }).format(d);
 }
 
@@ -62,6 +75,17 @@ export function formatDateTime(date: string | Date) {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: IST,
+  }).format(d);
+}
+
+/** Just the clock time, for a timeline where the date is already on the row. */
+export function formatTime(date: string | Date) {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return new Intl.DateTimeFormat("en-IN", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: IST,
   }).format(d);
 }
 

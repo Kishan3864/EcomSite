@@ -20,6 +20,7 @@ import type { Order } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 
+import { LiveRefresh } from "@/components/ui/live-refresh";
 import { formatDate, formatINR } from "@/lib/utils";
 
 /** Celebratory tick — drawn, not animated with a library, so it stays cheap. */
@@ -106,8 +107,17 @@ export function OrderClient({ order }: { order: Order | null }) {
     );
   }
 
+  // Waiting on a payment: the page keeps itself current, so a confirmation
+  // that lands while they are looking at it simply appears. A settled order
+  // has nothing left to change, and is left alone.
+  const settling =
+    order.paymentStatus === "pending" ||
+    order.paymentStatus === "verifying" ||
+    order.paymentStatus === "failed";
+
   return (
     <div className="container-page py-6 sm:py-12">
+      {settling && order.status !== "cancelled" && <LiveRefresh seconds={8} />}
       <div className="mx-auto max-w-3xl">
         <motion.header
           initial={{ opacity: 0, y: 14 }}
@@ -162,7 +172,8 @@ export function OrderClient({ order }: { order: Order | null }) {
               nothing until the order is paid for. */}
           {order.paymentMethod.id !== "cod" &&
             order.paymentMethod.id !== "upi" &&
-            order.paymentStatus === "pending" && (
+            (order.paymentStatus === "pending" || order.paymentStatus === "failed") &&
+            order.status !== "cancelled" && (
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sale-200 bg-sale-50 p-4 sm:gap-4 sm:p-5">
                 <div className="flex items-center gap-3">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sale-600 text-white sm:h-11 sm:w-11">

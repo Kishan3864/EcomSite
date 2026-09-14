@@ -108,7 +108,7 @@ Three changes make the app immune to it:
   of waiting out a connection that will never open.
 - **The calls that must not fail do not go through `fetch` at all.** Neither of
   the settings above reaches Node's bundled fetch, which kept choosing the dead
-  IPv4 address and waiting the full ten seconds. Sign-in, Razorpay and the OTP
+  IPv4 address and waiting the full ten seconds. Sign-in, PayU and the OTP
   SMS now use `src/lib/net/outbound.ts`, which asks `node:https` for every
   address IPv6-first and moves on after 250ms. Whichever family is healthy wins
   the race; if IPv4 is repaired later, or IPv6 breaks instead, this keeps

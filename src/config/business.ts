@@ -5,7 +5,7 @@
  *  READ THIS BEFORE GOING LIVE
  * ─────────────────────────────────────────────────────────────────────────────
  * Every value marked TODO_ must be replaced with a real, verifiable value before
- * you apply for online payment acceptance. Payment aggregators (Razorpay,
+ * you apply for online payment acceptance. Payment aggregators (PayU,
  * Cashfree, PhonePe PG) and Google cross-check these against your KYC documents,
  * your bank account and your GST record. A mismatch is the single most common
  * reason a merchant application is rejected.
@@ -195,8 +195,8 @@ export const BUSINESS = {
     /** Courier partners you have actually signed up with. Keep truthful. */
     courierPartners: ["Delhivery"],
 
-    /** Payment aggregator you are onboarding with, e.g. "Razorpay". */
-    paymentAggregator: "Razorpay",
+    /** Payment aggregator that collects online payments, e.g. "PayU". */
+    paymentAggregator: "PayU",
   },
 
   // ── Jurisdiction ────────────────────────────────────────────────────────────

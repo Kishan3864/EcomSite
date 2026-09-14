@@ -221,7 +221,7 @@ export function ProcessingClient() {
             <div className="space-y-3 px-4 py-5 sm:px-6 sm:py-6">
               <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">
                 <Lock size={14} className="mt-0.5 shrink-0 text-brand-600" />
-                Your card and UPI details are entered on Razorpay&apos;s secure page. They never
+                Your card and UPI details are entered on PayU&apos;s secure page. They never
                 reach our servers.
               </p>
               <p className="flex items-start gap-2.5 text-[12.5px] leading-relaxed text-ink-600">

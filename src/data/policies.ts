@@ -587,7 +587,7 @@ export const policies: Policy[] = [
     description:
       "Which payment methods we accept, how your payment credentials are protected, and what happens when a payment fails.",
     intro:
-      "Online payments on this site are processed by Razorpay, a payment aggregator authorised by the Reserve Bank of India. We never see, handle or store your card number, UPI PIN or banking password. Cash on Delivery, where offered, is collected by the courier at your door.",
+      "Online payments on this site are processed by PayU, a payment aggregator authorised by the Reserve Bank of India. We never see, handle or store your card number, UPI PIN or banking password. You may also pay us directly by UPI, in which case the money moves between your bank and ours with nobody in between. Cash on Delivery, where offered, is collected by the courier at your door.",
     updatedAt: UPDATED,
     sections: [
       {

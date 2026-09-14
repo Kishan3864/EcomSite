@@ -28,7 +28,7 @@ export const PAYMENT_STATUSES: PaymentStatus[] = [
 export const PAYMENT_METHODS: PaymentMethod[] = ["ONLINE", "UPI", "CARD", "NETBANKING", "WALLET", "COD"];
 
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
-  ONLINE: "Online (Razorpay)",
+  ONLINE: "Online (PayU)",
   UPI: "UPI",
   CARD: "Card",
   NETBANKING: "Net banking",

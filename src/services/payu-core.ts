@@ -162,23 +162,45 @@ export async function applyPayuResponse(body: Record<string, string>): Promise<P
   }
 
   if (payuFailed(response.status)) {
-    await db.paymentAttempt.updateMany({
-      where: { id: attempt.id, status: "CREATED" },
-      data: {
-        status: "FAILED",
-        gatewayPaymentId: response.mihpayid || null,
-        failureCode: response.unmappedstatus ?? response.status,
-        failureDescription: response.error_Message ?? response.field9 ?? "Payment not completed",
-        payload: body as object,
-      },
+    const why = response.error_Message?.trim() || response.field9?.trim() || "Payment not completed";
+
+    await db.$transaction(async (tx) => {
+      await tx.paymentAttempt.updateMany({
+        where: { id: attempt.id, status: "CREATED" },
+        data: {
+          status: "FAILED",
+          gatewayPaymentId: response.mihpayid || null,
+          failureCode: response.unmappedstatus ?? response.status,
+          failureDescription: why,
+          payload: body as object,
+        },
+      });
+
+      // The order itself is marked failed, so the admin panel shows what
+      // actually happened rather than an order still "pending" hours later.
+      // It stays PENDING as an *order* — its stock is still reserved and the
+      // customer can try again — until the sweep releases it or they pay.
+      const current = await tx.order.findUnique({
+        where: { id: attempt.orderId },
+        select: { paymentStatus: true },
+      });
+      if (current && current.paymentStatus !== "PAID" && current.paymentStatus !== "VERIFYING") {
+        await tx.order.update({
+          where: { id: attempt.orderId },
+          data: { paymentStatus: "FAILED", paymentDetail: `Not completed — ${why}`.slice(0, 190) },
+        });
+        await tx.orderEvent.create({
+          data: {
+            orderId: attempt.orderId,
+            status: "PENDING",
+            title: "Payment did not go through",
+            description: `${why}. Nothing was charged. The items are still reserved — you can try paying again.`,
+            location: "Online",
+          },
+        });
+      }
     });
-    return {
-      kind: "failed",
-      orderId: attempt.orderId,
-      message:
-        response.error_Message?.trim() ||
-        "The payment did not go through. Nothing has been charged, and your order is still waiting.",
-    };
+    return { kind: "failed", orderId: attempt.orderId, message: why };
   }
 
   // "pending" and friends: the bank has not decided. Leave the attempt open —
@@ -236,6 +258,8 @@ async function markPayuPaid(
         paymentMethod: payuMethod(response),
         paymentRef: response.mihpayid,
         paymentDetail: describePayu(response),
+        cancelledAt: null,
+        cancelReason: null,
       },
     });
 

@@ -9,6 +9,7 @@ import type { Order, OrderStatus } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
 
+import { LiveRefresh } from "@/components/ui/live-refresh";
 import { cn, formatDate, formatINR, statusLabel } from "@/lib/utils";
 
 const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
@@ -39,8 +40,19 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
     return orders.filter((o) => o.status === filter);
   }, [orders, filter]);
 
+  // An order still waiting on money changes without anyone here doing
+  // anything, so the list keeps itself current while one is outstanding.
+  const settling = orders.some(
+    (o) =>
+      o.status !== "cancelled" &&
+      (o.paymentStatus === "pending" ||
+        o.paymentStatus === "verifying" ||
+        o.paymentStatus === "failed"),
+  );
+
   return (
     <div className="space-y-4 sm:space-y-5">
+      {settling && <LiveRefresh seconds={10} />}
       <header>
         <h1 className="font-display text-[22px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[34px]">
           My orders

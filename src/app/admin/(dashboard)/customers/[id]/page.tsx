@@ -15,7 +15,7 @@ import { TierPill, isAnonymised, tierLabel } from "../customer-meta";
 const RECENT = 25;
 
 const PAYMENT_LABEL: Record<PaymentMethod, string> = {
-  ONLINE: "Online (Razorpay)",
+  ONLINE: "Online (PayU)",
   UPI: "UPI",
   CARD: "Card",
   NETBANKING: "Net banking",

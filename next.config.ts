@@ -21,29 +21,24 @@ const CSP = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  // Checkout renders the bank and UPI pages inside an iframe it owns.
-  "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com https://accounts.google.com/gsi/",
-  "child-src 'self' https://api.razorpay.com https://checkout.razorpay.com",
+  // Nothing is framed but Google's sign-in. The gateway takes a whole page.
+  "frame-src 'self' https://accounts.google.com/gsi/",
   // The gateway hand-off is a form this site posts to PayU. Every PayU host is
   // allowed, not just the two the form points at, because form-action governs
   // the whole redirect chain: posting to test.payu.in/_payment lands on
   // apitest.payu.in/public/, and naming only the first host blocks the second.
   // The failure is silent and looks like the site's own bug — the browser
   // reports the URL the form named, not the redirect it actually refused.
-  "form-action 'self' https://payu.in https://*.payu.in https://api.razorpay.com https://checkout.razorpay.com",
-  // Razorpay's checkout script. It is loaded from their CDN and cannot be
-  // self-hosted: it is versioned by them and must stay current for card
-  // network and UPI changes.
-  "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://accounts.google.com/gsi/client",
+  "form-action 'self' https://payu.in https://*.payu.in",
+  // Only Google's sign-in script is third-party. The gateway needs none:
+  // the hand-off is a form post, not a script.
+  "script-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/client",
   "style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style",
   "font-src 'self' data:",
   // Any https host: a product photo may be a URL pasted into the admin panel,
   // and the browser loads it directly (see src/lib/image-loader.ts).
   "img-src 'self' data: blob: https:",
-  // Checkout talks to the gateway directly from the browser, and reports its
-  // own telemetry to lumberjack. Blocking either breaks the payment flow with
-  // no visible error.
-  "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://accounts.google.com/gsi/",
+  "connect-src 'self' https://accounts.google.com/gsi/",
   "manifest-src 'self'",
   "media-src 'self'",
   "worker-src 'self' blob:",
@@ -87,18 +82,16 @@ const SECURITY_HEADERS = [
       "magnetometer=()",
       "microphone=()",
       "midi=()",
-      // Checkout may use the Payment Request API on supported browsers.
-      "payment=(self \"https://checkout.razorpay.com\")",
+      "payment=()",
       "usb=()",
       "interest-cohort=()",
     ].join(", "),
   },
 
   // Keep this origin out of other tabs' process, and out of their reach.
-  // same-origin-allow-popups, not same-origin: Razorpay opens the UPI and
-  // bank flows in a popup and needs a handle back to this window to report the
-  // result. Strict same-origin severs that and the payment silently hangs.
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+  // The gateway navigates the whole page rather than opening a popup, so
+  // nothing needs a handle back to this window.
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
 
   { key: "X-DNS-Prefetch-Control", value: "on" },
