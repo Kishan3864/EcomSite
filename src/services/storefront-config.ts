@@ -104,18 +104,29 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     (s.payments.card || s.payments.netbanking || s.payments.wallet) && payuConfigured();
 
   /**
-   * A gateway in test mode is shown to the owner and to nobody else.
+   * A gateway in test mode is shown to the owner, and by default to nobody
+   * else.
    *
-   * A warning label is not enough. PayU's test checkout carries a "Simulate
-   * Success transaction" button; a curious customer who pressed it would get a
-   * genuinely signed success, and the order would be marked paid with no money
-   * behind it. The only safe answer is that they never see the option — so
-   * while PAYU_MODE is not "live" it is offered only to a signed-in admin, who
-   * can then test the whole flow on the real site without exposing it.
+   * A warning label is not enough on its own. PayU's test checkout carries a
+   * "Simulate Success transaction" button; a customer who pressed it would get
+   * a genuinely signed success, and the order would be marked paid with no
+   * money behind it. So the safe default is that only a signed-in admin is
+   * offered it — enough to test the whole flow on the real site without
+   * exposing it to anyone else.
+   *
+   * PAYU_TEST_PUBLIC=1 shows it to everyone anyway, for demonstrating the
+   * checkout to someone who cannot sign into the admin panel. It is opt-in,
+   * and the option then says plainly what it is. Take it off before the shop
+   * has customers who might believe it.
    */
   const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
-  const ownerIsWatching = gatewaySwitchedOn && gatewayInTestMode ? !!(await getAdminSession()) : false;
-  const gatewayOn = gatewaySwitchedOn && (!gatewayInTestMode || ownerIsWatching);
+  const testGatewayIsPublic = process.env.PAYU_TEST_PUBLIC?.trim() === "1";
+  const ownerIsWatching =
+    gatewaySwitchedOn && gatewayInTestMode && !testGatewayIsPublic
+      ? !!(await getAdminSession())
+      : false;
+  const gatewayOn =
+    gatewaySwitchedOn && (!gatewayInTestMode || testGatewayIsPublic || ownerIsWatching);
 
   const enabled: PaymentMethod["id"][] = [
     ...(upiOn ? (["upi"] as const) : []),
@@ -127,15 +138,16 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     deliveryOptions,
     paymentMethods: enabled.map((id) => {
       const copy = PAYMENT_COPY[id];
-      // Only the owner ever reaches this branch, and they need telling which
-      // of the two systems they are about to pay on.
+      // Whoever reaches this branch needs telling which of the two systems
+      // they are about to pay on, and what it will and will not do.
       if (id === "online" && gatewayInTestMode) {
         return {
           id,
           name: copy.name,
-          description:
-            "Test mode — only you can see this option. No real money moves, and the order it confirms is a test order. Customers are offered UPI.",
-          badge: "Test · owner only",
+          description: testGatewayIsPublic
+            ? "Demo — this is the card and net-banking checkout being tested. No real money moves and nothing is dispatched. Use UPI above for a real order."
+            : "Test mode — only you can see this option. No real money moves, and the order it confirms is a test order. Customers are offered UPI.",
+          badge: testGatewayIsPublic ? "Demo only" : "Test · owner only",
         };
       }
       return { id, ...copy };

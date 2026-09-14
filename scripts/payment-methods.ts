@@ -65,13 +65,33 @@ async function main() {
 
   console.log("\n\x1b[1mAt checkout right now\x1b[0m");
   console.log(current.upi && upiReady ? ok("UPI — QR and Google Pay / PhonePe / Paytm") : off("UPI"));
-  const gatewayLabel = `Pay online — PayU (${gatewayMode})`;
+  // Who can see it matters as much as whether it is on: in test mode the
+  // gateway is hidden from customers, and not saying so here is how you end up
+  // wondering why the checkout shows only UPI.
+  const testPublic = process.env.PAYU_TEST_PUBLIC?.trim() === "1";
+  const seenBy =
+    gatewayMode === "live"
+      ? "everyone"
+      : testPublic
+        ? "everyone — demo mode (PAYU_TEST_PUBLIC=1)"
+        : "only you, when signed in at /admin in the same browser";
+  const gatewayLabel = `Pay online — PayU (${gatewayMode}) — seen by ${seenBy}`;
   console.log(gatewayOn && gatewayReady ? ok(gatewayLabel) : off(gatewayLabel));
   console.log(current.cod ? ok(`Cash on Delivery — up to ₹${current.codLimit.toLocaleString("en-IN")}`) : off("Cash on Delivery"));
 
   if (current.upi && !upiReady) console.log(warn("UPI is switched on but UPI_VPA is empty in .env, so it stays hidden."));
   if (gatewayOn && !gatewayReady) console.log(warn("The gateway is switched on but PAYU_KEY / PAYU_SALT are missing, so it stays hidden."));
-  if (gatewayOn && gatewayReady && gatewayMode === "test") console.log(warn("PayU is in TEST mode — no real money moves. Set PAYU_MODE=live when you are ready."));
+  if (gatewayOn && gatewayReady && gatewayMode === "test") {
+    console.log(warn("PayU is in TEST mode — no real money moves. Set PAYU_MODE=live when you are ready."));
+    if (!testPublic) {
+      console.log(
+        "    To see it at checkout, sign in at /admin in the same browser. To show it to",
+      );
+      console.log("    everyone as a demo instead, add PAYU_TEST_PUBLIC=\"1\" to .env and reload.");
+    } else {
+      console.log(warn("PAYU_TEST_PUBLIC=1 — every visitor is offered a checkout that takes no money."));
+    }
+  }
   if (!(current.upi && upiReady) && !(gatewayOn && gatewayReady) && !current.cod) {
     console.log(warn("Nothing is payable — no order can be placed. Switch something on."));
   }

@@ -35,7 +35,8 @@ export default async function PayuHandoffPage({ params }: { params: Promise<{ id
   // PayU. Hiding the option is not enough on its own — this URL is guessable,
   // and an older order placed before the option was hidden still points here.
   const config = payuConfig();
-  if (config && config.mode !== "live" && !(await getAdminSession())) {
+  const testIsPublic = process.env.PAYU_TEST_PUBLIC?.trim() === "1";
+  if (config && config.mode !== "live" && !testIsPublic && !(await getAdminSession())) {
     return (
       <PayuRedirect
         orderId={order.id}
