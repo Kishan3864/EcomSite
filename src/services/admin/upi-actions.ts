@@ -5,6 +5,7 @@ import { BUSINESS } from "@/config/business";
 import { db } from "@/lib/db";
 import { logActivity, requireAdmin } from "@/lib/auth/admin";
 import { sendMail } from "@/lib/mail";
+import { sendOrderConfirmation } from "@/services/order-email";
 import { formatINR } from "@/lib/utils";
 import type { FormState } from "./form-state";
 import { revalidateAdmin, str } from "./shared";
@@ -99,22 +100,7 @@ export async function confirmUpiPayment(_prev: FormState, formData: FormData): P
     metadata: { utr: order.paymentRef, amount: order.total, revived },
   });
 
-  void sendMail({
-    to: order.contactEmail,
-    subject: `Payment received — order ${order.number}`,
-    text: `Hello ${order.contactName},
-
-We have received your payment of ${formatINR(order.total)} for order ${order.number}. It is confirmed and we are getting it packed.
-
-You can follow it here: ${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/track/${order.id}
-
-Thank you,
-${BUSINESS.brandName}`,
-    html: `<p>Hello ${order.contactName},</p>
-<p>We have received your payment of <strong>${formatINR(order.total)}</strong> for order <strong>${order.number}</strong>. It is confirmed and we are getting it packed.</p>
-<p><a href="${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/track/${order.id}">Track your order</a></p>
-<p>Thank you,<br>${BUSINESS.brandName}</p>`,
-  }).catch(() => {});
+  void sendOrderConfirmation(id);
 
   revalidateOrder(id);
   return { ok: true, message: `${order.number} marked paid — ${formatINR(order.total)}.` };

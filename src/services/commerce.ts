@@ -32,6 +32,7 @@ import { upiConfigured } from "@/lib/payments/upi";
 import { expireStalePendingOrders } from "./order-expiry";
 import { after } from "next/server";
 import { mailConfigured, sendMail } from "@/lib/mail";
+import { sendOrderConfirmation } from "./order-email";
 import { buildWelcomeEmail } from "@/lib/emails/welcome";
 
 /**
@@ -387,6 +388,12 @@ export async function placeOrder(
   }
 
   if (!created) return { ok: false, error: "We could not place the order. Please try again." };
+
+  // Cash on delivery is confirmed the moment it is placed, so the receipt goes
+  // now. Everything else is still unpaid at this point and gets its receipt
+  // from whichever payment path confirms it — sending one here would be
+  // telling the customer an unpaid order is confirmed.
+  if (method === "COD") void sendOrderConfirmation(created.id);
 
   revalidatePath("/admin", "layout");
   revalidatePath("/", "layout");

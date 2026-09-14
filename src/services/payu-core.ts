@@ -2,6 +2,7 @@ import "server-only";
 
 import { db } from "@/lib/db";
 import { toPaise } from "@/lib/gst";
+import { sendOrderConfirmation } from "./order-email";
 import {
   describePayu,
   newTxnId,
@@ -157,7 +158,10 @@ export async function applyPayuResponse(body: Record<string, string>): Promise<P
       return { kind: "failed", orderId: attempt.orderId, message: "The amount did not match this order. Nothing has been charged." };
     }
 
-    await markPayuPaid(attempt.id, attempt.orderId, response, body);
+    const newlyPaid = await markPayuPaid(attempt.id, attempt.orderId, response, body);
+    // Only on the transition, so a redelivered webhook does not send a second
+    // receipt for the same payment.
+    if (newlyPaid) void sendOrderConfirmation(attempt.orderId);
     return { kind: "paid", orderId: attempt.orderId };
   }
 
@@ -208,12 +212,14 @@ export async function applyPayuResponse(body: Record<string, string>): Promise<P
   return { kind: "ignored", reason: `status ${response.status}` };
 }
 
+/** True when this call is what moved the order to paid. */
 async function markPayuPaid(
   attemptId: string,
   orderId: string,
   response: PayuResponse,
   raw: Record<string, string>,
-) {
+): Promise<boolean> {
+  let moved = false;
   await db.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
@@ -224,6 +230,7 @@ async function markPayuPaid(
       },
     });
     if (!order || order.paymentStatus === "PAID") return;
+    moved = true;
 
     // Money that lands after the order lapsed is still money taken: honour the
     // order and take its stock back off the shelf, rather than strand a
@@ -275,4 +282,6 @@ async function markPayuPaid(
       },
     });
   });
+
+  return moved;
 }
