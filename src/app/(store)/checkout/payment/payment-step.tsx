@@ -48,7 +48,17 @@ export function PaymentStep() {
     rates: config.rates,
   });
 
-  const codAllowed = totals.total <= config.codLimit;
+  // Cash on delivery is the shop's rule and the product's. A bag holding one
+  // prepaid-only line cannot be sent COD however the rest of it is priced, and
+  // the reason has to be the one shown — "over the limit" for an expensive bag
+  // is a different sentence from "this item is prepaid only".
+  const prepaidOnly = cart.find((line) => !line.codAvailable);
+  const overCodLimit = totals.total > config.codLimit;
+  const codAllowed = !prepaidOnly && !overCodLimit;
+  const codReason = prepaidOnly
+    ? `${prepaidOnly.title} is prepaid only, so this order cannot be sent cash on delivery.`
+    : `Cash on delivery is available on orders up to ${formatINR(config.codLimit)}.`;
+
   const available = config.paymentMethods.map((m) => m.id);
 
   // A draft saved in this browser before the shop's payment options changed may
@@ -83,7 +93,7 @@ export function PaymentStep() {
       return;
     }
     if (selected === "cod" && !codAllowed) {
-      setError(`Cash on delivery is available on orders up to ${formatINR(config.codLimit)}.`);
+      setError(codReason);
       return;
     }
     dispatch({
@@ -140,11 +150,7 @@ export function PaymentStep() {
                     </span>
                   }
                   badge={method.badge ? <Badge tone="gold">{method.badge}</Badge> : null}
-                  subtitle={
-                    disabled
-                      ? `Available on orders up to ${formatINR(config.codLimit)}.`
-                      : method.description
-                  }
+                  subtitle={disabled ? codReason : method.description}
                 >
                   {method.id === "upi" && (
                     <div className="space-y-3">

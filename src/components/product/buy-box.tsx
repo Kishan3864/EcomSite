@@ -78,6 +78,7 @@ export function BuyBox({
     stock: product.stock,
     deliveryDays: product.deliveryDays,
     freeShipping: product.freeShipping,
+    codAvailable: product.codAvailable ?? true,
     rating: product.rating,
     // Fields the card model carries but the buy box does not need.
     subtitle: product.subtitle,

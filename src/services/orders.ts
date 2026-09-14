@@ -120,6 +120,7 @@ export function toOrder(row: OrderRow): Order {
       stock: 0,
       deliveryDays: 3,
       freeShipping: true,
+      codAvailable: true,
     })),
     address,
     delivery: {

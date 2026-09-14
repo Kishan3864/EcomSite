@@ -19,6 +19,7 @@ export interface AddableProduct {
   stock: number;
   deliveryDays: number;
   freeShipping: boolean;
+  codAvailable: boolean;
   rating?: number;
 }
 
@@ -35,6 +36,7 @@ export function fromCard(card: ProductCardModel): AddableProduct {
     stock: card.stock,
     deliveryDays: card.deliveryDays,
     freeShipping: card.freeShipping,
+    codAvailable: card.codAvailable,
     rating: card.rating,
   };
 }
@@ -73,6 +75,7 @@ export function useCommerce() {
           stock: product.stock,
           deliveryDays: product.deliveryDays,
           freeShipping: product.freeShipping,
+          codAvailable: product.codAvailable,
         },
       });
 

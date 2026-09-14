@@ -122,14 +122,13 @@ export async function savePaymentSettings(_prev: FormState, formData: FormData):
 
   const value = {
     upi: bool(formData, "upi"),
-    card: bool(formData, "card"),
-    netbanking: bool(formData, "netbanking"),
-    wallet: bool(formData, "wallet"),
+    gateway: bool(formData, "gateway"),
+    gatewayDemo: bool(formData, "gatewayDemo"),
     cod: bool(formData, "cod"),
     codLimit,
   };
   // A storefront with no way to pay is a broken storefront.
-  if (!value.upi && !value.card && !value.netbanking && !value.wallet && !value.cod)
+  if (!value.upi && !value.gateway && !value.cod)
     return { error: "Leave at least one payment method switched on." };
 
   return persist("payments", value, "Updated payment methods");

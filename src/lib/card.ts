@@ -30,6 +30,7 @@ export interface ProductCardModel {
   badges: Product["badges"];
   deliveryDays: number;
   freeShipping: boolean;
+  codAvailable: boolean;
   colors: { name: string; hex: string }[];
 }
 
@@ -55,6 +56,7 @@ export function toCardModel(product: Product): ProductCardModel {
     badges: product.badges,
     deliveryDays: product.deliveryDays,
     freeShipping: product.freeShipping,
+    codAvailable: product.codAvailable,
     colors: product.colors.slice(0, 4).map((name) => ({
       name,
       hex: COLOR_HEX[name] ?? "#cdcdc7",

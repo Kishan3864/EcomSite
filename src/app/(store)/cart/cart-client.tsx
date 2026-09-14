@@ -97,6 +97,7 @@ export function CartClient() {
                         stock: line.stock,
                         deliveryDays: line.deliveryDays,
                         freeShipping: line.freeShipping,
+                        codAvailable: line.codAvailable,
                       });
 
                     return (

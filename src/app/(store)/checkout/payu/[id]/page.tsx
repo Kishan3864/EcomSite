@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { canViewOrder } from "@/lib/auth/customer";
 import { getAdminSession } from "@/lib/auth/admin";
 import { payuConfig } from "@/lib/payments/payu";
+import { getSettings } from "@/services/settings";
 import { startPayuPayment } from "@/services/payu-core";
 import { PayuRedirect } from "./payu-redirect";
 
@@ -35,8 +36,8 @@ export default async function PayuHandoffPage({ params }: { params: Promise<{ id
   // PayU. Hiding the option is not enough on its own — this URL is guessable,
   // and an older order placed before the option was hidden still points here.
   const config = payuConfig();
-  const testIsPublic = process.env.PAYU_TEST_PUBLIC?.trim() === "1";
-  if (config && config.mode !== "live" && !testIsPublic && !(await getAdminSession())) {
+  const { payments } = await getSettings();
+  if (config && config.mode !== "live" && !payments.gatewayDemo && !(await getAdminSession())) {
     return (
       <PayuRedirect
         orderId={order.id}

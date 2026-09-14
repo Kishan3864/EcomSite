@@ -100,8 +100,7 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   // switched on in the admin panel but missing its keys would be a dead end at
   // the last step of a checkout, which is the worst place to find one.
   const upiOn = s.payments.upi && upiConfigured();
-  const gatewaySwitchedOn =
-    (s.payments.card || s.payments.netbanking || s.payments.wallet) && payuConfigured();
+  const gatewaySwitchedOn = s.payments.gateway && payuConfigured();
 
   /**
    * A gateway in test mode is shown to the owner, and by default to nobody
@@ -120,7 +119,7 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
    * has customers who might believe it.
    */
   const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
-  const testGatewayIsPublic = process.env.PAYU_TEST_PUBLIC?.trim() === "1";
+  const testGatewayIsPublic = s.payments.gatewayDemo;
   const ownerIsWatching =
     gatewaySwitchedOn && gatewayInTestMode && !testGatewayIsPublic
       ? !!(await getAdminSession())

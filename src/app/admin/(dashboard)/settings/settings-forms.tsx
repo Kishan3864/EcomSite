@@ -313,45 +313,45 @@ export function PaymentsForm({ value }: { value: StoreSettings["payments"] }) {
       {(err) => (
         <>
           <FormSection
-            title="Methods offered at checkout"
-            description="Switching one off hides it immediately. At least one must stay on."
+            title="Ways to pay"
+            description="Three, and they differ by who holds the money on the way to you. Switching one off hides it from the checkout immediately; at least one must stay on. A method whose keys are missing stays hidden whatever this says, so the checkout never offers a dead end."
           >
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              <Toggle name="upi" label="UPI" description="GPay, PhonePe, Paytm and any UPI app." defaultChecked={value.upi} />
-              <Toggle
-                name="card"
-                label="Cards"
-                description="Credit and debit cards, with saved-card support."
-                defaultChecked={value.card}
-              />
-              <Toggle
-                name="netbanking"
-                label="Net banking"
-                description="Direct transfer from all major Indian banks."
-                defaultChecked={value.netbanking}
-              />
-              <Toggle
-                name="wallet"
-                label="Wallets"
-                description="Paytm, Amazon Pay, Mobikwik and similar."
-                defaultChecked={value.wallet}
-              />
-            </div>
-          </FormSection>
-
-          <FormSection title="Cash on delivery" description="Higher-value COD orders are the most common source of returns.">
+            <Toggle
+              name="upi"
+              label="UPI — straight to your bank"
+              description="A QR and a tap through to Google Pay, PhonePe or Paytm. No gateway and no commission; the customer sends you the 12-digit reference and you confirm it from the order page. Needs UPI_VPA in .env."
+              defaultChecked={value.upi}
+            />
+            <Toggle
+              name="gateway"
+              label="Pay online — PayU"
+              description="Card, UPI, net banking and wallets on PayU's own checkout, confirmed the moment it goes through. PayU chooses which of those to show, so there is nothing to switch here. Needs PAYU_KEY and PAYU_SALT in .env."
+              defaultChecked={value.gateway}
+            />
             <Toggle
               name="cod"
-              label="Offer cash on delivery"
-              description="Collected by the courier and marked paid from the order page."
+              label="Cash on delivery"
+              description="Collected by the courier at the door. A product can be marked prepaid-only on its own page, and a bag holding one of those is not offered COD whatever this says."
               defaultChecked={value.cod}
             />
             <Rupees
               name="codLimit"
-              label="Maximum order value for COD"
-              hint="Orders above this must be paid online."
+              label="Maximum order value for cash on delivery"
+              hint="Above this the order must be paid for online. Higher-value COD orders are the most common source of returns."
               defaultValue={value.codLimit}
               error={err("codLimit")}
+            />
+          </FormSection>
+
+          <FormSection
+            title="While PayU is in test mode"
+            description="PAYU_MODE in .env decides whether the gateway takes real money. Until it says live, the option is shown only to you — signed in here, in the same browser — so a customer cannot pay on a checkout that takes nothing."
+          >
+            <Toggle
+              name="gatewayDemo"
+              label="Show the test checkout to everyone"
+              description="For demonstrating it to someone who cannot sign in here. It is labelled as a demo on the page. Leave it off on a shop with real customers: PayU's test checkout has a Simulate Success button, and an order marked paid with no money behind it is worse than a missing option."
+              defaultChecked={value.gatewayDemo}
             />
           </FormSection>
         </>

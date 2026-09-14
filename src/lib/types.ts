@@ -185,6 +185,8 @@ export interface CartLine {
   stock: number;
   deliveryDays: number;
   freeShipping: boolean;
+  /** False on a product that must be paid for before it ships. */
+  codAvailable: boolean;
 }
 
 export interface Address {

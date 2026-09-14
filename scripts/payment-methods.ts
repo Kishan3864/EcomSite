@@ -23,7 +23,7 @@ const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
 });
 
-const DEFAULTS = { upi: true, card: true, netbanking: true, wallet: true, cod: true, codLimit: 20000 };
+const DEFAULTS = { upi: true, gateway: true, gatewayDemo: false, cod: true, codLimit: 20000 };
 const ok = (s: string) => `\x1b[32m✓\x1b[0m ${s}`;
 const off = (s: string) => `\x1b[90m·\x1b[0m \x1b[90m${s}\x1b[0m`;
 const warn = (s: string) => `\x1b[33m!\x1b[0m ${s}`;
@@ -40,13 +40,10 @@ async function main() {
   }
 
   if (wanted.length) {
-    const gateway = wanted.includes("gateway");
     const next = {
       ...current,
       upi: wanted.includes("upi"),
-      card: gateway,
-      netbanking: gateway,
-      wallet: gateway,
+      gateway: wanted.includes("gateway"),
       cod: wanted.includes("cod"),
     };
     await db.storeSetting.upsert({
@@ -61,19 +58,19 @@ async function main() {
   const upiReady = !!process.env.UPI_VPA?.trim();
   const gatewayReady = !!process.env.PAYU_KEY?.trim() && !!process.env.PAYU_SALT?.trim();
   const gatewayMode = (process.env.PAYU_MODE?.trim() || "test") === "live" ? "live" : "test";
-  const gatewayOn = current.card || current.netbanking || current.wallet;
+  const gatewayOn = current.gateway;
 
   console.log("\n\x1b[1mAt checkout right now\x1b[0m");
   console.log(current.upi && upiReady ? ok("UPI — QR and Google Pay / PhonePe / Paytm") : off("UPI"));
   // Who can see it matters as much as whether it is on: in test mode the
   // gateway is hidden from customers, and not saying so here is how you end up
   // wondering why the checkout shows only UPI.
-  const testPublic = process.env.PAYU_TEST_PUBLIC?.trim() === "1";
+  const testPublic = current.gatewayDemo;
   const seenBy =
     gatewayMode === "live"
       ? "everyone"
       : testPublic
-        ? "everyone — demo mode (PAYU_TEST_PUBLIC=1)"
+        ? "everyone — demo switch is on in /admin → Settings → Payments"
         : "only you, when signed in at /admin in the same browser";
   const gatewayLabel = `Pay online — PayU (${gatewayMode}) — seen by ${seenBy}`;
   console.log(gatewayOn && gatewayReady ? ok(gatewayLabel) : off(gatewayLabel));
@@ -87,9 +84,9 @@ async function main() {
       console.log(
         "    To see it at checkout, sign in at /admin in the same browser. To show it to",
       );
-      console.log("    everyone as a demo instead, add PAYU_TEST_PUBLIC=\"1\" to .env and reload.");
+      console.log("    everyone as a demo, switch it on in /admin → Settings → Payments.");
     } else {
-      console.log(warn("PAYU_TEST_PUBLIC=1 — every visitor is offered a checkout that takes no money."));
+      console.log(warn("Demo switch is on — every visitor is offered a checkout that takes no money."));
     }
   }
   if (!(current.upi && upiReady) && !(gatewayOn && gatewayReady) && !current.cod) {

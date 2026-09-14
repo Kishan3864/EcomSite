@@ -114,6 +114,7 @@ export const demoOrders: Order[] = [
         stock: 54,
         deliveryDays: 1,
         freeShipping: true,
+        codAvailable: true,
       },
       {
         id: "p22::none",
@@ -130,6 +131,7 @@ export const demoOrders: Order[] = [
         stock: 44,
         deliveryDays: 1,
         freeShipping: true,
+        codAvailable: true,
       },
     ],
   ),
@@ -154,6 +156,7 @@ export const demoOrders: Order[] = [
         stock: 32,
         deliveryDays: 3,
         freeShipping: true,
+        codAvailable: true,
       },
       {
         id: "p78::none",
@@ -170,6 +173,7 @@ export const demoOrders: Order[] = [
         stock: 210,
         deliveryDays: 2,
         freeShipping: true,
+        codAvailable: true,
       },
     ],
     {
@@ -201,6 +205,7 @@ export const demoOrders: Order[] = [
         stock: 130,
         deliveryDays: 2,
         freeShipping: true,
+        codAvailable: true,
       },
     ],
     {

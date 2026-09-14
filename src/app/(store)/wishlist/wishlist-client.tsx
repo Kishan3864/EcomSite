@@ -65,6 +65,10 @@ export function WishlistClient() {
                   stock: item.stock,
                   deliveryDays: 3,
                   freeShipping: item.price >= 999,
+                  // The wishlist row does not carry it. placeOrder re-reads every
+                  // line from the catalogue and refuses COD there if the product
+                  // does not allow it, so this is a starting guess, not a claim.
+                  codAvailable: true,
                 },
                 { silent: true },
               ),
@@ -146,6 +150,7 @@ export function WishlistClient() {
                       stock: item.stock,
                       deliveryDays: 3,
                       freeShipping: item.price >= 999,
+                      codAvailable: true,
                     })
                   }
                 >

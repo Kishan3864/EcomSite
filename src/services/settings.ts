@@ -28,11 +28,26 @@ export interface StoreSettings {
     standardDays: [number, number];
     expressDays: [number, number];
   };
+  /**
+   * The three ways this shop can take money, each switched on or off here.
+   *
+   * There used to be one per card network and wallet, which was a list of
+   * things the gateway decides for itself — a customer picking "card" here and
+   * wanting UPI there. What actually differs is who holds the money on the way:
+   * nobody (UPI straight to the bank), the gateway, or the courier.
+   */
   payments: {
+    /** UPI paid into the shop's own account, confirmed by the owner. */
     upi: boolean;
-    card: boolean;
-    netbanking: boolean;
-    wallet: boolean;
+    /** PayU: card, UPI, net banking and wallets on their checkout. */
+    gateway: boolean;
+    /**
+     * While PAYU_MODE is not "live", show the gateway to every visitor rather
+     * than only to a signed-in admin. For demonstrating the checkout; off by
+     * default, because PayU's test page has a "Simulate Success" button and an
+     * order marked paid with no money behind it is worse than a missing option.
+     */
+    gatewayDemo: boolean;
     cod: boolean;
     codLimit: number;
   };
@@ -61,9 +76,8 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   },
   payments: {
     upi: true,
-    card: true,
-    netbanking: true,
-    wallet: true,
+    gateway: true,
+    gatewayDemo: false,
     cod: BUSINESS.ops.codEnabled,
     codLimit: BUSINESS.ops.codLimit,
   },
@@ -78,11 +92,28 @@ export const getSettings = cache(async (): Promise<StoreSettings> => {
   return {
     store: { ...DEFAULT_SETTINGS.store, ...(stored.store as object) },
     shipping: { ...DEFAULT_SETTINGS.shipping, ...(stored.shipping as object) },
-    payments: { ...DEFAULT_SETTINGS.payments, ...(stored.payments as object) },
+    payments: normalisePayments(stored.payments),
     tax: { ...DEFAULT_SETTINGS.tax, ...(stored.tax as object) },
     inventory: { ...DEFAULT_SETTINGS.inventory, ...(stored.inventory as object) },
   };
 });
+
+/**
+ * Reads the payment switches, including any saved under the older per-method
+ * shape. A shop that had card, net banking or wallets switched on wanted the
+ * gateway; this says so rather than quietly turning it off on upgrade.
+ */
+function normalisePayments(stored: unknown): StoreSettings["payments"] {
+  const saved = (stored ?? {}) as Partial<StoreSettings["payments"]> &
+    Partial<{ card: boolean; netbanking: boolean; wallet: boolean }>;
+  const gateway =
+    saved.gateway ??
+    (saved.card !== undefined || saved.netbanking !== undefined || saved.wallet !== undefined
+      ? Boolean(saved.card || saved.netbanking || saved.wallet)
+      : DEFAULT_SETTINGS.payments.gateway);
+
+  return { ...DEFAULT_SETTINGS.payments, ...saved, gateway };
+}
 
 export async function saveSetting<K extends keyof StoreSettings>(key: K, value: StoreSettings[K]) {
   await db.storeSetting.upsert({

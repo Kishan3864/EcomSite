@@ -216,8 +216,27 @@ export async function placeOrder(
   if (isUpi && !upiConfigured())
     return { ok: false, error: "UPI is not available just now. Choose another way to pay.", field: "payment" };
 
-  if (input.paymentMethod === "cod" && (!settings.payments.cod || totals.total > settings.payments.codLimit))
-    return { ok: false, error: `Cash on Delivery is not available on this order.`, field: "payment" };
+  // Cash on delivery has three ways of not being allowed, and the customer is
+  // told which. The prepaid-only check reads the catalogue, not the cart: the
+  // browser's copy of a line is a suggestion, and a product can be switched to
+  // prepaid-only between filling a bag and paying for it.
+  if (input.paymentMethod === "cod") {
+    if (!settings.payments.cod)
+      return { ok: false, error: "Cash on delivery is not being offered at the moment.", field: "payment" };
+    if (totals.total > settings.payments.codLimit)
+      return {
+        ok: false,
+        error: `Cash on delivery is available on orders up to ₹${settings.payments.codLimit.toLocaleString("en-IN")}.`,
+        field: "payment",
+      };
+    const prepaidOnly = priced.find((line) => byId.get(line.productId)?.codAvailable === false);
+    if (prepaidOnly)
+      return {
+        ok: false,
+        error: `${prepaidOnly.title} is prepaid only, so this order cannot be sent cash on delivery.`,
+        field: "payment",
+      };
+  }
 
   const slowest = priced.reduce((m, l) => Math.max(m, l.deliveryDays), 1);
   const eta = new Date();
