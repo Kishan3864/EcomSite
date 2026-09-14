@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Banknote, Lock, ShieldCheck } from "lucide-react";
+import { ArrowRight, Banknote, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import type { PaymentMethodId } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
@@ -16,6 +16,9 @@ import { formatINR } from "@/lib/utils";
 
 /** What Razorpay's checkout offers once the customer reaches it. */
 const GATEWAY_METHODS = ["UPI", "Google Pay", "PhonePe", "Paytm", "Cards", "Net banking", "Wallets"];
+
+/** Every UPI app can pay the QR; these are the ones people look for by name. */
+const UPI_APP_NAMES = ["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay", "Any UPI app"];
 
 /**
  * Two ways to pay: online through Razorpay, or cash on delivery.
@@ -42,19 +45,24 @@ export function PaymentStep() {
   });
 
   const codAllowed = totals.total <= config.codLimit;
+  const available = config.paymentMethods.map((m) => m.id);
 
-  // A draft saved before this page changed may still say "upi" or "card";
-  // anything that is not cash on delivery is paid online.
-  const selected: PaymentMethodId | null = checkout.paymentMethod
-    ? checkout.paymentMethod === "cod"
-      ? "cod"
-      : "online"
-    : null;
+  // A draft saved in this browser before the shop's payment options changed may
+  // name one that is no longer offered — "card" from when the gateway listed
+  // each method separately. Anything that was a gateway choice still is one;
+  // anything else falls back to no choice rather than a wrong one.
+  const stored = checkout.paymentMethod;
+  const selected: PaymentMethodId | null =
+    stored && available.includes(stored)
+      ? stored
+      : stored && stored !== "cod" && available.includes("online")
+        ? "online"
+        : null;
 
   // How this customer usually pays, offered until they choose for themselves.
   useEffect(() => {
     if (!hydrated || checkout.paymentMethod || !customer?.preferredPayment) return;
-    const preferred: PaymentMethodId = customer.preferredPayment === "cod" ? "cod" : "online";
+    const preferred = customer.preferredPayment as PaymentMethodId;
     if (!config.paymentMethods.some((m) => m.id === preferred)) return;
     if (preferred === "cod" && !codAllowed) return;
     dispatch({ type: "checkout/patch", patch: { paymentMethod: preferred, paymentDetail: null } });
@@ -78,7 +86,8 @@ export function PaymentStep() {
       type: "checkout/patch",
       patch: {
         paymentMethod: selected,
-        paymentDetail: selected === "cod" ? "Pay on delivery" : "Razorpay",
+        paymentDetail:
+          selected === "cod" ? "Pay on delivery" : selected === "upi" ? "UPI" : "Razorpay",
       },
     });
     router.push("/checkout/review");
@@ -111,7 +120,8 @@ export function PaymentStep() {
         <ul className="space-y-2 sm:space-y-3">
           {config.paymentMethods.map((method) => {
             const disabled = method.id === "cod" && !codAllowed;
-            const Icon = method.id === "cod" ? Banknote : ShieldCheck;
+            const Icon =
+              method.id === "cod" ? Banknote : method.id === "upi" ? Smartphone : ShieldCheck;
 
             return (
               <li key={method.id}>
@@ -132,6 +142,42 @@ export function PaymentStep() {
                       : method.description
                   }
                 >
+                  {method.id === "upi" && (
+                    <div className="space-y-3">
+                      <ul className="flex flex-wrap gap-1.5" aria-label="Works with">
+                        {UPI_APP_NAMES.map((label) => (
+                          <li
+                            key={label}
+                            className="border border-ink-200 bg-surface px-2 py-1 text-[11px] font-medium text-ink-700"
+                          >
+                            {label}
+                          </li>
+                        ))}
+                      </ul>
+                      <ol className="space-y-1.5 text-[12.5px] leading-relaxed text-ink-600">
+                        <li className="flex gap-2">
+                          <span className="font-semibold text-ink-900">1.</span>
+                          Scan our QR, or tap through to your UPI app on a phone.
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-semibold text-ink-900">2.</span>
+                          Pay {formatINR(totals.total)} and copy the 12-digit reference your app
+                          shows.
+                        </li>
+                        <li className="flex gap-2">
+                          <span className="font-semibold text-ink-900">3.</span>
+                          Enter it on the next screen. We check it against our bank and confirm —
+                          usually within a few hours, and you get an email the moment we do.
+                        </li>
+                      </ol>
+                      <p className="flex items-start gap-2 text-[12.5px] leading-relaxed text-ink-600">
+                        <Lock size={13} className="mt-0.5 shrink-0 text-brand-600" />
+                        Your UPI PIN is entered only inside your own payment app — it never reaches
+                        our servers.
+                      </p>
+                    </div>
+                  )}
+
                   {method.id === "online" && (
                     <div className="space-y-3">
                       <ul className="flex flex-wrap gap-1.5" aria-label="Accepted on the next step">

@@ -28,6 +28,7 @@ import { safeNextPath } from "@/lib/auth/oauth";
 import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
 import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
+import { upiConfigured } from "@/lib/payments/upi";
 import { expireStalePendingOrders } from "./payment-core";
 import { after } from "next/server";
 import { mailConfigured, sendMail } from "@/lib/mail";
@@ -110,8 +111,15 @@ export async function placeOrder(
   // forty-five, so a retry is never refused for the earlier attempt's sake. A
   // payment that lands late on a released order revives it (see markPaid).
   await expireStalePendingOrders({ customerId: session.id, olderThanMinutes: 2 });
+  // A UPI order gets half a day before it is released — there is no payment
+  // window to close, and the customer may pay from another phone hours later.
+  await expireStalePendingOrders({ method: "UPI" });
   const unpaid = await db.order.count({
-    where: { customerId: session.id, paymentStatus: "PENDING", paymentMethod: "ONLINE" },
+    where: {
+      customerId: session.id,
+      paymentStatus: "PENDING",
+      paymentMethod: { in: ["ONLINE", "UPI"] },
+    },
   });
   if (unpaid >= 3)
     return {
@@ -200,12 +208,17 @@ export async function placeOrder(
     },
   });
 
-  // Two ways to pay: the gateway, or cash on delivery. Older drafts saved in a
-  // browser may still say "upi" or "card"; those were always going to be paid
-  // through the gateway, so they are read as online rather than rejected.
-  const GATEWAY_IDS = ["online", "upi", "card", "netbanking", "wallet"];
-  if (input.paymentMethod !== "cod" && !GATEWAY_IDS.includes(input.paymentMethod))
+  // Three ways to pay: UPI straight into the shop's own bank account, the
+  // gateway, or cash on delivery. Older drafts saved in a browser may still say
+  // "card" or "netbanking"; those were always going to the gateway, so they are
+  // read as online rather than rejected.
+  const GATEWAY_IDS = ["online", "card", "netbanking", "wallet"];
+  const isUpi = input.paymentMethod === "upi";
+  if (input.paymentMethod !== "cod" && !isUpi && !GATEWAY_IDS.includes(input.paymentMethod))
     return { ok: false, error: "Choose how you would like to pay.", field: "payment" };
+
+  if (isUpi && !upiConfigured())
+    return { ok: false, error: "UPI is not available just now. Choose another way to pay.", field: "payment" };
 
   if (input.paymentMethod === "cod" && (!settings.payments.cod || totals.total > settings.payments.codLimit))
     return { ok: false, error: `Cash on Delivery is not available on this order.`, field: "payment" };
@@ -216,9 +229,11 @@ export async function placeOrder(
   const scheduled = input.deliveryDate ? new Date(input.deliveryDate) : null;
   const estimatedDelivery = speed === "scheduled" && scheduled ? scheduled : eta;
 
-  // Online orders are written as ONLINE and narrowed to what was actually used
-  // once the gateway reports it.
-  const method: "ONLINE" | "COD" = input.paymentMethod === "cod" ? "COD" : "ONLINE";
+  // Gateway orders are written as ONLINE and narrowed to what was actually
+  // used once the gateway reports it. A UPI order is UPI from the start: there
+  // is no gateway to narrow it, only a bank credit to match.
+  const method: "ONLINE" | "COD" | "UPI" =
+    input.paymentMethod === "cod" ? "COD" : isUpi ? "UPI" : "ONLINE";
   const email = input.contact.email.toLowerCase().trim();
   // A business buyer claiming input credit must have their GSTIN on the invoice;
   // anything that is not one is dropped rather than printed as fact.

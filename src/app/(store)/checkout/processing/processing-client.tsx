@@ -193,7 +193,16 @@ export function ProcessingClient() {
 
   // Create the order, then pay for it.
   useEffect(() => {
-    if (!hydrated || !pendingCheckout || started.current || !scriptReady) return;
+    if (!hydrated || !pendingCheckout || started.current) return;
+
+    // Only the gateway needs Razorpay's script. Waiting for it on a UPI or
+    // cash-on-delivery order would hold the whole checkout hostage to a
+    // third-party script that may be slow, blocked, or — as on this server —
+    // unreachable altogether.
+    const method = pendingCheckout.input.paymentMethod;
+    const needsGateway = method !== "cod" && method !== "upi";
+    if (needsGateway && !scriptReady) return;
+
     started.current = true;
 
     placeOrder(pendingCheckout.input)
@@ -207,8 +216,17 @@ export function ProcessingClient() {
         setOrderId(result.data.orderId);
 
         // Cash on delivery takes no gateway: the order is already confirmed.
-        if (pendingCheckout.input.paymentMethod === "cod") {
+        if (method === "cod") {
           finish(result.data.orderId);
+          return;
+        }
+
+        // UPI is paid on our own page — a QR and the customer's own app — so
+        // the staged checkout is cleared here and the order takes over. It is
+        // reserved and payable from their account until it is paid or lapses.
+        if (method === "upi") {
+          dispatch({ type: "checkout/complete" });
+          router.replace(`/checkout/upi/${result.data.orderId}`);
           return;
         }
 
@@ -220,7 +238,7 @@ export function ProcessingClient() {
         });
         setPhase("failed");
       });
-  }, [hydrated, pendingCheckout, scriptReady, pay, finish]);
+  }, [hydrated, pendingCheckout, scriptReady, pay, finish, dispatch, router]);
 
   /**
    * Poll our own database, not the gateway.

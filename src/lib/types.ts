@@ -254,6 +254,15 @@ export interface Order {
   address: Address;
   delivery: DeliveryOption;
   paymentMethod: PaymentMethod;
+  /** Whether the money has arrived. A UPI order sits here until a human confirms it. */
+  paymentStatus:
+    | "pending"
+    | "verifying"
+    | "paid"
+    | "cod_pending"
+    | "failed"
+    | "refunded"
+    | "partially_refunded";
   totals: OrderTotals;
   estimatedDelivery: string;
   tracking: OrderTrackingEvent[];

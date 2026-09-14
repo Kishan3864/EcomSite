@@ -2,6 +2,8 @@ import "server-only";
 
 import type { DeliveryOption, PaymentMethod } from "@/lib/types";
 import type { Rates } from "@/lib/pricing";
+import { razorpayConfigured } from "@/lib/payments/razorpay";
+import { upiConfigured } from "@/lib/payments/upi";
 import { getSettings } from "./settings";
 
 /**
@@ -34,10 +36,14 @@ const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
       "UPI (Google Pay, PhonePe, Paytm), credit and debit cards, net banking and wallets, on Razorpay's secure checkout",
     badge: "Recommended",
   },
+  // Paid straight into the shop's bank account by QR or a tap through to the
+  // customer's own app. No gateway stands in between, which is why the wait
+  // for confirmation is named here rather than discovered afterwards.
   upi: {
-    name: "UPI",
-    description: "Google Pay, PhonePe, Paytm, BHIM or any UPI app",
-    badge: "Fastest",
+    name: "UPI — Google Pay, PhonePe, Paytm",
+    description:
+      "Scan a QR or tap through to your UPI app. Your order is reserved straight away and confirmed once we see the payment.",
+    badge: "Recommended",
   },
   card: {
     name: "Credit / Debit card",
@@ -88,8 +94,15 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   ];
 
   // Order matters: this is the order the payment step lists them in.
-  const gatewayOn = s.payments.upi || s.payments.card || s.payments.netbanking || s.payments.wallet;
+  //
+  // Each option is offered only when it can actually take money. A method
+  // switched on in the admin panel but missing its keys would be a dead end at
+  // the last step of a checkout, which is the worst place to find one.
+  const upiOn = s.payments.upi && upiConfigured();
+  const gatewayOn =
+    (s.payments.card || s.payments.netbanking || s.payments.wallet) && razorpayConfigured();
   const enabled: PaymentMethod["id"][] = [
+    ...(upiOn ? (["upi"] as const) : []),
     ...(gatewayOn ? (["online"] as const) : []),
     ...(s.payments.cod ? (["cod"] as const) : []),
   ];

@@ -129,6 +129,7 @@ export function toOrder(row: OrderRow): Order {
       minDays: deliveryId === "express" ? 1 : 3,
       maxDays: deliveryId === "express" ? 2 : 5,
     },
+    paymentStatus: row.paymentStatus.toLowerCase() as Order["paymentStatus"],
     paymentMethod: {
       id: row.paymentMethod.toLowerCase() as Order["paymentMethod"]["id"],
       name:

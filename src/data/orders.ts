@@ -69,6 +69,7 @@ function order(
       minDays: 3,
       maxDays: 5,
     },
+    paymentStatus: "paid",
     paymentMethod: {
       id: "upi",
       name: "UPI",

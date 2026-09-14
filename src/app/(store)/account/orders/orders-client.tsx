@@ -189,12 +189,24 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                   >
                     View details
                   </Link>
-                  <Link
-                    href={`/track/${order.id}`}
-                    className={buttonClasses("primary", "sm", "h-10 flex-1 sm:h-9 sm:flex-initial")}
-                  >
-                    Track <ArrowRight size={14} />
-                  </Link>
+                  {/* An unpaid UPI order has one thing left to do, and this is
+                      where a customer comes back to do it. Tracking an order
+                      that has not been paid for would only show them nothing. */}
+                  {order.paymentMethod.id === "upi" && order.paymentStatus === "pending" ? (
+                    <Link
+                      href={`/checkout/upi/${order.id}`}
+                      className={buttonClasses("primary", "sm", "h-10 flex-1 sm:h-9 sm:flex-initial")}
+                    >
+                      Pay now <ArrowRight size={14} />
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/track/${order.id}`}
+                      className={buttonClasses("primary", "sm", "h-10 flex-1 sm:h-9 sm:flex-initial")}
+                    >
+                      Track <ArrowRight size={14} />
+                    </Link>
+                  )}
                 </div>
               </footer>
             </motion.li>

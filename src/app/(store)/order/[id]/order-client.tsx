@@ -155,6 +155,45 @@ export function OrderClient({ order }: { order: Order | null }) {
           transition={{ duration: 0.5, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           className="mt-6 space-y-3 sm:mt-8 sm:space-y-4"
         >
+          {/* Unpaid UPI: the one thing this page must offer is a way back to
+              paying. Above the delivery promise, because a promise means
+              nothing until the order is paid for. */}
+          {order.paymentMethod.id === "upi" && order.paymentStatus === "pending" && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold-300 bg-gold-50 p-4 sm:gap-4 sm:p-5">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gold-600 text-white sm:h-11 sm:w-11">
+                  <Wallet size={19} />
+                </span>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold-800">
+                    Waiting for payment
+                  </p>
+                  <p className="text-[13.5px] text-ink-800">
+                    Your items are reserved. Pay {formatINR(order.totals.total)} to confirm this
+                    order.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href={`/checkout/upi/${order.id}`}
+                className={buttonClasses("primary", "md", "w-full shrink-0 sm:w-auto")}
+              >
+                Pay now
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          )}
+
+          {order.paymentMethod.id === "upi" && order.paymentStatus === "verifying" && (
+            <div className="rounded-xl border border-brand-200 bg-brand-50 p-4 text-[13.5px] leading-relaxed text-brand-900 sm:p-5">
+              <p className="font-semibold">We are checking your payment</p>
+              <p className="mt-1 text-brand-800/80">
+                Your reference is with us and we are matching it against our bank. You will get an
+                email the moment it is confirmed — usually within a few hours.
+              </p>
+            </div>
+          )}
+
           {/* Delivery promise */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-brand-200 bg-brand-50 p-4 sm:gap-4 sm:p-5">
             <div className="flex items-center gap-3">

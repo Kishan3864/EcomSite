@@ -97,6 +97,9 @@ enum OrderStatus {
 
 enum PaymentStatus {
   PENDING
+  /// UPI only: the customer says they have paid and gave a UTR, and the owner
+  /// has not yet checked the bank. Never treat this as money received.
+  VERIFYING
   PAID
   COD_PENDING
   FAILED

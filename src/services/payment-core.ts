@@ -21,6 +21,15 @@ import { toPaise, upiAppFrom, type RazorpayPayment } from "@/lib/payments/razorp
 /** An online order that has not been paid for this long is released. */
 export const PENDING_EXPIRY_MINUTES = 45;
 
+/**
+ * A UPI order is given far longer than a gateway one. There is no window to
+ * close and no callback to lose: the customer may well pay from another phone,
+ * or come back after lunch, and releasing their stock underneath them would
+ * turn a slow payment into a cancelled order. Only orders where nothing has
+ * been reported are swept — once a reference is in, a human decides.
+ */
+export const UPI_EXPIRY_MINUTES = 12 * 60;
+
 /** "UPI · Google Pay", "Card", "Net banking · HDFC" — for the order page. */
 export function describe(payment: RazorpayPayment): string {
   const app = upiAppFrom(payment);
@@ -181,14 +190,19 @@ export async function expireStalePendingOrders(scope?: {
   customerId?: string;
   /** Override the shop-wide window; a customer superseding their own can be short. */
   olderThanMinutes?: number;
+  /** Which kind of unpaid order to release. Gateway orders by default. */
+  method?: "ONLINE" | "UPI";
 }): Promise<number> {
-  const minutes = scope?.olderThanMinutes ?? PENDING_EXPIRY_MINUTES;
+  const minutes =
+    scope?.olderThanMinutes ?? (scope?.method === "UPI" ? UPI_EXPIRY_MINUTES : PENDING_EXPIRY_MINUTES);
   const cutoff = new Date(Date.now() - minutes * 60_000);
 
   const stale = await db.order.findMany({
     where: {
+      // PENDING only, never VERIFYING: once a customer has given a reference,
+      // the order waits for a person, not for a clock.
       paymentStatus: "PENDING",
-      paymentMethod: "ONLINE",
+      paymentMethod: scope?.method ?? "ONLINE",
       placedAt: { lt: cutoff },
       ...(scope?.customerId ? { customerId: scope.customerId } : {}),
     },

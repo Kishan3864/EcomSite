@@ -37,7 +37,13 @@ import {
   nextStatus,
   toDateInput,
 } from "../workflow";
-import { AddEventForm, AdminNoteForm, CancelOrderForm, ShipmentForm } from "../order-forms";
+import {
+  AddEventForm,
+  AdminNoteForm,
+  CancelOrderForm,
+  ShipmentForm,
+  UpiVerifyForm,
+} from "../order-forms";
 import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Order" };
@@ -189,6 +195,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </div>
             </dl>
           </Card>
+
+          {order.paymentStatus === "VERIFYING" && (
+            <Card title="Payment to confirm">
+              <UpiVerifyForm
+                orderId={order.id}
+                amount={formatINR(order.total)}
+                utr={order.paymentRef ?? ""}
+                readOnly={!canEdit}
+              />
+            </Card>
+          )}
 
           <Card title="Shipment">
             <ShipmentForm

@@ -1,7 +1,19 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Ban, CalendarClock, ExternalLink, PackageCheck, Plus, Printer, RefreshCw, Save, Truck } from "lucide-react";
+import {
+  BadgeIndianRupee,
+  Ban,
+  CalendarClock,
+  Check,
+  ExternalLink,
+  PackageCheck,
+  Plus,
+  Printer,
+  RefreshCw,
+  Save,
+  Truck,
+} from "lucide-react";
 import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, Label, inputCls, textareaCls } from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
@@ -13,6 +25,7 @@ import {
   setShipment,
 } from "@/services/admin/orders-actions";
 import { bookShipment, refreshTracking, requestDelhiveryPickup } from "@/services/admin/shipping-actions";
+import { confirmUpiPayment, rejectUpiPayment } from "@/services/admin/upi-actions";
 import { Form } from "@/components/ui/form";
 
 export interface CourierLink {
@@ -163,6 +176,104 @@ function DelhiveryPanel({
           </SubmitButton>
           {pickup.error && !pickup.field && <Notice tone="error">{pickup.error}</Notice>}
           {pickup.ok && pickup.message && <Notice tone="ok">{pickup.message}</Notice>}
+        </Form>
+      )}
+    </div>
+  );
+}
+
+/**
+ * A UPI payment the customer says they have made, waiting on the owner.
+ *
+ * Confirming is the only way a UPI order becomes paid, so the card states the
+ * amount and the reference and asks for them to be found in the bank first.
+ * Rejecting is not a cancellation: the reference is cleared, the order stays,
+ * and the customer is told to send the right one — a mistyped digit is the
+ * usual reason, and cancelling their order over it would be absurd.
+ */
+export function UpiVerifyForm({
+  orderId,
+  amount,
+  utr,
+  readOnly,
+}: {
+  orderId: string;
+  amount: string;
+  utr: string;
+  readOnly?: boolean;
+}) {
+  const [confirmState, confirmAction] = useActionState(confirmUpiPayment, INITIAL_FORM);
+  const [rejectState, rejectAction] = useActionState(rejectUpiPayment, INITIAL_FORM);
+  const [rejecting, setRejecting] = useState(false);
+
+  return (
+    <div className="grid gap-3">
+      <div className="rounded-lg border border-gold-300 bg-gold-50 p-3.5">
+        <p className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-900">
+          <BadgeIndianRupee size={15} className="text-gold-700" />
+          Customer says they have paid {amount}
+        </p>
+        <p className="mt-2 text-[12px] text-ink-600">UPI reference (UTR)</p>
+        <p className="font-mono text-[17px] font-semibold tracking-[0.04em] text-ink-950 tabular-nums">
+          {utr}
+        </p>
+        <p className="mt-2.5 text-[11.5px] leading-relaxed text-ink-600">
+          Find this reference for <strong>{amount}</strong> in your bank or UPI app before you
+          confirm. Confirming marks the order paid and tells the customer it is being packed.
+        </p>
+      </div>
+
+      {confirmState.error && <Notice tone="error">{confirmState.error}</Notice>}
+      {confirmState.ok && confirmState.message && <Notice tone="ok">{confirmState.message}</Notice>}
+      {rejectState.ok && rejectState.message && <Notice tone="ok">{rejectState.message}</Notice>}
+
+      {!readOnly && !rejecting && (
+        <div className="flex flex-wrap gap-2">
+          <Form action={confirmAction}>
+            <input type="hidden" name="id" value={orderId} />
+            <SubmitButton size="sm" pendingText="Confirming…">
+              <Check size={14} /> Yes, {amount} received
+            </SubmitButton>
+          </Form>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-sale-300 text-sale-600 hover:border-sale-500 hover:bg-sale-50"
+            onClick={() => setRejecting(true)}
+          >
+            <Ban size={14} /> Not in my bank
+          </Button>
+        </div>
+      )}
+
+      {!readOnly && rejecting && (
+        <Form action={rejectAction} className="grid gap-2 rounded-lg border border-hairline bg-canvas p-3.5">
+          <input type="hidden" name="id" value={orderId} />
+          {rejectState.error && !rejectState.field && <Notice tone="error">{rejectState.error}</Notice>}
+          <Label htmlFor="upi-reason" hint="The customer sees this in their email.">
+            What did you find?
+          </Label>
+          <textarea
+            id="upi-reason"
+            name="reason"
+            rows={2}
+            className={textareaCls}
+            required
+            defaultValue="We could not find this reference in our account."
+          />
+          <FieldError>{rejectState.field === "reason" ? rejectState.error : undefined}</FieldError>
+          <p className="text-[11.5px] leading-relaxed text-ink-500">
+            The order is kept and its stock stays reserved. Only the reference is cleared, so the
+            customer can send the correct one or pay again.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setRejecting(false)}>
+              Back
+            </Button>
+            <SubmitButton size="sm" variant="danger" pendingText="Sending…">
+              Clear reference and tell them
+            </SubmitButton>
+          </div>
         </Form>
       )}
     </div>
