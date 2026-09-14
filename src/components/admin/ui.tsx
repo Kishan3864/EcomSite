@@ -147,7 +147,11 @@ const TONE_CLASS: Record<Tone, string> = {
   gold: "bg-gold-100 text-gold-800",
   sale: "bg-sale-100 text-sale-700",
   ink: "bg-ink-900 text-white",
-  sky: "bg-[#e6f0fb] text-[#1f4b8f]",
+  // Teal rather than the blue this tone once was: the brand ramp is now indigo,
+  // so a blue pill and a brand pill read as the same thing and an order in
+  // transit stops being distinguishable from one already delivered. Literal,
+  // because this is the one tone with no home in the scale.
+  sky: "bg-[#dcecf3] text-[#0e5266]",
 };
 
 export function Pill({
@@ -416,7 +420,7 @@ export const textareaCls =
 export const selectCls = cn(inputCls, "appearance-none pr-9 bg-no-repeat bg-[right_10px_center]");
 export const selectArrow = {
   backgroundImage:
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2377776f' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23676d77' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
 };
 
 export function Label({

@@ -56,6 +56,14 @@ export function ProductBadgePill({ badge }: { badge: ProductBadge }) {
 
 /* ------------------------------ Rating ---------------------------- */
 
+/**
+ * Five stars, part-filled to the average.
+ *
+ * With nothing to average it renders nothing at all. A row of five empty
+ * outlines beside a product no one has reviewed yet reads as five people
+ * giving it nought out of five, which is the opposite of the truth and the
+ * fastest way to lose a shopper who was otherwise ready to buy.
+ */
 export function Stars({
   value,
   size = 14,
@@ -65,6 +73,8 @@ export function Stars({
   size?: number;
   className?: string;
 }) {
+  if (!(value > 0)) return null;
+
   return (
     <span className={cn("inline-flex items-center gap-px", className)} aria-hidden>
       {[0, 1, 2, 3, 4].map((i) => {
@@ -90,6 +100,11 @@ export function Stars({
   );
 }
 
+/**
+ * The score chip. Absent until somebody has actually scored the product —
+ * see `Stars`. A "0.0 ★ · 0 reviews" chip was appearing on every product in
+ * the shop, which told every visitor the same untrue thing at once.
+ */
 export function RatingChip({
   value,
   count,
@@ -99,6 +114,8 @@ export function RatingChip({
   count?: number;
   className?: string;
 }) {
+  if (!count || !(value > 0)) return null;
+
   return (
     <span className={cn("inline-flex items-center gap-1.5 text-[11.5px] sm:text-xs", className)}>
       <span className="inline-flex items-center gap-1 rounded-md bg-brand-700 px-1.5 py-0.5 font-semibold text-white tabular-nums">
@@ -199,14 +216,17 @@ export function SectionHeader({
           </p>
         )}
       </div>
+      {/* Shown at every width. It used to be hidden below 640px, which is why
+          rails grew a second "View all" tile at their far end to give phones a
+          way out — two links saying one thing. The link belongs here. */}
       {href && (
         <Link
           href={href}
-          className="group hidden shrink-0 items-center gap-1 rounded-lg px-3 py-2 text-[13px] font-semibold text-brand-700 transition-colors hover:bg-brand-50 sm:inline-flex"
+          className="tap group -my-2 inline-flex shrink-0 items-center gap-1.5 py-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors hover:text-gold-700 sm:my-0 sm:py-0"
         >
           {linkLabel}
           <ChevronRight
-            size={15}
+            size={14}
             className="transition-transform duration-200 group-hover:translate-x-0.5"
           />
         </Link>
@@ -259,19 +279,6 @@ export function Breadcrumbs({ items, className }: { items: Crumb[]; className?: 
 
 export function Skeleton({ className }: { className?: string }) {
   return <div className={cn("skeleton rounded-lg", className)} />;
-}
-
-export function ProductCardSkeleton() {
-  return (
-    <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
-      <Skeleton className="aspect-[4/5] rounded-none" />
-      <div className="space-y-2 p-3.5">
-        <Skeleton className="h-3 w-1/3" />
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-1/2" />
-      </div>
-    </div>
-  );
 }
 
 /* --------------------------- Empty state -------------------------- */

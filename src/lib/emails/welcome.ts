@@ -38,22 +38,28 @@ const LINKS = {
   mark: `${SITE}/brand/png/weekendcart-icon-192.png`,
 };
 
-/** Brand palette, from globals.css. */
+/**
+ * The brand palette from globals.css, repeated here as literals. No email
+ * client resolves CSS custom properties, so a token would collapse to nothing
+ * and leave dark text on an unpainted background in the clients that matter.
+ * The keys are named for the job each colour does rather than for what it
+ * looks like, so that a change of theme cannot leave the names telling lies.
+ */
 const C = {
-  canvas: "#f7f5f1",
+  canvas: "#eef1f5",
   surface: "#ffffff",
-  evergreen: "#16261f",
-  evergreenSoft: "#274337",
-  mist: "#dfe8e3",
-  brass: "#b8832f",
-  brassLight: "#d0a04b",
-  brassDeep: "#7b5122",
-  ink: "#191714",
-  body: "#403c37",
-  soft: "#55504a",
-  muted: "#736d63",
-  hairline: "#e2ded6",
-  rule: "#c7c2b9",
+  brandDeep: "#111834",
+  brandSoft: "#26346e",
+  brandTint: "#e3e8f7",
+  accent: "#a9740d",
+  accentSoft: "#e0a420",
+  accentDeep: "#714e0c",
+  ink: "#14171b",
+  body: "#3b4048",
+  soft: "#51565f",
+  muted: "#676d77",
+  hairline: "#d4dae1",
+  rule: "#c7cbd2",
 };
 
 const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
@@ -202,15 +208,15 @@ function button(href: string, label: string): string {
   const url = esc(href);
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;margin:0 auto;">
 <tr>
-<td align="center" bgcolor="${C.evergreen}" style="background-color:${C.evergreen};">
+<td align="center" bgcolor="${C.brandDeep}" style="background-color:${C.brandDeep};">
 <!--[if mso]>
-<v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:54px;v-text-anchor:middle;width:260px;" stroke="f" fillcolor="${C.evergreen}">
+<v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:54px;v-text-anchor:middle;width:260px;" stroke="f" fillcolor="${C.brandDeep}">
 <w:anchorlock/>
 <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;letter-spacing:2px;">${esc(label.toUpperCase())}</center>
 </v:rect>
 <![endif]-->
 <!--[if !mso]><!-->
-<a href="${url}" target="_blank" style="display:inline-block;padding:18px 44px;border:1px solid ${C.evergreen};background-color:${C.evergreen};color:#ffffff;font-family:${SANS};font-size:13px;font-weight:700;line-height:18px;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;-webkit-text-size-adjust:none;">${esc(label)}</a>
+<a href="${url}" target="_blank" style="display:inline-block;padding:18px 44px;border:1px solid ${C.brandDeep};background-color:${C.brandDeep};color:#ffffff;font-family:${SANS};font-size:13px;font-weight:700;line-height:18px;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;-webkit-text-size-adjust:none;">${esc(label)}</a>
 <!--<![endif]-->
 </td>
 </tr>
@@ -220,7 +226,7 @@ function button(href: string, label: string): string {
 function expectRows(): string {
   return EXPECT.map(
     (point, i) => `<tr>
-<td width="44" valign="top" class="serif" style="padding:16px 0;border-top:1px solid ${C.hairline};font-family:${SERIF};font-size:15px;line-height:22px;color:${C.brass};mso-line-height-rule:exactly;">${String(i + 1).padStart(2, "0")}</td>
+<td width="44" valign="top" class="serif" style="padding:16px 0;border-top:1px solid ${C.hairline};font-family:${SERIF};font-size:15px;line-height:22px;color:${C.accent};mso-line-height-rule:exactly;">${String(i + 1).padStart(2, "0")}</td>
 <td valign="top" style="padding:16px 0;border-top:1px solid ${C.hairline};">
 <p style="margin:0;font-family:${SANS};font-size:15px;line-height:22px;font-weight:700;color:${C.ink};mso-line-height-rule:exactly;">${esc(point.title)}</p>
 <p style="margin:4px 0 0;font-family:${SANS};font-size:14px;line-height:22px;color:${C.soft};mso-line-height-rule:exactly;">${esc(point.body)}</p>
@@ -242,8 +248,8 @@ function tile(point: Point): string {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
 <tr>
 <td style="padding:16px 16px 14px;text-align:left;">
-${ruleCell(28, 2, C.brass)}
-<p class="serif" style="margin:0;padding-top:12px;font-family:${SERIF};font-size:17px;line-height:24px;color:${C.evergreen};mso-line-height-rule:exactly;">${esc(point.title)}</p>
+${ruleCell(28, 2, C.accent)}
+<p class="serif" style="margin:0;padding-top:12px;font-family:${SERIF};font-size:17px;line-height:24px;color:${C.brandDeep};mso-line-height-rule:exactly;">${esc(point.title)}</p>
 <p style="margin:6px 0 0;font-family:${SANS};font-size:14px;line-height:22px;color:${C.soft};mso-line-height-rule:exactly;">${body}</p>
 </td>
 </tr>
@@ -269,7 +275,7 @@ function signatureContacts(): string {
     .map(
       (line) => `<tr>
 <td width="96" valign="top" style="padding:10px 0 0;font-family:${SANS};font-size:11px;line-height:20px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:${C.muted};mso-line-height-rule:exactly;">${esc(line.label)}</td>
-<td valign="top" style="padding:10px 0 0;font-family:${SANS};font-size:14px;line-height:20px;mso-line-height-rule:exactly;"><a href="${esc(line.href)}" target="_blank" style="color:${C.evergreenSoft};text-decoration:none;">${esc(line.value)}</a></td>
+<td valign="top" style="padding:10px 0 0;font-family:${SANS};font-size:14px;line-height:20px;mso-line-height-rule:exactly;"><a href="${esc(line.href)}" target="_blank" style="color:${C.brandSoft};text-decoration:none;">${esc(line.value)}</a></td>
 </tr>`,
     )
     .join("\n");
@@ -304,7 +310,7 @@ export function buildWelcomeEmail(email: string): WelcomeEmail {
     `<p style="margin:0 0 ${last ? 0 : 18}px;font-family:${SANS};font-size:16px;line-height:26px;color:${C.body};mso-line-height-rule:exactly;">${esc(text)}</p>`;
 
   const footerLink = (href: string, label: string) =>
-    `<a href="${esc(href)}" target="_blank" style="color:${C.evergreenSoft};text-decoration:underline;">${esc(label)}</a>`;
+    `<a href="${esc(href)}" target="_blank" style="color:${C.brandSoft};text-decoration:underline;">${esc(label)}</a>`;
   const dot = `<span style="color:${C.rule};">&nbsp;&nbsp;&middot;&nbsp;&nbsp;</span>`;
 
   const html = `<!DOCTYPE html>
@@ -338,23 +344,23 @@ table, td, div, p, a, span { font-family: 'Segoe UI', Arial, sans-serif !importa
 <!--[if mso]><table role="presentation" align="center" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;max-width:600px;margin:0 auto;">
 
-<!-- Brass edge -->
-<tr><td height="4" bgcolor="${C.brass}" style="height:4px;background-color:${C.brass};font-size:4px;line-height:4px;mso-line-height-rule:exactly;">&nbsp;</td></tr>
+<!-- Accent edge -->
+<tr><td height="4" bgcolor="${C.accent}" style="height:4px;background-color:${C.accent};font-size:4px;line-height:4px;mso-line-height-rule:exactly;">&nbsp;</td></tr>
 
 <!-- Logo -->
 <tr>
 <td align="center" bgcolor="${C.surface}" style="padding:32px 32px 28px;background-color:${C.surface};">
-<a href="${esc(LINKS.shop)}" target="_blank" style="text-decoration:none;"><img src="${esc(LINKS.logo)}" width="200" height="54" alt="${esc(brand)}" style="display:block;width:200px;max-width:200px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;color:${C.evergreen};font-family:${SERIF};font-size:26px;line-height:54px;font-weight:bold;"></a>
+<a href="${esc(LINKS.shop)}" target="_blank" style="text-decoration:none;"><img src="${esc(LINKS.logo)}" width="200" height="54" alt="${esc(brand)}" style="display:block;width:200px;max-width:200px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;color:${C.brandDeep};font-family:${SERIF};font-size:26px;line-height:54px;font-weight:bold;"></a>
 </td>
 </tr>
 
 <!-- Thank you -->
 <tr>
-<td align="center" bgcolor="${C.evergreen}" style="padding:46px 32px 44px;background-color:${C.evergreen};text-align:center;">
-<p style="margin:0 0 16px;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${C.brassLight};mso-line-height-rule:exactly;">Welcome to ${esc(brand)}</p>
+<td align="center" bgcolor="${C.brandDeep}" style="padding:46px 32px 44px;background-color:${C.brandDeep};text-align:center;">
+<p style="margin:0 0 16px;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${C.accentSoft};mso-line-height-rule:exactly;">Welcome to ${esc(brand)}</p>
 <h1 class="serif" style="margin:0;font-family:${SERIF};font-size:36px;line-height:44px;font-weight:normal;letter-spacing:-0.5px;color:${C.canvas};mso-line-height-rule:exactly;">Thank you for joining&nbsp;us.</h1>
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;margin:0 auto;"><tr><td style="padding:22px 0;">${ruleCell(48, 2, C.brass, "center")}</td></tr></table>
-<p style="margin:0 auto;max-width:440px;font-family:${SANS};font-size:16px;line-height:26px;color:${C.mist};mso-line-height-rule:exactly;">We are so glad you are here, and truly grateful that you chose to hear from us.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;margin:0 auto;"><tr><td style="padding:22px 0;">${ruleCell(48, 2, C.accent, "center")}</td></tr></table>
+<p style="margin:0 auto;max-width:440px;font-family:${SANS};font-size:16px;line-height:26px;color:${C.brandTint};mso-line-height-rule:exactly;">We are so glad you are here, and truly grateful that you chose to hear from us.</p>
 </td>
 </tr>
 
@@ -370,7 +376,7 @@ ${p(intro[1], true)}
 <!-- What to expect -->
 <tr>
 <td bgcolor="${C.surface}" style="padding:28px 32px 8px;background-color:${C.surface};">
-<h2 class="serif" style="margin:0 0 8px;font-family:${SERIF};font-size:22px;line-height:30px;font-weight:normal;color:${C.evergreen};mso-line-height-rule:exactly;">What to expect from us</h2>
+<h2 class="serif" style="margin:0 0 8px;font-family:${SERIF};font-size:22px;line-height:30px;font-weight:normal;color:${C.brandDeep};mso-line-height-rule:exactly;">What to expect from us</h2>
 <p style="margin:0 0 16px;font-family:${SANS};font-size:14px;line-height:22px;color:${C.muted};mso-line-height-rule:exactly;">${esc(expectLead)}</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-bottom:1px solid ${C.hairline};">
 ${expectRows()}
@@ -384,8 +390,8 @@ ${expectRows()}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.canvas}" style="border-collapse:collapse;background-color:${C.canvas};border:1px solid ${C.hairline};">
 <tr>
 <td align="center" style="padding:28px 24px 4px;text-align:center;">
-<p style="margin:0 0 6px;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${C.brassDeep};mso-line-height-rule:exactly;">Good to know</p>
-<h2 class="serif" style="margin:0;font-family:${SERIF};font-size:22px;line-height:30px;font-weight:normal;color:${C.evergreen};mso-line-height-rule:exactly;">Why shop with us</h2>
+<p style="margin:0 0 6px;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${C.accentDeep};mso-line-height-rule:exactly;">Good to know</p>
+<h2 class="serif" style="margin:0;font-family:${SERIF};font-size:22px;line-height:30px;font-weight:normal;color:${C.brandDeep};mso-line-height-rule:exactly;">Why shop with us</h2>
 </td>
 </tr>
 <tr>
@@ -401,7 +407,7 @@ ${tileRows(points)}
 <tr>
 <td align="center" bgcolor="${C.surface}" style="padding:36px 32px 8px;background-color:${C.surface};text-align:center;">
 ${button(LINKS.shop, "Start shopping")}
-<p style="margin:14px 0 0;font-family:${SANS};font-size:13px;line-height:20px;color:${C.muted};mso-line-height-rule:exactly;">or visit <a href="${esc(LINKS.shop)}" target="_blank" style="color:${C.evergreenSoft};text-decoration:underline;">${esc(BUSINESS.domain)}</a></p>
+<p style="margin:14px 0 0;font-family:${SANS};font-size:13px;line-height:20px;color:${C.muted};mso-line-height-rule:exactly;">or visit <a href="${esc(LINKS.shop)}" target="_blank" style="color:${C.brandSoft};text-decoration:underline;">${esc(BUSINESS.domain)}</a></p>
 </td>
 </tr>
 
@@ -413,9 +419,9 @@ ${p(signOff)}
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
 <tr>
 <td width="52" valign="top" style="padding:0 16px 0 0;"><img src="${esc(LINKS.mark)}" width="52" height="52" alt="${esc(brand)}" style="display:block;width:52px;height:52px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;"></td>
-<td valign="middle" style="padding:2px 0 2px 16px;border-left:2px solid ${C.brass};">
-<p class="serif" style="margin:0;font-family:${SERIF};font-size:19px;line-height:26px;color:${C.evergreen};mso-line-height-rule:exactly;">${esc(BUSINESS.proprietorName)}</p>
-<p style="margin:4px 0 0;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${C.brassDeep};mso-line-height-rule:exactly;">Founder, ${esc(brand)}</p>
+<td valign="middle" style="padding:2px 0 2px 16px;border-left:2px solid ${C.accent};">
+<p class="serif" style="margin:0;font-family:${SERIF};font-size:19px;line-height:26px;color:${C.brandDeep};mso-line-height-rule:exactly;">${esc(BUSINESS.proprietorName)}</p>
+<p style="margin:4px 0 0;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${C.accentDeep};mso-line-height-rule:exactly;">Founder, ${esc(brand)}</p>
 </td>
 </tr>
 </table>

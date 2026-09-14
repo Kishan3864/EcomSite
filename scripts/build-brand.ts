@@ -28,17 +28,27 @@ const out = (...parts: string[]) => join(root, ...parts);
 
 /* ------------------------------------------------------------- colours */
 
-/** The site's evergreen and brass, in place of the original blue and green. */
+/**
+ * The site's indigo ink and saffron. These are literals rather than tokens
+ * because the assets below are written straight to disk as SVG and PNG, where
+ * no stylesheet — and so no `var(--color-…)` — can reach them; they are kept in
+ * step with the @theme block in src/app/globals.css by hand.
+ *
+ * The light palette takes the darker end of each scale so it holds up on the
+ * pale canvas, and the dark palette the lighter end for the same reason
+ * reversed. Both mark colours sit well clear of ink-400, which is decorative
+ * only and too faint to carry the logo.
+ */
 const COLOURS = {
   /** For light backgrounds. */
-  light: { accent: "#d0a04b", peak: "#2f7a5f", tail: "#2f7a5f", word: "#16261f", tagline: "#16261f" },
+  light: { accent: "#e0a420", peak: "#26346e", tail: "#26346e", word: "#14171b", tagline: "#14171b" },
   /** For dark backgrounds. */
-  dark: { accent: "#dfb96f", peak: "#5aa886", tail: "#5aa886", word: "#fbf7ee", tagline: "#fbf7ee" },
+  dark: { accent: "#ecbc4f", peak: "#9cabdd", tail: "#9cabdd", word: "#f6f7f8", tagline: "#f6f7f8" },
 } as const;
 type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
 
-/** Favicon tile. */
-const TILE = "#fbf7ee";
+/** Favicon tile: the canvas, so the icon reads as a piece of the site. */
+const TILE = "#eef1f5";
 
 /* ---------------------------------------------------------------- the W */
 

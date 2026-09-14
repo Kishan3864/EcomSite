@@ -42,14 +42,21 @@ export interface OrderEmailInput {
 }
 
 const SITE = (isFilled(BUSINESS.url) ? BUSINESS.url : "http://localhost:3000").replace(/\/+$/, "");
+/**
+ * The brand palette from globals.css, repeated as literals because no email
+ * client resolves CSS custom properties. The keys say what each colour is for
+ * rather than what it looks like, so a change of theme does not leave a name
+ * describing a colour the file no longer uses.
+ */
 const C = {
-  canvas: "#f7f5f1",
+  canvas: "#eef1f5",
   surface: "#ffffff",
-  evergreen: "#16261f",
-  ink: "#191714",
-  body: "#403c37",
-  muted: "#736d63",
-  hairline: "#e2ded6",
+  brandDeep: "#111834",
+  brandTint: "#c6cfee",
+  ink: "#14171b",
+  body: "#3b4048",
+  muted: "#676d77",
+  hairline: "#d4dae1",
 };
 
 const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
@@ -115,9 +122,9 @@ ${formatAddress()}`;
 <tr><td align="center">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${C.surface};border:1px solid ${C.hairline};border-radius:12px;overflow:hidden;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
-    <tr><td style="background:${C.evergreen};padding:22px 24px;">
+    <tr><td style="background:${C.brandDeep};padding:22px 24px;">
       <div style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.2px;">${esc(BUSINESS.brandName)}</div>
-      <div style="color:#b9cbc0;font-size:13px;margin-top:2px;">Order confirmed</div>
+      <div style="color:${C.brandTint};font-size:13px;margin-top:2px;">Order confirmed</div>
     </td></tr>
 
     <tr><td style="padding:24px;">
@@ -152,14 +159,14 @@ ${formatAddress()}`;
       </div>
 
       <div style="margin-top:22px;">
-        <a href="${track}" style="display:inline-block;background:${C.evergreen};color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;">Track your order</a>
-        <a href="${invoice}" style="display:inline-block;margin-left:8px;color:${C.evergreen};text-decoration:none;padding:11px 6px;font-size:14px;font-weight:600;">View invoice</a>
+        <a href="${track}" style="display:inline-block;background:${C.brandDeep};color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;">Track your order</a>
+        <a href="${invoice}" style="display:inline-block;margin-left:8px;color:${C.brandDeep};text-decoration:none;padding:11px 6px;font-size:14px;font-weight:600;">View invoice</a>
       </div>
 
       <p style="margin:22px 0 0;font-size:13px;color:${C.muted};line-height:1.6;">
         Anything at all — reply to this email, call
-        <a href="tel:+${BUSINESS.supportPhoneDigits}" style="color:${C.evergreen};">${esc(BUSINESS.supportPhone)}</a>,
-        or <a href="https://wa.me/${BUSINESS.supportPhoneDigits}" style="color:${C.evergreen};">WhatsApp us</a>.
+        <a href="tel:+${BUSINESS.supportPhoneDigits}" style="color:${C.brandDeep};">${esc(BUSINESS.supportPhone)}</a>,
+        or <a href="https://wa.me/${BUSINESS.supportPhoneDigits}" style="color:${C.brandDeep};">WhatsApp us</a>.
         ${esc(BUSINESS.supportHours)}.
       </p>
     </td></tr>

@@ -5,7 +5,7 @@ import type { Rates } from "@/lib/pricing";
 import { payuConfigured } from "@/lib/payments/payu";
 import { upiConfigured } from "@/lib/payments/upi";
 import { getAdminSession } from "@/lib/auth/admin";
-import { getSettings } from "./settings";
+import { getSettings, type StoreSettings } from "./settings";
 
 /**
  * The parts of Settings the shopper actually sees: what delivery costs, how
@@ -58,6 +58,55 @@ const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
   },
 };
 
+/**
+ * Which ways to pay are really on, worked out from the settings alone.
+ *
+ * Both the checkout's list and the homepage's promise of what this shop accepts
+ * are built from this one place, because the two of them disagreeing is a lie
+ * told to somebody who has not even reached the basket. The one thing it
+ * deliberately does not know is whether an admin is signed in: answering that
+ * needs cookies, and only the checkout has any business paying that price.
+ */
+function paymentSwitches(s: StoreSettings) {
+  // Each option is offered only when it can actually take money. A method
+  // switched on in the admin panel but missing its keys would be a dead end at
+  // the last step of a checkout, which is the worst place to find one.
+  const upi = s.payments.upi && upiConfigured();
+  const gatewaySwitchedOn = s.payments.gateway && payuConfigured();
+
+  /**
+   * A gateway in test mode is shown to the owner, and by default to nobody
+   * else.
+   *
+   * A warning label is not enough on its own. PayU's test checkout carries a
+   * "Simulate Success transaction" button; a customer who pressed it would get
+   * a genuinely signed success, and the order would be marked paid with no
+   * money behind it. So the safe default is that only a signed-in admin is
+   * offered it — enough to test the whole flow on the real site without
+   * exposing it to anyone else.
+   *
+   * The "show the test checkout to everyone" switch in Settings → Payments
+   * shows it to everyone anyway, for demonstrating the checkout to someone who
+   * cannot sign into the admin panel. It is opt-in, and the option then says
+   * plainly what it is. Take it off before the shop has customers who might
+   * believe it.
+   *
+   * The mode is read exactly as `payuConfig()` reads it, so the warning a
+   * customer is shown cannot disagree with the host their form is posted to.
+   */
+  const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
+  const testGatewayIsPublic = s.payments.gatewayDemo;
+
+  return {
+    upi,
+    gatewaySwitchedOn,
+    gatewayInTestMode,
+    testGatewayIsPublic,
+    /** The gateway as a signed-out customer finds it, with no admin session in it. */
+    gatewayForCustomers: gatewaySwitchedOn && (!gatewayInTestMode || testGatewayIsPublic),
+  };
+}
+
 export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   const s = await getSettings();
 
@@ -79,40 +128,25 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     },
   ];
 
-  // Order matters: this is the order the payment step lists them in.
-  //
-  // Each option is offered only when it can actually take money. A method
-  // switched on in the admin panel but missing its keys would be a dead end at
-  // the last step of a checkout, which is the worst place to find one.
-  const upiOn = s.payments.upi && upiConfigured();
-  const gatewaySwitchedOn = s.payments.gateway && payuConfigured();
+  const {
+    upi: upiOn,
+    gatewaySwitchedOn,
+    gatewayInTestMode,
+    testGatewayIsPublic,
+    gatewayForCustomers,
+  } = paymentSwitches(s);
 
-  /**
-   * A gateway in test mode is shown to the owner, and by default to nobody
-   * else.
-   *
-   * A warning label is not enough on its own. PayU's test checkout carries a
-   * "Simulate Success transaction" button; a customer who pressed it would get
-   * a genuinely signed success, and the order would be marked paid with no
-   * money behind it. So the safe default is that only a signed-in admin is
-   * offered it — enough to test the whole flow on the real site without
-   * exposing it to anyone else.
-   *
-   * The "show the test checkout to everyone" switch in Settings → Payments
-   * shows it to everyone anyway, for demonstrating the checkout to someone who
-   * cannot sign into the admin panel. It is opt-in, and the option then says
-   * plainly what it is. Take it off before the shop has customers who might
-   * believe it.
-   */
-  const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
-  const testGatewayIsPublic = s.payments.gatewayDemo;
+  // The admin session is the one part of the answer that differs from visitor
+  // to visitor, so it is asked for here rather than in the shared helper — and
+  // only in the case that can change the outcome, because reading the cookie at
+  // all is what forces a page into dynamic rendering.
   const ownerIsWatching =
     gatewaySwitchedOn && gatewayInTestMode && !testGatewayIsPublic
       ? !!(await getAdminSession())
       : false;
-  const gatewayOn =
-    gatewaySwitchedOn && (!gatewayInTestMode || testGatewayIsPublic || ownerIsWatching);
+  const gatewayOn = gatewayForCustomers || ownerIsWatching;
 
+  // Order matters: this is the order the payment step lists them in.
   const enabled: PaymentMethod["id"][] = [
     ...(upiOn ? (["upi"] as const) : []),
     ...(gatewayOn ? (["online"] as const) : []),
@@ -149,4 +183,29 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
       supportPhone: s.store.supportPhone,
     },
   };
+}
+
+/**
+ * What a signed-out visitor will actually be offered at checkout.
+ *
+ * Reads settings only — NO getAdminSession(), therefore NO cookies() — so the
+ * homepage, which is statically revalidated every 120s, can call this without
+ * being forced into dynamic rendering. getSettings() is cache()d.
+ *
+ * The owner-only test-gateway branch deliberately does NOT apply: this answers
+ * what a customer gets, not what the owner sees.
+ */
+export async function getPublicPaymentMethods(): Promise<{
+  upi: boolean;
+  gateway: boolean;
+  cod: boolean;
+  codLimit: number;
+}> {
+  const s = await getSettings();
+  const { upi, gatewayForCustomers } = paymentSwitches(s);
+
+  // Cash on delivery is the live switch, never BUSINESS.ops.codEnabled: that is
+  // a literal written when the shop was drawn up and it has been wrong since
+  // the day the owner turned the option off.
+  return { upi, gateway: gatewayForCustomers, cod: s.payments.cod, codLimit: s.payments.codLimit };
 }

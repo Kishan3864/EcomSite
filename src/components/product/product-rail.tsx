@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
 import { ProductCard } from "./product-card";
 import { SectionHeader } from "@/components/ui/primitives";
@@ -48,28 +46,23 @@ export function ProductRail({
           </Reveal>
         }
       >
+        {/* One way out of a band, not two. The rail used to end in a dashed
+            "View all" tile as well as carrying the link in its header, which
+            said the same thing twice in the same eyeful. The tile was there
+            because the header's link used to be hidden on phones; it is now
+            shown at every width instead, which is the honest fix. */}
         {products.map((product, i) => (
           <ProductCard
             key={product.id}
             product={product}
             layout="rail"
             priority={priority && i < 3}
-            sizes="(min-width:640px) 212px, 152px"
+            /* Must track ProductCard's own `layout="rail"` widths. Remote
+               images are served unoptimized by policy, so a stale `sizes`
+               has no fallback — it simply renders soft. */
+            sizes="(min-width:640px) 236px, 152px"
           />
         ))}
-        {href && (
-          <Link
-            href={href}
-            className="tap group flex w-[152px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-ink-200 bg-surface/50 p-4 text-center transition-colors hover:border-brand-500 hover:bg-brand-50 sm:w-[212px] sm:gap-3 sm:p-6"
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-brand-700 transition-transform duration-300 group-hover:translate-x-1 sm:h-11 sm:w-11">
-              <ArrowRight size={18} />
-            </span>
-            <span className="text-[12.5px] font-semibold text-ink-900 sm:text-[13px]">
-              {linkLabel ?? "View all"}
-            </span>
-          </Link>
-        )}
       </RailScroller>
     </section>
   );

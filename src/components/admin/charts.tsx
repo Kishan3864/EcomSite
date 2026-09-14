@@ -18,8 +18,12 @@ export interface TrendPoint {
   count?: number;
 }
 
-const MARK = "#2c837c";
-const MARK_SOFT = "rgba(44,131,124,0.12)";
+// SVG paint attributes and inline styles cannot read a Tailwind token, so the
+// chart's hues are spelled out here and kept in step with the theme by hand.
+// These two are brand-700 and the same hue at the weight a fill needs to sit
+// under a 2px line without competing with it.
+const MARK = "#26346e";
+const MARK_SOFT = "rgba(38, 52, 110, 0.12)";
 
 export function TrendChart({
   points,
@@ -98,8 +102,8 @@ export function TrendChart({
           const v = niceMax - (niceMax / gridSteps) * i;
           return (
             <g key={i}>
-              <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="#e8e6e1" strokeWidth="1" />
-              <text x={W - PAD.right} y={y - 4} textAnchor="end" fontSize="10" fill="#a1a19a">
+              <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="#e1e4e8" strokeWidth="1" />
+              <text x={W - PAD.right} y={y - 4} textAnchor="end" fontSize="10" fill="#99a0aa">
                 {format === "money" ? compactMoney(v) : Math.round(v).toLocaleString("en-IN")}
               </text>
             </g>
@@ -125,7 +129,7 @@ export function TrendChart({
               y={H - 8}
               textAnchor={i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"}
               fontSize="10"
-              fill="#77776f"
+              fill="#676d77"
             >
               {p.label}
             </text>
@@ -135,7 +139,7 @@ export function TrendChart({
         {/* Hover crosshair */}
         {hover != null && (
           <g>
-            <line x1={xy[hover].x} x2={xy[hover].x} y1={PAD.top} y2={PAD.top + innerH} stroke="#cdcdc7" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1={xy[hover].x} x2={xy[hover].x} y1={PAD.top} y2={PAD.top + innerH} stroke="#c7cbd2" strokeWidth="1" strokeDasharray="3 3" />
             <circle cx={xy[hover].x} cy={xy[hover].y} r="5" fill="#fff" stroke={MARK} strokeWidth="2" />
           </g>
         )}

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/hero";
 import { HeroStatic } from "@/components/home/hero-static";
+import { Counter } from "@/components/home/counter";
+import { OrderJourney } from "@/components/home/order-journey";
 import {
   CategoryMosaic,
-  DealsBoard,
   EditorialBand,
-  OpeningNote,
   ProductGrid,
   Spotlight,
 } from "@/components/home/showcase";
@@ -18,6 +18,7 @@ import {
   getFlashDeals,
   getNewArrivals,
 } from "@/services/catalog";
+import { getPublicPaymentMethods } from "@/services/storefront-config";
 import { BRAND } from "@/components/brand/logo";
 
 export const revalidate = 120;
@@ -36,26 +37,31 @@ export const metadata: Metadata = {
 /**
  * Homepage.
  *
- * The full page is eight bands in five shapes — departments, deals, the
- * products at a size worth looking at, one product given a full spread, one
- * full-bleed statement. That composition needs a catalogue behind it. A real
- * shop does not start with one, so the page first asks how much there is and
- * picks a shape that the stock can actually fill:
+ * Seven bands in a fixed order — masthead, the counter, the departments, one
+ * product given a spread, the shelf, how an order actually goes, and the
+ * statement. Three of those seven are made of business facts rather than
+ * catalogue rows, which is the whole point: the page has to be worth reading
+ * on the day the shop holds three products, and it has to say something a
+ * fraudulent shop could not say.
  *
- *   no products      a typographic hero, the departments, and a plain note
- *                    about what is coming — nothing pretends to be a shelf
- *   under ten        one lead product as a spread, then the rest in one grid
- *                    that narrows to the number of products there are
- *   ten or more      the full composition below
+ * The composition still asks how much stock there is and drops the bands it
+ * cannot fill honestly:
  *
- * Nothing is duplicated to fill space: a band with nothing to show is left
- * out, and it returns by itself as the catalogue grows. No editing required.
+ *   no products      masthead, counter, departments, how an order goes, the
+ *                    statement — nothing pretends to be a shelf
+ *   under ten        one product as a spread, the rest in a single grid that
+ *                    narrows to the number of products there actually are
+ *   ten or more      the full composition, three shelves deep
  *
- * The delivery/returns promises are not repeated here either — the footer
- * carries them, with icons, on every page of the site.
+ * A band with nothing to show is left out, and it returns by itself as the
+ * catalogue grows. No editing required.
+ *
+ * `getPublicPaymentMethods()` is the one query here that is not about stock.
+ * It reads only the cached settings — never `getAdminSession()`, which would
+ * touch cookies and silently turn this statically revalidated page dynamic.
  */
 
-/** Below this the shop is merchandised as one shelf rather than eight bands. */
+/** Below this the shop is merchandised as one shelf rather than seven bands. */
 const SPARSE_BELOW = 10;
 
 export default async function HomePage() {
@@ -71,7 +77,11 @@ export default async function HomePage() {
  * ------------------------------------------------------------------ */
 
 async function EmptyHome() {
-  const [banners, categories] = await Promise.all([getBanners(), getCategories()]);
+  const [banners, categories, payments] = await Promise.all([
+    getBanners(),
+    getCategories(),
+    getPublicPaymentMethods(),
+  ]);
 
   return (
     <>
@@ -80,8 +90,9 @@ async function EmptyHome() {
       ) : (
         <HeroStatic hasProducts={false} categories={categories} />
       )}
+      <Counter payments={payments} />
       <CategoryMosaic categories={categories} />
-      <OpeningNote hasCategories={categories.length > 0} />
+      <OrderJourney payments={payments} />
       <EditorialBand banner={banners.mid[0]} />
     </>
   );
@@ -92,16 +103,17 @@ async function EmptyHome() {
  * ------------------------------------------------------------------ */
 
 async function SparseHome() {
-  const [banners, categories, products] = await Promise.all([
+  const [banners, categories, products, payments] = await Promise.all([
     getBanners(),
     getCategories(),
     getNewArrivals(SPARSE_BELOW),
+    getPublicPaymentMethods(),
   ]);
 
   const cards = toCardModels(products);
-  // The hero shows the first product, so the spread below takes the next one:
-  // the same photograph twice in one screen reads as a page that has run out
-  // of things to show.
+  // The masthead shows the first product, so the spread below takes the next
+  // one: the same photograph twice in one screen reads as a page that has run
+  // out of things to show.
   const heroLead = cards[0];
 
   // One product is a spread on its own. Two or three fill an even row better
@@ -118,20 +130,24 @@ async function SparseHome() {
         <HeroStatic hasProducts categories={categories} lead={heroLead} />
       )}
 
+      <Counter payments={payments} />
+
       <CategoryMosaic categories={categories} />
 
-      <Spotlight product={lead} eyebrow="In the shop" />
+      <Spotlight product={lead} eyebrow="In the shop" payments={payments} />
 
       <ProductGrid
         eyebrow={lead ? "The rest of the shelf" : "The catalogue"}
         title={lead ? "Also in the store" : "Everything we stock"}
         description="Every product we hold right now. The list grows one product at a time."
         href="/products"
-        linkLabel="All products"
+        linkLabel="The full catalogue"
         products={rest}
         columns={4}
         priority={!lead}
       />
+
+      <OrderJourney payments={payments} />
 
       <EditorialBand banner={banners.mid[0]} />
     </>
@@ -143,12 +159,13 @@ async function SparseHome() {
  * ------------------------------------------------------------------ */
 
 async function FullHome() {
-  const [banners, categories, flashDeals, bestsellers, newArrivals] = await Promise.all([
+  const [banners, categories, flashDeals, bestsellers, newArrivals, payments] = await Promise.all([
     getBanners(),
     getCategories(),
     getFlashDeals(7),
     getBestsellers(10),
     getNewArrivals(10),
+    getPublicPaymentMethods(),
   ]);
 
   const best = toCardModels(bestsellers);
@@ -162,9 +179,9 @@ async function FullHome() {
         <HeroStatic hasProducts categories={categories} lead={heroLead} />
       )}
 
-      <CategoryMosaic categories={categories} />
+      <Counter payments={payments} />
 
-      <DealsBoard products={toCardModels(flashDeals)} />
+      <CategoryMosaic categories={categories} />
 
       <ProductGrid
         eyebrow="Proven"
@@ -178,9 +195,20 @@ async function FullHome() {
       />
 
       {/* One product, given the space a magazine would give it. */}
-      <Spotlight product={best[0]} />
+      <Spotlight product={best[0]} payments={payments} />
 
-      <EditorialBand banner={banners.mid[0]} />
+      {/* The reductions. This is the only band on the homepage that is allowed
+          to use the sale colour, which is what keeps it meaning something. */}
+      <ProductGrid
+        eyebrow="Reduced this week"
+        title="Deals worth the scroll"
+        description="Real reductions on stock we hold, not a permanent sale price dressed up as one."
+        href="/products?discount=25&sort=discount"
+        linkLabel="Every reduction"
+        products={toCardModels(flashDeals)}
+        columns={4}
+        tone="sale"
+      />
 
       <ProductGrid
         eyebrow="Just landed"
@@ -191,6 +219,10 @@ async function FullHome() {
         products={toCardModels(newArrivals)}
         columns={5}
       />
+
+      <OrderJourney payments={payments} />
+
+      <EditorialBand banner={banners.mid[0]} />
     </>
   );
 }

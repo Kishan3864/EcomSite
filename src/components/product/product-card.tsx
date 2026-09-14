@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { Check, Eye, Heart, ShoppingBag } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
+import { BUSINESS } from "@/config/business";
 import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
 import { RatingChip } from "@/components/ui/primitives";
 import { fromCard, useCommerce } from "@/store/commerce";
@@ -43,6 +44,7 @@ export function ProductCard({
   const wished = isWishlisted(product.id);
   const lowStock = product.stock > 0 && product.stock <= 12;
   const outOfStock = product.stock <= 0;
+  const hasScore = product.reviewCount > 0 && product.rating > 0;
 
   function handleAdd(e: React.MouseEvent) {
     e.preventDefault();
@@ -75,7 +77,7 @@ export function ProductCard({
             sizes={sizes}
             className={cn(
               "object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-              "group-hover:scale-[1.04]",
+              "group-hover:scale-[1.03]",
               outOfStock && "opacity-45 grayscale",
             )}
           />
@@ -156,7 +158,10 @@ export function ProductCard({
         </Link>
 
         <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-4">
-          <p className="mb-1 truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-700 sm:mb-1.5">
+          {/* Ink, not saffron. The accent is worth something only while it is
+              rare, and a grid of twenty tiles was spending it twenty times on
+              the least important line in the card. */}
+          <p className="mb-1 truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-1.5">
             {product.brand}
           </p>
 
@@ -166,37 +171,46 @@ export function ProductCard({
             </Link>
           </h3>
 
-          {/* Price in the display face — the one place the card raises its voice. */}
+          {/* Prices are set in the text face, not the display face: Fraunces'
+              figures are proportional, so a column of prices down a grid
+              wandered left and right by a couple of pixels a row. */}
           <div className="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 sm:mt-2.5 sm:gap-x-2">
-            <span className="font-display text-[16px] leading-none tracking-[-0.02em] text-ink-950 sm:text-[19px]">
+            <span className="text-[13.5px] font-semibold leading-none tabular-nums text-ink-900 sm:text-[14px]">
               {formatINR(product.price)}
             </span>
             {product.mrp > product.price && (
-              <span className="text-[11.5px] leading-none text-ink-400 line-through sm:text-[12px]">
+              <span className="text-[11.5px] leading-none tabular-nums text-ink-400 line-through sm:text-[12px]">
                 {formatINR(product.mrp)}
               </span>
             )}
           </div>
 
-          {/* Wraps on a narrow tile rather than pushing past its edge. */}
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 sm:mt-2.5 sm:gap-x-2.5 lg:flex-nowrap">
-            <RatingChip
-              value={product.rating}
-              count={product.reviewCount}
-              className="text-[11px]/[14px] sm:text-xs"
-            />
-            {product.soldCount ? (
-              <span className="text-[11px] text-ink-400">
-                {formatCompact(product.soldCount)} sold
-              </span>
-            ) : null}
+          {/* One line of fact, and it is never a fiction.
+              `RatingChip` renders nothing until somebody has actually reviewed
+              the product, so a new shop showed a row of "0.0 ★ · 0 reviews"
+              chips — the worst thing on the page. When there is no score the
+              line carries something true instead, at the same height so the
+              rows of a grid stay aligned. */}
+          <div className="mt-1.5 flex min-h-[18px] flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-ink-500 sm:mt-2.5 sm:min-h-[20px] sm:gap-x-2.5 sm:text-[12px] lg:flex-nowrap">
+            {hasScore ? (
+              <>
+                <RatingChip
+                  value={product.rating}
+                  count={product.reviewCount}
+                  className="text-[11px]/[14px] sm:text-xs"
+                />
+                {product.soldCount > 0 && (
+                  <span className="text-ink-400">{formatCompact(product.soldCount)} sold</span>
+                )}
+              </>
+            ) : outOfStock ? (
+              <span>Back in stock soon</span>
+            ) : lowStock ? (
+              <span className="font-medium text-sale-600">Only {product.stock} left</span>
+            ) : (
+              <span>Dispatched in {BUSINESS.ops.dispatchDays} working days</span>
+            )}
           </div>
-
-          {lowStock && (
-            <p className="mt-1.5 text-[11px] font-medium text-sale-600 sm:mt-2">
-              Only {product.stock} left
-            </p>
-          )}
 
           {/* One action, full width, square. It slides up on hover on desktop
               and is simply always there on touch. */}

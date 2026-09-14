@@ -83,7 +83,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   // The page canvas, so the browser's status bar and the sticky header read as
   // one surface, the way an app's top bar does.
-  themeColor: "#f7f5f1",
+  themeColor: "#eef1f5",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

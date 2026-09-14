@@ -1,5 +1,25 @@
 import type { Brand, Category } from "@/lib/types";
+import { BUSINESS } from "@/config/business";
 import { POOL, img } from "./images";
+
+/**
+ * What every department may claim.
+ *
+ * These arrays used to carry seeded marketing copy — "Free assembly in 40+
+ * cities", "Lifetime cookware warranty", "Hallmarked & certified", "Free
+ * shipping over ₹499" when the real threshold is ₹999. Not one of them was
+ * true, and they were rendered on the category pages and in the mega menu,
+ * where a shopper would reasonably take them as promises.
+ *
+ * There are exactly three things this shop can promise about every department,
+ * and they are read from the business config so they cannot drift away from
+ * the policy pages that have to honour them.
+ */
+const HONEST_HIGHLIGHTS = [
+  `Dispatched in ${BUSINESS.ops.dispatchDays} working days`,
+  `${BUSINESS.ops.returnWindowDays}-day returns from delivery`,
+  `Shipped with ${BUSINESS.ops.courierPartners[0]}, tracked`,
+];
 
 /* ----------------------------- Brands ----------------------------- */
 
@@ -49,12 +69,12 @@ export const categories: Category[] = [
     name: "Electronics",
     menuLabel: "Tech & Gadgets",
     icon: "cpu",
-    accent: "#2c837c",
+    accent: "#26346e",
     description:
       "Phones, laptops, audio and wearables from brands building for Indian conditions — with real warranty support and doorstep service.",
     image: { url: img(POOL.phones[1], { fit: "square", w: 600 }), alt: "Electronics" },
     featuredBrands: ["novair", "kestrel", "orbo", "mistral"],
-    highlights: ["Brand warranty on every unit", "7-day replacement", "Bought and invoiced by us"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("electronics", [
       ["smartphones", "Smartphones", "phones", 0, "Flagship and mid-range phones with India-first warranty."],
       ["laptops", "Laptops", "laptops", 0, "Thin-and-light to creator-grade machines."],
@@ -69,12 +89,12 @@ export const categories: Category[] = [
     name: "Fashion",
     menuLabel: "Wardrobe",
     icon: "shirt",
-    accent: "#e0316a",
+    accent: "#9a2742",
     description:
       "Handloom, everyday essentials and occasion wear from Indian design studios. Free size exchange within 14 days.",
     image: { url: img(POOL.womenwear[0], { fit: "square", w: 600 }), alt: "Fashion" },
     featuredBrands: ["saanjh", "loomcraft", "terra-nine", "indus-forge"],
-    highlights: ["Free size exchange", "Handloom-first sourcing", "True-to-size fit guide"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("fashion", [
       ["women", "Womenswear", "womenwear", 1, "Kurtas, dresses, co-ords and occasion wear."],
       ["men", "Menswear", "menwear", 0, "Shirts, tees, trousers and layering."],
@@ -89,12 +109,12 @@ export const categories: Category[] = [
     name: "Home & Living",
     menuLabel: "For the Home",
     icon: "sofa",
-    accent: "#d2740c",
+    accent: "#714e0c",
     description:
       "Furniture, lighting and decor scaled for Indian apartments. Assembly included in 40+ cities.",
     image: { url: img(POOL.furniture[0], { fit: "square", w: 600 }), alt: "Home and living" },
     featuredBrands: ["bloom-barn", "studio-vayu", "kavya", "loomcraft"],
-    highlights: ["Free assembly in 40+ cities", "3-year frame warranty", "Made-to-order options"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("home-living", [
       ["furniture", "Furniture", "furniture", 0, "Sofas, beds, storage and study desks."],
       ["decor", "Decor & Lighting", "decor", 0, "Lamps, vases, mirrors and wall art."],
@@ -108,12 +128,12 @@ export const categories: Category[] = [
     name: "Kitchen",
     menuLabel: "Kitchen & Dining",
     icon: "chef-hat",
-    accent: "#1f6963",
+    accent: "#34458a",
     description:
       "Cookware, appliances and dining that survive daily Indian cooking — high heat, heavy use, real families.",
     image: { url: img(POOL.kitchen[0], { fit: "square", w: 600 }), alt: "Kitchen" },
     featuredBrands: ["copperleaf", "studio-vayu", "orbo"],
-    highlights: ["Induction & gas compatible", "Lifetime cookware warranty", "Dishwasher safe"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("kitchen", [
       ["cookware", "Cookware", "kitchen", 0, "Triply, cast iron and non-stick."],
       ["appliances", "Small Appliances", "kitchen", 2, "Mixers, air fryers and coffee gear."],
@@ -127,12 +147,12 @@ export const categories: Category[] = [
     name: "Beauty & Wellness",
     menuLabel: "Beauty",
     icon: "sparkles",
-    accent: "#c81a54",
+    accent: "#b83a54",
     description:
       "Dermat-tested skincare, haircare and fragrance formulated for Indian skin tones and climate.",
     image: { url: img(POOL.beauty[0], { fit: "square", w: 600 }), alt: "Beauty" },
     featuredBrands: ["nirvaan", "sundara", "studio-vayu"],
-    highlights: ["Dermatologically tested", "Cruelty-free", "Fresh batch guarantee"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("beauty", [
       ["skincare", "Skincare", "beauty", 0, "Serums, sunscreens and moisturisers."],
       ["haircare", "Haircare", "beauty", 2, "Oils, shampoos and scalp treatments."],
@@ -146,12 +166,12 @@ export const categories: Category[] = [
     name: "Jewellery",
     menuLabel: "Jewellery",
     icon: "gem",
-    accent: "#a5530d",
+    accent: "#4a5da8",
     description:
       "925 silver, 18k gold-plated and demi-fine jewellery — hallmarked, insured shipping, 30-day returns.",
     image: { url: img(POOL.jewellery[0], { fit: "square", w: 600 }), alt: "Jewellery" },
     featuredBrands: ["sundara", "studio-vayu"],
-    highlights: ["Hallmarked & certified", "Insured shipping", "Lifetime replating"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("jewellery", [
       ["earrings", "Earrings", "jewellery", 0, "Studs, hoops and jhumkas."],
       ["necklaces", "Necklaces", "jewellery", 1, "Chains, pendants and layered sets."],
@@ -165,12 +185,12 @@ export const categories: Category[] = [
     name: "Sports & Fitness",
     menuLabel: "Sport",
     icon: "dumbbell",
-    accent: "#164441",
+    accent: "#1a2450",
     description:
       "Training equipment, recovery and outdoor gear tested by Indian athletes and weekend runners.",
     image: { url: img(POOL.fitness[0], { fit: "square", w: 600 }), alt: "Sports and fitness" },
     featuredBrands: ["peak-pine", "terra-nine", "orbo"],
-    highlights: ["Athlete-tested", "2-year equipment warranty", "Free training plans"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("sports", [
       ["training", "Training & Gym", "fitness", 0, "Dumbbells, mats, bands and benches."],
       ["outdoor", "Outdoor & Trek", "fitness", 2, "Packs, tents and trail gear."],
@@ -184,12 +204,12 @@ export const categories: Category[] = [
     name: "Books & Stationery",
     menuLabel: "Books & Paper",
     icon: "book-open",
-    accent: "#585851",
+    accent: "#51565f",
     description:
       "Fiction, non-fiction and beautifully made paper goods — curated by readers, not algorithms.",
     image: { url: img(POOL.books[0], { fit: "square", w: 600 }), alt: "Books" },
     featuredBrands: ["halcyon", "studio-vayu"],
-    highlights: ["Curated by readers", "Gift wrap available", "Free shipping over ₹499"],
+    highlights: HONEST_HIGHLIGHTS,
     subcategories: buildSubs("books", [
       ["fiction", "Fiction", "books", 0, "Literary, translated and contemporary fiction."],
       ["non-fiction", "Non-fiction", "books", 1, "History, business and biography."],
