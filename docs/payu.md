@@ -105,6 +105,33 @@ npx tsx --conditions=react-server scripts/check-payu.ts   # should say LIVE
 The code path is identical; `PAYU_MODE` only chooses between
 `test.payu.in/_payment` and `secure.payu.in/_payment`.
 
+## If the webhook never arrives
+
+The browser return is the fast path and the webhook is the reliable one, but
+neither is guaranteed: a phone dies on the bank page, hotel wifi eats a
+redirect, a webhook is never registered or never delivered. In all of those
+the money moved and only PayU knows.
+
+So the shop asks. `reconcilePayuOrder` calls PayU's `verify_payment` API for
+any attempt open longer than three minutes and applies the answer through the
+same `applyVerdict` the webhook uses, so the three sources cannot disagree.
+It runs:
+
+- when a customer opens their own unpaid order, and
+- across everything outstanding when the admin orders list is drawn.
+
+Both are throttled to one question per attempt per window, and both are silent
+when PayU cannot be reached, so the page renders either way. This is the one
+part of the integration that needs this server to reach PayU — and nothing a
+customer is waiting on depends on it, because it runs afterwards.
+
+**A working webhook still makes the shop quicker** and costs nothing to
+register, so register it. But an order will not sit unpaid for want of one.
+
+A transaction PayU has never seen answers with the literal status `Not Found`.
+That is not a verdict about a payment — it means nobody ever started one — and
+is read as nothing at all.
+
 ## The webhook
 
 PayU dashboard → **Developers → Webhooks → Create Webhook**. Make **two**,

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/admin";
 import { ParamSelect, SearchBox } from "@/components/admin/client";
 import { LiveRefresh } from "@/components/ui/live-refresh";
+import { reconcileStalePayuOrders } from "@/services/payu-core";
 import {
   AdminPagination,
   DateCell,
@@ -41,6 +42,13 @@ const FILTER_KEYS = ["status", "payment", "method", "from", "to", "attention"];
 
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<RawParams> }) {
   await requireAdmin();
+
+  // Ask the gateway about anything still outstanding before drawing the list,
+  // so a payment whose customer never came back is settled here rather than
+  // waiting for a complaint. Throttled and silent on failure; on a quiet shop
+  // it does nothing at all.
+  await reconcileStalePayuOrders();
+
   const raw = await searchParams;
   const params = parseListParams(raw, { perPage: 25, filterKeys: FILTER_KEYS });
   const f = params.filters;

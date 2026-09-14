@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { syncTracking, trackingIsFresh } from "@/lib/shipping/tracking";
+import { reconcilePayuOrder } from "@/services/payu-core";
 import { canViewOrder, getCustomerSession } from "@/lib/auth/customer";
 import type {
   Address,
@@ -170,6 +171,18 @@ export async function getOrderForViewer(idOrNumber: string): Promise<Order | nul
   });
   if (!row) return null;
   if (!(await canViewOrder(row))) return null;
+
+  // An order that thinks it is unpaid may simply never have been told. Ask
+  // PayU before drawing the page — throttled inside reconcilePayuOrder, and
+  // silent if PayU cannot be reached.
+  if (
+    row.paymentMethod !== "COD" &&
+    (row.paymentStatus === "PENDING" || row.paymentStatus === "FAILED") &&
+    row.status !== "CANCELLED" &&
+    (await reconcilePayuOrder(row.id))
+  ) {
+    row = (await db.order.findUnique({ where: { id: row.id }, include: orderInclude })) ?? row;
+  }
 
   // A parcel on its way: pull the courier's latest scans into the timeline
   // before drawing it, so the page shows where it actually is. Throttled to

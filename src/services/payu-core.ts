@@ -14,6 +14,7 @@ import {
   payuMethod,
   payuResponseIsAuthentic,
   payuSucceeded,
+  verifyPayuTransaction,
   type PayuResponse,
 } from "@/lib/payments/payu";
 
@@ -21,23 +22,36 @@ import {
  * The PayU half of the payment lifecycle, kept server-only.
  *
  * Deliberately not a "use server" module. Every export of one of those is an
- * endpoint a browser can call, and `applyPayuResponse` marks an order paid —
+ * endpoint a browser can call, and applying a verdict marks an order paid —
  * exposed as an action, that is a free order for anyone who can post an object
- * at it. Only the return route (after verifying PayU's hash) and the page that
- * starts a payment reach in here.
+ * at it. Only the return route (after verifying PayU's hash), the webhook
+ * (likewise) and the reconciler (which asked PayU itself) reach in here.
+ *
+ * Three things can tell us a payment landed, and all three end in `applyVerdict`
+ * so they cannot disagree: the customer's browser being posted back, PayU's
+ * webhook, and us asking PayU directly. The first two prove themselves with a
+ * hash; the third is a call we made, so its answer is ours by definition.
  */
 
 /** Enough retries for a customer whose bank keeps saying no; not enough to abuse. */
 const MAX_ATTEMPTS_PER_ORDER = 8;
+
+/**
+ * How long to leave an attempt alone before asking PayU about it.
+ *
+ * Long enough that a customer still on the bank's page is not chased, short
+ * enough that a payment whose browser never came back is found while they are
+ * still wondering. It also throttles: an attempt is asked about at most once
+ * per window, however many times a page is loaded.
+ */
+const RECONCILE_AFTER_MINUTES = 3;
 
 export interface PayuSession {
   endpoint: string;
   fields: Record<string, string>;
 }
 
-export type PayuStart =
-  | { ok: true; session: PayuSession }
-  | { ok: false; error: string };
+export type PayuStart = { ok: true; session: PayuSession } | { ok: false; error: string };
 
 /**
  * Sign a fresh transaction for an order and hand back the form the browser
@@ -105,78 +119,81 @@ export async function startPayuPayment(orderId: string): Promise<PayuStart> {
   };
 }
 
+/* ------------------------------ Verdicts ----------------------------- */
+
 export type PayuOutcome =
   | { kind: "paid"; orderId: string }
   | { kind: "failed"; orderId: string; message: string }
   | { kind: "ignored"; reason: string };
 
+interface Verdict {
+  txnid: string;
+  status: string;
+  mihpayid: string;
+  /** Rupees, as PayU writes them. */
+  amount: string;
+  mode: string;
+  bankcode: string;
+  errorMessage: string;
+  raw: object;
+}
+
 /**
  * Apply what PayU says happened.
  *
- * Idempotent, because it is called from two places that race: the customer's
- * browser being posted back, and PayU's webhook. Whichever arrives first wins
- * and the second finds the work done.
+ * Idempotent, because it is reached from places that race each other. Whichever
+ * arrives first wins and the rest find the work already done.
  *
- * Nothing is believed without the hash, and nothing is believed about the
- * amount either — the transaction is matched to the attempt we created, and
- * the rupees PayU reports must be the paise we asked for.
+ * Nothing is believed about the amount: the transaction is matched to the
+ * attempt we created, and the rupees PayU reports must be the paise we asked
+ * for. A verified answer carrying a different amount would mean the salt had
+ * leaked, and that is not a sale either.
  */
-export async function applyPayuResponse(body: Record<string, string>): Promise<PayuOutcome> {
-  const config = payuConfig();
-  if (!config) return { kind: "ignored", reason: "PayU is not configured" };
-
-  if (!payuResponseIsAuthentic(config, body)) {
-    console.error("[payu] rejected a response whose hash did not verify", {
-      txnid: body.txnid,
-      status: body.status,
-    });
-    return { kind: "ignored", reason: "hash mismatch" };
-  }
-
-  const response = body as unknown as PayuResponse;
+async function applyVerdict(verdict: Verdict): Promise<PayuOutcome> {
   const attempt = await db.paymentAttempt.findUnique({
-    where: { gatewayOrderId: response.txnid },
+    where: { gatewayOrderId: verdict.txnid },
     select: { id: true, orderId: true, amount: true, status: true },
   });
   if (!attempt) return { kind: "ignored", reason: "no such transaction" };
 
-  if (payuSucceeded(response.status)) {
-    // PayU reports rupees; we stored paise. A mismatch means the amount was
-    // edited somewhere between the two, and a verified hash over an edited
-    // amount would mean our own salt had leaked — either way, not a sale.
-    if (payuAmount(attempt.amount / 100) !== payuAmount(Number(response.amount))) {
+  if (payuSucceeded(verdict.status)) {
+    if (payuAmount(attempt.amount / 100) !== payuAmount(Number(verdict.amount))) {
       await db.paymentAttempt.update({
         where: { id: attempt.id },
         data: {
           status: "FAILED",
           failureCode: "amount_mismatch",
-          failureDescription: `PayU ${response.amount} vs order ${attempt.amount / 100}`,
-          payload: body as object,
+          failureDescription: `PayU ${verdict.amount} vs order ${attempt.amount / 100}`,
+          payload: verdict.raw,
         },
       });
-      console.error("[payu] amount mismatch", { txnid: response.txnid });
-      return { kind: "failed", orderId: attempt.orderId, message: "The amount did not match this order. Nothing has been charged." };
+      console.error("[payu] amount mismatch", { txnid: verdict.txnid });
+      return {
+        kind: "failed",
+        orderId: attempt.orderId,
+        message: "The amount did not match this order. Nothing has been charged.",
+      };
     }
 
-    const newlyPaid = await markPayuPaid(attempt.id, attempt.orderId, response, body);
+    const newlyPaid = await markPaid(attempt.id, attempt.orderId, verdict);
     // Only on the transition, so a redelivered webhook does not send a second
     // receipt for the same payment.
     if (newlyPaid) void sendOrderConfirmation(attempt.orderId);
     return { kind: "paid", orderId: attempt.orderId };
   }
 
-  if (payuFailed(response.status)) {
-    const why = response.error_Message?.trim() || response.field9?.trim() || "Payment not completed";
+  if (payuFailed(verdict.status)) {
+    const why = verdict.errorMessage.trim() || "Payment not completed";
 
     await db.$transaction(async (tx) => {
       await tx.paymentAttempt.updateMany({
         where: { id: attempt.id, status: "CREATED" },
         data: {
           status: "FAILED",
-          gatewayPaymentId: response.mihpayid || null,
-          failureCode: response.unmappedstatus ?? response.status,
+          gatewayPaymentId: verdict.mihpayid || null,
+          failureCode: verdict.status,
           failureDescription: why,
-          payload: body as object,
+          payload: verdict.raw,
         },
       });
 
@@ -204,22 +221,23 @@ export async function applyPayuResponse(body: Record<string, string>): Promise<P
         });
       }
     });
+
     return { kind: "failed", orderId: attempt.orderId, message: why };
   }
 
-  // "pending" and friends: the bank has not decided. Leave the attempt open —
-  // the webhook will bring the verdict.
-  return { kind: "ignored", reason: `status ${response.status}` };
+  // "pending" and friends: the bank has not decided. Touch the attempt so the
+  // reconciler waits another window before asking again, and leave it open.
+  await db.paymentAttempt.updateMany({
+    where: { id: attempt.id, status: "CREATED" },
+    data: { payload: verdict.raw },
+  });
+  return { kind: "ignored", reason: `status ${verdict.status}` };
 }
 
 /** True when this call is what moved the order to paid. */
-async function markPayuPaid(
-  attemptId: string,
-  orderId: string,
-  response: PayuResponse,
-  raw: Record<string, string>,
-): Promise<boolean> {
+async function markPaid(attemptId: string, orderId: string, verdict: Verdict): Promise<boolean> {
   let moved = false;
+
   await db.$transaction(async (tx) => {
     const order = await tx.order.findUnique({
       where: { id: orderId },
@@ -251,9 +269,9 @@ async function markPayuPaid(
       where: { id: attemptId },
       data: {
         status: "CAPTURED",
-        gatewayPaymentId: response.mihpayid,
-        method: (response.mode ?? "").toLowerCase() || null,
-        payload: raw as object,
+        gatewayPaymentId: verdict.mihpayid || null,
+        method: verdict.mode.toLowerCase() || null,
+        payload: verdict.raw,
       },
     });
 
@@ -262,9 +280,9 @@ async function markPayuPaid(
       data: {
         status: "CONFIRMED",
         paymentStatus: "PAID",
-        paymentMethod: payuMethod(response),
-        paymentRef: response.mihpayid,
-        paymentDetail: describePayu(response),
+        paymentMethod: payuMethod(verdict),
+        paymentRef: verdict.mihpayid,
+        paymentDetail: describePayu(verdict),
         cancelledAt: null,
         cancelReason: null,
       },
@@ -276,12 +294,134 @@ async function markPayuPaid(
         status: "CONFIRMED",
         title: "Payment received",
         description: revived
-          ? `${describePayu(response)} · ${response.mihpayid}. Arrived after the order had lapsed; stock was re-reserved — check availability before dispatch.`
-          : `${describePayu(response)} · ${response.mihpayid}`,
+          ? `${describePayu(verdict)} · ${verdict.mihpayid}. Arrived after the order had lapsed; stock was re-reserved — check availability before dispatch.`
+          : `${describePayu(verdict)} · ${verdict.mihpayid}`,
         location: "Online",
       },
     });
   });
 
   return moved;
+}
+
+/* ------------------- What PayU posted back to us --------------------- */
+
+/**
+ * The browser return and the webhook, both of which carry a hash we can check
+ * against the salt. Anything that does not verify changes nothing.
+ */
+export async function applyPayuResponse(body: Record<string, string>): Promise<PayuOutcome> {
+  const config = payuConfig();
+  if (!config) return { kind: "ignored", reason: "PayU is not configured" };
+
+  if (!payuResponseIsAuthentic(config, body)) {
+    console.error("[payu] rejected a response whose hash did not verify", {
+      txnid: body.txnid,
+      status: body.status,
+    });
+    return { kind: "ignored", reason: "hash mismatch" };
+  }
+
+  const r = body as unknown as PayuResponse;
+  return applyVerdict({
+    txnid: r.txnid,
+    status: r.status,
+    mihpayid: r.mihpayid ?? "",
+    amount: r.amount ?? "",
+    mode: r.mode ?? "",
+    bankcode: r.bankcode ?? "",
+    errorMessage: r.error_Message ?? r.field9 ?? "",
+    raw: body,
+  });
+}
+
+/* ----------------------- What we ask PayU about ---------------------- */
+
+/**
+ * Catch up on payments nobody told us about.
+ *
+ * A customer whose phone died on the bank's page, a redirect a captive wifi
+ * portal swallowed, a webhook that was never delivered — in each of those the
+ * money moved and only PayU knows. Rather than leave the order pending until
+ * somebody complains, we ask.
+ *
+ * Safe to call while rendering a page: it never throws, it only looks at
+ * attempts old enough to have settled, and it will not ask about the same one
+ * twice inside a window.
+ */
+export async function reconcilePayuOrder(orderId: string): Promise<boolean> {
+  const config = payuConfig();
+  if (!config) return false;
+
+  const cutoff = new Date(Date.now() - RECONCILE_AFTER_MINUTES * 60_000);
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: {
+      paymentStatus: true,
+      payments: {
+        where: { status: "CREATED", createdAt: { lt: cutoff }, updatedAt: { lt: cutoff } },
+        select: { gatewayOrderId: true },
+        orderBy: { createdAt: "desc" },
+        take: 3,
+      },
+    },
+  });
+  if (!order || order.paymentStatus === "PAID" || order.payments.length === 0) return false;
+
+  let changed = false;
+  for (const attempt of order.payments) {
+    try {
+      const seen = await verifyPayuTransaction(config, attempt.gatewayOrderId);
+      if (!seen) continue; // PayU never saw it: nobody paid.
+      const outcome = await applyVerdict({
+        txnid: attempt.gatewayOrderId,
+        status: seen.status,
+        mihpayid: seen.mihpayid,
+        amount: seen.amount,
+        mode: seen.mode,
+        bankcode: seen.bankRef,
+        errorMessage: seen.errorMessage,
+        raw: seen as unknown as object,
+      });
+      if (outcome.kind === "paid") return true;
+      if (outcome.kind === "failed") changed = true;
+    } catch (error) {
+      // PayU unreachable, or answering something unexpected. The order is
+      // exactly as it was; the next page load tries again.
+      console.error(
+        "[payu] verify",
+        attempt.gatewayOrderId,
+        error instanceof Error ? error.message : error,
+      );
+      return changed;
+    }
+  }
+  return changed;
+}
+
+/**
+ * The same, across every order still waiting on one. Called lazily from the
+ * admin orders screen, so it needs no scheduler and costs nothing on a quiet
+ * shop.
+ */
+export async function reconcileStalePayuOrders(limit = 10): Promise<number> {
+  const config = payuConfig();
+  if (!config) return 0;
+
+  const cutoff = new Date(Date.now() - RECONCILE_AFTER_MINUTES * 60_000);
+  const waiting = await db.order.findMany({
+    where: {
+      paymentStatus: { in: ["PENDING", "FAILED"] },
+      payments: { some: { status: "CREATED", createdAt: { lt: cutoff }, updatedAt: { lt: cutoff } } },
+    },
+    select: { id: true },
+    orderBy: { placedAt: "desc" },
+    take: limit,
+  });
+
+  let changed = 0;
+  for (const order of waiting) {
+    if (await reconcilePayuOrder(order.id)) changed++;
+  }
+  return changed;
 }

@@ -2,6 +2,8 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 
+import { httpsFetch } from "@/lib/net/outbound";
+
 /**
  * PayU — the payment gateway.
  *
@@ -184,13 +186,112 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+/* ----------------------------- Asking PayU --------------------------- */
+
+const VERIFY_HOSTS = {
+  test: "https://test.payu.in/merchant/postservice.php?form=2",
+  live: "https://info.payu.in/merchant/postservice.php?form=2",
+} as const;
+
+export interface PayuVerification {
+  /** PayU's own word: success, failure, pending, … */
+  status: string;
+  mihpayid: string;
+  amount: string;
+  mode: string;
+  bankRef: string;
+  errorMessage: string;
+}
+
+interface VerifyResponse {
+  status?: number;
+  msg?: string;
+  transaction_details?: Record<
+    string,
+    {
+      status?: string;
+      mihpayid?: string;
+      amt?: string | number;
+      amount?: string | number;
+      mode?: string;
+      bank_ref_num?: string;
+      error_Message?: string;
+      field9?: string;
+    } | null
+  >;
+}
+
+/**
+ * Ask PayU what became of one transaction.
+ *
+ * This is the answer to a customer whose browser never came back and a webhook
+ * that never arrived — the two ways an order can be paid for and not know it.
+ * Unlike the checkout itself this *is* a server-to-server call, so it depends
+ * on this box reaching PayU; that is acceptable because nothing a customer is
+ * waiting on depends on it. It runs afterwards, to catch what fell through.
+ *
+ * Authenticated the same way as everything else here: a SHA-512 over the salt,
+ * which is what makes the reply worth believing without a second signature on
+ * it.
+ *
+ * Returns null when PayU has never heard of the transaction — a customer who
+ * reached the payment page and closed it — which is not a failure to record,
+ * just an order nobody paid for.
+ */
+export async function verifyPayuTransaction(
+  config: PayuConfig,
+  txnid: string,
+): Promise<PayuVerification | null> {
+  const command = "verify_payment";
+  const body = new URLSearchParams({
+    key: config.key,
+    command,
+    var1: txnid,
+    hash: sha512([config.key, command, txnid, config.salt].join("|")),
+  }).toString();
+
+  const response = await httpsFetch(VERIFY_HOSTS[config.mode === "live" ? "live" : "test"], {
+    method: "POST",
+    body,
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    timeoutMs: 15_000,
+  });
+
+  if (response.status !== 200) {
+    throw new Error(`PayU verify answered HTTP ${response.status}`);
+  }
+
+  let parsed: VerifyResponse;
+  try {
+    parsed = JSON.parse(response.body) as VerifyResponse;
+  } catch {
+    throw new Error(`PayU verify answered something other than JSON: ${response.body.slice(0, 120)}`);
+  }
+
+  const row = parsed.transaction_details?.[txnid];
+  if (!row || !row.status) return null;
+  // PayU answers a transaction it has never seen with the literal status
+  // "Not Found" rather than an empty row. That is not a verdict about a
+  // payment — it means nobody ever started one — so it reads as nothing.
+  if (String(row.status).trim().toLowerCase() === "not found") return null;
+
+  return {
+    status: String(row.status),
+    mihpayid: String(row.mihpayid ?? ""),
+    amount: String(row.amt ?? row.amount ?? ""),
+    mode: String(row.mode ?? ""),
+    bankRef: String(row.bank_ref_num ?? ""),
+    errorMessage: String(row.error_Message ?? row.field9 ?? ""),
+  };
+}
+
 /** PayU's own words for how it went. Anything else is neither yet. */
 export const payuSucceeded = (status: string) => status.toLowerCase() === "success";
 export const payuFailed = (status: string) =>
   ["failure", "failed", "cancel", "cancelled", "usercancelled"].includes(status.toLowerCase());
 
 /** "UPI · Google Pay", "Card", "Net banking" — for the order page and invoice. */
-export function describePayu(body: PayuResponse): string {
+export function describePayu(body: { mode?: string; bankcode?: string }): string {
   const mode = (body.mode ?? "").toUpperCase();
   const raw = body.bankcode?.trim();
   // PayU repeats the mode in bankcode for UPI, which would read "UPI · UPI".
@@ -205,7 +306,7 @@ export function describePayu(body: PayuResponse): string {
 }
 
 /** Which column the order's paymentMethod should end up in. */
-export function payuMethod(body: PayuResponse): "UPI" | "CARD" | "NETBANKING" | "WALLET" | "ONLINE" {
+export function payuMethod(body: { mode?: string }): "UPI" | "CARD" | "NETBANKING" | "WALLET" | "ONLINE" {
   const mode = (body.mode ?? "").toUpperCase();
   if (mode === "UPI") return "UPI";
   if (mode === "CC" || mode === "DC" || mode === "EMI") return "CARD";
