@@ -4,6 +4,7 @@ import type { DeliveryOption, PaymentMethod } from "@/lib/types";
 import type { Rates } from "@/lib/pricing";
 import { payuConfigured } from "@/lib/payments/payu";
 import { upiConfigured } from "@/lib/payments/upi";
+import { getAdminSession } from "@/lib/auth/admin";
 import { getSettings } from "./settings";
 
 /**
@@ -99,30 +100,42 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   // switched on in the admin panel but missing its keys would be a dead end at
   // the last step of a checkout, which is the worst place to find one.
   const upiOn = s.payments.upi && upiConfigured();
-  const gatewayOn =
+  const gatewaySwitchedOn =
     (s.payments.card || s.payments.netbanking || s.payments.wallet) && payuConfigured();
+
+  /**
+   * A gateway in test mode is shown to the owner and to nobody else.
+   *
+   * A warning label is not enough. PayU's test checkout carries a "Simulate
+   * Success transaction" button; a curious customer who pressed it would get a
+   * genuinely signed success, and the order would be marked paid with no money
+   * behind it. The only safe answer is that they never see the option — so
+   * while PAYU_MODE is not "live" it is offered only to a signed-in admin, who
+   * can then test the whole flow on the real site without exposing it.
+   */
+  const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
+  const ownerIsWatching = gatewaySwitchedOn && gatewayInTestMode ? !!(await getAdminSession()) : false;
+  const gatewayOn = gatewaySwitchedOn && (!gatewayInTestMode || ownerIsWatching);
+
   const enabled: PaymentMethod["id"][] = [
     ...(upiOn ? (["upi"] as const) : []),
     ...(gatewayOn ? (["online"] as const) : []),
     ...(s.payments.cod ? (["cod"] as const) : []),
   ];
 
-  // A gateway in test mode takes no real money. On a live shop that is a trap:
-  // the customer pays, sees success, and nothing arrives. So the option says so
-  // in the place they are choosing, rather than anywhere they might not look.
-  const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
-
   return {
     deliveryOptions,
     paymentMethods: enabled.map((id) => {
       const copy = PAYMENT_COPY[id];
+      // Only the owner ever reaches this branch, and they need telling which
+      // of the two systems they are about to pay on.
       if (id === "online" && gatewayInTestMode) {
         return {
           id,
           name: copy.name,
           description:
-            "Test mode — this is the shop trying its new payment system. No real payment is taken and no order is confirmed. Pay by UPI above for a real order.",
-          badge: "Test only",
+            "Test mode — only you can see this option. No real money moves, and the order it confirms is a test order. Customers are offered UPI.",
+          badge: "Test · owner only",
         };
       }
       return { id, ...copy };
