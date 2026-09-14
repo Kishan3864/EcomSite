@@ -230,10 +230,10 @@ export function PaymentStep() {
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           {/* A 40px touch target on phones; the negative margin keeps the row. */}
           <Link
-            href="/checkout/delivery"
+            href="/checkout/address"
             className="-my-2.5 py-2.5 text-[13px] font-medium text-ink-600 underline-offset-4 hover:text-ink-900 hover:underline lg:my-0 lg:py-0"
           >
-            Back to delivery
+            Back to address
           </Link>
           <Button size="lg" className="hidden min-w-[200px] lg:inline-flex" onClick={next}>
             Review order

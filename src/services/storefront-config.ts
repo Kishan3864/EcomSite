@@ -58,12 +58,13 @@ const PAYMENT_COPY: Record<string, Omit<PaymentMethod, "id">> = {
   },
 };
 
-const dayRange = (days: [number, number]) =>
-  days[0] === days[1] ? `${days[0]} working day` : `${days[0]} to ${days[1]} working days`;
-
 export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   const s = await getSettings();
 
+  // One delivery. A shop this size cannot honour a priority promise made at
+  // checkout, and offering a choice it cannot keep is worse than offering
+  // none — so the speed is the one the courier actually gives, and the price
+  // is the one the shipping settings set.
   const deliveryOptions: DeliveryOption[] = [
     {
       id: "standard",
@@ -75,22 +76,6 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
       price: s.shipping.standardFee,
       minDays: s.shipping.standardDays[0],
       maxDays: s.shipping.standardDays[1],
-    },
-    {
-      id: "express",
-      name: "Express delivery",
-      description: `Priority dispatch, delivered in ${dayRange(s.shipping.expressDays)}.`,
-      price: s.shipping.expressFee,
-      minDays: s.shipping.expressDays[0],
-      maxDays: s.shipping.expressDays[1],
-    },
-    {
-      id: "scheduled",
-      name: "Pick your day",
-      description: "Choose a delivery date up to 10 days out. Ideal for gifting.",
-      price: s.shipping.scheduledFee,
-      minDays: Math.max(s.shipping.standardDays[1], 4),
-      maxDays: 10,
     },
   ];
 
@@ -113,10 +98,11 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
    * offered it — enough to test the whole flow on the real site without
    * exposing it to anyone else.
    *
-   * PAYU_TEST_PUBLIC=1 shows it to everyone anyway, for demonstrating the
-   * checkout to someone who cannot sign into the admin panel. It is opt-in,
-   * and the option then says plainly what it is. Take it off before the shop
-   * has customers who might believe it.
+   * The "show the test checkout to everyone" switch in Settings → Payments
+   * shows it to everyone anyway, for demonstrating the checkout to someone who
+   * cannot sign into the admin panel. It is opt-in, and the option then says
+   * plainly what it is. Take it off before the shop has customers who might
+   * believe it.
    */
   const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
   const testGatewayIsPublic = s.payments.gatewayDemo;

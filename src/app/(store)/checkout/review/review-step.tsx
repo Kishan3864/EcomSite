@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Gift, Lock, MapPin, Pencil, Truck, UserRound, Wallet } from "lucide-react";
+import { Lock, MapPin, Pencil, Truck, UserRound, Wallet } from "lucide-react";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -71,8 +71,8 @@ export function ReviewStep() {
           address,
           deliveryId: checkout.deliveryId,
           deliveryDate: checkout.deliveryDate,
-          giftWrap: checkout.giftWrap,
-          buyerGstin: checkout.buyerGstin,
+          giftWrap: false,
+          buyerGstin: null,
           paymentMethod: payment.id,
           paymentDetail: checkout.paymentDetail,
             },
@@ -112,22 +112,14 @@ export function ReviewStep() {
     },
     {
       icon: Truck,
-      title: "Delivery method",
-      href: "/checkout/delivery",
+      title: "Delivery",
+      // No link: there is one delivery, so there is nothing to go and change.
       body: (
         <>
           <strong className="font-semibold text-ink-900">{delivery.name}</strong> ·{" "}
           {totals.shipping === 0 ? "Free" : formatINR(totals.shipping)}
           <br />
           Arriving {formatDate(eta.from, "day")} – {formatDate(eta.to, "day")}
-          {checkout.giftWrap && (
-            <>
-              <br />
-              <span className="inline-flex items-center gap-1.5 text-brand-700">
-                <Gift size={12} /> Gift wrapped
-              </span>
-            </>
-          )}
         </>
       ),
     },
@@ -231,14 +223,18 @@ export function ReviewStep() {
                   <row.icon size={13} className="text-brand-600" />
                   {row.title}
                 </h2>
-                {/* A 40px target on phones; the negative margin keeps the row height. */}
-                <Link
-                  href={row.href}
-                  aria-label={`Change ${row.title.toLowerCase()}`}
-                  className="tap -m-2.5 rounded-md p-3.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700 sm:m-0 sm:p-1"
-                >
-                  <Pencil size={12} />
-                </Link>
+                {/* A 40px target on phones; the negative margin keeps the row
+                    height. Delivery has no link — there is one, so there is
+                    nothing to go and change. */}
+                {row.href && (
+                  <Link
+                    href={row.href}
+                    aria-label={`Change ${row.title.toLowerCase()}`}
+                    className="tap -m-2.5 rounded-md p-3.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700 sm:m-0 sm:p-1"
+                  >
+                    <Pencil size={12} />
+                  </Link>
+                )}
               </div>
               <p className="text-[12.5px] leading-relaxed text-ink-600 wrap-break-word">{row.body}</p>
             </section>

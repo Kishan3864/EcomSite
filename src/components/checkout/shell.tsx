@@ -10,10 +10,19 @@ import { EmptyState } from "@/components/ui/primitives";
 import { useStore } from "@/store/store";
 import { cn, formatINR } from "@/lib/utils";
 
+/**
+ * Four steps, not five.
+ *
+ * There was a whole screen for choosing between three delivery speeds, gift
+ * wrapping and a GSTIN field. The shop has one delivery, does not wrap gifts,
+ * and almost nobody buying a kettle is claiming input credit — so the screen
+ * asked four questions with one real answer between them and put a click
+ * between the customer and paying. What it used to say about the delivery date
+ * is now on the address and review steps, where it is read rather than chosen.
+ */
 export const CHECKOUT_STEPS = [
   { id: "contact", label: "Contact", href: "/checkout/contact" },
   { id: "address", label: "Address", href: "/checkout/address" },
-  { id: "delivery", label: "Delivery", href: "/checkout/delivery" },
   { id: "payment", label: "Payment", href: "/checkout/payment" },
   { id: "review", label: "Review", href: "/checkout/review" },
 ] as const;

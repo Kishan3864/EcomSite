@@ -41,7 +41,7 @@ export function AddressStep() {
       setError("Choose a delivery address, or add a new one.");
       return;
     }
-    router.push("/checkout/delivery");
+    router.push("/checkout/payment");
   }
 
   return (
