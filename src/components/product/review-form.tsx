@@ -1,28 +1,63 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { Check, PenLine, Star } from "lucide-react";
+import { Check, Clock, PenLine, ShieldCheck, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
-import { submitReview } from "@/services/commerce";
+import { reviewEligibility, submitReview, type ReviewEligibility } from "@/services/commerce";
 import { useStore } from "@/store/store";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
+/** The same panel however it is filled, so the section never jumps about. */
+function Note({ icon, children }: { icon?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-hairline bg-surface p-3.5 text-[12.5px] leading-relaxed text-ink-600 sm:mt-6 sm:p-4 sm:text-[13px]">
+      {icon}
+      <span>{children}</span>
+    </div>
+  );
+}
+
 /**
- * Reviews are held for moderation, so nothing written here appears on the page
- * until someone approves it in the admin panel. Saying so up front is kinder
- * than letting a shopper wonder where their review went.
+ * Writing a review, for the people who have earned the right to.
+ *
+ * Only a customer the product actually reached can write one — see
+ * `reviewEligibility`. That is checked on the server when the review is
+ * submitted; this asks the same question first so the page can say *why* the
+ * form is not there, which is the difference between a rule and a dead end.
+ *
+ * Reviews are then held for moderation, so nothing written here appears until
+ * someone approves it. Saying so up front is kinder than letting a shopper
+ * wonder where their review went.
  */
 export function ReviewForm({ productId }: { productId: string }) {
   const { customer, sessionChecked } = useStore();
+  const [status, setStatus] = useState<ReviewEligibility | null>(null);
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  // Asked once the session is known, and again if the visitor signs in while
+  // the page is open.
+  useEffect(() => {
+    if (!sessionChecked) return;
+    let stale = false;
+    reviewEligibility(productId)
+      .then((result) => {
+        if (!stale) setStatus(result);
+      })
+      .catch(() => {
+        if (!stale) setStatus({ can: false, reason: "not-bought" });
+      });
+    return () => {
+      stale = true;
+    };
+  }, [productId, sessionChecked, customer?.id]);
 
   if (sent) {
     return (
@@ -36,36 +71,67 @@ export function ReviewForm({ productId }: { productId: string }) {
     );
   }
 
-  if (!customer) {
+  if (!sessionChecked || !status) {
+    return <Note>Checking your account…</Note>;
+  }
+
+  if (status.can === false) {
+    if (status.reason === "signin") {
+      return (
+        <Note icon={<ShieldCheck size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
+          Every review here is from someone who bought this and had it delivered.{" "}
+          <Link href="/login" className="font-semibold text-brand-700 underline-offset-2 hover:underline">
+            Sign in
+          </Link>{" "}
+          if that is you.
+        </Note>
+      );
+    }
+    if (status.reason === "awaiting-delivery") {
+      return (
+        <Note icon={<Clock size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
+          Your order <strong className="font-medium text-ink-900">{status.orderNumber}</strong> is on
+          its way — expected by {formatDate(status.expected, "day")}. You can write a review here
+          once it has been delivered.
+        </Note>
+      );
+    }
+    if (status.reason === "already") {
+      return (
+        <Note icon={<Check size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
+          {status.status === "published"
+            ? "You have already reviewed this product — thank you. It is on this page."
+            : status.status === "pending"
+              ? "Your review is with our team and will appear once it has been checked."
+              : "You have already reviewed this product."}
+        </Note>
+      );
+    }
     return (
-      <div className="mt-4 rounded-xl border border-hairline bg-surface p-3.5 text-[12.5px] text-ink-600 sm:mt-6 sm:p-4 sm:text-[13px]">
-        {sessionChecked ? (
-          <>
-            <Link
-              href="/login"
-              className="font-semibold text-brand-700 underline-offset-2 hover:underline"
-            >
-              Sign in
-            </Link>{" "}
-            to write a review. We only publish reviews from real accounts.
-          </>
-        ) : (
-          <span className="text-ink-400">Checking your account…</span>
-        )}
-      </div>
+      <Note icon={<ShieldCheck size={15} className="mt-0.5 shrink-0 text-brand-600" />}>
+        Only customers who have bought this and had it delivered can review it — which is why every
+        review below is from someone who owns it.
+      </Note>
     );
   }
 
   if (!open) {
     return (
-      <Button
-        variant="outline"
-        size="md"
-        className="tap mt-4 w-full sm:mt-6 sm:w-auto"
-        onClick={() => setOpen(true)}
-      >
-        <PenLine size={15} /> Write a review
-      </Button>
+      <div className="mt-4 sm:mt-6">
+        <Button
+          variant="outline"
+          size="md"
+          className="tap w-full sm:w-auto"
+          onClick={() => setOpen(true)}
+        >
+          <PenLine size={15} /> Write a review
+        </Button>
+        <p className="mt-2 flex items-center gap-1.5 text-[12px] text-ink-500">
+          <ShieldCheck size={13} className="shrink-0 text-brand-600" />
+          You bought this on order {status.orderNumber} — your review will be marked a verified
+          purchase.
+        </p>
+      </div>
     );
   }
 
@@ -94,7 +160,7 @@ export function ReviewForm({ productId }: { productId: string }) {
     <Form onSubmit={submit} className="mt-4 rounded-xl border border-hairline bg-surface p-4 sm:mt-6 sm:p-5">
       <h3 className="text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">Write a review</h3>
       <p className="mt-1 text-[12.5px] text-ink-500">
-        Posting as {customer.name}. Reviews are checked before they appear.
+        Posting as {customer?.name ?? "your account"}. Reviews are checked before they appear.
       </p>
 
       <fieldset className="mt-4">

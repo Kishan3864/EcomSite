@@ -29,6 +29,7 @@ import { getSettings } from "./settings";
 import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
 import { upiConfigured } from "@/lib/payments/upi";
 import { expireStalePendingOrders, trimUnpaidOrders } from "./order-expiry";
+import { reviewEligibilityFor, type ReviewEligibility } from "./reviews";
 import { after } from "next/server";
 import { mailConfigured, sendMail } from "@/lib/mail";
 import { sendOrderConfirmation } from "./order-email";
@@ -39,6 +40,8 @@ import { buildWelcomeEmail } from "@/lib/emails/welcome";
  * rules are recomputed from the database on every call — the client is only
  * ever a suggestion.
  */
+
+export type { ReviewEligibility } from "./reviews";
 
 export type ActionResult<T = undefined> =
   | ({ ok: true } & (T extends undefined ? { data?: undefined } : { data: T }))
@@ -437,6 +440,16 @@ export async function requestReturn(input: {
 
 /* ------------------------------ Reviews ----------------------------- */
 
+/**
+ * Whether the signed-in customer may review this product. The rule itself
+ * lives in services/reviews.ts; this only supplies who is asking.
+ */
+export async function reviewEligibility(productId: string): Promise<ReviewEligibility> {
+  const session = await getCustomerSession();
+  if (!session) return { can: false, reason: "signin" };
+  return reviewEligibilityFor(session.id, productId);
+}
+
 export async function submitReview(input: {
   productId: string;
   rating: number;
@@ -445,6 +458,24 @@ export async function submitReview(input: {
 }): Promise<ActionResult> {
   const session = await getCustomerSession();
   if (!session) return { ok: false, error: "Sign in to write a review." };
+
+  if (!rateLimit("review:write", session.id, 10, 60 * 60_000)) return { ok: false, error: TOO_MANY };
+
+  // Checked again here, not only in the UI: the form is a convenience, this is
+  // the rule.
+  const eligible = await reviewEligibility(input.productId);
+  if (!eligible.can) {
+    return {
+      ok: false,
+      error:
+        eligible.reason === "already"
+          ? "You have already reviewed this product."
+          : eligible.reason === "awaiting-delivery"
+            ? "You can review this once it has been delivered."
+            : "Only customers who have bought and received this product can review it.",
+    };
+  }
+
   const rating = Math.round(Number(input.rating));
   if (rating < 1 || rating > 5) return { ok: false, error: "Pick a star rating." };
   if (input.title.trim().length < 3) return { ok: false, error: "Give your review a title." };
@@ -453,9 +484,6 @@ export async function submitReview(input: {
   const customer = await db.customer.findUnique({
     where: { id: session.id },
     include: { addresses: { where: { isDefault: true }, take: 1 } },
-  });
-  const verified = await db.orderLine.count({
-    where: { productId: input.productId, order: { customerId: session.id, status: "DELIVERED" } },
   });
 
   await db.review.create({
@@ -467,7 +495,9 @@ export async function submitReview(input: {
       rating,
       title: input.title.trim(),
       body: input.body.trim(),
-      verified: verified > 0,
+      // True by construction now: nobody who has not received the product can
+      // reach this line.
+      verified: true,
       status: "PENDING",
     },
   });
