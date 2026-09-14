@@ -105,14 +105,31 @@ npx tsx --conditions=react-server scripts/check-payu.ts   # should say LIVE
 The code path is identical; `PAYU_MODE` only chooses between
 `test.payu.in/_payment` and `secure.payu.in/_payment`.
 
-**Also set the webhook** in the PayU dashboard → Developers → Webhooks, to:
+## The webhook
 
-```
-https://weekendcart.com/api/payments/payu/webhook
-```
+PayU dashboard → **Developers → Webhooks → Create Webhook**. Make **two**,
+both pointing at the same URL:
 
-Without it, an order still confirms when the browser comes back — but a
-customer whose browser never comes back leaves a paid order sitting unpaid.
+| Type | Event | Webhook URL |
+|---|---|---|
+| Payments | **Successful** | `https://weekendcart.com/api/payments/payu/webhook` |
+| Payments | **Failed** | `https://weekendcart.com/api/payments/payu/webhook` |
+
+*Refund* and *Dispute* are not handled yet — leave them until refunds are
+automated, or they will simply be ignored.
+
+PayU posts these as form-url-encoded fields carrying the same reverse hash as
+the browser return, so the same verification and the same idempotent path
+handle both. The route always answers 200: a gateway that reads an error code
+retries for hours, and there would be nothing for it to fix.
+
+**Why it matters.** The browser return is the fast path; this is the reliable
+one. A phone that dies on the bank page, a tab closed the moment the UPI app
+said yes, a redirect eaten by hotel wifi — in every one of those the customer
+has paid and only the webhook can say so.
+
+While `PAYU_MODE=test`, register the webhook in the dashboard's **Test Mode**;
+the live dashboard keeps its own separate list.
 
 ## Which methods the checkout offers
 

@@ -107,9 +107,26 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     ...(s.payments.cod ? (["cod"] as const) : []),
   ];
 
+  // A gateway in test mode takes no real money. On a live shop that is a trap:
+  // the customer pays, sees success, and nothing arrives. So the option says so
+  // in the place they are choosing, rather than anywhere they might not look.
+  const gatewayInTestMode = (process.env.PAYU_MODE?.trim() || "test") !== "live";
+
   return {
     deliveryOptions,
-    paymentMethods: enabled.map((id) => ({ id, ...PAYMENT_COPY[id] })),
+    paymentMethods: enabled.map((id) => {
+      const copy = PAYMENT_COPY[id];
+      if (id === "online" && gatewayInTestMode) {
+        return {
+          id,
+          name: copy.name,
+          description:
+            "Test mode — this is the shop trying its new payment system. No real payment is taken and no order is confirmed. Pay by UPI above for a real order.",
+          badge: "Test only",
+        };
+      }
+      return { id, ...copy };
+    }),
     rates: {
       freeThreshold: s.shipping.freeThreshold,
       standardFee: s.shipping.standardFee,
