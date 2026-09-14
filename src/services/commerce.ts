@@ -1,6 +1,5 @@
 "use server";
 
-import { BUSINESS } from "@/config/business";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@/generated/prisma/client";
@@ -310,8 +309,11 @@ export async function placeOrder(
             sellerStateCode,
             placeOfSupply: input.address.state,
             placeOfSupplyCode: placeCode,
-            courier: BUSINESS.ops.courierPartners[0] ?? "Courier partner",
-            awb: `WKCX${Date.now().toString().slice(-9)}`,
+            // No courier and no tracking number until a parcel is actually
+            // booked. These used to be invented at checkout, which made every
+            // order look shipped the moment it was placed — the customer was
+            // given a tracking number that tracked nothing, and the admin
+            // panel, seeing an AWB, offered no way to book the real one.
             estimatedDelivery,
             lines: {
               create: priced.map((l) => ({
