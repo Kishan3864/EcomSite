@@ -263,7 +263,11 @@ export function BuyBox({
       {/* CTAs. On a phone they share one row — two equal actions and the save
           — with tighter lettering so all three fit; the tick on "Added to bag"
           gives way below 360px rather than push the label past the edge. */}
-      <div className="flex gap-2 sm:flex-wrap sm:gap-2.5">
+      {/* items-stretch so the save button is exactly as tall as the two beside
+          it, whatever the label inside them wraps to. It used to be sized by
+          hand at sm:h-13 — a class the theme does not define — and sat a few
+          pixels proud of the row. */}
+      <div className="flex items-stretch gap-2 sm:gap-2.5">
         <Button
           size="lg"
           variant="outline"
@@ -308,7 +312,8 @@ export function BuyBox({
           size="icon"
           variant="outline"
           className={cn(
-            "tap h-12 w-12 shrink-0 sm:h-13 sm:w-13",
+            // Square, and the same height as the buttons beside it.
+            "tap h-auto w-12 shrink-0 self-stretch",
             wished && "border-sale-500 text-sale-500",
           )}
           aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}

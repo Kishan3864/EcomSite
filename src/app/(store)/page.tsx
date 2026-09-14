@@ -99,19 +99,23 @@ async function SparseHome() {
   ]);
 
   const cards = toCardModels(products);
+  // The hero shows the first product, so the spread below takes the next one:
+  // the same photograph twice in one screen reads as a page that has run out
+  // of things to show.
+  const heroLead = cards[0];
 
   // One product is a spread on its own. Two or three fill an even row better
   // than a spread plus a lonely card would. From four there is enough left
   // over for the grid to look like a grid once the lead is taken out.
-  const lead = cards.length === 1 || cards.length >= 4 ? cards[0] : undefined;
-  const rest = lead ? cards.slice(1) : cards;
+  const lead = cards.length >= 4 ? cards[1] : undefined;
+  const rest = cards.filter((card) => card.id !== heroLead?.id && card.id !== lead?.id);
 
   return (
     <>
       {banners.hero.length > 0 ? (
         <Hero banners={banners.hero} />
       ) : (
-        <HeroStatic hasProducts categories={categories} />
+        <HeroStatic hasProducts categories={categories} lead={heroLead} />
       )}
 
       <CategoryMosaic categories={categories} />
@@ -148,13 +152,14 @@ async function FullHome() {
   ]);
 
   const best = toCardModels(bestsellers);
+  const heroLead = best[0];
 
   return (
     <>
       {banners.hero.length > 0 ? (
         <Hero banners={banners.hero} />
       ) : (
-        <HeroStatic hasProducts categories={categories} />
+        <HeroStatic hasProducts categories={categories} lead={heroLead} />
       )}
 
       <CategoryMosaic categories={categories} />
