@@ -1,8 +1,10 @@
 node_modules
 .next
-.next-build
-.next-prev
-.next-failed
+# Every build directory, not a list of the four we happened to think of.
+# deploy.sh builds into .next-build and keeps .next-prev / .next-failed, and a
+# NEXT_DIST_DIR set by hand for a one-off check is just as much build output —
+# one of those got as far as being committed because it was not on the list.
+.next-*
 out
 build
 .DS_Store
