@@ -255,7 +255,7 @@ export function BuyBox({
                   className={cn(
                     "tap min-h-10 min-w-[52px] border px-3 py-2 text-[13px] font-medium transition-colors duration-200 sm:min-h-0 sm:px-3.5",
                     selected
-                      ? "border-ink-950 bg-ink-950 text-white"
+                      ? "border-brand-700 bg-brand-700 text-white"
                       : "border-hairline bg-surface text-ink-800 hover:border-ink-950",
                     !option.inStock &&
                       "cursor-not-allowed border-dashed text-ink-400 line-through hover:border-hairline",
@@ -327,9 +327,15 @@ export function BuyBox({
           hand at sm:h-13 — a class the theme does not define — and sat a few
           pixels proud of the row. */}
       <div className="flex items-stretch gap-2 sm:gap-2.5">
+        {/* Ember, and the first of the pair.
+            "Add to bag" was an outline control beside a filled "Buy now",
+            which reads as a shop steering every visitor into a one-item
+            checkout. Adding to the bag is the action most people want and the
+            one the product grid has been training them to press, so it gets
+            the same ember here that it has on every card. */}
         <Button
           size="lg"
-          variant="outline"
+          variant="accent"
           className="tap min-w-0 flex-1 px-2 text-[11px] tracking-[0.06em] sm:min-w-[160px] sm:px-8 sm:text-[12px] sm:tracking-[0.12em]"
           onClick={handleAdd}
           disabled={!available}

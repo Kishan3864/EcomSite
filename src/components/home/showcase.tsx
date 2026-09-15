@@ -21,10 +21,14 @@ import { cn, discountPercent, formatINR } from "@/lib/utils";
  * photographs here any more. Departments are a drawn mark and a list of what
  * is actually inside them, which is both smaller and more useful.
  *
- * Everything is drawn in hairlines on paper. There are no cards, no shadows,
- * no rounded corners and no gradients over pictures. Structure comes from the
- * 1px grid (`.tile-grid`) and from alignment, which is what makes a page read
- * as engineered rather than decorated.
+ * Structure comes from alignment and from objects with real edges: a corner, a
+ * hairline and a short shadow, so a tile reads as something laid on the page
+ * that you could pick up. That replaces the older scheme here, which drew
+ * everything flat in hairlines on paper — beautiful, and the reason the shop
+ * read as a printed catalogue rather than a place to buy a kettle.
+ *
+ * Colour is spent to one rule: evergreen is structure and orientation, ember
+ * is the thing to press. A band may carry one ember object and no more.
  */
 
 /* ------------------------------------------------------------------ *
@@ -49,9 +53,16 @@ function BandHeader({
   // Phones lay the head out the way a shopping app does: the title and its
   // link share one row, the description runs full width beneath. The text
   // column dissolves (`contents`) so its children can join that grid.
+  //
+  // The band used to be closed by a thick rule over a thin one — the old
+  // book-typography trick for starting a section. It is a beautiful device and
+  // it was the single strongest reason the shop read as a printed catalogue:
+  // ruled bands stack down the page like chapters. A shelf in a shop is not a
+  // chapter, so the rule is gone and the shelf is marked the way a shop marks
+  // one — a short ember tick, the name, and a way through to the rest of it.
   return (
     <div className={className}>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-b border-ink-950 pb-3 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:pb-5">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="contents sm:block">
           <span className="eyebrow col-span-2">{eyebrow}</span>
           <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
@@ -66,7 +77,7 @@ function BandHeader({
         {href && (
           <Link
             href={href}
-            className="tap group col-start-2 row-start-2 inline-flex h-10 shrink-0 items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors hover:text-gold-700 sm:h-auto sm:text-[12px]"
+            className="tap group col-start-2 row-start-2 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-hairline bg-surface px-4 text-[12.5px] font-semibold text-brand-700 shadow-xs transition-colors duration-200 hover:border-brand-200 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
           >
             {linkLabel}
             <ArrowRight
@@ -76,9 +87,6 @@ function BandHeader({
           </Link>
         )}
       </div>
-      {/* A thick rule and a thin one, three pixels apart — the oldest trick in
-          book typography for saying "a section starts here" without a box. */}
-      <div aria-hidden className="mt-[3px] h-px w-full bg-rule" />
     </div>
   );
 }
@@ -329,7 +337,7 @@ export function Spotlight({
     <section className="container-page py-10 sm:py-20">
       <div className="grid items-start gap-7 lg:grid-cols-12 lg:gap-10">
         <div className="lg:col-span-6">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-lg border border-hairline bg-ink-100">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-hairline bg-ink-100 shadow-sm">
             <Image
               src={product.image}
               alt={product.imageAlt || product.title}
@@ -533,7 +541,7 @@ export function EditorialBand({ banner }: { banner?: Banner }) {
             )}
             <Link
               href={banner?.href ?? "/products"}
-              className="tap mt-7 inline-flex h-12 items-center gap-2 bg-gold-400 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-gold-300 sm:mt-9 sm:px-8 sm:text-[12px]"
+              className="tap mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:mt-9 sm:px-8"
             >
               {banner?.cta ?? "Browse the catalogue"} <ArrowRight size={15} />
             </Link>

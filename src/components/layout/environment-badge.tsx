@@ -21,9 +21,9 @@ export function EnvironmentBadge() {
       className="pointer-events-none fixed bottom-2 left-2 z-[95] select-none"
       aria-hidden
     >
-      {/* Ink with a saffron rule around it rather than an oxblood chip: oxblood
+      {/* Ink with a ember rule around it rather than an rose chip: rose
           is reserved for price reductions, and a shadow would make this the one
-          thing on the site that floats. A saffron edge is still the loudest
+          thing on the site that floats. A ember edge is still the loudest
           thing in the corner of a page drawn entirely in hairlines. */}
       <span className="block border border-gold-400 bg-ink-950 px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.14em] text-gold-300">
         {env}

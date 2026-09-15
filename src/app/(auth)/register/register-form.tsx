@@ -29,10 +29,10 @@ const LABELS = ["Too short", "Weak", "Fair", "Good", "Strong"];
 /**
  * The meter fills with ink, not with a traffic light.
  *
- * It used to run oxblood, saffron, indigo — which spent two of the three
- * colours the shop reserves for something else entirely: saffron marks the one
- * action worth taking on a page, and oxblood means a price has come down.
- * Neither is a comment on a password. Graphite darkening into indigo says
+ * It used to run rose, ember, evergreen — which spent two of the three
+ * colours the shop reserves for something else entirely: ember marks the one
+ * action worth taking on a page, and rose means a price has come down.
+ * Neither is a comment on a password. Graphite darkening into evergreen says
  * "stronger" just as plainly and leaves the signals intact.
  */
 const TONES = ["bg-ink-200", "bg-ink-400", "bg-ink-500", "bg-brand-500", "bg-brand-700"];

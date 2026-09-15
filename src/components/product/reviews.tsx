@@ -105,8 +105,8 @@ export function ReviewsSection({
               </div>
             )}
 
-            {/* Five bars in one ink. Colouring the top two indigo, the middle
-                one saffron and the bottom two oxblood turned a record of what
+            {/* Five bars in one ink. Colouring the top two evergreen, the middle
+                one ember and the bottom two rose turned a record of what
                 customers said into the shop's own verdict on it, and spent the
                 two colours that are meant to mean a signal and a reduction on
                 a chart. The bar is a measure; only the filtered row changes
@@ -170,7 +170,7 @@ export function ReviewsSection({
                 className={cn(
                   "tap inline-flex h-9 items-center rounded-lg border px-3.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[11.5px]",
                   filter === chip.key
-                    ? "border-ink-950 bg-ink-950 text-white"
+                    ? "border-brand-700 bg-brand-700 text-white"
                     : "border-hairline text-ink-600 hover:border-ink-950 hover:text-ink-950",
                 )}
               >
@@ -269,7 +269,7 @@ export function ReviewsSection({
                       className={cn(
                         "tap mt-3 inline-flex h-9 items-center gap-2 border px-3 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
                         helpful[review.id]
-                          ? "border-ink-950 bg-ink-950 text-white"
+                          ? "border-brand-700 bg-brand-700 text-white"
                           : "border-hairline text-ink-500 hover:border-ink-950 hover:text-ink-950",
                       )}
                     >

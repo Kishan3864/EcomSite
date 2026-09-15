@@ -119,9 +119,13 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   onMouseEnter={() => open(category.slug)}
                   onFocus={() => open(category.slug)}
                   aria-expanded={isOpen}
+                  // The rail this sits on is evergreen now, so the department
+                  // names are set in white rather than ink and the marker
+                  // under the open one is ember: it is the only thing in the
+                  // masthead that says "you are pointing at this".
                   className={cn(
                     "relative inline-flex items-center px-3.5 py-2 text-[13.5px] transition-colors duration-200",
-                    isOpen ? "font-semibold text-ink-950" : "font-medium text-ink-700 hover:text-ink-950",
+                    isOpen ? "font-semibold text-white" : "font-medium text-brand-100 hover:text-white",
                   )}
                 >
                   {category.name}
@@ -132,7 +136,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   <span
                     aria-hidden
                     className={cn(
-                      "absolute inset-x-3.5 bottom-0 h-[1.5px] origin-left bg-ink-950 transition-transform duration-200 ease-out",
+                      "absolute inset-x-3.5 bottom-0 h-[2px] origin-left bg-gold-400 transition-transform duration-200 ease-out",
                       isOpen ? "scale-x-100" : "scale-x-0",
                     )}
                   />
@@ -152,10 +156,11 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
             onMouseEnter={() => open(active.slug)}
             style={{ width: `min(${sheetWidth}px, calc(100vw - 4rem))` }}
-            // An ink frame rather than a soft shadow: the panel is a sheet laid
-            // on the page, and a hairline would lose its edge against the white
-            // tiles it floats over.
-            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-ink-950 bg-surface shadow-lg"
+            // A hairline and a real shadow, not the old ink frame. The frame
+            // was there to give the sheet an edge against the white tiles it
+            // floats over; dropping out of an evergreen bar it already has
+            // one, and the black outline only made it look like a dialog.
+            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-2xl border border-hairline bg-surface shadow-xl"
           >
             <div
               className="grid"
@@ -177,7 +182,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
 
                 {active.subcategories.length > 0 && (
                   <ul
-                    className="mt-5 grid border-t border-ink-950 pt-5"
+                    className="mt-5 grid border-t border-hairline pt-5"
                     style={{
                       gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
                       gap: `${TILE_GAP}px`,

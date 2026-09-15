@@ -12,13 +12,19 @@ type Variant =
 type Size = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
 
 /**
- * Buttons are flat, square and lettered in small caps.
+ * Buttons carry the site's two colours, each with one job.
  *
- * The old set leaned on shadows, soft corners and a scale-down press, which
- * read as consumer-app rather than considered retail. Colour now does the
- * work: near-black ink for the action we want pressed, warming into indigo as
- * the pointer lands on it; saffron for the single filled accent a page is
- * allowed; a plain ink rule for everything secondary.
+ * `accent` is ember, and it means "this is the thing to press": add to bag,
+ * wherever a bag exists. It is the same orange on a product card, in the quick
+ * view, on the product page and in the bar that follows you down a phone
+ * screen, so the action is one recognisable object the whole way through.
+ *
+ * `primary` is evergreen, and it means "go on": buy now, place the order,
+ * continue. Structure is evergreen everywhere else on the site, so a green
+ * button reads as part of the shop rather than as a second accent competing
+ * with the orange one.
+ *
+ * Everything secondary is a plain rule on the surface.
  *
  * No variant carries its own disabled colour. Dimming is done once, in
  * `buttonClasses` — the pale greys that used to sit here were applied on top of
@@ -26,10 +32,10 @@ type Size = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
  * barely darker than the page it stood on.
  */
 const VARIANTS: Record<Variant, string> = {
-  // Brand indigo, not near-black. A filled black button is a typographic
-  // device; a shop's buy button should be the brand's own colour, so that
-  // "the thing you press to spend money" is one recognisable object from the
-  // product card through the bag to the last step of the checkout.
+  // Evergreen, not near-black. A filled black button is a typographic device;
+  // a shop's buy button should be the brand's own colour, so that "the thing
+  // you press to spend money" is one recognisable object from the product card
+  // through the bag to the last step of the checkout.
   primary: "bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900",
   accent: "bg-gold-400 text-ink-950 hover:bg-gold-300 active:bg-gold-500",
   // A quiet bordered control rather than an inverting ink block. The old one

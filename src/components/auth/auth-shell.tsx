@@ -40,7 +40,7 @@ const ASSURANCES = [
  * and to a search engine rather than a darkened stock photograph.
  *
  * What it promises is set as a ruled index rather than a list of ticks in
- * saffron boxes. Four saffron squares repeated down one panel spend the site's
+ * ember boxes. Four ember squares repeated down one panel spend the site's
  * only warm colour on its least important line, which is precisely what makes
  * an accent stop meaning anything; the rules between the rows do the same work
  * and cost nothing.

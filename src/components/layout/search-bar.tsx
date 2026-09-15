@@ -154,7 +154,7 @@ export function SearchBar({
             "flex items-center gap-2.5 rounded-xl border bg-surface px-3.5 transition-all duration-200",
             variant === "header" ? "h-11" : "h-12",
             open
-              ? "border-brand-500 shadow-[0_0_0_3px_rgb(74_93_168/0.18)]"
+              ? "border-brand-500 shadow-[0_0_0_3px_rgb(23_146_108/0.18)]"
               : "border-hairline hover:border-ink-950",
           )}
         >

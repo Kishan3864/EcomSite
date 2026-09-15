@@ -225,7 +225,7 @@ export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form(
           role="alert"
           aria-live="assertive"
           tabIndex={-1}
-          // A rule down the left margin and the words set in oxblood, with no
+          // A rule down the left margin and the words set in rose, with no
           // tinted panel behind them. On a sheet this quiet a marginal rule is
           // already the loudest mark on the page, and it leaves the summary
           // sitting in the form rather than in a box bolted above it.

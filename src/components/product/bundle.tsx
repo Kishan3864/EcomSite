@@ -39,7 +39,7 @@ export function BundleSection({
 
   return (
     <section>
-      <div className="border-b border-ink-950 pb-3 sm:pb-4">
+      <div className="border-b border-hairline pb-3 sm:pb-4">
         <span className="eyebrow">Add to the order</span>
         <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
           Frequently bought together
@@ -85,7 +85,7 @@ export function BundleSection({
                   className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-700)] disabled:opacity-60"
                 />
                 <span className="min-w-0 flex-1">
-                  {/* Ink, not indigo. The one coloured word in the whole band
+                  {/* Ink, not evergreen. The one coloured word in the whole band
                       was sitting on its least important line — the label that
                       only says which of these is the product already open. */}
                   {i === 0 && (

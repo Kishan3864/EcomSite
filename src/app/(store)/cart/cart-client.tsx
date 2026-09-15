@@ -147,7 +147,7 @@ export function CartClient() {
                             <Price price={line.price} mrp={line.mrp} size="md" className="mt-2" />
 
                             {/* A fact, in the same ink as every other fact on the
-                                page. It used to be printed in brand indigo on
+                                page. It used to be printed in brand evergreen on
                                 every line, which spent the page's structural
                                 colour on its least important sentence. */}
                             <p className="mt-1.5 text-[13px] leading-[1.5] text-ink-500">

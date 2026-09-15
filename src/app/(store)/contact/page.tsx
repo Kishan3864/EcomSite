@@ -62,7 +62,7 @@ export default function ContactPage() {
       <BreadcrumbJsonLd items={crumbs} />
       <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-      <header className="mb-6 border-b border-ink-950 pb-6 sm:mb-8 sm:pb-8">
+      <header className="mb-6 border-b border-hairline pb-6 sm:mb-8 sm:pb-8">
         <span className="eyebrow">Support</span>
         <h1 className="mt-3 font-display text-[26px] leading-[1.06] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[42px]">
           Talk to a person

@@ -104,7 +104,7 @@ function CheckRow({
   count?: number;
   swatch?: string;
 }) {
-  // Ink, not indigo: a column of twenty ticks is the most repeated element on
+  // Ink, not evergreen: a column of twenty ticks is the most repeated element on
   // the page, and colouring every one of them spends the accent on the least
   // important thing in the rail.
   return (
@@ -307,7 +307,7 @@ export function FilterPanel({
                   className="sr-only"
                 />
                 {/* A filled square inside an outlined one. The old radio was a
-                    ring of indigo, which was both the one round thing in a
+                    ring of evergreen, which was both the one round thing in a
                     square rail and a second use of the accent colour. */}
                 <span
                   className={cn(
@@ -467,7 +467,7 @@ export function ActiveChips({
         <button
           key={chip.key}
           onClick={() => setParams(chip.clear)}
-          // Oxblood is for reductions, so dismissing a filter is not painted in
+          // Rose is for reductions, so dismissing a filter is not painted in
           // it. A hairline that darkens to ink says "this comes off" quietly.
           className="tap group inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap border border-hairline bg-surface pl-3 pr-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 lg:h-8"
         >

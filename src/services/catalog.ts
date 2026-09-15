@@ -495,6 +495,26 @@ export const getCatalogueSize = cache(
   },
 );
 
+/**
+ * Every active product's price, ascending.
+ *
+ * The homepage's budget bands are quantiles of this, and they publish counts
+ * ("7 products under ₹2,000"), so they have to be computed from the whole
+ * catalogue rather than from whichever ten products a merchandising query
+ * happened to return — bands drawn from the bestseller shelf would quote a
+ * ceiling and a count that no listing page agrees with.
+ *
+ * One column, no relations: this is the cheapest query on the homepage.
+ */
+export const getPriceLadder = cache(async (): Promise<number[]> => {
+  const rows = await db.product.findMany({
+    where: ACTIVE,
+    select: { price: true },
+    orderBy: { price: "asc" },
+  });
+  return rows.map((r) => r.price);
+});
+
 /* ------------------------------ Banners ----------------------------- */
 
 export const getBanners = cache(

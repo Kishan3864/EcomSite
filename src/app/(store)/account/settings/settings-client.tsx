@@ -118,7 +118,7 @@ function Section({
 
 /**
  * Both answers a form can give, drawn as the shop draws every other aside: a
- * rule down the left and the sentence beside it. The oxblood one matches the
+ * rule down the left and the sentence beside it. The rose one matches the
  * block the shared `Form` puts up when a field fails its own constraint, so a
  * server saying no and a browser saying no look like one thing.
  */

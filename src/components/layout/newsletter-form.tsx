@@ -18,10 +18,10 @@ async function subscribe(_prev: State, formData: FormData): Promise<State> {
 }
 
 /**
- * White rather than saffron, even though this is the strongest thing on the
- * plane. The footer is on every page of the shop, and saffron is spent on one
+ * White rather than ember, even though this is the strongest thing on the
+ * plane. The footer is on every page of the shop, and ember is spent on one
  * filled call to action per page — if the newsletter took it here, no page
- * could ever have its own. White on indigo is the stronger fill in any case.
+ * could ever have its own. White on evergreen is the stronger fill in any case.
  */
 function SubscribeButton() {
   const { pending } = useFormStatus();
@@ -80,8 +80,8 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
         />
         <SubscribeButton />
       </div>
-      {/* The message is set in white and marked by a saffron rule rather than
-          being written in saffron itself: on this plane the only other gold is
+      {/* The message is set in white and marked by a ember rule rather than
+          being written in ember itself: on this plane the only other gold is
           the subscribe button, and an error painted the same colour as the
           thing that caused it reads as part of the button. */}
       {state.error && (

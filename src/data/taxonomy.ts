@@ -69,7 +69,7 @@ export const categories: Category[] = [
     name: "Electronics",
     menuLabel: "Tech & Gadgets",
     icon: "cpu",
-    accent: "#26346e",
+    accent: "#0a5f48",
     description:
       "Phones, laptops, audio and wearables from brands building for Indian conditions — with real warranty support and doorstep service.",
     image: { url: img(POOL.phones[1], { fit: "square", w: 600 }), alt: "Electronics" },
@@ -89,7 +89,7 @@ export const categories: Category[] = [
     name: "Fashion",
     menuLabel: "Wardrobe",
     icon: "shirt",
-    accent: "#9a2742",
+    accent: "#b01d45",
     description:
       "Handloom, everyday essentials and occasion wear from Indian design studios. Free size exchange within 14 days.",
     image: { url: img(POOL.womenwear[0], { fit: "square", w: 600 }), alt: "Fashion" },
@@ -109,7 +109,7 @@ export const categories: Category[] = [
     name: "Home & Living",
     menuLabel: "For the Home",
     icon: "sofa",
-    accent: "#714e0c",
+    accent: "#9c340c",
     description:
       "Furniture, lighting and decor scaled for Indian apartments. Assembly included in 40+ cities.",
     image: { url: img(POOL.furniture[0], { fit: "square", w: 600 }), alt: "Home and living" },
@@ -128,7 +128,7 @@ export const categories: Category[] = [
     name: "Kitchen",
     menuLabel: "Kitchen & Dining",
     icon: "chef-hat",
-    accent: "#34458a",
+    accent: "#0c7558",
     description:
       "Cookware, appliances and dining that survive daily Indian cooking — high heat, heavy use, real families.",
     image: { url: img(POOL.kitchen[0], { fit: "square", w: 600 }), alt: "Kitchen" },
@@ -147,7 +147,7 @@ export const categories: Category[] = [
     name: "Beauty & Wellness",
     menuLabel: "Beauty",
     icon: "sparkles",
-    accent: "#b83a54",
+    accent: "#d02f56",
     description:
       "Dermat-tested skincare, haircare and fragrance formulated for Indian skin tones and climate.",
     image: { url: img(POOL.beauty[0], { fit: "square", w: 600 }), alt: "Beauty" },
@@ -166,7 +166,7 @@ export const categories: Category[] = [
     name: "Jewellery",
     menuLabel: "Jewellery",
     icon: "gem",
-    accent: "#4a5da8",
+    accent: "#17926c",
     description:
       "925 silver, 18k gold-plated and demi-fine jewellery — hallmarked, insured shipping, 30-day returns.",
     image: { url: img(POOL.jewellery[0], { fit: "square", w: 600 }), alt: "Jewellery" },
@@ -185,7 +185,7 @@ export const categories: Category[] = [
     name: "Sports & Fitness",
     menuLabel: "Sport",
     icon: "dumbbell",
-    accent: "#1a2450",
+    accent: "#084a39",
     description:
       "Training equipment, recovery and outdoor gear tested by Indian athletes and weekend runners.",
     image: { url: img(POOL.fitness[0], { fit: "square", w: 600 }), alt: "Sports and fitness" },
@@ -204,7 +204,7 @@ export const categories: Category[] = [
     name: "Books & Stationery",
     menuLabel: "Books & Paper",
     icon: "book-open",
-    accent: "#51565f",
+    accent: "#515652",
     description:
       "Fiction, non-fiction and beautifully made paper goods — curated by readers, not algorithms.",
     image: { url: img(POOL.books[0], { fit: "square", w: 600 }), alt: "Books" },

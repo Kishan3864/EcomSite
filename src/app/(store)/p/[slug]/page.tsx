@@ -65,14 +65,14 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 /**
- * The head of a detail section, set the way the homepage bands are: a saffron
+ * The head of a detail section, set the way the homepage bands are: a ember
  * rule and small caps, the name in the display face, and a rule under the pair.
  * It is a step smaller than a band title so that the product's own name — the
  * only h1 on the page — still outranks everything written about it.
  */
 function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="border-b border-ink-950 pb-3">
+    <div className="border-b border-hairline pb-3">
       <span className="eyebrow">{eyebrow}</span>
       <h2 className="mt-2 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:mt-2.5 sm:text-[28px]">
         {title}
@@ -276,7 +276,7 @@ export default async function ProductPage({ params }: { params: Params }) {
               paragraphs are the shop's promise, and a promise reads as a
               promise when it is set as a document rather than as furniture. */}
           <aside className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
-            <div className="border-t border-ink-950 pt-4 sm:pt-5">
+            <div className="border-t border-hairline pt-4 sm:pt-5">
               <span className="eyebrow">Every order</span>
               <dl className="mt-4 border-b border-hairline sm:mt-5">
                 {policies.map((item) => (

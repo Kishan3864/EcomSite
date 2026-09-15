@@ -46,20 +46,20 @@ const LINKS = {
  * looks like, so that a change of theme cannot leave the names telling lies.
  */
 const C = {
-  canvas: "#eef1f5",
+  canvas: "#f6f7f5",
   surface: "#ffffff",
-  brandDeep: "#111834",
-  brandSoft: "#26346e",
-  brandTint: "#e3e8f7",
-  accent: "#a9740d",
-  accentSoft: "#e0a420",
-  accentDeep: "#714e0c",
-  ink: "#14171b",
-  body: "#3b4048",
-  soft: "#51565f",
-  muted: "#676d77",
+  brandDeep: "#06382c",
+  brandSoft: "#0a5f48",
+  brandTint: "#d5f2e4",
+  accent: "#e35510",
+  accentSoft: "#fa7e38",
+  accentDeep: "#9c340c",
+  ink: "#141715",
+  body: "#3b403c",
+  soft: "#515652",
+  muted: "#676d69",
   hairline: "#d4dae1",
-  rule: "#c7cbd2",
+  rule: "#c8cbc7",
 };
 
 const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";

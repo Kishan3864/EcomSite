@@ -42,7 +42,7 @@ export default function FaqPage() {
       <FaqJsonLd items={allItems} />
       <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-      <header className="mb-7 border-b border-ink-950 pb-6 sm:mb-10 sm:pb-8">
+      <header className="mb-7 border-b border-hairline pb-6 sm:mb-10 sm:pb-8">
         <span className="eyebrow">Help centre</span>
         <h1 className="mt-3 max-w-[22ch] font-display text-[26px] leading-[1.06] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[42px]">
           Questions people actually ask

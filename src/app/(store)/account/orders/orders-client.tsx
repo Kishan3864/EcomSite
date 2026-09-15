@@ -23,7 +23,7 @@ const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
  * An order that is over — cancelled, or sent back — steps out of the ink and
  * is set in grey. Everything still in play is stated at full strength. The
  * tinted lozenges this replaces spent three colours saying what one word says,
- * and one of them was the oxblood the shop keeps for a price coming down.
+ * and one of them was the rose the shop keeps for a price coming down.
  */
 const SPENT: OrderStatus[] = ["cancelled", "returned"];
 
@@ -71,7 +71,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
             className={cn(
               "tap h-10 whitespace-nowrap border px-4 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[12px]",
               filter === f.id
-                ? "border-ink-950 bg-ink-950 text-white"
+                ? "border-brand-700 bg-brand-700 text-white"
                 : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
             )}
           >

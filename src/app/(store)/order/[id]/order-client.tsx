@@ -17,7 +17,7 @@ import { cn, formatDate, formatINR } from "@/lib/utils";
 /**
  * The stamp on a finished order.
  *
- * It used to be a white tick inside a filled indigo disc with a ring pulsing
+ * It used to be a white tick inside a filled evergreen disc with a ring pulsing
  * out of it — the mark every checkout on the internet ends with, and the one
  * shape this shop never draws: nothing here is round, nothing is filled and
  * nothing pulses. So the tick is ruled across a square instead, with the

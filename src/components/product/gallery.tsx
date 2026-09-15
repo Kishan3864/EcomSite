@@ -376,7 +376,7 @@ export function Gallery({
                       aria-label={`Show image ${i + 1}`}
                       aria-current={i === index}
                       className={cn(
-                        // White, not saffron: the accent is spent on the page
+                        // White, not ember: the accent is spent on the page
                         // itself, and a lit frame reads as "this one" anyway.
                         "relative h-14 w-12 shrink-0 overflow-hidden rounded-md transition-all duration-200",
                         i === index

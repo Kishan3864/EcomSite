@@ -46,7 +46,7 @@ export function WishlistClient() {
 
   return (
     <>
-      <div className="mb-3 flex items-center justify-between gap-3 border-b border-ink-950 pb-3 sm:mb-5">
+      <div className="mb-3 flex items-center justify-between gap-3 border-b border-hairline pb-3 sm:mb-5">
         <p className="min-w-0 text-[13px] text-ink-500">
           <span className="font-semibold tabular-nums text-ink-950">{wishlist.length}</span> saved
           {wishlist.length > 1 ? " items" : " item"}

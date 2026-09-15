@@ -63,7 +63,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
             className={cn(
               "tap h-10 rounded-lg border px-3.5 text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
               category === c
-                ? "border-ink-950 bg-ink-950 text-white"
+                ? "border-brand-700 bg-brand-700 text-white"
                 : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
             )}
           >

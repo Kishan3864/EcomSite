@@ -15,8 +15,8 @@ export default function manifest(): MetadataRoute.Manifest {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#eef1f5",
-    theme_color: "#eef1f5",
+    background_color: "#f6f7f5",
+    theme_color: "#06382c",
     categories: ["shopping"],
     icons: [
       { src: "/brand/png/weekendcart-icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },

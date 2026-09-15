@@ -283,7 +283,7 @@ function Shell({
         {/* The amount is money, so it is set in the text face with tabular
             figures rather than in Fraunces, whose proportional numerals were
             never going to hold a column of rupees straight. */}
-        <header className="mb-5 border-b border-ink-950 pb-4 text-center sm:mb-6">
+        <header className="mb-5 border-b border-hairline pb-4 text-center sm:mb-6">
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             Order <span className="tabular-nums">{orderNumber}</span>
           </p>

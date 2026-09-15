@@ -147,7 +147,7 @@ const TONE_CLASS: Record<Tone, string> = {
   gold: "bg-gold-100 text-gold-800",
   sale: "bg-sale-100 text-sale-700",
   ink: "bg-ink-900 text-white",
-  // Teal rather than the blue this tone once was: the brand ramp is now indigo,
+  // Teal rather than the blue this tone once was: the brand ramp is now evergreen,
   // so a blue pill and a brand pill read as the same thing and an order in
   // transit stops being distinguishable from one already delivered. Literal,
   // because this is the one tone with no home in the scale.

@@ -111,7 +111,11 @@ function Band({
 }) {
   return (
     <div className={className}>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 border-b border-ink-950 pb-3 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:pb-5">
+      {/* Matched to the shelf headings on the homepage: an ember eyebrow, the
+          name, and a pill through to the rest. The ruled band this used to sit
+          in is gone for the same reason it went there — ruled bands stack down
+          a page like chapters of a book, and this is a shop. */}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="contents sm:block">
           <span className="eyebrow col-span-2">{eyebrow}</span>
           <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
@@ -126,7 +130,7 @@ function Band({
         {href && (
           <Link
             href={href}
-            className="tap group col-start-2 row-start-2 inline-flex h-10 shrink-0 items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors hover:text-gold-700 sm:h-auto sm:text-[12px]"
+            className="tap group col-start-2 row-start-2 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-hairline bg-surface px-4 text-[12.5px] font-semibold text-brand-700 shadow-xs transition-colors duration-200 hover:border-brand-200 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
           >
             {linkLabel}
             <ArrowRight
@@ -136,7 +140,6 @@ function Band({
           </Link>
         )}
       </div>
-      <div aria-hidden className="mt-[3px] h-px w-full bg-rule" />
     </div>
   );
 }
@@ -148,7 +151,7 @@ export default function AboutPage() {
         <BreadcrumbJsonLd items={crumbs} />
         <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-        <header className="border-b border-ink-950 pb-8 sm:pb-14">
+        <header className="border-b border-hairline pb-8 sm:pb-14">
           <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-8">
             <div className="min-w-0 lg:col-span-6">
               <span className="eyebrow">About us · {BUSINESS.address.city}</span>
@@ -174,10 +177,14 @@ export default function AboutPage() {
             {/* The photograph, framed and captioned, with nothing written over
                 it. A caption a reader can check beats a slogan they cannot. */}
             <div className="min-w-0 lg:col-span-5 lg:col-start-8">
-              <div className="border border-hairline bg-surface">
-                <div className="relative aspect-[3/4] overflow-hidden bg-ink-100 lg:aspect-[4/5]">
+              {/* A landscape crop on desktop, not a portrait one. At 4/5 the
+                  photograph stood nearly 600px tall beside a column of text
+                  about 330px tall, and the row's `items-center` put the
+                  difference on the page as a void above and below the words. */}
+              <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-sm">
+                <div className="relative aspect-[3/4] overflow-hidden bg-ink-100 sm:aspect-[16/10] lg:aspect-[5/4]">
                   <Image
-                    src={img(POOL.lifestyle[1], { fit: "portrait", w: 900 })}
+                    src={img(POOL.lifestyle[1], { fit: "wide", w: 900 })}
                     alt={`${BUSINESS.brandName} product range`}
                     fill
                     loading="eager"
@@ -372,7 +379,7 @@ export default function AboutPage() {
         </section>
       </div>
 
-      {/* The full stop: the page's one dark plane and its one filled saffron
+      {/* The full stop: the page's one dark plane and its one filled ember
           call to action, placed last so it lands as an ending rather than
           competing with the masthead. */}
       <section className="deep-plane">
@@ -389,7 +396,7 @@ export default function AboutPage() {
             <div className="mt-7 flex flex-col gap-2.5 sm:mt-9 sm:flex-row sm:gap-3">
               <Link
                 href="/contact"
-                className="tap inline-flex h-12 items-center justify-center gap-2 bg-gold-400 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-gold-300 sm:px-8 sm:text-[12px]"
+                className="tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:px-8"
               >
                 Contact us <ArrowRight size={15} />
               </Link>

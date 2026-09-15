@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
  * smaller than 16px the moment it is focused, which no app would do.
  *
  * The field no longer suppresses its outline. That `outline-none` was throwing
- * away the saffron focus ring the whole site is keyboard-navigated by, leaving
+ * away the ember focus ring the whole site is keyboard-navigated by, leaving
  * a one-shade border change as the only sign of where the cursor was.
  */
 export const inputClasses = (invalid?: boolean) =>

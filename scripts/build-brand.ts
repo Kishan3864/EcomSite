@@ -29,7 +29,7 @@ const out = (...parts: string[]) => join(root, ...parts);
 /* ------------------------------------------------------------- colours */
 
 /**
- * The site's indigo ink and saffron. These are literals rather than tokens
+ * The site's evergreen and ember. These are literals rather than tokens
  * because the assets below are written straight to disk as SVG and PNG, where
  * no stylesheet — and so no `var(--color-…)` — can reach them; they are kept in
  * step with the @theme block in src/app/globals.css by hand.
@@ -41,14 +41,34 @@ const out = (...parts: string[]) => join(root, ...parts);
  */
 const COLOURS = {
   /** For light backgrounds. */
-  light: { accent: "#e0a420", peak: "#26346e", tail: "#26346e", word: "#14171b", tagline: "#14171b" },
+  light: { accent: "#e35510", peak: "#0a5f48", tail: "#0a5f48", word: "#0a0c0b", tagline: "#0a0c0b" },
   /** For dark backgrounds. */
-  dark: { accent: "#ecbc4f", peak: "#9cabdd", tail: "#9cabdd", word: "#f6f7f8", tagline: "#f6f7f8" },
+  dark: { accent: "#fa7e38", peak: "#76cfab", tail: "#76cfab", word: "#f7f7f6", tagline: "#f7f7f6" },
 } as const;
 type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
 
-/** Favicon tile: the canvas, so the icon reads as a piece of the site. */
-const TILE = "#eef1f5";
+/**
+ * Favicon tile: the brand's deep evergreen, not the page canvas.
+ *
+ * The icon used to be the W in indigo on a near-white tile, which is almost
+ * invisible at 16px in a browser tab — a pale square among other pale squares,
+ * and on a light-themed tab strip it had no edge at all. A saturated tile gives
+ * the mark a silhouette at any size, which is the whole job of a favicon.
+ *
+ * The W on it is drawn in ICON below rather than COLOURS.light: the light
+ * palette is dark ink meant for a pale background, and putting it on this tile
+ * would be near-black on near-black.
+ */
+const TILE = "#06382c";
+
+/** The W as the icon draws it: white strokes, one ember accent, on the tile. */
+const ICON = {
+  accent: "#fa7e38",
+  peak: "#ffffff",
+  tail: "#ffffff",
+  word: "#ffffff",
+  tagline: "#ffffff",
+} as const;
 
 /* ---------------------------------------------------------------- the W */
 
@@ -178,7 +198,7 @@ function iconFile(rounded: boolean) {
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">`,
     `<rect id="tile" width="64" height="64" rx="${rounded ? 14 : 0}" fill="${TILE}"/>`,
-    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups(COLOURS.light)}</g>`,
+    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups(ICON)}</g>`,
     `</svg>`,
   ].join("");
 }
@@ -196,7 +216,7 @@ function maskableFile() {
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">`,
     `<rect width="64" height="64" fill="${TILE}"/>`,
-    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups(COLOURS.light)}</g>`,
+    `<g transform="translate(${f2(tx)} ${f2(ty)}) scale(${scale.toFixed(4)})">${markGroups(ICON)}</g>`,
     `</svg>`,
   ].join("");
 }

@@ -95,7 +95,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   </div>
                 ) : (
                   /* One flat square, filled in the colour the message actually
-                     means: saffron for something that worked, oxblood for the
+                     means: ember for something that worked, rose for the
                      wishlist heart, and a plain rule for a remark. Tinted
                      translucent discs read as an app's status dots. */
                   <div

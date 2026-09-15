@@ -60,7 +60,7 @@ export function ListingShell({
 
       {/* On phones the title block stays short so the first row of products
           is on screen without scrolling; the description clamps to two lines. */}
-      <header className="mb-4 border-b border-ink-950 pb-3 sm:mb-6 sm:pb-5">
+      <header className="mb-4 border-b border-hairline pb-3 sm:mb-6 sm:pb-5">
         {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         <div
           className={cn(
@@ -160,7 +160,7 @@ export function ListingShellSkeleton() {
     <div className="container-page py-3 sm:py-7">
       <Shimmer className="mb-3 h-3 w-56 max-w-full sm:mb-5" />
 
-      <div className="mb-4 border-b border-ink-950 pb-3 sm:mb-6 sm:pb-5">
+      <div className="mb-4 border-b border-hairline pb-3 sm:mb-6 sm:pb-5">
         <Shimmer className="h-2.5 w-32" />
         <Shimmer className="mt-1.5 h-6.5 w-52 max-w-full sm:mt-3 sm:h-8 sm:w-72" />
         <Shimmer className="mt-1.5 h-3.5 w-96 max-w-full sm:mt-2.5" />

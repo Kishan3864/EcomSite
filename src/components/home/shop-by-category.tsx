@@ -60,6 +60,25 @@ export function ShopByCategory({ categories }: { categories: Category[] }) {
   // Four across at most, and never a row with one lonely card in it.
   const columns = balancedColumnClass(destinations.length, 4);
 
+  /**
+   * How tall each tile stands, which has to follow how many there are.
+   *
+   * Every tile used to be `aspect-[5/4]` whatever the count. In a four-column
+   * row that is a neat postcard; in the two-column row a shop with one
+   * department gets, it is a 700px-wide photograph more than 500px tall, and
+   * two of them fill an entire screen with two words on them. It read as a
+   * shop with nothing in it — the opposite of what a department band is for.
+   *
+   * So the fewer the tiles, the wider the crop: a pair sits as two letterbox
+   * panels, a trio a little squarer, four or more keep the postcard.
+   */
+  const shape =
+    destinations.length <= 2
+      ? "aspect-[16/9] sm:aspect-[2/1]"
+      : destinations.length === 3
+        ? "aspect-[4/3] sm:aspect-[3/2]"
+        : "aspect-[5/4]";
+
   return (
     <section className="container-page py-10 sm:py-16">
       <div className="mb-5 flex items-end justify-between gap-6 sm:mb-8">
@@ -89,7 +108,7 @@ export function ShopByCategory({ categories }: { categories: Category[] }) {
               href={destination.href}
               className="group block overflow-hidden rounded-xl border border-hairline bg-surface shadow-xs transition-[box-shadow,transform,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md"
             >
-              <div className="relative aspect-[5/4] overflow-hidden bg-ink-50">
+              <div className={cn("relative overflow-hidden bg-ink-50", shape)}>
                 <Image
                   src={destination.image.url}
                   alt={destination.image.alt}

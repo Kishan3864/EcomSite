@@ -18,14 +18,14 @@ import { cn } from "@/lib/utils";
  * any one of them between visits.
  */
 const PALETTES: [bg: string, figure: string, accent: string][] = [
-  ["#111834", "#9cabdd", "#ecbc4f"],
-  ["#262a30", "#c7cbd2", "#e0a420"],
-  ["#1a2450", "#c6cfee", "#f4d489"],
-  ["#5c400d", "#fae9c6", "#34458a"],
-  ["#e3e8f7", "#34458a", "#a9740d"],
-  ["#3b4048", "#eef0f2", "#8b5f0b"],
-  ["#26346e", "#f2f4fb", "#ecbc4f"],
-  ["#7d1c34", "#fae3e6", "#e0a420"],
+  ["#06382c", "#76cfab", "#fdab71"],
+  ["#262a27", "#c8cbc7", "#fa7e38"],
+  ["#084a39", "#ade4cc", "#fecda8"],
+  ["#7e2d0f", "#ffe8d4", "#0c7558"],
+  ["#d5f2e4", "#0c7558", "#e35510"],
+  ["#3b403c", "#eeefed", "#c4420a"],
+  ["#0a5f48", "#eefaf4", "#fdab71"],
+  ["#8f1739", "#fde3e7", "#fa7e38"],
 ];
 
 function hash(seed: string): number {

@@ -16,11 +16,15 @@ import { QuickView } from "./quick-view";
 /**
  * Product card.
  *
- * Deliberately not a card: no box, no shadow, no lift. The tile sits flat on
- * the surface and lets the photograph do the selling, which is what stops a
- * page of these reading as a wall of identical widgets. Separation comes from
- * the 1px grid the parent draws (`.tile-grid`), not from each tile outlining
- * itself.
+ * An object you could pick up: a rounded surface, a hairline, a short shadow
+ * that deepens as the pointer comes near. The photograph still does the
+ * selling — everything else on the tile is set quietly around it — but the
+ * tile is a thing lying on the page rather than a rectangle drawn on it.
+ *
+ * The action is ember, and it is the only ember on the tile. Green carries
+ * structure across the site and orange carries what you press; in a grid that
+ * distinction is what lets somebody buy without reading, because the button is
+ * the one thing that is not the same colour as everything around it.
  */
 export function ProductCard({
   product,
@@ -159,7 +163,7 @@ export function ProductCard({
         </Link>
 
         <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3 sm:pb-3.5 sm:pt-3">
-          {/* Ink, not saffron. The accent is worth something only while it is
+          {/* Ink, not ember. The accent is worth something only while it is
               rare, and a grid of twenty tiles was spending it twenty times on
               the least important line in the card. */}
           <p className="mb-1 truncate text-[10.5px] font-semibold uppercase tracking-[0.13em] text-ink-400">
@@ -234,8 +238,11 @@ export function ProductCard({
                 outOfStock
                   ? "cursor-not-allowed bg-ink-100 text-ink-400"
                   : added
-                    ? "bg-brand-800 text-white"
-                    : "bg-brand-700 text-white hover:bg-brand-800",
+                    // Confirmation flips to evergreen on purpose: the button
+                    // stops being an invitation the moment it has been taken,
+                    // and a still-ember "Added" invites a second press.
+                    ? "bg-brand-700 text-white"
+                    : "bg-gold-400 text-ink-950 hover:bg-gold-300",
               )}
             >
               <AnimatePresence mode="wait" initial={false}>

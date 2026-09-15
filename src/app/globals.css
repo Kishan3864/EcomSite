@@ -1,108 +1,117 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ *
- *  INDIGO & PAPER — design tokens
+ *  EVERGREEN & EMBER — design tokens
  *
- *  Direction: paper, ink and one signal. The page is a sheet of cool
- *  paper; structure is drawn in hairlines rather than boxes and shadows;
- *  colour is spent almost nowhere, so that the one saffron accent is
- *  believed when it finally appears.
+ *  Direction: a shop, not a document. Deep evergreen carries every
+ *  structural surface — the header, the dark planes, the links — and a
+ *  warm ember orange carries every action. Two colours, each with one
+ *  job, is what makes a commerce page legible at a glance: green is
+ *  where you are, orange is what you press.
  *
- *  Corners are square by policy. The radius scale below is collapsed to
- *  2px on purpose, so every `rounded-*` utility across the app lands on
- *  the same crisp edge. Form controls are the one exception and opt in
- *  with `rounded-field`.
+ *  This replaces the indigo-and-saffron scheme. The split of labour is
+ *  the same, so nothing downstream has to change: `brand-*` is still the
+ *  structural colour and `gold-*` is still the single accent. Only the
+ *  hues moved. `gold-*` is now an orange scale; the name is kept because
+ *  it is spelled out in class strings across the app and renaming it
+ *  would touch every one of them for no visual gain.
  *
  *  Token NAMES are load-bearing — 153 of the files under src/ name them
  *  as Tailwind classes. Change values here; never rename.
  * ------------------------------------------------------------------ */
 
 @theme {
-  /* Brand — indigo ink. All structural colour: dark planes, links, the
-     focus of attention. Near-black at 800–950 so every white-on-brand
-     scrim and gradient already in the repo keeps working untouched.
+  /* Brand — deep evergreen. All structural colour: the header, dark
+     planes, links, the focus of attention. Near-black at 900–950 so
+     every white-on-brand scrim and gradient already in the repo keeps
+     working untouched.
 
      CONSTRAINT: brand-700 does two contradictory jobs — text on canvas
-     and on surface, AND a background under white text. Lightening it
-     breaks both at once, silently. */
-  --color-brand-50: #f2f4fb;
-  --color-brand-100: #e3e8f7;
-  --color-brand-200: #c6cfee;
-  --color-brand-300: #9cabdd;
-  --color-brand-400: #6c80c4;
-  --color-brand-500: #4a5da8;
-  --color-brand-600: #34458a;
-  --color-brand-700: #26346e;
-  --color-brand-800: #1a2450;
-  --color-brand-900: #111834;
-  --color-brand-950: #080b1c;
+     and on surface, AND a background under white text. It clears both
+     here (7.1:1 on canvas, 7.7:1 under white). Lightening it breaks
+     both at once, silently. */
+  --color-brand-50: #eefaf4;
+  --color-brand-100: #d5f2e4;
+  --color-brand-200: #ade4cc;
+  --color-brand-300: #76cfab;
+  --color-brand-400: #3bb187;
+  --color-brand-500: #17926c;
+  --color-brand-600: #0c7558;
+  --color-brand-700: #0a5f48;
+  --color-brand-800: #084a39;
+  --color-brand-900: #06382c;
+  --color-brand-950: #04211a;
 
-  /* Gold — saffron signal. The only warm colour on the site. Spent on
-     the eyebrow rule, the focus ring, and exactly one filled call to
-     action per page.
+  /* Gold — ember orange. Misnamed by history and kept that way on
+     purpose (see the header above). The only warm colour on the site,
+     and the only one that means "press this": the eyebrow rule, the
+     focus ring, and the filled call to action.
 
      CONSTRAINT: gold-500 is the global :focus-visible outline, at
-     3.57:1 on canvas. Brightening it fails SC 1.4.11 site-wide with no
-     error anywhere. */
-  --color-gold-50: #fdf6e8;
-  --color-gold-100: #fae9c6;
-  --color-gold-200: #f4d489;
-  --color-gold-300: #ecbc4f;
-  --color-gold-400: #e0a420;
-  --color-gold-500: #a9740d;
-  --color-gold-600: #8b5f0b;
-  --color-gold-700: #714e0c;
-  --color-gold-800: #5c400d;
-  --color-gold-900: #4b350d;
+     3.51:1 on canvas. Brightening it fails SC 1.4.11 site-wide with no
+     error anywhere.
+     CONSTRAINT: gold-400 is the accent button's fill and carries
+     ink-950 text, not white — 7.6:1 that way, 2.6:1 the other. The
+     white-on-orange version of that button belongs on gold-600. */
+  --color-gold-50: #fff5ed;
+  --color-gold-100: #ffe8d4;
+  --color-gold-200: #fecda8;
+  --color-gold-300: #fdab71;
+  --color-gold-400: #fa7e38;
+  --color-gold-500: #e35510;
+  --color-gold-600: #c4420a;
+  --color-gold-700: #9c340c;
+  --color-gold-800: #7e2d0f;
+  --color-gold-900: #67280f;
 
-  /* Sale — oxblood. Low chroma on purpose: a reduction should read as a
-     decision the shop made, never as a siren competing with saffron. */
-  --color-sale-50: #fdf3f4;
-  --color-sale-100: #fae3e6;
-  --color-sale-200: #f3c9d0;
-  --color-sale-300: #e39dab;
-  --color-sale-400: #cf6a81;
-  --color-sale-500: #b83a54;
-  --color-sale-600: #9a2742;
-  --color-sale-700: #7d1c34;
+  /* Sale — deep rose. Pulled cool and pink on purpose: with ember
+     carrying every button, a reduction printed in another orange would
+     read as one more thing to press. This one reads as a price. */
+  --color-sale-50: #fef2f4;
+  --color-sale-100: #fde3e7;
+  --color-sale-200: #fac7d0;
+  --color-sale-300: #f297a9;
+  --color-sale-400: #e4617e;
+  --color-sale-500: #d02f56;
+  --color-sale-600: #b01d45;
+  --color-sale-700: #8f1739;
 
-  /* Ink — cool graphite with a faint blue cast, so it sits under indigo
-     without reading as a second hue. Carries most of the site.
+  /* Ink — near-neutral graphite with the faintest green cast, so it
+     sits under evergreen without reading as a second hue. Carries most
+     of the site.
 
-     ink-400 is DECORATIVE ONLY (2.64:1 on white): glyph strokes,
+     ink-400 is DECORATIVE ONLY (2.6:1 on white): glyph strokes,
      disabled states, chevrons, struck-through MRP. Never body copy.
-     ink-500 at 4.60:1 on canvas is the floor for anything readable. */
-  --color-ink-50: #f6f7f8;
-  --color-ink-100: #eef0f2;
-  --color-ink-200: #e1e4e8;
-  --color-ink-300: #c7cbd2;
-  --color-ink-400: #99a0aa;
-  --color-ink-500: #676d77;
-  --color-ink-600: #51565f;
-  --color-ink-700: #3b4048;
-  --color-ink-800: #262a30;
-  --color-ink-900: #14171b;
-  --color-ink-950: #0a0c0f;
+     ink-500 at 4.92:1 on canvas is the floor for anything readable. */
+  --color-ink-50: #f7f7f6;
+  --color-ink-100: #eeefed;
+  --color-ink-200: #e2e4e1;
+  --color-ink-300: #c8cbc7;
+  --color-ink-400: #9aa09b;
+  --color-ink-500: #676d69;
+  --color-ink-600: #515652;
+  --color-ink-700: #3b403c;
+  --color-ink-800: #262a27;
+  --color-ink-900: #141715;
+  --color-ink-950: #0a0c0b;
 
-  /* Planes. canvas against surface separates at 1.13:1 — up from the old
-     1.06:1 — so a white tile reads as an object laid on the page, and
-     not as a slightly different white, on a mid-range LCD in daylight. */
-  /* Warmed and lightened. The old canvas was a cool blue-grey heavy enough
-     that white tiles read as panels cut into a background; a shop wants the
-     page to feel like clean daylight with the goods sitting on it. */
-  --color-canvas: #f5f6f8;
+  /* Planes. canvas against surface separates at about 1.13:1, so a white
+     tile reads as an object laid on the page and not as a slightly
+     different white, on a mid-range LCD in daylight.
+
+     The cast is off-neutral toward green rather than blue now, which is
+     what keeps a page of white product tiles from looking cold under
+     the evergreen header. */
+  --color-canvas: #f6f7f5;
   --color-surface: #ffffff;
   /* hairline is the visible 1px line of `.tile-grid` AND the default
      border colour of every element on the site (see @layer base). With
-     no radius and almost no shadow it is the only structure the page
-     has, so it is set stronger than before: 1.41:1 on white. */
-  /* Lighter than before. With a radius and real elevation doing the
-     structural work, a hairline this visible turned every card into a boxed
-     diagram; it is now a divider, not a frame. */
-  --color-hairline: #e2e6eb;
+     a radius and real elevation doing the structural work it is a
+     divider, not a frame. */
+  --color-hairline: #e4e7e3;
   /* A second, heavier rule for editorial dividers that need to be seen —
      under band headers, around drawn frames. */
-  --color-rule: #bcc3cc;
+  --color-rule: #bec4bd;
 
   /* Type */
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
@@ -148,12 +157,12 @@
      These spell out ink-950 as rgb triples — a custom property cannot be
      interpolated into an rgb() alpha here — so they do NOT follow the
      tokens above and have to be restated by hand. */
-  --shadow-xs: 0 1px 2px 0 rgb(10 12 15 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(10 12 15 / 0.07), 0 1px 2px -1px rgb(10 12 15 / 0.06);
-  --shadow-md: 0 4px 12px -2px rgb(10 12 15 / 0.09), 0 2px 4px -2px rgb(10 12 15 / 0.05);
-  --shadow-lg: 0 12px 28px -8px rgb(10 12 15 / 0.14), 0 4px 10px -4px rgb(10 12 15 / 0.07);
-  --shadow-xl: 0 24px 56px -16px rgb(10 12 15 / 0.2);
-  --shadow-ring: 0 0 0 1px rgb(226 230 235 / 1);
+  --shadow-xs: 0 1px 2px 0 rgb(10 12 11 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(10 12 11 / 0.07), 0 1px 2px -1px rgb(10 12 11 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(10 12 11 / 0.09), 0 2px 4px -2px rgb(10 12 11 / 0.05);
+  --shadow-lg: 0 12px 28px -8px rgb(10 12 11 / 0.14), 0 4px 10px -4px rgb(10 12 11 / 0.07);
+  --shadow-xl: 0 24px 56px -16px rgb(10 12 11 / 0.2);
+  --shadow-ring: 0 0 0 1px rgb(228 231 227 / 1);
 
   /* Motion */
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);

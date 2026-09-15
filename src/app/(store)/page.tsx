@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { HeroLead } from "@/components/home/hero-lead";
+import { HeroBanner } from "@/components/home/hero-banner";
 import { Assurance } from "@/components/home/assurance";
 import { ShopByCategory } from "@/components/home/shop-by-category";
+import { ShopByPrice } from "@/components/home/shop-by-price";
 import { SupportBand } from "@/components/home/support-band";
 import { RecentlyViewed } from "@/components/product/recently-viewed";
 import { Counter } from "@/components/home/counter";
@@ -16,6 +17,7 @@ import {
   getBanners,
   getBestsellers,
   getCatalogueSize,
+  getPriceLadder,
   getCategories,
   getFlashDeals,
   getNewArrivals,
@@ -91,7 +93,7 @@ async function EmptyHome() {
 
   return (
     <>
-      <HeroLead hasProducts={false} categories={categories} />
+      <HeroBanner hasProducts={false} categories={categories} banner={banners.hero[0]} />
       <Counter payments={payments} />
       <ShopByCategory categories={categories} />
       <Assurance payments={payments} />
@@ -108,10 +110,11 @@ async function EmptyHome() {
  * ------------------------------------------------------------------ */
 
 async function SparseHome() {
-  const [banners, categories, products, payments] = await Promise.all([
+  const [banners, categories, products, priceLadder, payments] = await Promise.all([
     getBanners(),
     getCategories(),
     getNewArrivals(SPARSE_BELOW),
+    getPriceLadder(),
     getPublicPaymentMethods(),
   ]);
 
@@ -125,7 +128,7 @@ async function SparseHome() {
 
   return (
     <>
-      <HeroLead hasProducts categories={categories} lead={heroLead} />
+      <HeroBanner hasProducts categories={categories} lead={heroLead} banner={banners.hero[0]} />
       <Counter payments={payments} />
       <ShopByCategory categories={categories} />
 
@@ -139,6 +142,11 @@ async function SparseHome() {
         columns={4}
         priority={!spread}
       />
+
+      {/* Budget doors sit under the one shelf rather than above it: with a
+          catalogue this size the shelf IS the catalogue, and a filter offered
+          before anything has been shown is a filter on nothing. */}
+      <ShopByPrice prices={priceLadder} />
 
       <Spotlight product={spread} eyebrow="In the shop" payments={payments} />
 
@@ -156,22 +164,25 @@ async function SparseHome() {
  * ------------------------------------------------------------------ */
 
 async function FullHome() {
-  const [banners, categories, flashDeals, bestsellers, newArrivals, payments] = await Promise.all([
-    getBanners(),
-    getCategories(),
-    getFlashDeals(7),
-    getBestsellers(10),
-    getNewArrivals(10),
-    getPublicPaymentMethods(),
-  ]);
+  const [banners, categories, flashDeals, bestsellers, newArrivals, priceLadder, payments] =
+    await Promise.all([
+      getBanners(),
+      getCategories(),
+      getFlashDeals(7),
+      getBestsellers(10),
+      getNewArrivals(10),
+      getPriceLadder(),
+      getPublicPaymentMethods(),
+    ]);
 
   const best = toCardModels(bestsellers);
 
   return (
     <>
-      <HeroLead hasProducts categories={categories} lead={best[0]} />
+      <HeroBanner hasProducts categories={categories} lead={best[0]} banner={banners.hero[0]} />
       <Counter payments={payments} />
       <ShopByCategory categories={categories} />
+      <ShopByPrice prices={priceLadder} />
 
       <ProductGrid
         eyebrow="Proven"

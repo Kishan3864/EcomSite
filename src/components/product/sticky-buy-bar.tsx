@@ -61,7 +61,7 @@ export function StickyBuyBar({ product }: { product: ProductCardModel }) {
               </div>
               <div className="flex shrink-0 gap-2">
                 <Button
-                  variant="outline"
+                  variant="accent"
                   size="sm"
                   className="tap h-10 px-2.5 tracking-[0.08em] sm:h-11 sm:px-5 sm:text-[12px] sm:tracking-[0.12em]"
                   disabled={outOfStock}

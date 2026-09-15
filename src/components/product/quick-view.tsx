@@ -145,7 +145,7 @@ export function QuickView({
           <div className="flex flex-wrap gap-2">
             <Button
               className="flex-1"
-              variant="outline"
+              variant="accent"
               onClick={() => {
                 addToCart(fromCard(product), { quantity: qty, variantLabel: color });
                 onClose();
