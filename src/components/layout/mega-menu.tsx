@@ -5,7 +5,8 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import { DepartmentGlyph, glyphNameFor } from "@/components/illustration/department-glyph";
+import { DepartmentGlyph } from "@/components/illustration/department-glyph";
+import { glyphNameFor } from "@/components/illustration/glyph-name";
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
