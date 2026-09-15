@@ -187,7 +187,7 @@ export function ReviewStep() {
         {needsAccount && (
           /* Ink, not a tinted panel. It is the most important thing on the page
              and it earns that by being the only element drawn in full black. */
-          <section className="border border-ink-950 bg-surface p-4 sm:p-5">
+          <section className="bg-surface p-4 sm:p-5">
             <h2 className="font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
               You need an account to place this order
             </h2>
@@ -240,16 +240,16 @@ export function ReviewStep() {
           ))}
         </div>
 
-        <section className="border border-hairline bg-surface">
-          <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
+        <section className="bg-surface">
+          <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
             {cart.length} item{cart.length > 1 ? "s" : ""} in this order
           </h2>
-          <ul className="divide-y divide-hairline">
+          <ul>
             {cart.map((line) => (
               <li key={line.id} className="flex gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
                 <Link
                   href={`/p/${line.slug}`}
-                  className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
+                  className="relative h-20 w-16 shrink-0 overflow-hidden bg-ink-100"
                 >
                   <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                 </Link>
@@ -280,7 +280,7 @@ export function ReviewStep() {
         {/* The one Pay button on a desktop is in the order summary beside this;
             on a phone it is the pinned bar. This keeps only the terms — a second
             button here made two places to press for one payment. */}
-        <p className="border-t border-hairline pt-4 text-[13px] leading-[1.55] text-ink-500">
+        <p className="pt-4 text-[13px] leading-[1.55] text-ink-500">
           By placing this order you agree to our{" "}
           <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
             terms

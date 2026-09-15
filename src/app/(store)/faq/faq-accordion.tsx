@@ -38,7 +38,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
     // min-w-0: this is a grid column, and the chip rail's full width would
     // otherwise become its minimum and push the page sideways on a phone.
     <div className="min-w-0">
-      <div className="mb-3 flex h-11 items-center gap-2.5 rounded-field border border-ink-200 bg-canvas px-3.5 transition-colors focus-within:border-brand-500 sm:mb-5 sm:h-12 sm:px-4">
+      <div className="mb-3 flex h-11 items-center gap-2.5 bg-canvas px-3.5 transition-colors sm:mb-5 sm:h-12 sm:px-4">
         <Search size={16} className="shrink-0 text-ink-400" />
         <label htmlFor="faq-search" className="sr-only">
           Search the help centre
@@ -61,10 +61,10 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
             key={c}
             onClick={() => setCategory(c)}
             className={cn(
-              "tap h-10 rounded-lg border px-3.5 text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
+              "tap h-10 px-3.5 text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
               category === c
-                ? "border-brand-700 bg-brand-700 text-white"
-                : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
+                ? "bg-brand-700 text-white"
+                : "bg-surface text-ink-600 hover:text-ink-950",
             )}
           >
             {c}
@@ -73,7 +73,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
       </div>
 
       {total === 0 ? (
-        <div className="border border-hairline bg-surface px-4 py-10 text-center sm:px-6 sm:py-14">
+        <div className="bg-surface px-4 py-10 text-center sm:px-6 sm:py-14">
           <PaperMark size={120} className="mx-auto text-ink-300" />
           {/* break-words: the query is echoed back and may be one long word. */}
           <h2 className="mt-5 break-words font-display text-[20px] tracking-[-0.02em] text-ink-950">
@@ -90,7 +90,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
               <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:mb-3">
                 {group.category}
               </h2>
-              <ul className="divide-y divide-hairline border-y border-hairline">
+              <ul>
                 {group.items.map((item) => {
                   const expanded = open === item.q;
                   return (

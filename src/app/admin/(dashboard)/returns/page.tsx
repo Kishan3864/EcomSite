@@ -249,7 +249,7 @@ export default async function ReturnsPage({ searchParams }: { searchParams: Prom
                       <Link
                         href={detail}
                         title="Open"
-                        className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
+                        className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
                       >
                         <ArrowRight size={14} />
                       </Link>
@@ -273,7 +273,7 @@ function RowButton({ title, children }: { title: string; children: React.ReactNo
       type="submit"
       title={title}
       aria-label={title}
-      className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-brand-50 hover:text-brand-800"
+      className="p-1.5 text-ink-400 transition-colors hover:bg-brand-50 hover:text-brand-800"
     >
       {children}
     </button>
@@ -303,7 +303,7 @@ function AgeCell({
         {ageLabel(requestedAt, now)}
       </span>
       {overdue && (
-        <span className="rounded-full bg-sale-100 px-1.5 py-px text-[10.5px] font-semibold uppercase tracking-wide text-sale-700">
+        <span className="bg-sale-100 px-1.5 py-px text-[10.5px] font-semibold uppercase tracking-wide text-sale-700">
           Overdue
         </span>
       )}

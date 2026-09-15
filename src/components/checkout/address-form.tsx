@@ -72,10 +72,10 @@ export function AddressForm({
               onClick={() => set("label", label)}
               aria-pressed={form.label === label}
               className={cn(
-                "tap inline-flex h-10 items-center justify-center border px-4 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[11.5px]",
+                "tap inline-flex h-10 items-center justify-center px-4 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[11.5px]",
                 form.label === label
-                  ? "border-brand-700 bg-brand-700 text-white"
-                  : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
+                  ? "bg-brand-700 text-white"
+                  : "bg-surface text-ink-600 hover:text-ink-950",
               )}
             >
               {label}

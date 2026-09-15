@@ -42,7 +42,7 @@ export default function FaqPage() {
       <FaqJsonLd items={allItems} />
       <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-      <header className="mb-7 border-b border-hairline pb-6 sm:mb-10 sm:pb-8">
+      <header className="mb-7 pb-6 sm:mb-10 sm:pb-8">
         <span className="eyebrow">Help centre</span>
         <h1 className="mt-3 max-w-[22ch] font-display text-[26px] leading-[1.06] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[42px]">
           Questions people actually ask
@@ -57,7 +57,7 @@ export default function FaqPage() {
         <FaqAccordion groups={faqs} />
 
         <aside className="min-w-0 space-y-4 lg:sticky lg:top-[132px] lg:h-fit">
-          <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
+          <div className="bg-surface p-4 sm:p-5">
             <h2 className="font-display text-[20px] leading-tight tracking-[-0.02em] text-ink-950">
               Still stuck?
             </h2>
@@ -85,12 +85,12 @@ export default function FaqPage() {
             {/* A ruled index. Six policy pages listed as an index is how a
                 reader expects to be handed the small print, and every row is a
                 44px target for a thumb. */}
-            <ul className="mt-2 border-b border-hairline">
+            <ul className="mt-2">
               {POLICY_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="tap group flex h-11 items-center justify-between gap-4 border-t border-hairline text-[13px] text-ink-700 transition-colors hover:text-brand-700"
+                    className="tap group flex h-11 items-center justify-between gap-4 text-[13px] text-ink-700 transition-colors hover:text-brand-700"
                   >
                     {link.label}
                     <ChevronRight

@@ -40,7 +40,7 @@ export default async function BannersPage() {
       />
 
       {liveHeroes === 0 && (
-        <div className="mb-5 rounded-xl border border-gold-200 bg-gold-50 px-4 py-3 text-[13px] text-gold-900">
+        <div className="mb-5 bg-gold-50 px-4 py-3 text-[13px] text-gold-900">
           No hero slide is live right now, so the home page opens without its carousel. Activate one
           below or add a new hero banner.
         </div>
@@ -76,7 +76,7 @@ export default async function BannersPage() {
                   )}
                 </p>
               ) : (
-                <ul className="divide-y divide-hairline">
+                <ul>
                   {rows.map((b, i) => {
                     const status = bannerStatus(b, now);
                     const tone = BANNER_STATUS[status];
@@ -85,7 +85,7 @@ export default async function BannersPage() {
                       <li key={b.id} className="flex flex-wrap items-center gap-4 px-5 py-3.5">
                         <span
                           className={cn(
-                            "relative shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100",
+                            "relative shrink-0 overflow-hidden bg-ink-100",
                             placement === "PROMO_TILE" ? "h-16 w-16" : "h-16 w-28",
                           )}
                         >
@@ -143,7 +143,7 @@ export default async function BannersPage() {
                                   type="submit"
                                   disabled={i === 0}
                                   title="Move up"
-                                  className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900 disabled:opacity-30"
+                                  className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900 disabled:opacity-30"
                                 >
                                   <ArrowUp size={14} />
                                 </button>
@@ -155,7 +155,7 @@ export default async function BannersPage() {
                                   type="submit"
                                   disabled={i === rows.length - 1}
                                   title="Move down"
-                                  className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900 disabled:opacity-30"
+                                  className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900 disabled:opacity-30"
                                 >
                                   <ArrowDown size={14} />
                                 </button>
@@ -165,7 +165,7 @@ export default async function BannersPage() {
                                 <button
                                   type="submit"
                                   title={b.isActive ? "Deactivate" : "Activate"}
-                                  className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
+                                  className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
                                 >
                                   <Power size={14} />
                                 </button>
@@ -176,7 +176,7 @@ export default async function BannersPage() {
                             href={b.href}
                             target="_blank"
                             title="Open target page"
-                            className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700"
+                            className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-brand-700"
                           >
                             <ExternalLink size={14} />
                           </Link>
@@ -189,7 +189,7 @@ export default async function BannersPage() {
                               <button
                                 type="submit"
                                 title="Delete"
-                                className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
+                                className="p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
                               >
                                 <Trash2 size={14} />
                               </button>

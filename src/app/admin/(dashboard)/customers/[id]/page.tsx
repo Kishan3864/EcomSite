@@ -223,7 +223,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
             {customer.returns.length === 0 ? (
               <p className="px-5 py-8 text-center text-[13px] text-ink-500">No return requests.</p>
             ) : (
-              <ul className="divide-y divide-hairline">
+              <ul>
                 {customer.returns.map((r) => (
                   <li key={r.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3.5 text-[13px]">
                     <div className="min-w-0 flex-1">
@@ -259,7 +259,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
             {customer.reviews.length === 0 ? (
               <p className="px-5 py-8 text-center text-[13px] text-ink-500">No reviews written.</p>
             ) : (
-              <ul className="divide-y divide-hairline">
+              <ul>
                 {customer.reviews.map((r) => (
                   <li key={r.id} className="px-5 py-3.5 text-[13px]">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
@@ -346,7 +346,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
             ) : (
               <ul className="space-y-3">
                 {customer.addresses.map((a) => (
-                  <li key={a.id} className="rounded-lg border border-hairline bg-canvas p-3 text-[12.5px] leading-relaxed text-ink-700">
+                  <li key={a.id} className="bg-canvas p-3 text-[12.5px] leading-relaxed text-ink-700">
                     <div className="mb-1 flex flex-wrap items-center gap-1.5">
                       <Pill tone="neutral">{ADDRESS_LABEL[a.label]}</Pill>
                       {a.isDefault && <Pill tone="brand">Default</Pill>}
@@ -367,7 +367,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
             )}
           </Card>
 
-          <Card title="Danger zone" className="border-sale-200">
+          <Card title="Danger zone">
             {anon ? (
               <p className="text-[13px] leading-relaxed text-ink-600">
                 This record was anonymised and is frozen: it cannot be edited, reactivated or anonymised again. Its
@@ -408,7 +408,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
                 )}
 
                 {hasRole(session, "OWNER") && (
-                  <div className="flex flex-wrap items-start justify-between gap-3 border-t border-hairline pt-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3 pt-4">
                     <div className="min-w-0 flex-1">
                       <p className="text-[13px] font-medium text-ink-900">Anonymise customer</p>
                       <p className="mt-0.5 text-[12px] leading-relaxed text-ink-500">

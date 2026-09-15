@@ -63,7 +63,7 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <Reveal className="min-w-0 rounded-xl border border-hairline bg-surface p-5 sm:p-8">
+      <Reveal className="min-w-0 bg-surface p-5 sm:p-8">
         <span className="eyebrow">Received</span>
         <h2 className="mt-3 font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
           Message received
@@ -94,7 +94,7 @@ export function ContactForm() {
   }
 
   return (
-    <Form onSubmit={submit} className="min-w-0 rounded-xl border border-hairline bg-surface p-4 sm:p-8">
+    <Form onSubmit={submit} className="min-w-0 bg-surface p-4 sm:p-8">
       <h2 className="font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
         Send us a message
       </h2>
@@ -159,10 +159,10 @@ export function ContactForm() {
             onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
             placeholder="Tell us what happened…"
             // 16px on phones, as in the shared inputs: iOS zooms into smaller fields.
-            className={`w-full rounded-field border bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px] ${
+            className={`w-full border bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px] ${
               errors.message
-                ? "border-sale-500 focus:border-sale-600"
-                : "border-ink-200 hover:border-ink-300 focus:border-brand-500"
+                ? ""
+                : ""
             }`}
           />
         </Field>

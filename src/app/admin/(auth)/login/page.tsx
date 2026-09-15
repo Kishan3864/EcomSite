@@ -31,7 +31,7 @@ export default async function AdminLoginPage({
             <AdminLoginForm next={next} />
           </div>
 
-          <p className="mt-8 flex items-center gap-2 border-t border-hairline pt-4 text-[13px] text-ink-500">
+          <p className="mt-8 flex items-center gap-2 pt-4 text-[13px] text-ink-500">
             <Lock size={12} className="shrink-0 text-ink-400" /> Sessions expire after{" "}
             <span className="tabular-nums">12</span> hours. Every action is logged.
           </p>
@@ -47,7 +47,7 @@ export default async function AdminLoginPage({
           </h2>
           {/* A ruled index rather than a column of gold ticks: aqua is spent
               on the eyebrow rule and nowhere else on this screen. */}
-          <ul className="mt-7 max-w-md border-b border-white/15">
+          <ul className="mt-7 max-w-md">
             {[
               "Live orders with one-click status updates and tracking events",
               "Catalogue edits that reach the storefront within seconds",
@@ -55,7 +55,7 @@ export default async function AdminLoginPage({
             ].map((line) => (
               <li
                 key={line}
-                className="border-t border-white/15 py-3 text-[14px] leading-[1.55] text-white/75"
+                className="py-3 text-[14px] leading-[1.55] text-white/75"
               >
                 {line}
               </li>

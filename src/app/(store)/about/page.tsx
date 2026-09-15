@@ -130,7 +130,7 @@ function Band({
         {href && (
           <Link
             href={href}
-            className="tap group col-start-2 row-start-2 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-hairline bg-surface px-4 text-[12.5px] font-semibold text-brand-700 shadow-xs transition-colors duration-200 hover:border-brand-200 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
+            className="tap group col-start-2 row-start-2 inline-flex h-9 shrink-0 items-center gap-1.5 bg-surface px-4 text-[12.5px] font-semibold text-brand-700 shadow-xs transition-colors duration-200 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
           >
             {linkLabel}
             <ArrowRight
@@ -151,7 +151,7 @@ export default function AboutPage() {
         <BreadcrumbJsonLd items={crumbs} />
         <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-        <header className="border-b border-hairline pb-8 sm:pb-14">
+        <header className="pb-8 sm:pb-14">
           <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-8">
             <div className="min-w-0 lg:col-span-6">
               <span className="eyebrow">About us · {BUSINESS.address.city}</span>
@@ -181,7 +181,7 @@ export default function AboutPage() {
                   photograph stood nearly 600px tall beside a column of text
                   about 330px tall, and the row's `items-center` put the
                   difference on the page as a void above and below the words. */}
-              <div className="overflow-hidden rounded-2xl border border-hairline bg-surface shadow-sm">
+              <div className="overflow-hidden bg-surface shadow-sm">
                 <div className="relative aspect-[3/4] overflow-hidden bg-ink-100 sm:aspect-[16/10] lg:aspect-[5/4]">
                   <Image
                     src={img(POOL.lifestyle[1], { fit: "wide", w: 900 })}
@@ -193,7 +193,7 @@ export default function AboutPage() {
                     className="object-cover"
                   />
                 </div>
-                <p className="border-t border-hairline px-4 py-3.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
+                <p className="px-4 py-3.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
                   Stocked and shipped from {BUSINESS.address.city}
                 </p>
               </div>
@@ -234,28 +234,28 @@ export default function AboutPage() {
               <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 Business details
               </h3>
-              <dl className="mt-3 border-b border-hairline">
-                <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+              <dl className="mt-3">
+                <div className="flex items-baseline justify-between gap-5 py-3">
                   <dt className="shrink-0 text-[13px] text-ink-500">Trading name</dt>
                   <dd className="min-w-0 text-right text-[13px] font-medium text-ink-900 wrap-break-word">
                     {BUSINESS.legalName}
                   </dd>
                 </div>
-                <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+                <div className="flex items-baseline justify-between gap-5 py-3">
                   <dt className="shrink-0 text-[13px] text-ink-500">Operated by</dt>
                   <dd className="min-w-0 text-right text-[13px] font-medium text-ink-900 wrap-break-word">
                     {BUSINESS.proprietorName}
                   </dd>
                 </div>
                 {isFilled(BUSINESS.gstin) ? (
-                  <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+                  <div className="flex items-baseline justify-between gap-5 py-3">
                     <dt className="shrink-0 text-[13px] text-ink-500">GSTIN</dt>
                     <dd className="min-w-0 text-right text-[13px] font-medium tabular-nums text-ink-900 wrap-break-word">
                       {BUSINESS.gstin}
                     </dd>
                   </div>
                 ) : null}
-                <div className="flex items-baseline justify-between gap-5 border-t border-hairline py-3">
+                <div className="flex items-baseline justify-between gap-5 py-3">
                   <dt className="shrink-0 text-[13px] text-ink-500">Business address</dt>
                   <dd className="min-w-0 text-right text-[13px] font-medium leading-[1.55] text-ink-900 wrap-break-word">
                     {formatAddress()}
@@ -316,7 +316,7 @@ export default function AboutPage() {
             />
           </Reveal>
 
-          <ol className="relative border-l border-hairline pl-6 sm:pl-8">
+          <ol className="relative pl-6 sm:pl-8">
             {HOW_IT_WORKS.map((item, i) => (
               <Reveal
                 key={item.step}
@@ -396,13 +396,13 @@ export default function AboutPage() {
             <div className="mt-7 flex flex-col gap-2.5 sm:mt-9 sm:flex-row sm:gap-3">
               <Link
                 href="/contact"
-                className="tap inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:px-8"
+                className="tap inline-flex h-12 items-center justify-center gap-2 bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:px-8"
               >
                 Contact us <ArrowRight size={15} />
               </Link>
               <Link
                 href="/faq"
-                className="tap inline-flex h-12 items-center justify-center border border-white/30 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-white hover:text-ink-950 sm:px-8 sm:text-[12px]"
+                className="tap inline-flex h-12 items-center justify-center px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-white hover:text-ink-950 sm:px-8 sm:text-[12px]"
               >
                 Read the FAQ
               </Link>

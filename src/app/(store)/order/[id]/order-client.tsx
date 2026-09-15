@@ -30,9 +30,9 @@ function SuccessMark() {
     <div className="relative mx-auto h-16 w-16 sm:h-20 sm:w-20">
       <span
         aria-hidden
-        className="absolute inset-[10%] translate-x-[8px] translate-y-[8px] border border-rule"
+        className="absolute inset-[10%] translate-x-[8px] translate-y-[8px]"
       />
-      <span aria-hidden className="absolute inset-0 border border-ink-950 bg-surface" />
+      <span aria-hidden className="absolute inset-0 bg-surface" />
       <Ink viewBox="0 0 64 64" strokeWidth={1.5} className="relative h-full w-full text-brand-700">
         <DrawIn duration={700} delay={180}>
           <path d="M18 33L28 43L46 21" {...drawnPath} />
@@ -46,7 +46,7 @@ function SuccessMark() {
    The same shape the form summary uses, so an unpaid order and a failed field
    speak in one voice. */
 const NOTICE =
-  "flex flex-wrap items-center justify-between gap-3 border-l-2 px-4 py-4 sm:gap-4 sm:px-5 sm:py-5";
+  "flex flex-wrap items-center justify-between gap-3 rule-l px-4 py-4 sm:gap-4 sm:px-5 sm:py-5";
 const NOTICE_LABEL = "text-[11px] font-semibold uppercase tracking-[0.12em]";
 
 export function OrderClient({ order }: { order: Order | null }) {
@@ -120,7 +120,7 @@ export function OrderClient({ order }: { order: Order | null }) {
             )}
           </p>
 
-          <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 border border-hairline bg-surface px-3 py-2.5 sm:mt-6 sm:px-4">
+          <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-surface px-3 py-2.5 sm:mt-6 sm:px-4">
             <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Order number
             </span>
@@ -149,7 +149,7 @@ export function OrderClient({ order }: { order: Order | null }) {
             order.paymentMethod.id !== "upi" &&
             (order.paymentStatus === "pending" || order.paymentStatus === "failed") &&
             order.status !== "cancelled" && (
-              <div className={cn(NOTICE, "border-sale-600 bg-sale-50")}>
+              <div className={cn(NOTICE, "[--rule-color:var(--color-sale-600)] bg-sale-50")}>
                 <div className="min-w-0">
                   <p className={cn(NOTICE_LABEL, "text-sale-700")}>
                     {paymentFailed ? "Payment not completed" : "Waiting for payment"}
@@ -170,7 +170,7 @@ export function OrderClient({ order }: { order: Order | null }) {
             )}
 
           {order.paymentMethod.id === "upi" && order.paymentStatus === "pending" && (
-            <div className={cn(NOTICE, "border-ink-950 bg-surface")}>
+            <div className={cn(NOTICE, "[--rule-color:var(--color-ink-950)] bg-surface")}>
               <div className="min-w-0">
                 <p className={cn(NOTICE_LABEL, "text-ink-500")}>Waiting for payment</p>
                 <p className="mt-1.5 max-w-[46ch] text-[13.5px] leading-[1.55] text-ink-800">
@@ -192,7 +192,7 @@ export function OrderClient({ order }: { order: Order | null }) {
           )}
 
           {order.paymentMethod.id === "upi" && order.paymentStatus === "verifying" && (
-            <div className="border-l-2 border-ink-950 bg-surface px-4 py-4 sm:px-5 sm:py-5">
+            <div className="rule-l [--rule-color:var(--color-ink-950)] bg-surface px-4 py-4 sm:px-5 sm:py-5">
               <p className={cn(NOTICE_LABEL, "text-ink-500")}>We are checking your payment</p>
               <p className="mt-1.5 max-w-[60ch] text-[13.5px] leading-[1.6] text-ink-600">
                 Your reference is with us and we are matching it against our bank. You will get an
@@ -202,7 +202,7 @@ export function OrderClient({ order }: { order: Order | null }) {
           )}
 
           {/* Delivery promise */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-hairline bg-surface p-4 sm:gap-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-surface p-4 sm:gap-4 sm:p-5">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 Estimated delivery
@@ -222,17 +222,17 @@ export function OrderClient({ order }: { order: Order | null }) {
           </div>
 
           {/* Items */}
-          <section className="border border-hairline bg-surface">
-            <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
+          <section className="bg-surface">
+            <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
               <span className="tabular-nums">{order.lines.length}</span> item
               {order.lines.length > 1 ? "s" : ""}
             </h2>
-            <ul className="divide-y divide-hairline">
+            <ul>
               {order.lines.map((line) => (
                 <li key={line.id} className="flex gap-3 px-4 py-4 sm:gap-4 sm:px-5">
                   <Link
                     href={`/p/${line.slug}`}
-                    className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
+                    className="relative h-20 w-16 shrink-0 overflow-hidden bg-ink-100"
                   >
                     <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                   </Link>
@@ -316,8 +316,8 @@ export function OrderClient({ order }: { order: Order | null }) {
           </div>
 
           {/* Totals */}
-          <section className="border border-hairline bg-surface">
-            <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
+          <section className="bg-surface">
+            <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
               Payment summary
             </h2>
             <dl className="space-y-2.5 px-4 py-3.5 text-[13px] sm:px-5 sm:py-4 sm:text-[13.5px]">
@@ -336,7 +336,7 @@ export function OrderClient({ order }: { order: Order | null }) {
               />
               <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
             </dl>
-            <div className="flex items-baseline justify-between gap-4 border-t border-hairline px-4 py-3.5 sm:px-5 sm:py-4">
+            <div className="flex items-baseline justify-between gap-4 px-4 py-3.5 sm:px-5 sm:py-4">
               <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
                 Total paid
               </span>

@@ -53,7 +53,7 @@ export function ListingToolbar({
     <>
       {/* Phones and tablets: two equal halves pinned under the header, the way
           shopping apps do it, so sort and filter are one thumb-tap away. */}
-      <div className="sticky top-[57px] z-30 -mx-3 mb-3 grid grid-cols-2 border-y border-hairline bg-canvas/92 backdrop-blur-lg sm:-mx-6 sm:mb-5 lg:hidden">
+      <div className="sticky top-[57px] z-30 -mx-3 mb-3 grid grid-cols-2 bg-canvas/92 backdrop-blur-lg sm:-mx-6 sm:mb-5 lg:hidden">
         <button
           type="button"
           onClick={() => setSortSheetOpen(true)}
@@ -79,7 +79,7 @@ export function ListingToolbar({
           onClick={() => setFiltersOpen(true)}
           aria-haspopup="dialog"
           aria-expanded={filtersOpen}
-          className="tap flex h-11 min-w-0 items-center justify-center gap-2 border-l border-hairline px-3"
+          className="tap flex h-11 min-w-0 items-center justify-center gap-2 px-3"
         >
           <SlidersHorizontal size={15} className="shrink-0 text-ink-400" />
           <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
@@ -96,7 +96,7 @@ export function ListingToolbar({
       </div>
 
       {/* Desktop: count on the left, sort on the right, one rule under both. */}
-      <div className="mb-5 hidden h-12 items-center justify-between gap-4 border-b border-hairline lg:flex">
+      <div className="mb-5 hidden h-12 items-center justify-between gap-4 lg:flex">
         <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           <span className="tabular-nums text-ink-950">{total}</span>{" "}
           {total === 1 ? "product" : "products"}
@@ -138,7 +138,7 @@ export function ListingToolbar({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.16 }}
-                  className="absolute right-0 top-[calc(100%+6px)] z-20 w-60 border border-ink-950 bg-surface"
+                  className="absolute right-0 top-[calc(100%+6px)] z-20 w-60 bg-surface"
                 >
                   {SORT_OPTIONS.map((option) => {
                     const selected = currentSort === option.value;
@@ -147,7 +147,6 @@ export function ListingToolbar({
                         key={option.value}
                         role="option"
                         aria-selected={selected}
-                        className="border-t border-hairline first:border-t-0"
                       >
                         <button
                           onClick={() => {
@@ -182,7 +181,7 @@ export function ListingToolbar({
       >
         {/* Full-bleed ruled rows, so the sheet reads as a list on paper rather
             than as a stack of buttons floating in a tray. */}
-        <ul role="listbox" aria-label="Sort by" className="border-b border-hairline bg-surface">
+        <ul role="listbox" aria-label="Sort by" className="bg-surface">
           {SORT_OPTIONS.map((option) => {
             const selected = currentSort === option.value;
             return (
@@ -190,7 +189,6 @@ export function ListingToolbar({
                 key={option.value}
                 role="option"
                 aria-selected={selected}
-                className="border-t border-hairline first:border-t-0"
               >
                 <button
                   type="button"

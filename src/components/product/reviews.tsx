@@ -55,7 +55,7 @@ export function ReviewsSection({
         <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
           Ratings and reviews
         </h2>
-        <div className="mt-3 border-t border-hairline pt-4 sm:mt-5 sm:pt-5">
+        <div className="mt-3 pt-4 sm:mt-5 sm:pt-5">
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             No reviews yet
           </p>
@@ -76,7 +76,7 @@ export function ReviewsSection({
         Ratings and reviews
       </h2>
 
-      <div className="mt-3 grid gap-5 border-t border-hairline pt-4 sm:mt-5 sm:gap-8 sm:pt-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12">
+      <div className="mt-3 grid gap-5 pt-4 sm:mt-5 sm:gap-8 sm:pt-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12">
         {/* Summary */}
         <div>
           {/* Phones set the score beside the bars, as shopping apps do, rather
@@ -168,10 +168,10 @@ export function ReviewsSection({
                 onClick={() => setFilter(chip.key)}
                 aria-pressed={filter === chip.key}
                 className={cn(
-                  "tap inline-flex h-9 items-center rounded-lg border px-3.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[11.5px]",
+                  "tap inline-flex h-9 items-center px-3.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[11.5px]",
                   filter === chip.key
-                    ? "border-brand-700 bg-brand-700 text-white"
-                    : "border-hairline text-ink-600 hover:border-ink-950 hover:text-ink-950",
+                    ? "bg-brand-700 text-white"
+                    : "text-ink-600 hover:text-ink-950",
                 )}
               >
                 {chip.label}
@@ -183,7 +183,7 @@ export function ReviewsSection({
               measure, so the note reads as a footnote to the panel above it
               rather than as another tinted box. Every word of it is the
               shop's own promise and is kept as written. */}
-          <div className="mt-5 border-t border-hairline pt-4">
+          <div className="mt-5 pt-4">
             <p className="max-w-[46ch] text-[13px] leading-[1.6] text-ink-500">
               Only customers who bought the product on WeekendCart can leave a review. We never edit
               or remove a review for being negative.
@@ -194,11 +194,11 @@ export function ReviewsSection({
         {/* List */}
         <div>
           {filtered.length === 0 ? (
-            <p className="border-t border-hairline pt-4 text-[13px] text-ink-500 sm:text-[13.5px]">
+            <p className="pt-4 text-[13px] text-ink-500 sm:text-[13.5px]">
               No reviews match that filter yet.
             </p>
           ) : (
-            <ul className="border-t border-hairline">
+            <ul>
               <AnimatePresence initial={false}>
                 {filtered.slice(0, visible).map((review) => (
                   <motion.li
@@ -208,14 +208,14 @@ export function ReviewsSection({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="border-b border-hairline py-4 sm:py-5"
+                    className="py-4 sm:py-5"
                   >
                     <div className="flex items-start justify-between gap-3 sm:gap-4">
                       <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
                         {/* Initials in a hairline square, like a stamp on a
                             docket. The round tinted disc was the one piece of
                             app furniture left on the page. */}
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-hairline text-[11.5px] font-semibold tracking-[0.04em] text-ink-700">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center text-[11.5px] font-semibold tracking-[0.04em] text-ink-700">
                           {review.author
                             .split(" ")
                             .map((n) => n[0])
@@ -227,7 +227,7 @@ export function ReviewsSection({
                             {review.verified && (
                               <span
                                 title="Verified purchase"
-                                className="inline-flex items-center gap-1 border border-hairline px-1.5 py-[3px] text-[10px] font-semibold uppercase leading-none tracking-[0.1em] text-brand-700"
+                                className="inline-flex items-center gap-1 px-1.5 py-[3px] text-[10px] font-semibold uppercase leading-none tracking-[0.1em] text-brand-700"
                               >
                                 <VerifiedIcon size={10} /> Verified
                               </span>
@@ -253,7 +253,7 @@ export function ReviewsSection({
                         {review.images.map((src) => (
                           <span
                             key={src}
-                            className="relative h-16 w-16 overflow-hidden rounded-lg border border-hairline bg-ink-100"
+                            className="relative h-16 w-16 overflow-hidden bg-ink-100"
                           >
                             <Image src={src} alt="" fill sizes="64px" className="object-cover" />
                           </span>
@@ -267,10 +267,10 @@ export function ReviewsSection({
                       }
                       aria-pressed={Boolean(helpful[review.id])}
                       className={cn(
-                        "tap mt-3 inline-flex h-9 items-center gap-2 border px-3 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
+                        "tap mt-3 inline-flex h-9 items-center gap-2 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
                         helpful[review.id]
-                          ? "border-brand-700 bg-brand-700 text-white"
-                          : "border-hairline text-ink-500 hover:border-ink-950 hover:text-ink-950",
+                          ? "bg-brand-700 text-white"
+                          : "text-ink-500 hover:text-ink-950",
                       )}
                     >
                       <ThumbsUp size={12} />
@@ -333,7 +333,7 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
           A new listing has no questions yet, and saying so — with the way to
           ask one — is the honest version of the same space. */}
       {questions.length === 0 ? (
-        <div className="mt-3 border-t border-hairline pt-4 sm:mt-5 sm:pt-5">
+        <div className="mt-3 pt-4 sm:mt-5 sm:pt-5">
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             No questions about this one yet
           </p>
@@ -352,7 +352,7 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
         /* A ruled index that opens in place — the same shape as the collection
            list on the homepage, so a question reads as a line in a contents
            page rather than as another card. */
-        <ul className="mt-3 divide-y divide-hairline border-y border-hairline sm:mt-5">
+        <ul className="mt-3 sm:mt-5">
           {questions.map((qa) => {
             const expanded = open === qa.id;
             return (

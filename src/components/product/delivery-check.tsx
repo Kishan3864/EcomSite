@@ -23,9 +23,9 @@ const COURIER = BUSINESS.ops.courierPartners[0] ?? "our courier";
  * plainly which one it is — the rule only has to mark where it begins.
  */
 const TONE_RULE: Record<CheckResult["tone"], string> = {
-  ok: "border-brand-700",
-  info: "border-rule",
-  error: "border-sale-600",
+  ok: "[--rule-color:var(--color-brand-700)]",
+  info: "[--rule-color:var(--color-rule)]",
+  error: "[--rule-color:var(--color-sale-600)]",
 };
 
 /**
@@ -100,7 +100,7 @@ export function DeliveryCheck({
   }
 
   return (
-    <section className="border-t border-hairline pt-4 sm:pt-5">
+    <section className="pt-4 sm:pt-5">
       <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
         Check delivery to your pincode
       </h2>
@@ -123,7 +123,7 @@ export function DeliveryCheck({
           // than inside a tinted panel, and a canvas-coloured input on a
           // canvas-coloured page is a border with nothing in it.
           // 16px on phones: iOS zooms the page into any smaller field.
-          className="h-11 min-w-0 flex-1 rounded-field border border-ink-200 bg-surface px-3.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500 sm:text-[14px]"
+          className="h-11 min-w-0 flex-1 bg-ink-50 px-3.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px]"
         />
         <Button type="submit" variant="outline" loading={checking} className="shrink-0">
           Check
@@ -142,7 +142,7 @@ export function DeliveryCheck({
           >
             <div
               role={result.tone === "error" ? "alert" : "status"}
-              className={cn("mt-3.5 border-l-2 pl-3.5", TONE_RULE[result.tone])}
+              className={cn("mt-3.5 rule-l pl-3.5", TONE_RULE[result.tone])}
             >
               {/* Tabular figures because this line is usually a date or the
                   pincode read back, and both are numerals in running text. */}

@@ -68,7 +68,7 @@ export async function NotFoundBody() {
                 <li key={category.slug}>
                   <Link
                     href={`/c/${category.slug}`}
-                    className="tap group inline-flex h-10 items-center gap-2 border border-hairline bg-surface px-3.5 text-[13px] font-medium text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-brand-700 sm:px-4"
+                    className="tap group inline-flex h-10 items-center gap-2 bg-surface px-3.5 text-[13px] font-medium text-ink-700 transition-colors duration-200 hover:text-brand-700 sm:px-4"
                   >
                     {category.name}
                     <ArrowRight

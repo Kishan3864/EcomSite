@@ -82,7 +82,7 @@ export function CartClient() {
                 </button>
               </header>
 
-              <ul className="border-b border-hairline">
+              <ul>
                 <AnimatePresence initial={false}>
                   {cart.map((line) => {
                     const saveForLater = () => dispatch({ type: "cart/save", id: line.id });
@@ -112,12 +112,12 @@ export function CartClient() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden border-t border-hairline"
+                        className="overflow-hidden"
                       >
                         <div className="flex gap-3 py-3 sm:gap-5 sm:py-4">
                           <Link
                             href={`/p/${line.slug}`}
-                            className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-32 sm:w-28"
+                            className="relative h-24 w-20 shrink-0 overflow-hidden bg-ink-100 sm:h-32 sm:w-28"
                           >
                             <Image
                               src={line.image}
@@ -158,7 +158,7 @@ export function CartClient() {
                             </p>
 
                             <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 pt-3">
-                              <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline">
+                              <div className="inline-flex items-center overflow-hidden">
                                 <button
                                   onClick={() =>
                                     dispatch({
@@ -168,7 +168,7 @@ export function CartClient() {
                                     })
                                   }
                                   aria-label="Decrease quantity"
-                                  className="flex h-10 w-10 items-center justify-center border-r border-hairline text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:h-9 sm:w-9"
+                                  className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:h-9 sm:w-9"
                                 >
                                   <Minus size={14} />
                                 </button>
@@ -185,7 +185,7 @@ export function CartClient() {
                                   }
                                   disabled={line.quantity >= line.stock}
                                   aria-label="Increase quantity"
-                                  className="flex h-10 w-10 items-center justify-center border-l border-hairline text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white disabled:pointer-events-none disabled:text-ink-400 sm:h-9 sm:w-9"
+                                  className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white disabled:pointer-events-none disabled:text-ink-400 sm:h-9 sm:w-9"
                                 >
                                   <Plus size={14} />
                                 </button>
@@ -222,7 +222,7 @@ export function CartClient() {
                         </div>
 
                         {/* Phones: three 40px targets across the line, like a native cart. */}
-                        <div className="flex divide-x divide-hairline border-t border-hairline sm:hidden">
+                        <div className="flex sm:hidden">
                           <button
                             onClick={saveForLater}
                             className={`tap flex h-10 flex-auto items-center justify-center whitespace-nowrap px-2 text-ink-500 hover:text-ink-950 ${LINE_ACTION}`}
@@ -280,7 +280,7 @@ export function CartClient() {
                   >
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
+                      className="relative h-24 w-20 shrink-0 overflow-hidden bg-ink-100"
                     >
                       <Image src={line.image} alt="" fill sizes="80px" className="object-cover" />
                     </Link>
@@ -342,7 +342,7 @@ export function CartClient() {
           than fixed: it parks at the end of the bag instead of covering the
           footer. */}
       {cart.length > 0 && (
-        <div className="sticky bottom-[calc(61px_+_env(safe-area-inset-bottom))] z-30 -mx-3 mt-4 flex items-center justify-between gap-3 border-t border-ink-950 bg-surface px-3 py-2.5 sm:-mx-6 sm:px-6 lg:hidden">
+        <div className="sticky bottom-[calc(61px_+_env(safe-area-inset-bottom))] z-30 -mx-3 mt-4 flex items-center justify-between gap-3 bg-surface px-3 py-2.5 sm:-mx-6 sm:px-6 lg:hidden">
           <p className="min-w-0">
             <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Total payable

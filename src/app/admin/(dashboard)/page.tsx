@@ -181,13 +181,13 @@ export default async function AdminDashboardPage({
         title={`${greeting}, ${session.name}`}
         description={`Here is how WeekendCart is doing over the last ${days === 365 ? "12 months" : `${days} days`}.`}
         actions={
-          <div className="flex items-center gap-1 rounded-lg border border-hairline bg-surface p-1">
+          <div className="flex items-center gap-1 bg-surface p-1">
             {RANGES.map((r) => (
               <Link
                 key={r.key}
                 href={`/admin?range=${r.key}`}
                 className={cn(
-                  "rounded-md px-3 py-1.5 text-[12.5px] font-medium transition-colors",
+                  "px-3 py-1.5 text-[12.5px] font-medium transition-colors",
                   String(days) === r.key ? "bg-brand-900 text-white" : "text-ink-600 hover:bg-ink-100",
                 )}
               >
@@ -211,11 +211,11 @@ export default async function AdminDashboardPage({
         </Card>
 
         <Card title="Needs attention" padded={false}>
-          <ul className="divide-y divide-hairline">
+          <ul>
             {attention.map((a) => (
               <li key={a.label}>
                 <Link href={a.href} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-canvas">
-                  <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg", a.count > 0 ? "bg-gold-100 text-gold-800" : "bg-ink-100 text-ink-400")}>
+                  <span className={cn("flex h-8 w-8 items-center justify-center", a.count > 0 ? "bg-gold-100 text-gold-800" : "bg-ink-100 text-ink-400")}>
                     <a.icon size={15} />
                   </span>
                   <span className="flex-1 text-[13.5px] text-ink-800">{a.label}</span>
@@ -253,7 +253,7 @@ export default async function AdminDashboardPage({
             </Link>
           }
         >
-          <Table className="rounded-none border-0">
+          <Table>
             <thead>
               <tr>
                 <Th>Order</Th>
@@ -308,7 +308,7 @@ export default async function AdminDashboardPage({
             {lowStock.length === 0 ? (
               <p className="px-5 py-6 text-[13px] text-ink-400">Everything is comfortably stocked.</p>
             ) : (
-              <ul className="divide-y divide-hairline">
+              <ul>
                 {lowStock.map((p) => (
                   <li key={p.id} className="flex items-center gap-3 px-5 py-2.5">
                     <AlertTriangle size={14} className={p.stock === 0 ? "text-sale-600" : "text-gold-600"} />
@@ -333,7 +333,7 @@ export default async function AdminDashboardPage({
               </Link>
             }
           >
-            <ul className="divide-y divide-hairline">
+            <ul>
               {activity.map((a) => (
                 <li key={a.id} className="px-5 py-2.5">
                   <p className="text-[13px] text-ink-900">{a.summary}</p>

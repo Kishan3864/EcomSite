@@ -108,8 +108,12 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
 
   return (
     <div className="relative" onMouseLeave={scheduleClose}>
-      <nav aria-label="Product categories">
-        <ul className="flex items-center">
+      {/* One line, always. Eleven departments do not fit a 1408px container,
+          and a wrapping rail pushes the page down by a row and collides with
+          the links on the right. It scrolls sideways instead — the scrollbar
+          is hidden, and the panels still open from wherever a name lands. */}
+      <nav aria-label="Product categories" className="min-w-0 flex-1">
+        <ul className="no-scrollbar flex items-center overflow-x-auto">
           {categories.map((category) => {
             const isOpen = openSlug === category.slug;
             return (
@@ -123,7 +127,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   // the open department: the one thing in the masthead that
                   // says "you are pointing at this".
                   className={cn(
-                    "relative inline-flex items-center px-3.5 py-2 text-[13.5px] transition-colors duration-200",
+                    "relative inline-flex shrink-0 whitespace-nowrap items-center px-3.5 py-2 text-[13.5px] transition-colors duration-200",
                     isOpen ? "font-semibold text-ink-950" : "font-medium text-ink-700 hover:text-ink-950",
                   )}
                 >
@@ -159,7 +163,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
             // gave the sheet an edge against the white tiles it floats over,
             // but the black outline made it look like a dialog; the elevation
             // does the same job without the weight.
-            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-2xl border border-hairline bg-surface shadow-xl"
+            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden bg-surface shadow-xl"
           >
             <div
               className="grid"
@@ -181,7 +185,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
 
                 {active.subcategories.length > 0 && (
                   <ul
-                    className="mt-5 grid border-t border-hairline pt-5"
+                    className="mt-5 grid pt-5"
                     style={{
                       gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
                       gap: `${TILE_GAP}px`,
@@ -223,7 +227,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                 )}
 
                 {active.featuredBrands.length > 0 && (
-                  <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-hairline pt-4">
+                  <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 pt-4">
                     <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                       Top brands
                     </span>
@@ -231,7 +235,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                       <Link
                         key={slug}
                         href={`/products?brands=${slug}&category=${active.slug}`}
-                        className="inline-flex h-7 items-center rounded-md border border-hairline px-2.5 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                        className="inline-flex h-7 items-center px-2.5 text-[12.5px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
                       >
                         {slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
                       </Link>
@@ -243,7 +247,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
               {/* ── The department, and the door out of the menu ────────── */}
               <Link
                 href={`/c/${active.slug}`}
-                className="group relative overflow-hidden border-l border-hairline bg-canvas"
+                className="group relative overflow-hidden bg-canvas"
               >
                 <Image
                   src={active.image.url}

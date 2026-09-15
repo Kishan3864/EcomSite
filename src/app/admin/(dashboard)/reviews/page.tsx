@@ -53,8 +53,8 @@ type QuestionStatus = (typeof QUESTION_STATUSES)[number];
 const isReviewStatus = (v: string): v is ReviewStatus => (REVIEW_STATUSES as readonly string[]).includes(v);
 const isQuestionStatus = (v: string): v is QuestionStatus => (QUESTION_STATUSES as readonly string[]).includes(v);
 
-const rowBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
-const rowBtnDanger = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600";
+const rowBtn = "p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
+const rowBtnDanger = "p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600";
 
 const productSelect = {
   select: {
@@ -124,7 +124,7 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
             <Link
               href={withParams(BASE, current, { product: null, page: null })}
               aria-label="Clear product filter"
-              className="-mr-0.5 rounded-full p-0.5 hover:bg-white/60"
+              className="-mr-0.5 p-0.5 hover:bg-white/60"
             >
               <X size={12} />
             </Link>
@@ -176,8 +176,8 @@ function TabLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "inline-flex h-9 items-center gap-2 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
-        active ? "border-ink-900 bg-ink-900 text-white" : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
+        "inline-flex h-9 items-center gap-2 px-3.5 text-[13px] font-medium transition-colors",
+        active ? "bg-ink-900 text-white" : "bg-surface text-ink-700",
       )}
     >
       {icon}
@@ -185,7 +185,7 @@ function TabLink({
       {count > 0 && (
         <span
           className={cn(
-            "rounded-full px-1.5 py-px text-[11px] font-semibold tabular-nums",
+            "px-1.5 py-px text-[11px] font-semibold tabular-nums",
             active ? "bg-white/15 text-white" : "bg-gold-100 text-gold-800",
           )}
           title={`${count} pending`}
@@ -220,10 +220,10 @@ function ProductCell({
           alt={thumb.alt || product.title}
           width={40}
           height={40}
-          className="h-10 w-10 shrink-0 rounded-md border border-hairline object-cover"
+          className="h-10 w-10 shrink-0 object-cover"
         />
       ) : (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-hairline bg-canvas text-ink-300">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-canvas text-ink-300">
           <Package size={16} />
         </span>
       )}
@@ -380,7 +380,7 @@ async function ReviewsTab({ params, current, returnTo, canModerate, canDelete, p
                     {r.verified && (
                       <span
                         title="Verified purchase"
-                        className="inline-flex items-center gap-0.5 rounded-full bg-brand-100 px-1.5 py-px text-[10.5px] font-semibold text-brand-800"
+                        className="inline-flex items-center gap-0.5 bg-brand-100 px-1.5 py-px text-[10.5px] font-semibold text-brand-800"
                       >
                         <ShieldCheck size={11} /> Verified
                       </span>

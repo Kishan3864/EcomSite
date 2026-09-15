@@ -106,7 +106,7 @@ export default async function InventoryLedgerPage({
                   alt={thumb.alt || product.title}
                   width={44}
                   height={44}
-                  className="h-11 w-11 shrink-0 rounded-lg border border-hairline object-cover"
+                  className="h-11 w-11 shrink-0 object-cover"
                 />
               )}
               <span>{product.title}</span>

@@ -61,7 +61,7 @@ export function ReturnDetailsForm({
           ) : (
             <div
               id="return-refund-amount"
-              className="flex h-10 items-center justify-between rounded-lg border border-dashed border-ink-200 bg-canvas px-3 text-[13.5px] text-ink-700"
+              className="flex h-10 items-center justify-between bg-canvas px-3 text-[13.5px] text-ink-700"
             >
               <span className="font-medium tabular-nums text-ink-900">{formatINR(initial.refundAmount)}</span>
               <span className="inline-flex items-center gap-1 text-[11.5px] text-ink-400">
@@ -75,7 +75,7 @@ export function ReturnDetailsForm({
           <Label htmlFor="return-refund-mode" hint="Chosen by the customer when they raised the return.">
             Refund mode
           </Label>
-          <div id="return-refund-mode" className="flex h-10 items-center rounded-lg border border-ink-200 bg-canvas px-3 text-[13.5px] text-ink-700">
+          <div id="return-refund-mode" className="flex h-10 items-center bg-canvas px-3 text-[13.5px] text-ink-700">
             <span className="truncate">{refundMode}</span>
           </div>
         </div>

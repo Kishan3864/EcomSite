@@ -66,7 +66,7 @@ export function RecentlyViewed({
     <section className="container-page py-10 sm:py-16">
       {/* The heavier rule, so the tail of a product page reads as three
           deliberate bands rather than one long scroll. */}
-      <div className="border-t border-rule pt-8 sm:pt-12">
+      <div className="pt-8 sm:pt-12">
         {/* No link in this header: there is no page of "things you looked at",
             and inventing one would put two calls to action in one band again. */}
         <SectionHeader
@@ -80,7 +80,7 @@ export function RecentlyViewed({
             <Link
               key={item.productId}
               href={`/p/${item.slug}`}
-              className="tap group flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface shadow-xs transition-[box-shadow,border-color,transform] duration-300 ease-out hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md"
+              className="tap group flex flex-col overflow-hidden bg-surface shadow-xs transition-[box-shadow,,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
             >
               {/* The same 3:4 crop as the product tile and its loading
                   skeleton, so a product does not change shape between the

@@ -48,7 +48,7 @@ export function PayuRedirect({
   if (error) {
     return (
       <Frame>
-        <span className="mx-auto flex h-12 w-12 items-center justify-center border border-sale-300 text-sale-600 sm:h-14 sm:w-14">
+        <span className="mx-auto flex h-12 w-12 items-center justify-center text-sale-600 sm:h-14 sm:w-14">
           <AlertTriangle size={26} />
         </span>
         <h1 className="mt-4 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:mt-5 sm:text-[26px]">
@@ -106,7 +106,7 @@ export function PayuRedirect({
 function Frame({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
-      <div className="w-full max-w-md rounded-xl border border-hairline bg-surface p-5 text-center sm:p-7">
+      <div className="w-full max-w-md bg-surface p-5 text-center sm:p-7">
         {children}
       </div>
     </div>

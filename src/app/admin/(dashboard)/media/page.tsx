@@ -75,7 +75,7 @@ export default async function MediaPage() {
               const used = uses.get(url) ?? 0;
 
               return (
-                <li key={asset.id} className="overflow-hidden rounded-xl border border-hairline bg-surface">
+                <li key={asset.id} className="overflow-hidden bg-surface">
                   <div className="relative aspect-square bg-ink-100">
                     <Image src={url} alt={asset.filename} fill sizes="200px" className="object-cover" />
                   </div>
@@ -108,7 +108,7 @@ export default async function MediaPage() {
                             <button
                               type="submit"
                               title="Delete image"
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
+                              className="inline-flex h-7 w-7 items-center justify-center text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
                             >
                               <Trash2 size={13} />
                             </button>

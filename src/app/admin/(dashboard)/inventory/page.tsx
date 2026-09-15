@@ -169,10 +169,10 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                           alt={thumb.alt || p.title}
                           width={40}
                           height={40}
-                          className="h-10 w-10 shrink-0 rounded-md border border-hairline object-cover"
+                          className="h-10 w-10 shrink-0 object-cover"
                         />
                       ) : (
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-hairline bg-canvas text-ink-300">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-canvas text-ink-300">
                           <Boxes size={16} />
                         </span>
                       )}
@@ -242,7 +242,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                       <Link
                         href={`/admin/inventory/${p.id}`}
                         title="Movement ledger"
-                        className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
+                        className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
                       >
                         <History size={14} />
                       </Link>

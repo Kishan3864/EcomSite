@@ -11,7 +11,7 @@ import { cn, formatDate, formatDateTime, formatINR } from "@/lib/utils";
 
 /** The heading every block on the account screens wears. */
 const PANEL_HEAD =
-  "border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5";
+  "px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5";
 
 export function OrderDetailClient({ order }: { order: Order | null }) {
 
@@ -123,7 +123,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
-          <section className="border border-hairline bg-surface">
+          <section className="bg-surface">
             <h2 className={PANEL_HEAD}>Items in this order</h2>
             <ul>
               {order.lines.map((line) => (
@@ -131,11 +131,11 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
                 // of their own instead of squeezing beside the line total.
                 <li
                   key={line.id}
-                  className="flex flex-wrap gap-3 border-b border-hairline px-4 py-4 last:border-b-0 sm:flex-nowrap sm:gap-4 sm:px-5"
+                  className="flex flex-wrap gap-3 px-4 py-4 sm:flex-nowrap sm:gap-4 sm:px-5"
                 >
                   <Link
                     href={`/p/${line.slug}`}
-                    className="relative h-[72px] w-[58px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-20 sm:w-16"
+                    className="relative h-[72px] w-[58px] shrink-0 overflow-hidden bg-ink-100 sm:h-20 sm:w-16"
                   >
                     <Image
                       src={line.image}
@@ -174,7 +174,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
             </ul>
           </section>
 
-          <section className="border border-hairline bg-surface">
+          <section className="bg-surface">
             <h2 className={PANEL_HEAD}>Shipment progress</h2>
             <div className="px-4 py-5 sm:px-5 sm:py-6">
               <TrackingTimeline events={order.tracking} />
@@ -186,11 +186,11 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
             block across the full width. grid-cols-1 and min-w-0 let a long AWB
             wrap inside its column instead of stretching it. */}
         <aside className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:block lg:space-y-4">
-          <section className="border border-hairline bg-surface">
+          <section className="bg-surface">
             <h2 className={PANEL_HEAD}>Payment summary</h2>
             {/* A ledger, the same one the homepage sets under a product: label
                 left, figure right, a rule between every pair. */}
-            <dl className="divide-y divide-hairline px-4 sm:px-5">
+            <dl className="px-4 sm:px-5">
               <Row label="Items total" value={formatINR(order.totals.mrpTotal)} />
               {order.totals.productDiscount > 0 && (
                 <Row
@@ -205,7 +205,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
               />
               <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
             </dl>
-            <div className="flex items-baseline justify-between gap-3 border-t border-hairline px-4 py-3.5 sm:px-5">
+            <div className="flex items-baseline justify-between gap-3 px-4 py-3.5 sm:px-5">
               <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
                 Total
               </span>
@@ -216,7 +216,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
           </section>
 
           {facts.map((fact) => (
-            <section key={fact.title} className="border border-hairline bg-surface">
+            <section key={fact.title} className="bg-surface">
               <h2 className={PANEL_HEAD}>{fact.title}</h2>
               {/* Long AWBs and unbroken address lines wrap instead of widening
                   the column. */}

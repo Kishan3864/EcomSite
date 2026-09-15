@@ -118,7 +118,7 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
                         <button
                           type="submit"
                           title={b.isActive ? "Deactivate" : "Activate"}
-                          className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
+                          className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
                         >
                           <Power size={14} />
                         </button>
@@ -130,7 +130,7 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
                         <button
                           type="submit"
                           title="Delete"
-                          className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
+                          className="p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
                         >
                           <Trash2 size={14} />
                         </button>

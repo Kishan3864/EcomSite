@@ -151,7 +151,7 @@ export function BuyBox({
           {product.badges.slice(0, 2).map((b) => (
             <span
               key={b}
-              className="rounded-md border border-hairline px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600"
+              className="px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600"
             >
               {b === "bestseller" ? "Bestseller" : b === "new" ? "New in" : b}
             </span>
@@ -189,7 +189,7 @@ export function BuyBox({
 
       {/* Price. Ruled top and bottom rather than boxed — `xl` is 22px on a
           phone and 30px from 640px, in Jakarta with tabular figures. */}
-      <div className="border-y border-hairline py-3.5 sm:py-4">
+      <div className="py-3.5 sm:py-4">
         <Price price={price} mrp={mrp} size="xl" />
         <p className="mt-1.5 text-[13px] text-ink-500">
           Inclusive of all taxes
@@ -229,8 +229,8 @@ export function BuyBox({
                       // The colour sits inset inside its own frame, so the
                       // chosen one is marked by the frame going to ink rather
                       // than by a ring that would shift the row as it lands.
-                      "tap relative flex h-10 w-10 items-center justify-center border p-[3px] transition-colors duration-200 sm:h-9 sm:w-9",
-                      selected ? "border-ink-950" : "border-hairline hover:border-ink-400",
+                      "tap relative flex h-10 w-10 items-center justify-center p-[3px] transition-colors duration-200 sm:h-9 sm:w-9",
+                      selected ? "" : "",
                       !option.inStock && "opacity-40",
                     )}
                   >
@@ -253,12 +253,12 @@ export function BuyBox({
                   disabled={!option.inStock}
                   aria-pressed={selected}
                   className={cn(
-                    "tap min-h-10 min-w-[52px] border px-3 py-2 text-[13px] font-medium transition-colors duration-200 sm:min-h-0 sm:px-3.5",
+                    "tap min-h-10 min-w-[52px] px-3 py-2 text-[13px] font-medium transition-colors duration-200 sm:min-h-0 sm:px-3.5",
                     selected
-                      ? "border-brand-700 bg-brand-700 text-white"
-                      : "border-hairline bg-surface text-ink-800 hover:border-ink-950",
+                      ? "bg-brand-700 text-white"
+                      : "bg-surface text-ink-800",
                     !option.inStock &&
-                      "cursor-not-allowed border-dashed text-ink-400 line-through hover:border-hairline",
+                      "cursor-not-allowed text-ink-400 line-through",
                   )}
                 >
                   {option.label}
@@ -281,7 +281,7 @@ export function BuyBox({
 
       {/* Quantity and stock */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline bg-surface">
+        <div className="inline-flex items-center overflow-hidden bg-ink-100">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={qty <= 1}
@@ -379,7 +379,7 @@ export function BuyBox({
           className={cn(
             // Square, and the same height as the buttons beside it.
             "tap h-auto w-12 shrink-0 self-stretch",
-            wished && "border-sale-500 text-sale-500",
+            wished && "text-sale-500",
           )}
           aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
           onClick={() => toggleWishlist(addable)}
@@ -393,11 +393,11 @@ export function BuyBox({
       {/* The ledger. Four icon tiles said less than five ruled lines do, and
           the warranty no longer has to be cut to its first three words to fit
           a tile — it is printed as the manufacturer wrote it. */}
-      <dl className="border-b border-hairline">
+      <dl>
         {ledger.map((row) => (
           <div
             key={row.label}
-            className="flex min-h-[44px] items-center justify-between gap-4 border-t border-hairline py-2"
+            className="flex min-h-[44px] items-center justify-between gap-4 py-2"
           >
             <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               {row.label}

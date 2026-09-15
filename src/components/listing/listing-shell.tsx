@@ -60,7 +60,7 @@ export function ListingShell({
 
       {/* On phones the title block stays short so the first row of products
           is on screen without scrolling; the description clamps to two lines. */}
-      <header className="mb-4 border-b border-hairline pb-3 sm:mb-6 sm:pb-5">
+      <header className="mb-4 pb-3 sm:mb-6 sm:pb-5">
         {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         <div
           className={cn(
@@ -160,7 +160,7 @@ export function ListingShellSkeleton() {
     <div className="container-page py-3 sm:py-7">
       <Shimmer className="mb-3 h-3 w-56 max-w-full sm:mb-5" />
 
-      <div className="mb-4 border-b border-hairline pb-3 sm:mb-6 sm:pb-5">
+      <div className="mb-4 pb-3 sm:mb-6 sm:pb-5">
         <Shimmer className="h-2.5 w-32" />
         <Shimmer className="mt-1.5 h-6.5 w-52 max-w-full sm:mt-3 sm:h-8 sm:w-72" />
         <Shimmer className="mt-1.5 h-3.5 w-96 max-w-full sm:mt-2.5" />
@@ -170,11 +170,11 @@ export function ListingShellSkeleton() {
         <aside className="hidden lg:block lg:pr-2">
           {/* The panel's own 48px header, so the rail does not shift up by the
               height of a rule the moment the real filters arrive. */}
-          <div className="flex h-12 items-center border-b border-hairline">
+          <div className="flex h-12 items-center">
             <Shimmer className="h-3 w-20" />
           </div>
           {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="border-b border-hairline py-4">
+            <div key={i} className="py-4">
               <Shimmer className="h-3 w-24" />
               <div className="mt-3.5 space-y-2.5">
                 {Array.from({ length: 5 }, (_, j) => (
@@ -185,16 +185,16 @@ export function ListingShellSkeleton() {
           ))}
         </aside>
         <div className="min-w-0">
-          <div className="-mx-3 mb-3 grid h-11 grid-cols-2 border-y border-hairline sm:-mx-6 sm:mb-5 lg:hidden">
+          <div className="-mx-3 mb-3 grid h-11 grid-cols-2 sm:-mx-6 sm:mb-5 lg:hidden">
             <span className="flex flex-col items-center justify-center gap-1.5">
               <Shimmer className="h-2.5 w-9" />
               <Shimmer className="h-3 w-20" />
             </span>
-            <span className="flex items-center justify-center border-l border-hairline">
+            <span className="flex items-center justify-center">
               <Shimmer className="h-3 w-16" />
             </span>
           </div>
-          <div className="mb-5 hidden h-12 items-center justify-between border-b border-hairline lg:flex">
+          <div className="mb-5 hidden h-12 items-center justify-between lg:flex">
             <Shimmer className="h-3 w-24" />
             <Shimmer className="h-3 w-40" />
           </div>

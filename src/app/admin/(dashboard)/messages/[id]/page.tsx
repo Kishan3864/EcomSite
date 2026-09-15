@@ -113,8 +113,8 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
 
         <div className="grid gap-5">
           <Card title="Message" padded={false}>
-            <div className="flex flex-wrap items-center gap-3 border-b border-hairline px-5 py-4">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-[12px] font-semibold text-brand-800">
+            <div className="flex flex-wrap items-center gap-3 px-5 py-4">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-brand-100 text-[12px] font-semibold text-brand-800">
                 {initials(message.name) || "?"}
               </span>
               <div className="min-w-0 flex-1">
@@ -127,7 +127,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
               {orderNumber && (
                 <Link
                   href={`/admin/orders?q=${encodeURIComponent(orderNumber)}`}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-canvas px-2.5 py-1 text-[12px] font-medium tabular-nums text-ink-800 transition-colors hover:border-brand-500 hover:text-brand-700"
+                  className="inline-flex items-center gap-1.5 bg-canvas px-2.5 py-1 text-[12px] font-medium tabular-nums text-ink-800 transition-colors hover:text-brand-700"
                 >
                   <Package size={13} /> {orderNumber}
                 </Link>
@@ -148,7 +148,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
           >
             <div className="grid gap-5">
               {message.reply && (
-                <blockquote className="rounded-lg border border-brand-100 bg-brand-50/60 px-4 py-3 text-[13.5px] leading-relaxed text-ink-900 whitespace-pre-wrap">
+                <blockquote className="bg-brand-50/60 px-4 py-3 text-[13.5px] leading-relaxed text-ink-900 whitespace-pre-wrap">
                   {message.reply}
                 </blockquote>
               )}
@@ -169,7 +169,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
           {customer ? (
             <div className="grid gap-3">
               <div className="flex items-center gap-2.5">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink-100 text-ink-600">
+                <span className="flex h-8 w-8 items-center justify-center bg-ink-100 text-ink-600">
                   <UserRound size={15} />
                 </span>
                 <div className="min-w-0">
@@ -244,7 +244,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
                   ]}
                 />
                 {orderEmailMismatch && (
-                  <p className="flex items-start gap-2 rounded-lg border border-gold-200 bg-gold-50 px-3 py-2 text-[12px] leading-snug text-gold-800">
+                  <p className="flex items-start gap-2 bg-gold-50 px-3 py-2 text-[12px] leading-snug text-gold-800">
                     <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                     <span>
                       This order was placed with <span className="font-medium">{order.contactEmail}</span>, not the
@@ -274,7 +274,7 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
 
         {earlier.length > 0 && (
           <Card title="Earlier messages" description="From the same email address" padded={false}>
-            <ul className="divide-y divide-hairline">
+            <ul>
               {earlier.map((e) => (
                 <li key={e.id}>
                   <Link

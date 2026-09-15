@@ -114,7 +114,7 @@ export default async function CategoryPage({
             line of text rather than a row of coloured pills: a claim reads as
             true in proportion to how quietly it is made. */}
         {category.highlights.length > 0 && (
-          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-hairline py-2.5">
+          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 py-2.5">
             {category.highlights.map((h) => (
               <li key={h} className="flex items-center gap-2.5 text-[13px] text-ink-600">
                 <span aria-hidden className="h-px w-3.5 shrink-0 bg-ink-400" />

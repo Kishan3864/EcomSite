@@ -31,7 +31,7 @@ export type StepId = (typeof CHECKOUT_STEPS)[number]["id"];
 
 /** Every step draws its own 2px segment of one continuous rule. */
 const STEP_BASE =
-  "flex h-11 w-full items-center justify-center border-b-2 px-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] transition-colors duration-200 sm:h-12 sm:text-[11.5px] sm:tracking-[0.12em]";
+  "flex h-11 w-full items-center justify-center rule-b px-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] transition-colors duration-200 sm:h-12 sm:text-[11.5px] sm:tracking-[0.12em]";
 
 export function CheckoutShell({
   step,
@@ -96,7 +96,7 @@ export function CheckoutShell({
           shield glyphs that used to sit beside them are the badge every scam
           site wears, and they were spending the page's one warm colour three
           times over on a line nobody was meant to look at. */}
-      <div className="border-b border-hairline bg-surface">
+      <div className="bg-surface">
         <div className="container-page flex flex-wrap items-center justify-center gap-x-5 gap-y-1 py-2.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-500 sm:gap-x-8 sm:py-3 sm:text-[11.5px] sm:tracking-[0.12em]">
           <span>Secure checkout</span>
           <span>256-bit encryption</span>
@@ -118,10 +118,10 @@ export function CheckoutShell({
               const classes = cn(
                 STEP_BASE,
                 current
-                  ? "border-ink-950 text-ink-950"
+                  ? "[--rule-color:var(--color-ink-950)] text-ink-950"
                   : done
-                    ? "border-ink-400 text-ink-500 hover:text-ink-950"
-                    : "border-hairline text-ink-400",
+                    ? "[--rule-color:var(--color-ink-400)] text-ink-500 hover:text-ink-950"
+                    : "text-ink-400",
               );
 
               return (
@@ -175,7 +175,7 @@ export function CheckoutShell({
             Sticky rather than fixed: it rides along through the form and the
             summary, then parks above the footer. */}
         {action && (
-          <div className="sticky bottom-0 z-30 -mx-3 mt-4 border-t border-ink-950 bg-surface px-3 pb-safe sm:-mx-6 sm:px-6 lg:hidden">
+          <div className="sticky bottom-0 z-30 -mx-3 mt-4 bg-surface px-3 pb-safe sm:-mx-6 sm:px-6 lg:hidden">
             <div className="flex items-center justify-between gap-4 py-2.5">
               {total !== undefined && (
                 <p className="hidden min-w-0 sm:block">
@@ -201,8 +201,8 @@ export function CheckoutAside() {
   const { cart } = useStore();
 
   return (
-    <div className="border border-hairline bg-surface">
-      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3 sm:px-5">
+    <div className="bg-surface">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
         <h2 className="min-w-0 truncate text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {cart.length} item{cart.length > 1 ? "s" : ""} in your bag
         </h2>
@@ -215,13 +215,13 @@ export function CheckoutAside() {
           Edit
         </Link>
       </div>
-      <ul className="divide-y divide-hairline">
+      <ul>
         {cart.map((line) => (
           <li key={line.id} className="flex items-center gap-3 px-4 py-2.5 sm:px-5 sm:py-3">
             {/* Routed through the shared image component like every other
                 picture on the site, so the remote-image policy applies here
                 too; it used to be a raw <img> with the lint rule switched off. */}
-            <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100">
+            <span className="relative h-14 w-12 shrink-0 overflow-hidden bg-ink-100">
               <Image src={line.image} alt="" fill sizes="48px" className="object-cover" />
             </span>
             <span className="min-w-0 flex-1">

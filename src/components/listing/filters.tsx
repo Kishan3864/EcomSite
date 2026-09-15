@@ -56,7 +56,7 @@ function Group({
   // Below lg this panel lives in the filter sheet, so rows grow to finger
   // height there; the desktop sidebar keeps its tighter rhythm.
   return (
-    <section className="border-b border-hairline py-1.5 last:border-b-0 lg:py-4">
+    <section className="py-1.5 lg:py-4">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
@@ -111,10 +111,10 @@ function CheckRow({
     <label className="tap group flex cursor-pointer items-center gap-2.5 py-2.5 lg:py-1.5">
       <span
         className={cn(
-          "flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-[4px] border transition-colors duration-150",
-          checked
-            ? "border-ink-950 bg-ink-950"
-            : "border-ink-300 bg-surface group-hover:border-ink-950",
+          "flex h-[17px] w-[17px] shrink-0 items-center justify-center transition-colors duration-150",
+          // Unticked is a filled grey square, not a white one: with no border
+          // to draw it, white on a white panel is nothing at all.
+          checked ? "bg-ink-950" : "bg-ink-200",
         )}
       >
         {checked && (
@@ -132,7 +132,7 @@ function CheckRow({
       <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
       {swatch && (
         <span
-          className="h-3.5 w-3.5 shrink-0 rounded-[3px] border border-ink-300"
+          className="h-3.5 w-3.5 shrink-0"
           style={{ backgroundColor: swatch }}
         />
       )}
@@ -185,7 +185,7 @@ export function FilterPanel({
       {/* 48px with a rule beneath it from lg up, which is the height of the
           toolbar in the column alongside — so the rail and the grid start on
           one line rather than a few pixels apart. */}
-      <div className="flex min-h-11 items-center justify-between gap-3 border-b border-hairline lg:h-12 lg:min-h-0">
+      <div className="flex min-h-11 items-center justify-between gap-3 lg:h-12 lg:min-h-0">
         <h2 className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 sm:text-[12px]">
           Filters
           {active.length > 0 && (
@@ -311,8 +311,8 @@ export function FilterPanel({
                     square rail and a second use of the accent colour. */}
                 <span
                   className={cn(
-                    "flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-[4px] border transition-colors duration-150",
-                    chosen ? "border-ink-950" : "border-ink-300 group-hover:border-ink-950",
+                    "flex h-[17px] w-[17px] shrink-0 items-center justify-center transition-colors duration-150",
+                    chosen ? "" : "",
                   )}
                 >
                   {chosen && <span className="h-[9px] w-[9px] bg-ink-950" />}
@@ -399,7 +399,7 @@ function PriceRange({
   const [hi, setHi] = useState(value[1] ?? max);
 
   return (
-    <div className="mt-3 border-t border-hairline pt-3 lg:mt-4 lg:pt-4">
+    <div className="mt-3 pt-3 lg:mt-4 lg:pt-4">
       <div className="flex items-center gap-2">
         <label className="min-w-0 flex-1">
           <span className="mb-1.5 block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
@@ -413,7 +413,7 @@ function PriceRange({
             min={min}
             max={hi}
             onChange={(e) => setLo(Number(e.target.value))}
-            className="h-10 w-full rounded-lg border border-hairline bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-ink-950 sm:text-[13px] lg:h-9"
+            className="h-10 w-full bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors sm:text-[13px] lg:h-9"
           />
         </label>
         <span aria-hidden className="mt-6 text-ink-400">
@@ -429,7 +429,7 @@ function PriceRange({
             min={lo}
             max={max}
             onChange={(e) => setHi(Number(e.target.value))}
-            className="h-10 w-full rounded-lg border border-hairline bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-ink-950 sm:text-[13px] lg:h-9"
+            className="h-10 w-full bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors sm:text-[13px] lg:h-9"
           />
         </label>
       </div>
@@ -469,7 +469,7 @@ export function ActiveChips({
           onClick={() => setParams(chip.clear)}
           // Rose is for reductions, so dismissing a filter is not painted in
           // it. A hairline that darkens to ink says "this comes off" quietly.
-          className="tap group inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap border border-hairline bg-surface pl-3 pr-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 lg:h-8"
+          className="tap group inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap bg-surface pl-3 pr-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-700 transition-colors duration-200 hover:text-ink-950 lg:h-8"
         >
           {chip.label}
           <X size={12} className="text-ink-400 transition-colors group-hover:text-ink-950" />

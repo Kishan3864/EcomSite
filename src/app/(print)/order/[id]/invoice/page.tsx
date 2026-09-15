@@ -48,7 +48,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     >
       <PrintToolbar backHref={`/order/${invoice.orderId}`} />
 
-      <header className="flex flex-wrap items-start justify-between gap-6 border-b-2 border-ink-800 pb-4">
+      <header className="flex flex-wrap items-start justify-between gap-6 pb-4">
         <div className="max-w-sm">
           <p className="font-display text-[21px] leading-tight font-semibold tracking-[-0.02em] text-ink-950">
             {seller.legalName}
@@ -75,7 +75,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
       </header>
 
-      <dl className="grid gap-x-6 gap-y-2.5 border-b border-ink-300 py-4 text-[11.5px] sm:grid-cols-3 print:gap-y-1.5 print:py-2.5 print:text-[10px]">
+      <dl className="grid gap-x-6 gap-y-2.5 py-4 text-[11.5px] sm:grid-cols-3 print:gap-y-1.5 print:py-2.5 print:text-[10px]">
         <MetaField label="Invoice date" value={formatDate(invoice.invoiceDate, "short")} />
         <MetaField label="Order number" value={invoice.orderNumber} mono />
         <MetaField label="Order date" value={formatDate(invoice.orderDate, "short")} />
@@ -88,7 +88,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         {invoice.buyerGstin && <MetaField label="Buyer GSTIN" value={invoice.buyerGstin} mono />}
       </dl>
 
-      <section className="grid border-b border-ink-300 sm:grid-cols-2">
+      <section className="grid sm:grid-cols-2">
         <Party title="Billed to" name={billTo.name} lines={billTo.lines}>
           {billTo.state} ({billTo.stateCode})
           <br />
@@ -98,7 +98,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           title="Shipped to"
           name={shipTo.name}
           lines={shipTo.lines}
-          className="sm:border-l sm:border-ink-300 sm:pl-5"
+          className="sm:pl-5"
         >
           {shipTo.state} ({shipTo.stateCode})
           <br />
@@ -192,7 +192,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </div>
 
       <div className="mt-4 flex justify-end break-inside-avoid print:mt-2.5">
-        <dl className="w-full max-w-[300px] border border-ink-400 py-1 text-[11.5px]">
+        <dl className="w-full max-w-[300px] py-1 text-[11.5px]">
           {totals.discount > 0 && (
             <>
               <Total
@@ -220,14 +220,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               value={`${totals.roundOff < 0 ? "−" : "+"} ${formatPaise(Math.abs(totals.roundOff))}`}
             />
           )}
-          <div className="mt-1 flex items-baseline justify-between gap-4 border-t-2 border-ink-800 px-3 py-2 text-[13px] font-bold text-ink-950">
+          <div className="mt-1 flex items-baseline justify-between gap-4 px-3 py-2 text-[13px] font-bold text-ink-950">
             <dt>Grand total</dt>
             <dd className="tabular-nums">₹ {formatPaise(totals.payable)}</dd>
           </div>
         </dl>
       </div>
 
-      <p className="mt-4 break-inside-avoid border border-ink-400 px-3 py-2 text-[11.5px] leading-relaxed print:mt-2.5 print:text-[10px]">
+      <p className="mt-4 break-inside-avoid px-3 py-2 text-[11.5px] leading-relaxed print:mt-2.5 print:text-[10px]">
         <span className="text-ink-600">Amount chargeable in words: </span>
         <span className="font-semibold text-ink-950">{invoice.amountInWords}</span>
       </p>
@@ -291,7 +291,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </table>
       </section>
 
-      <section className="mt-6 grid gap-6 break-inside-avoid border-t border-ink-300 pt-4 text-[11.5px] sm:grid-cols-2 print:mt-3.5 print:gap-4 print:pt-2.5 print:text-[10px]">
+      <section className="mt-6 grid gap-6 break-inside-avoid pt-4 text-[11.5px] sm:grid-cols-2 print:mt-3.5 print:gap-4 print:pt-2.5 print:text-[10px]">
         <div>
           <h2 className="text-[10px] font-semibold tracking-[0.14em] text-ink-500 uppercase">
             Payment
@@ -323,7 +323,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
       </section>
 
-      <footer className="mt-6 break-inside-avoid border-t border-ink-300 pt-3 text-[10.5px] leading-relaxed text-ink-600 print:mt-3.5 print:text-[9px]">
+      <footer className="mt-6 break-inside-avoid pt-3 text-[10.5px] leading-relaxed text-ink-600 print:mt-3.5 print:text-[9px]">
         <p>
           Declaration: the goods sold are intended for end user consumption and are not for resale.
           The particulars given above are true and correct, and the amount shown is the actual price
@@ -414,7 +414,7 @@ function Th({
       colSpan={colSpan}
       rowSpan={rowSpan}
       className={cn(
-        "border border-ink-400 px-2 py-1.5 text-left align-bottom font-semibold text-ink-900",
+        "px-2 py-1.5 text-left align-bottom font-semibold text-ink-900",
         className,
       )}
     >
@@ -433,7 +433,7 @@ function Td({
   colSpan?: number;
 }) {
   return (
-    <td colSpan={colSpan} className={cn("border border-ink-300 px-2 py-1.5", className)}>
+    <td colSpan={colSpan} className={cn("px-2 py-1.5", className)}>
       {children}
     </td>
   );

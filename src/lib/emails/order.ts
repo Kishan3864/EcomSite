@@ -120,7 +120,7 @@ ${formatAddress()}`;
 <body style="margin:0;padding:0;background:${C.canvas};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.canvas};padding:24px 12px;">
 <tr><td align="center">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${C.surface};border:1px solid ${C.hairline};border-radius:12px;overflow:hidden;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${C.surface};overflow:hidden;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 
     <tr><td style="background:${C.brandDeep};padding:22px 24px;">
       <div style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.2px;">${esc(BUSINESS.brandName)}</div>
@@ -133,7 +133,7 @@ ${formatAddress()}`;
         <strong style="color:${C.ink};">${esc(order.number)}</strong> is confirmed. We are getting it packed.
       </p>
 
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${C.hairline};margin-top:6px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.canvas};margin-top:6px;">
         ${order.lines
           .map(
             (l) => `<tr>
@@ -144,7 +144,7 @@ ${formatAddress()}`;
           .join("")}
       </table>
 
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${C.hairline};margin-top:8px;padding-top:8px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.canvas};margin-top:8px;padding-top:8px;">
         ${row("Items", rupees(order.itemsTotal))}
         ${row("Delivery", order.shipping === 0 ? "Free" : rupees(order.shipping))}
         ${row("Total paid", rupees(order.total), true)}
@@ -152,14 +152,14 @@ ${formatAddress()}`;
         ${row("Placed", formatDateTime(order.placedAt))}
       </table>
 
-      <div style="margin-top:20px;padding:14px 16px;background:${C.canvas};border-radius:8px;">
+      <div style="margin-top:20px;padding:14px 16px;background:${C.canvas};">
         <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:${C.muted};">Delivering to</div>
         <div style="margin-top:6px;font-size:14px;color:${C.ink};line-height:1.6;">${esc(address).replace(/\n/g, "<br>")}</div>
         <div style="margin-top:10px;font-size:13.5px;color:${C.body};">Expected by <strong>${esc(eta)}</strong>. We will email the tracking number as soon as the courier collects it.</div>
       </div>
 
       <div style="margin-top:22px;">
-        <a href="${track}" style="display:inline-block;background:${C.brandDeep};color:#ffffff;text-decoration:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;">Track your order</a>
+        <a href="${track}" style="display:inline-block;background:${C.brandDeep};color:#ffffff;text-decoration:none;padding:11px 20px;font-size:14px;font-weight:600;">Track your order</a>
         <a href="${invoice}" style="display:inline-block;margin-left:8px;color:${C.brandDeep};text-decoration:none;padding:11px 6px;font-size:14px;font-weight:600;">View invoice</a>
       </div>
 
@@ -171,7 +171,7 @@ ${formatAddress()}`;
       </p>
     </td></tr>
 
-    <tr><td style="padding:16px 24px;background:${C.canvas};border-top:1px solid ${C.hairline};font-size:12px;color:${C.muted};line-height:1.6;">
+    <tr><td style="padding:16px 24px;background:${C.canvas};font-size:12px;color:${C.muted};line-height:1.6;">
       ${esc(BUSINESS.legalName)}<br>${esc(formatAddress())}
     </td></tr>
   </table>

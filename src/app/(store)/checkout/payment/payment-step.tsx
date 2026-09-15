@@ -23,7 +23,7 @@ const UPI_APP_NAMES = ["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay", "
 
 /** The named apps and gateway methods, set as outlined stamps rather than pills. */
 const CHIP =
-  "border border-hairline bg-surface px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600";
+  "bg-surface px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600";
 
 /**
  * How the customer would like to pay.
@@ -164,7 +164,7 @@ export function PaymentStep() {
                         ))}
                       </ul>
                       {/* Three ruled rows: what to do, in the order it happens. */}
-                      <ol className="border-b border-hairline">
+                      <ol>
                         {[
                           "Scan our QR, or tap through to your UPI app on a phone.",
                           `Pay ${formatINR(totals.total)} and copy the 12-digit reference your app shows.`,
@@ -172,7 +172,7 @@ export function PaymentStep() {
                         ].map((line, i) => (
                           <li
                             key={line}
-                            className="flex gap-3 border-t border-hairline py-2.5 text-[13px] leading-[1.55] text-ink-600"
+                            className="flex gap-3 py-2.5 text-[13px] leading-[1.55] text-ink-600"
                           >
                             <span className="shrink-0 tabular-nums text-ink-400">{i + 1}</span>
                             <span className="min-w-0">{line}</span>

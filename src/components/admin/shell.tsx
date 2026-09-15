@@ -54,7 +54,7 @@ export function AdminShell({
   return (
     <div className="min-h-dvh bg-canvas lg:grid lg:grid-cols-[248px_minmax(0,1fr)] print:block print:min-h-0">
       {/* Desktop sidebar */}
-      <aside className="hidden border-r border-hairline bg-surface lg:sticky lg:top-0 lg:block lg:h-dvh print:hidden">
+      <aside className="hidden bg-surface lg:sticky lg:top-0 lg:block lg:h-dvh print:hidden">
         <AdminSidebar counts={counts} />
       </aside>
 
@@ -79,7 +79,7 @@ export function AdminShell({
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
-                className="absolute right-3 top-4 rounded-lg p-1.5 text-ink-500 hover:bg-ink-100"
+                className="absolute right-3 top-4 p-1.5 text-ink-500 hover:bg-ink-100"
               >
                 <X size={18} />
               </button>
@@ -90,11 +90,11 @@ export function AdminShell({
       </AnimatePresence>
 
       <div className="flex min-w-0 flex-col">
-        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 border-b border-hairline bg-surface/90 px-4 backdrop-blur-lg sm:px-6 print:hidden">
+        <header className="sticky top-0 z-40 flex h-16 items-center gap-3 bg-surface/90 px-4 backdrop-blur-lg sm:px-6 print:hidden">
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="-ml-1 rounded-lg p-2 text-ink-700 hover:bg-ink-100 lg:hidden"
+            className="-ml-1 p-2 text-ink-700 hover:bg-ink-100 lg:hidden"
           >
             <Menu size={20} />
           </button>
@@ -104,13 +104,13 @@ export function AdminShell({
           <div className="ml-auto flex items-center gap-2">
             <Link
               href="/admin/orders"
-              className="hidden h-9 items-center gap-2 rounded-lg border border-ink-200 bg-canvas px-3 text-[12.5px] text-ink-500 transition-colors hover:border-ink-400 md:flex"
+              className="hidden h-9 items-center gap-2 bg-canvas px-3 text-[12.5px] text-ink-500 transition-colors md:flex"
             >
               <Search size={14} /> Find an order…
             </Link>
 
-            <div className="flex items-center gap-2.5 rounded-lg border border-hairline bg-canvas py-1 pl-1 pr-2.5">
-              <span className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-900 text-[11px] font-bold text-white">
+            <div className="flex items-center gap-2.5 bg-canvas py-1 pl-1 pr-2.5">
+              <span className="flex h-7 w-7 items-center justify-center bg-brand-900 text-[11px] font-bold text-white">
                 {user.name
                   .split(" ")
                   .map((n) => n[0])
@@ -127,7 +127,7 @@ export function AdminShell({
                   type="submit"
                   aria-label="Sign out"
                   title="Sign out"
-                  className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-sale-600"
+                  className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-sale-600"
                 >
                   <LogOut size={15} />
                 </button>

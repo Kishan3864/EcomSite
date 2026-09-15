@@ -95,10 +95,10 @@ export function FlashMessage() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           className={cn(
-            "mb-5 flex items-start gap-2.5 rounded-xl border px-4 py-3 text-[13px]",
+            "mb-5 flex items-start gap-2.5 px-4 py-3 text-[13px]",
             tone === "error"
-              ? "border-sale-200 bg-sale-50 text-sale-700"
-              : "border-brand-200 bg-brand-50 text-brand-900",
+              ? "bg-sale-50 text-sale-700"
+              : "bg-brand-50 text-brand-900",
           )}
           role="status"
         >
@@ -111,7 +111,7 @@ export function FlashMessage() {
           <button
             onClick={() => setDismissed(flash)}
             aria-label="Dismiss"
-            className="-m-1 rounded-md p-1 opacity-60 transition-opacity hover:opacity-100"
+            className="-m-1 p-1 opacity-60 transition-opacity hover:opacity-100"
           >
             <X size={14} />
           </button>
@@ -136,10 +136,10 @@ export function Notice({
     <div
       role={tone === "error" ? "alert" : "status"}
       className={cn(
-        "flex items-start gap-2.5 rounded-lg border px-3.5 py-2.5 text-[13px]",
-        tone === "error" && "border-sale-200 bg-sale-50 text-sale-700",
-        tone === "ok" && "border-brand-200 bg-brand-50 text-brand-900",
-        tone === "info" && "border-ink-200 bg-ink-50 text-ink-700",
+        "flex items-start gap-2.5 px-3.5 py-2.5 text-[13px]",
+        tone === "error" && "bg-sale-50 text-sale-700",
+        tone === "ok" && "bg-brand-50 text-brand-900",
+        tone === "info" && "bg-ink-50 text-ink-700",
         className,
       )}
     >
@@ -180,7 +180,7 @@ export function SearchBox({
   return (
     <div
       className={cn(
-        "flex h-10 items-center gap-2 rounded-lg border border-ink-200 bg-surface px-3 transition-colors focus-within:border-brand-500",
+        "flex h-10 items-center gap-2 bg-surface px-3 transition-colors",
         className,
       )}
     >
@@ -209,7 +209,7 @@ export function SearchBox({
             commit("");
           }}
           aria-label="Clear"
-          className="rounded p-0.5 text-ink-400 hover:text-ink-700"
+          className="p-0.5 text-ink-400 hover:text-ink-700"
         >
           <X size={14} />
         </button>
@@ -248,7 +248,7 @@ export function ParamSelect({
         router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
       }}
       className={cn(
-        "h-10 rounded-lg border border-ink-200 bg-surface px-3 pr-8 text-[13px] text-ink-800 outline-none focus:border-brand-500",
+        "h-10 bg-surface px-3 pr-8 text-[13px] text-ink-800 outline-none",
         className,
       )}
       aria-label={name}
@@ -275,7 +275,7 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
         setDone(true);
         setTimeout(() => setDone(false), 1500);
       }}
-      className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11.5px] font-medium text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900"
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[11.5px] font-medium text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900"
     >
       {done ? <Check size={12} className="text-brand-600" /> : <Copy size={12} />}
       {done ? "Copied" : label}

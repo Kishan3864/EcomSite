@@ -138,7 +138,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
             name="from"
             defaultValue={f.from ?? ""}
             aria-label="From date"
-            className="h-10 rounded-lg border border-ink-200 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none focus:border-brand-500"
+            className="h-10 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none"
           />
           <span className="text-ink-400">–</span>
           <input
@@ -146,11 +146,11 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
             name="to"
             defaultValue={f.to ?? ""}
             aria-label="To date"
-            className="h-10 rounded-lg border border-ink-200 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none focus:border-brand-500"
+            className="h-10 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none"
           />
           <button
             type="submit"
-            className="h-10 rounded-lg border border-ink-200 bg-surface px-3 text-[12.5px] font-medium text-ink-700 transition-colors hover:border-ink-400"
+            className="h-10 bg-surface px-3 text-[12.5px] font-medium text-ink-700 transition-colors"
           >
             Apply
           </button>

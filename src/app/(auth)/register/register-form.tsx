@@ -13,7 +13,7 @@ import { Form } from "@/components/ui/form";
 
 /** Matches the block the shared `Form` draws for a failed constraint. */
 const ERROR_BLOCK =
-  "flex items-start gap-2 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600";
+  "flex items-start gap-2 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600";
 
 function strength(password: string) {
   let score = 0;

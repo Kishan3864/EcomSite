@@ -25,7 +25,7 @@ export function EnvironmentBadge() {
           is reserved for price reductions, and a shadow would make this the one
           thing on the site that floats. An aqua edge is still the loudest
           thing in the corner of a page drawn entirely in hairlines. */}
-      <span className="block border border-gold-400 bg-ink-950 px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.14em] text-gold-300">
+      <span className="block bg-ink-950 px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.14em] text-gold-300">
         {env}
       </span>
     </div>

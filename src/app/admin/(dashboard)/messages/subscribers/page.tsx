@@ -139,7 +139,7 @@ export default async function SubscribersPage({ searchParams }: { searchParams: 
                       <button
                         type="submit"
                         title="Remove subscriber"
-                        className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
+                        className="p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
                       >
                         <Trash2 size={14} />
                       </button>

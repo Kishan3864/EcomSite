@@ -62,7 +62,7 @@ export default function ContactPage() {
       <BreadcrumbJsonLd items={crumbs} />
       <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-      <header className="mb-6 border-b border-hairline pb-6 sm:mb-8 sm:pb-8">
+      <header className="mb-6 pb-6 sm:mb-8 sm:pb-8">
         <span className="eyebrow">Support</span>
         <h1 className="mt-3 font-display text-[26px] leading-[1.06] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[42px]">
           Talk to a person
@@ -119,7 +119,7 @@ export default function ContactPage() {
         <ContactForm />
 
         <aside className="min-w-0 space-y-6">
-          <section className="border-t border-hairline pt-4">
+          <section className="pt-4">
             <h2 className={ASIDE_LABEL}>When we are around</h2>
             <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">
               {BUSINESS.supportHours}. Messages that arrive outside those hours are answered the
@@ -127,7 +127,7 @@ export default function ContactPage() {
             </p>
           </section>
 
-          <section className="border-t border-hairline pt-4">
+          <section className="pt-4">
             <h2 className={ASIDE_LABEL}>Business address</h2>
             <address className="mt-2 text-[13px] not-italic leading-[1.6] text-ink-600">
               <strong className="font-semibold text-ink-900">{BRAND.legalName}</strong>
@@ -149,7 +149,7 @@ export default function ContactPage() {
           </section>
 
           {/* Required by the Consumer Protection (E-Commerce) Rules, 2020. */}
-          <section className="border-t border-hairline pt-4">
+          <section className="pt-4">
             <h2 className={ASIDE_LABEL}>Grievance officer</h2>
             <p className="mt-2 break-words text-[13px] leading-[1.6] text-ink-600">
               <strong className="font-semibold text-ink-900">
@@ -179,7 +179,7 @@ export default function ContactPage() {
             </p>
           </section>
 
-          <section className="border-t border-hairline pt-4">
+          <section className="pt-4">
             <h2 className={ASIDE_LABEL}>Faster than a message</h2>
             <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">
               Most questions are about where a parcel is. You can see that yourself in about five

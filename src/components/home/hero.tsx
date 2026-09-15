@@ -122,7 +122,7 @@ export function Hero({ banners }: { banners: Banner[] }) {
                   </Link>
                   <Link
                     href="/products"
-                    className="tap inline-flex h-10 grow items-center justify-center border border-white/30 px-5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:border-white hover:bg-white hover:text-ink-950 sm:h-12 sm:grow-0 sm:px-8 sm:text-[12px]"
+                    className="tap inline-flex h-10 grow items-center justify-center px-5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-white hover:text-ink-950 sm:h-12 sm:grow-0 sm:px-8 sm:text-[12px]"
                   >
                     Browse everything
                   </Link>
@@ -136,14 +136,14 @@ export function Hero({ banners }: { banners: Banner[] }) {
             <button
               onClick={() => go(index - 1)}
               aria-label="Previous slide"
-              className="flex h-10 w-10 items-center justify-center border border-white/25 text-white transition-colors hover:border-white hover:bg-white hover:text-ink-950"
+              className="flex h-10 w-10 items-center justify-center text-white transition-colors hover:bg-white hover:text-ink-950"
             >
               <ChevronLeft size={17} />
             </button>
             <button
               onClick={() => go(index + 1)}
               aria-label="Next slide"
-              className="flex h-10 w-10 items-center justify-center border border-white/25 text-white transition-colors hover:border-white hover:bg-white hover:text-ink-950"
+              className="flex h-10 w-10 items-center justify-center text-white transition-colors hover:bg-white hover:text-ink-950"
             >
               <ChevronRight size={17} />
             </button>

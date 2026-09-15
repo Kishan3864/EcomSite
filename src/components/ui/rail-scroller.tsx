@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 const OVERLAP = 64;
 
 const ARROW = cn(
-  "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full",
-  "border border-ink-200 bg-surface text-ink-700 shadow-sm",
-  "transition-colors duration-200 hover:border-ink-900 hover:text-ink-950",
+  "flex h-9 w-9 cursor-pointer items-center justify-center",
+  "bg-surface text-ink-700 shadow-sm",
+  "transition-colors duration-200 hover:text-ink-950",
   "disabled:pointer-events-none disabled:opacity-40",
 );
 

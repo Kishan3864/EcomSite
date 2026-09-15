@@ -74,15 +74,15 @@ export async function Footer() {
   const categories = await getCategories();
   return (
     // No top margin below lg: the <main> above already ends in pb-16 there.
-    <footer className="border-t border-hairline bg-surface lg:mt-20">
+    <footer className="bg-surface lg:mt-20">
       {/* Trust strip. Four rows on one shared hairline grid, the way the rest
           of the site draws a set of equal things — the coloured chip behind each
           glyph was the last card look left in the chrome. All four stay: this is
           the only place the return window is printed on the screen somebody is
           standing on when they decide whether to buy. */}
-      <div className="border-b border-hairline">
+      <div>
         <div className="container-page py-4 sm:py-8">
-          <div className="tile-grid overflow-hidden rounded-xl grid-cols-2 lg:grid-cols-4">
+          <div className="tile-grid overflow-hidden grid-cols-2 lg:grid-cols-4">
             {trustBadges.map((badge) => {
               const Icon = TRUST_ICONS[badge.icon as keyof typeof TRUST_ICONS];
               return (
@@ -175,7 +175,7 @@ export async function Footer() {
                 aria-label={label}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="tap is-circle flex h-10 w-10 items-center justify-center rounded-full border border-hairline text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 hover:text-ink-950 lg:h-9 lg:w-9"
+                className="tap is-circle flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-50 hover:text-ink-950 lg:h-9 lg:w-9"
               >
                 <Icon size={16} />
               </a>
@@ -185,7 +185,7 @@ export async function Footer() {
 
         {LINK_COLUMNS.map((column) => (
           <nav key={column.title} aria-label={column.title} className="hidden sm:block">
-            <h3 className="mb-4 border-b border-hairline pb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
+            <h3 className="mb-4 pb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
               {column.title}
             </h3>
             <ul className="space-y-2.5">
@@ -206,10 +206,10 @@ export async function Footer() {
         {/* Phones get the same columns as an accordion, the way an app lists them:
             four tidy rows instead of four stacked lists. Only one set is ever
             displayed, so assistive tech never meets the links twice. */}
-        <div className="border-t border-hairline sm:hidden">
+        <div className="sm:hidden">
           {LINK_COLUMNS.map((column) => (
             <nav key={column.title} aria-label={column.title}>
-              <details name="footer-links" className="group border-b border-hairline">
+              <details name="footer-links" className="group">
                 <summary className="tap flex h-11 list-none items-center justify-between [&::-webkit-details-marker]:hidden">
                   <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
                     {column.title}
@@ -242,7 +242,7 @@ export async function Footer() {
           a heading with nothing under it reads as something that failed to
           load, and it comes back by itself with the first category. */}
       {categories.length > 0 && (
-      <div className="border-t border-hairline">
+      <div>
         <div className="container-page py-5 sm:py-8">
           <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:mb-4">
             Browse every category
@@ -260,7 +260,7 @@ export async function Footer() {
                 <li key={c.slug}>
                   <Link
                     href={`/c/${c.slug}`}
-                    className="tap inline-block rounded-lg border border-ink-950 px-2.5 py-1.5 text-[13px] font-medium text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-3"
+                    className="tap inline-block px-2.5 py-1.5 text-[13px] font-medium text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-3"
                   >
                     {c.name}
                   </Link>
@@ -269,7 +269,7 @@ export async function Footer() {
                   <li key={`${c.slug}-${s.slug}`}>
                     <Link
                       href={`/c/${c.slug}/${s.slug}`}
-                      className="tap inline-block rounded-lg border border-hairline px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 sm:px-3"
+                      className="tap inline-block px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:text-ink-950 sm:px-3"
                     >
                       {s.name}
                     </Link>
@@ -284,7 +284,7 @@ export async function Footer() {
 
       {/* Legal. No bottom-nav clearance here: BottomNav leaves its own spacer
           after the footer, and only on the pages where it actually shows. */}
-      <div className="border-t border-hairline bg-canvas">
+      <div className="bg-canvas">
         <div className="container-page flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-6">
           <p className="text-[13px] leading-[1.5] tabular-nums text-ink-500">
             &copy; {new Date().getFullYear()} {BRAND.legalName}. All rights reserved.

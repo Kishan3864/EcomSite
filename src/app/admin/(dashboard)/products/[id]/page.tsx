@@ -194,7 +194,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           {product.stockMoves.length === 0 ? (
             <p className="px-5 py-6 text-[13px] text-ink-400">No movements recorded yet.</p>
           ) : (
-            <ul className="divide-y divide-hairline">
+            <ul>
               {product.stockMoves.map((m) => (
                 <li key={m.id} className="flex items-start gap-3 px-5 py-2.5">
                   <span
@@ -245,7 +245,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
               </div>
 
               {hasRole(session, "OWNER") && (
-                <div className="border-t border-hairline pt-3">
+                <div className="pt-3">
                   <ConfirmForm
                     action={deleteProduct}
                     message={`Delete ${product.title} permanently? This cannot be undone.`}
@@ -255,7 +255,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
                     <button
                       type="submit"
                       disabled={product._count.orderLines > 0}
-                      className={buttonClasses("outline", "sm", "w-full border-sale-300 text-sale-600 hover:border-sale-500 hover:bg-sale-50 disabled:opacity-50")}
+                      className={buttonClasses("outline", "sm", "w-full text-sale-600 hover:bg-sale-50 disabled:opacity-50")}
                     >
                       <Trash2 size={14} /> Delete permanently
                     </button>

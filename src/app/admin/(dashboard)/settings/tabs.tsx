@@ -21,7 +21,7 @@ export function SettingsTabs({ isOwner }: { isOwner: boolean }) {
   return (
     <nav
       aria-label="Settings sections"
-      className="-mx-4 flex gap-1 overflow-x-auto border-b border-hairline px-4 sm:mx-0 sm:px-0"
+      className="-mx-4 flex gap-1 overflow-x-auto px-4 sm:mx-0 sm:px-0"
     >
       {tabs.map((tab) => {
         const active = pathname === tab.href;
@@ -31,10 +31,10 @@ export function SettingsTabs({ isOwner }: { isOwner: boolean }) {
             href={tab.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "-mb-px shrink-0 border-b-2 px-3 py-2.5 text-[13px] font-medium transition-colors",
+              "shrink-0 rule-b px-3 py-2.5 text-[13px] font-medium transition-colors",
               active
-                ? "border-brand-800 text-ink-950"
-                : "border-transparent text-ink-500 hover:border-ink-300 hover:text-ink-900",
+                ? "[--rule-color:var(--color-brand-800)] text-ink-950"
+                : "[--rule-color:transparent] text-ink-500 hover:text-ink-900",
             )}
           >
             {tab.label}

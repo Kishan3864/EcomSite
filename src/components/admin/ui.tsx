@@ -64,9 +64,9 @@ export function Card({
   padded?: boolean;
 }) {
   return (
-    <section className={cn("overflow-hidden rounded-xl border border-hairline bg-surface", className)}>
+    <section className={cn("overflow-hidden bg-surface", className)}>
       {(title || actions) && (
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-5 py-3.5">
+        <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
           <div>
             {title && (
               <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">{title}</h2>
@@ -109,7 +109,7 @@ export function StatCard({
         {delta && (
           <span
             className={cn(
-              "rounded-full px-1.5 py-0.5 font-semibold tabular-nums",
+              "px-1.5 py-0.5 font-semibold tabular-nums",
               delta.value > 0
                 ? "bg-brand-100 text-brand-800"
                 : delta.value < 0
@@ -127,13 +127,13 @@ export function StatCard({
   );
 
   const cls =
-    "block rounded-xl border border-hairline bg-surface p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md";
+    "block bg-surface p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md";
   return href ? (
     <Link href={href} className={cls}>
       {body}
     </Link>
   ) : (
-    <div className="rounded-xl border border-hairline bg-surface p-4">{body}</div>
+    <div className="bg-surface p-4">{body}</div>
   );
 }
 
@@ -171,12 +171,12 @@ export function Pill({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold",
+        "inline-flex items-center gap-1.5 whitespace-nowrap px-2 py-0.5 text-[11px] font-semibold",
         TONE_CLASS[tone],
         className,
       )}
     >
-      {dot && <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />}
+      {dot && <span className="h-1.5 w-1.5 bg-current opacity-70" />}
       {children}
     </span>
   );
@@ -239,7 +239,7 @@ export function statusLabelOf(status: string) {
 
 export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("overflow-x-auto rounded-xl border border-hairline bg-surface", className)}>
+    <div className={cn("overflow-x-auto bg-surface", className)}>
       <table className="w-full min-w-[640px] border-collapse text-[13px]">{children}</table>
     </div>
   );
@@ -257,7 +257,7 @@ export function Th({
   return (
     <th
       className={cn(
-        "border-b border-hairline bg-canvas px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500",
+        "bg-canvas px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-500",
         align === "right" && "text-right",
         align === "center" && "text-center",
         align === "left" && "text-left",
@@ -281,7 +281,7 @@ export function Td({
   return (
     <td
       className={cn(
-        "border-b border-hairline px-4 py-3 align-middle text-ink-800 last:border-b-0",
+        "px-4 py-3 align-middle text-ink-800",
         align === "right" && "text-right tabular-nums",
         align === "center" && "text-center",
         className,
@@ -293,7 +293,7 @@ export function Td({
 }
 
 export function Tr({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <tr className={cn("transition-colors hover:bg-canvas [&:last-child>td]:border-b-0", className)}>{children}</tr>;
+  return <tr className={cn("transition-colors hover:bg-canvas [&:last-child>", className)}>{children}</tr>;
 }
 
 export function EmptyRow({ colSpan, title, body }: { colSpan: number; title: string; body?: string }) {
@@ -321,7 +321,7 @@ export function AdminPagination({
 }) {
   if (meta.total === 0) return null;
   const btn =
-    "inline-flex h-8 items-center gap-1 rounded-lg border px-2.5 text-[12.5px] font-medium transition-colors";
+    "inline-flex h-8 items-center gap-1 px-2.5 text-[12.5px] font-medium transition-colors";
   return (
     <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-[12.5px] text-ink-500">
       <p className="tabular-nums">
@@ -330,11 +330,11 @@ export function AdminPagination({
       </p>
       <div className="flex items-center gap-1.5">
         {meta.page > 1 ? (
-          <Link href={hrefFor(meta.page - 1)} className={cn(btn, "border-ink-200 bg-surface text-ink-700 hover:border-ink-400")}>
+          <Link href={hrefFor(meta.page - 1)} className={cn(btn, "bg-surface text-ink-700")}>
             <ChevronLeft size={14} /> Prev
           </Link>
         ) : (
-          <span className={cn(btn, "border-ink-100 text-ink-300")}>
+          <span className={cn(btn, "text-ink-300")}>
             <ChevronLeft size={14} /> Prev
           </span>
         )}
@@ -342,11 +342,11 @@ export function AdminPagination({
           Page {meta.page} / {meta.totalPages}
         </span>
         {meta.page < meta.totalPages ? (
-          <Link href={hrefFor(meta.page + 1)} className={cn(btn, "border-ink-200 bg-surface text-ink-700 hover:border-ink-400")}>
+          <Link href={hrefFor(meta.page + 1)} className={cn(btn, "bg-surface text-ink-700")}>
             Next <ChevronRight size={14} />
           </Link>
         ) : (
-          <span className={cn(btn, "border-ink-100 text-ink-300")}>
+          <span className={cn(btn, "text-ink-300")}>
             Next <ChevronRight size={14} />
           </span>
         )}
@@ -383,7 +383,7 @@ export function DateCell({ value, time = false }: { value: string | Date; time?:
 
 export function KeyValue({ rows }: { rows: { label: string; value: React.ReactNode }[] }) {
   return (
-    <dl className="divide-y divide-hairline">
+    <dl>
       {rows.map((r) => (
         <div key={r.label} className="grid grid-cols-[130px_minmax(0,1fr)] gap-3 py-2.5 text-[13px]">
           <dt className="text-ink-500">{r.label}</dt>
@@ -408,7 +408,7 @@ export function FormSection({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-xl border border-hairline bg-surface p-5", className)}>
+    <section className={cn("bg-surface p-5", className)}>
       <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">{title}</h2>
       {description && <p className="mt-1 text-[12.5px] text-ink-500">{description}</p>}
       <div className="mt-4 grid gap-4">{children}</div>
@@ -417,9 +417,9 @@ export function FormSection({
 }
 
 export const inputCls =
-  "h-10 w-full rounded-lg border border-ink-200 bg-canvas px-3 text-[13.5px] text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500 disabled:opacity-60";
+  "h-10 w-full bg-canvas px-3 text-[13.5px] text-ink-900 outline-none transition-colors placeholder:text-ink-400 disabled:opacity-60";
 export const textareaCls =
-  "w-full rounded-lg border border-ink-200 bg-canvas px-3 py-2.5 text-[13.5px] leading-relaxed text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500";
+  "w-full bg-canvas px-3 py-2.5 text-[13.5px] leading-relaxed text-ink-900 outline-none transition-colors placeholder:text-ink-400";
 export const selectCls = cn(inputCls, "appearance-none pr-9 bg-no-repeat bg-[right_10px_center]");
 export const selectArrow = {
   backgroundImage:

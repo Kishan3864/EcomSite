@@ -92,9 +92,9 @@ export function AdminSidebar({ counts, onNavigate }: { counts: SidebarCounts; on
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center justify-between border-b border-hairline px-5">
+      <div className="flex h-16 items-center justify-between px-5">
         <Logo size="sm" href="/admin" />
-        <span className="rounded-md bg-brand-900 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-white">
+        <span className="bg-brand-900 px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.12em] text-white">
           Admin
         </span>
       </div>
@@ -117,7 +117,7 @@ export function AdminSidebar({ counts, onNavigate }: { counts: SidebarCounts; on
                       onClick={onNavigate}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] transition-colors",
+                        "flex items-center gap-2.5 px-2.5 py-2 text-[13.5px] transition-colors",
                         active
                           ? "bg-brand-50 font-semibold text-brand-900"
                           : "text-ink-700 hover:bg-ink-100 hover:text-ink-950",
@@ -128,7 +128,7 @@ export function AdminSidebar({ counts, onNavigate }: { counts: SidebarCounts; on
                       {count ? (
                         <span
                           className={cn(
-                            "rounded-full px-1.5 py-0.5 text-[10.5px] font-bold tabular-nums",
+                            "px-1.5 py-0.5 text-[10.5px] font-bold tabular-nums",
                             item.countTone === "sale"
                               ? "bg-sale-100 text-sale-700"
                               : "bg-gold-100 text-gold-800",
@@ -146,11 +146,11 @@ export function AdminSidebar({ counts, onNavigate }: { counts: SidebarCounts; on
         ))}
       </nav>
 
-      <div className="border-t border-hairline p-3">
+      <div className="p-3">
         <Link
           href="/"
           target="_blank"
-          className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[12.5px] font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950"
+          className="flex items-center gap-2 px-2.5 py-2 text-[12.5px] font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950"
         >
           <ExternalLink size={14} /> View storefront
         </Link>

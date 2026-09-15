@@ -11,8 +11,8 @@ import { deleteCategory, moveCategory, toggleCategoryActive } from "@/services/a
 import { CategoryIcon } from "./category-icon";
 import { Form } from "@/components/ui/form";
 
-const iconBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
-const iconBtnDisabled = "rounded-md p-1.5 text-ink-200";
+const iconBtn = "p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
+const iconBtnDisabled = "p-1.5 text-ink-200";
 
 /**
  * Categories are few (a handful of top-level departments) and their order is
@@ -117,7 +117,7 @@ export default async function CategoriesPage() {
                       width={40}
                       height={40}
                       unoptimized
-                      className="h-10 w-10 shrink-0 rounded-lg border border-hairline object-cover"
+                      className="h-10 w-10 shrink-0 object-cover"
                     />
                     <div className="min-w-0">
                       <Link href={`/admin/categories/${c.id}`} className="font-medium text-ink-950 hover:text-brand-700">
@@ -125,7 +125,7 @@ export default async function CategoriesPage() {
                       </Link>
                       <span className="flex items-center gap-1.5 text-[11.5px] text-ink-400">
                         <span
-                          className="inline-flex h-4 w-4 items-center justify-center rounded-full"
+                          className="inline-flex h-4 w-4 items-center justify-center"
                           style={{ backgroundColor: `${c.accent}22`, color: c.accent }}
                           title={`Icon: ${c.icon} · Accent: ${c.accent}`}
                         >
@@ -175,7 +175,7 @@ export default async function CategoriesPage() {
                         <button
                           type="submit"
                           title="Delete"
-                          className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
+                          className="p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
                         >
                           <Trash2 size={14} />
                         </button>

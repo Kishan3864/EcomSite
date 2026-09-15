@@ -345,7 +345,7 @@ export function ProductForm({
                 return (
                   <label
                     key={b.value}
-                    className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-ink-200 bg-canvas px-3 py-1.5 text-[12.5px] text-ink-800 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-900"
+                    className="inline-flex cursor-pointer items-center gap-2 bg-canvas px-3 py-1.5 text-[12.5px] text-ink-800 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-900"
                   >
                     <input type="checkbox" name="badges" value={b.value} defaultChecked={checked} className="h-3.5 w-3.5 accent-[var(--color-brand-700)]" />
                     {b.label}
@@ -427,14 +427,14 @@ export function ProductForm({
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-hairline bg-canvas p-3 text-[13.5px] text-ink-800">
+            <label className="flex cursor-pointer items-start gap-3 bg-canvas p-3 text-[13.5px] text-ink-800">
               <input type="checkbox" name="codAvailable" defaultChecked={dc("codAvailable", init.codAvailable)} className="mt-0.5 h-4 w-4 accent-[var(--color-brand-700)]" />
               <span>
                 <span className="block font-medium">Cash on delivery</span>
                 <span className="block text-[12.5px] text-ink-500">Let shoppers pay when the parcel arrives.</span>
               </span>
             </label>
-            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-hairline bg-canvas p-3 text-[13.5px] text-ink-800">
+            <label className="flex cursor-pointer items-start gap-3 bg-canvas p-3 text-[13.5px] text-ink-800">
               <input type="checkbox" name="freeShipping" defaultChecked={dc("freeShipping", init.freeShipping)} className="mt-0.5 h-4 w-4 accent-[var(--color-brand-700)]" />
               <span>
                 <span className="block font-medium">Free shipping</span>

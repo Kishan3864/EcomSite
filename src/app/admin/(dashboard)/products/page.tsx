@@ -135,7 +135,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const pageIds = rows.map((r) => r.id);
   const colSpan = canManage ? 9 : 8;
 
-  const iconBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
+  const iconBtn = "p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
 
   return (
     <>
@@ -234,12 +234,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                             width={40}
                             height={40}
                             unoptimized
-                            className="h-10 w-10 shrink-0 rounded-md border border-hairline object-cover"
+                            className="h-10 w-10 shrink-0 object-cover"
                           />
                         ) : (
                           <span
                             title="No image"
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-dashed border-ink-200 bg-canvas text-ink-300"
+                            className="flex h-10 w-10 shrink-0 items-center justify-center bg-canvas text-ink-300"
                           >
                             <ImageOff size={15} />
                           </span>
@@ -324,7 +324,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                             <button
                               type="submit"
                               title="Delete"
-                              className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
+                              className="p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
                             >
                               <Trash2 size={14} />
                             </button>

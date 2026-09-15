@@ -92,7 +92,7 @@ export function SocialSignIn({
               href={start}
               // 40px and square, the same as Google's own button beside it and
               // the same as the submit button above.
-              className="tap flex h-10 w-full items-center justify-center gap-3 border border-ink-950 bg-ink-950 px-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-6"
+              className="tap flex h-10 w-full items-center justify-center gap-3 bg-ink-950 px-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-6"
             >
               <Mark />
               Continue with {label}

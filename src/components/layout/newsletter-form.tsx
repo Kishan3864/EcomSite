@@ -29,7 +29,7 @@ function SubscribeButton() {
     <button
       type="submit"
       disabled={pending}
-      className="tap inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[13.5px] font-semibold tracking-[0.005em] text-ink-950 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-70"
+      className="tap inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-[13.5px] font-semibold tracking-[0.005em] text-ink-950 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-70"
     >
       {pending ? "Signing you up…" : "Subscribe"}
       <ArrowRight size={16} />
@@ -48,7 +48,7 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
   if (state.ok) {
     return (
       <div className="w-full">
-        <p className="flex items-center gap-2.5 border border-white/15 bg-white/5 px-4 py-3.5 text-[14px] leading-[1.5] text-white">
+        <p className="flex items-center gap-2.5 bg-white/5 px-4 py-3.5 text-[14px] leading-[1.5] text-white">
           <Check size={17} strokeWidth={1.5} className="shrink-0 text-gold-300" />
           {welcomeEmail
             ? "Thank you for subscribing! If you are new here, a welcome note is on its way to your inbox."
@@ -76,7 +76,7 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
           // which is what squashed this input to a sliver on phones.
           // text-base on phones: iOS zooms the page into any input set smaller
           // than 16px the moment it is focused.
-          className="h-12 w-full shrink-0 rounded-lg border border-white/20 bg-white/5 px-4 text-base text-white outline-none transition-colors duration-200 placeholder:text-white/45 focus:border-gold-400 focus:bg-white/10 sm:w-auto sm:flex-1 sm:text-[14px]"
+          className="h-12 w-full shrink-0 bg-white/5 px-4 text-base text-white outline-none transition-colors duration-200 placeholder:text-white/45 focus:bg-white/10 sm:w-auto sm:flex-1 sm:text-[14px]"
         />
         <SubscribeButton />
       </div>
@@ -85,7 +85,7 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
           the subscribe button, and an error painted the same colour as the
           thing that caused it reads as part of the button. */}
       {state.error && (
-        <p role="alert" className="mt-3 border-l-2 border-gold-400 pl-3 text-[13px] leading-[1.5] text-white">
+        <p role="alert" className="mt-3 rule-l [--rule-color:var(--color-gold-400)] pl-3 text-[13px] leading-[1.5] text-white">
           {state.error}
         </p>
       )}

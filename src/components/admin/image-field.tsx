@@ -96,9 +96,9 @@ export function ImageField({
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={cn(
-          "relative overflow-hidden border border-dashed bg-ink-50 transition-colors",
+          "relative overflow-hidden bg-ink-50 transition-colors",
           ASPECT[aspect],
-          dragging ? "border-brand-500 bg-brand-50" : "border-ink-200",
+          dragging ? "bg-brand-50" : "",
         )}
       >
         {usable ? (
@@ -138,7 +138,7 @@ export function ImageField({
           type="button"
           onClick={() => fileInput.current?.click()}
           disabled={busy}
-          className="inline-flex h-9 items-center gap-1.5 border border-ink-300 bg-surface px-3 text-[12px] font-semibold text-ink-900 transition-colors hover:border-ink-950 hover:bg-ink-50 disabled:opacity-50"
+          className="inline-flex h-9 items-center gap-1.5 bg-surface px-3 text-[12px] font-semibold text-ink-900 transition-colors hover:bg-ink-50 disabled:opacity-50"
         >
           <Upload size={13} /> {usable ? "Replace" : "Upload"}
         </button>
@@ -150,7 +150,7 @@ export function ImageField({
               onChange("");
             }}
             disabled={busy}
-            className="inline-flex h-9 items-center gap-1.5 border border-ink-200 px-3 text-[12px] font-medium text-ink-600 transition-colors hover:border-sale-400 hover:text-sale-600 disabled:opacity-50"
+            className="inline-flex h-9 items-center gap-1.5 px-3 text-[12px] font-medium text-ink-600 transition-colors hover:text-sale-600 disabled:opacity-50"
           >
             <Trash2 size={13} /> Remove
           </button>

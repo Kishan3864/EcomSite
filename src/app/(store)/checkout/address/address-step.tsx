@@ -72,8 +72,8 @@ export function AddressStep() {
           {addresses.map((address) => (
             <li key={address.id}>
               {editing?.id === address.id ? (
-                <div className="border border-ink-950 bg-surface p-4 sm:p-5">
-                  <h3 className="mb-4 border-b border-hairline pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                <div className="bg-surface p-4 sm:p-5">
+                  <h3 className="mb-4 pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     Edit address
                   </h3>
                   <AddressForm
@@ -100,7 +100,7 @@ export function AddressStep() {
                       {/* An outlined stamp rather than a grey pill: the chip is a
                           label on a repeating row and has no business carrying a
                           fill of its own. */}
-                      <span className="border border-hairline px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-500">
+                      <span className="px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-500">
                         {address.label}
                       </span>
                       {address.isDefault && <Badge tone="success">Default</Badge>}
@@ -173,8 +173,8 @@ export function AddressStep() {
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden"
             >
-              <div className="border border-ink-950 bg-surface p-4 sm:p-5">
-                <h3 className="mb-4 border-b border-hairline pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+              <div className="bg-surface p-4 sm:p-5">
+                <h3 className="mb-4 pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   New delivery address
                 </h3>
                 <AddressForm
@@ -194,7 +194,7 @@ export function AddressStep() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setAdding(true)}
-              className="tap flex w-full items-center justify-center gap-2 border border-dashed border-rule bg-surface py-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50"
+              className="tap flex w-full items-center justify-center gap-2 bg-surface py-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-50"
             >
               <Plus size={15} />
               Add a new address

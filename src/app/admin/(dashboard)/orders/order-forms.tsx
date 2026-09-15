@@ -64,7 +64,7 @@ function DelhiveryPanel({
 
   if (!link) {
     return (
-      <p className="rounded-lg border border-dashed border-hairline bg-canvas px-3.5 py-3 text-[12.5px] leading-relaxed text-ink-500">
+      <p className="bg-canvas px-3.5 py-3 text-[12.5px] leading-relaxed text-ink-500">
         Delhivery is not connected yet, so book this parcel on Delhivery One and type the courier and
         waybill below. To connect it, add the three <code className="text-ink-700">DELHIVERY_*</code> keys
         to <code className="text-ink-700">.env</code> — see <code className="text-ink-700">docs/delhivery.md</code>.
@@ -77,8 +77,8 @@ function DelhiveryPanel({
     <span
       className={
         testMode
-          ? "rounded-md bg-amber-100 px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-amber-800"
-          : "rounded-md bg-brand-100 px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-brand-800"
+          ? "bg-amber-100 px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-amber-800"
+          : "bg-brand-100 px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-brand-800"
       }
     >
       {testMode ? "Test mode" : "Live"}
@@ -97,7 +97,7 @@ function DelhiveryPanel({
           : null;
 
     return (
-      <Form action={bookAction} className="grid gap-2.5 rounded-lg border border-hairline bg-canvas p-3.5">
+      <Form action={bookAction} className="grid gap-2.5 bg-canvas p-3.5">
         <input type="hidden" name="id" value={orderId} />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-900">
@@ -121,7 +121,7 @@ function DelhiveryPanel({
 
   const today = new Date().toISOString().slice(0, 10);
   return (
-    <div className="grid gap-2.5 rounded-lg border border-hairline bg-canvas p-3.5">
+    <div className="grid gap-2.5 bg-canvas p-3.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-900">
           <Truck size={14} className="text-brand-600" /> Delhivery {badge}
@@ -141,7 +141,7 @@ function DelhiveryPanel({
             href={`/api/admin/orders/${orderId}/label`}
             target="_blank"
             rel="noopener"
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-ink-200 px-2.5 text-[12.5px] font-medium text-ink-800 transition-colors hover:bg-surface"
+            className="inline-flex h-8 items-center gap-1.5 px-2.5 text-[12.5px] font-medium text-ink-800 transition-colors hover:bg-surface"
           >
             <Printer size={13} /> Label
           </a>
@@ -150,7 +150,7 @@ function DelhiveryPanel({
               href={`https://www.delhivery.com/track-v2/package/${awb}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-ink-200 px-2.5 text-[12.5px] font-medium text-ink-800 transition-colors hover:bg-surface"
+              className="inline-flex h-8 items-center gap-1.5 px-2.5 text-[12.5px] font-medium text-ink-800 transition-colors hover:bg-surface"
             >
               <ExternalLink size={13} /> Track on Delhivery
             </a>
@@ -162,7 +162,7 @@ function DelhiveryPanel({
       {track.ok && track.message && <Notice tone="ok">{track.message}</Notice>}
 
       {pickupOpen && (
-        <Form action={pickupAction} className="flex flex-wrap items-end gap-2 border-t border-hairline pt-2.5">
+        <Form action={pickupAction} className="flex flex-wrap items-end gap-2 pt-2.5">
           <input type="hidden" name="id" value={orderId} />
           <div>
             <Label htmlFor="pickup-date" hint="The courier comes to your registered pickup address after 2 pm.">
@@ -208,7 +208,7 @@ export function UpiVerifyForm({
 
   return (
     <div className="grid gap-3">
-      <div className="rounded-lg border border-gold-300 bg-gold-50 p-3.5">
+      <div className="bg-gold-50 p-3.5">
         <p className="flex items-center gap-2 text-[12.5px] font-semibold text-ink-900">
           <BadgeIndianRupee size={15} className="text-gold-700" />
           Customer says they have paid {amount}
@@ -238,7 +238,7 @@ export function UpiVerifyForm({
           <Button
             variant="outline"
             size="sm"
-            className="border-sale-300 text-sale-600 hover:border-sale-500 hover:bg-sale-50"
+            className="text-sale-600 hover:bg-sale-50"
             onClick={() => setRejecting(true)}
           >
             <Ban size={14} /> Not in my bank
@@ -247,7 +247,7 @@ export function UpiVerifyForm({
       )}
 
       {!readOnly && rejecting && (
-        <Form action={rejectAction} className="grid gap-2 rounded-lg border border-hairline bg-canvas p-3.5">
+        <Form action={rejectAction} className="grid gap-2 bg-canvas p-3.5">
           <input type="hidden" name="id" value={orderId} />
           {rejectState.error && !rejectState.field && <Notice tone="error">{rejectState.error}</Notice>}
           <Label htmlFor="upi-reason" hint="The customer sees this in their email.">
@@ -391,7 +391,7 @@ export function AddEventForm({ orderId, defaultLocation }: { orderId: string; de
   }
 
   return (
-    <Form action={action} className="grid gap-3 rounded-xl border border-hairline bg-canvas p-4">
+    <Form action={action} className="grid gap-3 bg-canvas p-4">
       <input type="hidden" name="id" value={orderId} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
@@ -465,7 +465,7 @@ export function CancelOrderForm({ orderId }: { orderId: string }) {
       <Button
         variant="outline"
         size="sm"
-        className="w-full border-sale-300 text-sale-600 hover:border-sale-500 hover:bg-sale-50"
+        className="w-full text-sale-600 hover:bg-sale-50"
         onClick={() => setOpen(true)}
       >
         <Ban size={14} /> Cancel order

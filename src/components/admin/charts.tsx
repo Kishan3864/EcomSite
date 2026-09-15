@@ -147,7 +147,7 @@ export function TrendChart({
 
       {hover != null && (
         <div
-          className="pointer-events-none absolute -translate-x-1/2 rounded-lg border border-hairline bg-surface px-2.5 py-1.5 text-[11.5px] shadow-md"
+          className="pointer-events-none absolute -translate-x-1/2 bg-surface px-2.5 py-1.5 text-[11.5px] shadow-md"
           style={{
             left: `${(xy[hover].x / W) * 100}%`,
             top: Math.max(0, (xy[hover].y / H) * 100 - 18) + "%",
@@ -198,9 +198,9 @@ export function BarList({
             </span>
             <span className="shrink-0 font-semibold tabular-nums text-ink-950">{fmt(r.value)}</span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full" style={{ backgroundColor: MARK_SOFT }}>
+          <div className="h-1.5 overflow-hidden" style={{ backgroundColor: MARK_SOFT }}>
             <div
-              className="h-full rounded-full"
+              className="h-full"
               style={{ width: `${Math.max(2, (r.value / max) * 100)}%`, backgroundColor: MARK }}
             />
           </div>

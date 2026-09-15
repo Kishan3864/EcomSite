@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
  */
 function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="border-b border-hairline pb-3">
+    <div className="pb-3">
       <span className="eyebrow">{eyebrow}</span>
       <h2 className="mt-2 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:mt-2.5 sm:text-[28px]">
         {title}
@@ -176,18 +176,18 @@ export default async function ProductPage({ params }: { params: Params }) {
 
       {/* Details */}
       <div className="container-page">
-        <div className="grid gap-8 border-t border-hairline pt-6 sm:gap-10 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
+        <div className="grid gap-8 pt-6 sm:gap-10 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
           <div className="space-y-8 sm:space-y-14">
             <section>
               <SectionHead eyebrow="In brief" title="Highlights" />
               {/* A ruled index rather than a bulleted list: the two columns
                   share one set of rules, so the pairs line up across the gap
                   and the block reads as a single table of facts. */}
-              <ul className="mt-5 grid border-b border-hairline sm:grid-cols-2">
+              <ul className="mt-5 grid sm:grid-cols-2">
                 {product.highlights.map((h) => (
                   <li
                     key={h}
-                    className="flex items-start gap-2.5 border-t border-hairline py-3 pr-6 text-[13.5px] leading-[1.5] text-ink-700 sm:text-[14px]"
+                    className="flex items-start gap-2.5 py-3 pr-6 text-[13.5px] leading-[1.5] text-ink-700 sm:text-[14px]"
                   >
                     <Check size={14} className="mt-[3px] shrink-0 text-ink-400" strokeWidth={2} />
                     {h}
@@ -209,7 +209,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 ))}
               </div>
               {brand && (
-                <div className="mt-6 border-t border-hairline pt-4 sm:mt-8">
+                <div className="mt-6 pt-4 sm:mt-8">
                   <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     About {brand.name}
                   </p>
@@ -241,11 +241,11 @@ export default async function ProductPage({ params }: { params: Params }) {
                     {/* The row is 44px tall and no taller until it has to be:
                         a long value on a phone wraps and takes the height it
                         needs rather than being squeezed into a fixed column. */}
-                    <dl className="mt-2 border-b border-hairline">
+                    <dl className="mt-2">
                       {group.items.map((item) => (
                         <div
                           key={item.label}
-                          className="flex min-h-[44px] items-center justify-between gap-4 border-t border-hairline py-2.5"
+                          className="flex min-h-[44px] items-center justify-between gap-4 py-2.5"
                         >
                           <dt className="min-w-0 break-words text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                             {item.label}
@@ -276,11 +276,11 @@ export default async function ProductPage({ params }: { params: Params }) {
               paragraphs are the shop's promise, and a promise reads as a
               promise when it is set as a document rather than as furniture. */}
           <aside className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
-            <div className="border-t border-hairline pt-4 sm:pt-5">
+            <div className="pt-4 sm:pt-5">
               <span className="eyebrow">Every order</span>
-              <dl className="mt-4 border-b border-hairline sm:mt-5">
+              <dl className="mt-4 sm:mt-5">
                 {policies.map((item) => (
-                  <div key={item.title} className="border-t border-hairline py-4">
+                  <div key={item.title} className="py-4">
                     <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-ink-500">
                       {item.title}
                     </dt>

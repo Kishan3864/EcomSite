@@ -36,10 +36,10 @@ import { discountPercent, formatINR } from "@/lib/utils";
  */
 
 const primaryCta =
-  "inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300";
+  "inline-flex h-12 items-center justify-center gap-2 bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300";
 
 const secondaryCta =
-  "inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-ink-300 bg-surface px-6 text-[14px] font-semibold text-ink-900 transition-colors duration-200 hover:border-ink-400 hover:bg-ink-50";
+  "inline-flex h-12 items-center justify-center gap-2 bg-surface px-6 text-[14px] font-semibold text-ink-900 transition-colors duration-200 hover:bg-ink-50";
 
 export function HeroBanner({
   hasProducts,
@@ -109,7 +109,7 @@ export function HeroBanner({
 
   return (
     <section className="container-page pt-3 sm:pt-5">
-      <div className="relative overflow-hidden rounded-3xl border border-brand-100 bg-brand-50">
+      <div className="relative overflow-hidden bg-brand-50">
         <div className="grid items-center gap-0 lg:grid-cols-[1.05fr_0.95fr]">
           {/* ── The words ─────────────────────────────────────────────── */}
           <div className="order-2 px-5 pb-8 pt-7 sm:px-9 sm:pb-11 sm:pt-10 lg:order-1 lg:py-16 lg:pl-12 lg:pr-8">
@@ -138,7 +138,7 @@ export function HeroBanner({
               </Link>
             </div>
 
-            <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-brand-100 pt-5">
+            <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 pt-5">
               {promises.map(({ icon: Icon, label }) => (
                 <li key={label} className="flex items-center gap-2 text-[12.5px] text-ink-600">
                   <Icon size={15} className="shrink-0 text-brand-600" aria-hidden />
@@ -158,7 +158,7 @@ export function HeroBanner({
                   about 850px high beside a column of words about 560px high,
                   and `items-center` spent the difference as empty panel
                   above and below the text. */}
-              <div className="relative aspect-[16/11] w-full overflow-hidden bg-ink-100 sm:aspect-[16/9] lg:aspect-square lg:rounded-2xl lg:shadow-lg">
+              <div className="relative aspect-[16/11] w-full overflow-hidden bg-ink-100 sm:aspect-[16/9] lg:aspect-square lg:shadow-lg">
                 <Image
                   src={picture.url}
                   alt={picture.alt}
@@ -173,7 +173,7 @@ export function HeroBanner({
                 />
 
                 {off > 0 && (
-                  <span className="absolute left-3 top-3 rounded-lg bg-sale-600 px-2.5 py-1.5 text-[12px] font-bold leading-none text-white shadow-md sm:left-4 sm:top-4">
+                  <span className="absolute left-3 top-3 bg-sale-600 px-2.5 py-1.5 text-[12px] font-bold leading-none text-white shadow-md sm:left-4 sm:top-4">
                     {off}% OFF
                   </span>
                 )}
@@ -185,7 +185,7 @@ export function HeroBanner({
               {lead && (
                 <Link
                   href={`/p/${lead.slug}`}
-                  className="group absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 rounded-xl border border-hairline bg-surface/95 px-3.5 py-3 shadow-lg backdrop-blur-sm transition-colors hover:bg-surface sm:inset-x-5 sm:bottom-5 lg:inset-x-5 lg:bottom-5"
+                  className="group absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 bg-surface/95 px-3.5 py-3 shadow-lg backdrop-blur-sm transition-colors hover:bg-surface sm:inset-x-5 sm:bottom-5 lg:inset-x-5 lg:bottom-5"
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-[12.5px] font-semibold text-ink-900 sm:text-[13.5px]">
@@ -202,7 +202,7 @@ export function HeroBanner({
                       )}
                     </span>
                   </span>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5">
                     <ArrowRight size={16} />
                   </span>
                 </Link>

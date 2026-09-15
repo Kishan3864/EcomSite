@@ -133,10 +133,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             <Link
               href={withParams("/admin/orders", {}, { attention: f.attention === "1" ? null : "1" })}
               className={cn(
-                "inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-[12.5px] font-medium transition-colors",
+                "inline-flex h-9 items-center gap-2 px-3 text-[12.5px] font-medium transition-colors",
                 f.attention === "1"
-                  ? "border-gold-400 bg-gold-100 text-gold-900"
-                  : "border-ink-200 bg-surface text-ink-700 hover:border-gold-400",
+                  ? "bg-gold-100 text-gold-900"
+                  : "bg-surface text-ink-700",
               )}
             >
               <AlertTriangle size={14} />
@@ -156,10 +156,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 page: null,
               })}
               className={cn(
-                "inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[12px] transition-colors",
+                "inline-flex items-center gap-2 px-2.5 py-1.5 text-[12px] transition-colors",
                 f.status === s.status
-                  ? "border-brand-700 bg-brand-50"
-                  : "border-hairline bg-surface hover:border-ink-300",
+                  ? "bg-brand-50"
+                  : "bg-surface",
               )}
             >
               <StatusPill status={s.status} />
@@ -201,7 +201,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             name="from"
             defaultValue={f.from ?? ""}
             aria-label="From date"
-            className="h-10 rounded-lg border border-ink-200 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none focus:border-brand-500"
+            className="h-10 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none"
           />
           <span className="text-ink-400">–</span>
           <input
@@ -209,11 +209,11 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
             name="to"
             defaultValue={f.to ?? ""}
             aria-label="To date"
-            className="h-10 rounded-lg border border-ink-200 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none focus:border-brand-500"
+            className="h-10 bg-surface px-2.5 text-[12.5px] text-ink-800 outline-none"
           />
           <button
             type="submit"
-            className="h-10 rounded-lg border border-ink-200 bg-surface px-3 text-[12.5px] font-medium text-ink-700 transition-colors hover:border-ink-400"
+            className="h-10 bg-surface px-3 text-[12.5px] font-medium text-ink-700 transition-colors"
           >
             Apply
           </button>

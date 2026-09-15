@@ -160,7 +160,7 @@ export function SubcategoryForm({
           </div>
           <div>
             <p className="mb-1.5 text-[12.5px] font-medium text-ink-800">Preview</p>
-            <div className="relative aspect-square overflow-hidden rounded-xl border border-hairline bg-ink-100">
+            <div className="relative aspect-square overflow-hidden bg-ink-100">
               {previewImage ? (
                 <Image
                   key={imageUrl}

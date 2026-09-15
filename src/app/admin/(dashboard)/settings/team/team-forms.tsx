@@ -80,7 +80,7 @@ export function AddMemberForm() {
   }
 
   return (
-    <Form action={action} className="grid gap-4 rounded-xl border border-hairline bg-surface p-5">
+    <Form action={action} className="grid gap-4 bg-surface p-5">
       <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
         Add a team member
       </h2>
@@ -148,7 +148,7 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <div className="rounded-xl border border-hairline bg-surface p-5">
+    <div className="bg-surface p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-[14px] font-semibold text-ink-950">
@@ -182,7 +182,7 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
           <RoleSelect id={`role-${member.id}`} defaultValue={member.role} />
         </div>
 
-        <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-hairline bg-canvas p-3.5">
+        <label className="flex cursor-pointer items-start gap-3 bg-canvas p-3.5">
           {/* Your own account stays on: the box is fixed, and a hidden field
               carries the value a disabled input would not submit. */}
           {isSelf && <input type="hidden" name="isActive" value="on" />}
@@ -212,7 +212,7 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
         </div>
       </Form>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-4">
         <ResetPasswordForm memberId={member.id} name={member.name} />
         {!isSelf && (
           <ConfirmForm

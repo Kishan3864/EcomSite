@@ -115,7 +115,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       />
 
       {order.status === "CANCELLED" && order.cancelReason && (
-        <div className="mb-5 rounded-xl border border-sale-200 bg-sale-50 px-4 py-3 text-[13px] text-sale-700">
+        <div className="mb-5 bg-sale-50 px-4 py-3 text-[13px] text-sale-700">
           <strong className="font-semibold">Cancelled:</strong> {order.cancelReason}
           {order.cancelledAt && <> · {formatDateTime(order.cancelledAt)}</>}
         </div>
@@ -124,7 +124,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-5">
           <Card title={`${order.lines.length} item${order.lines.length === 1 ? "" : "s"}`} padded={false}>
-            <Table className="rounded-none border-0">
+            <Table>
               <thead>
                 <tr>
                   <Th>Product</Th>
@@ -138,7 +138,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   <Tr key={l.id}>
                     <Td>
                       <div className="flex items-center gap-3">
-                        <span className="relative h-12 w-10 shrink-0 overflow-hidden rounded-md bg-ink-100">
+                        <span className="relative h-12 w-10 shrink-0 overflow-hidden bg-ink-100">
                           {/* Snapshot image stored on the line; any host is possible. */}
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={l.image} alt="" className="h-full w-full object-cover" />
@@ -178,7 +178,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               </tbody>
             </Table>
 
-            <dl className="space-y-2 border-t border-hairline px-5 py-4 text-[13px]">
+            <dl className="space-y-2 px-5 py-4 text-[13px]">
               <Row label="Items total" value={formatINR(order.mrpTotal)} />
               {order.productDiscount > 0 && (
                 <Row label="Product discount" value={`− ${formatINR(order.productDiscount)}`} save />
@@ -188,7 +188,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 value={order.shipping === 0 ? "Free" : formatINR(order.shipping)}
               />
               <Row label="GST (included)" value={formatINR(order.tax)} muted />
-              <div className="flex items-baseline justify-between border-t border-hairline pt-2.5">
+              <div className="flex items-baseline justify-between pt-2.5">
                 <dt className="text-[14px] font-semibold text-ink-950">Total</dt>
                 <dd className="text-[16px] font-semibold tabular-nums text-ink-950">
                   {formatINR(order.total)}
@@ -231,12 +231,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {order.events.length === 0 ? (
               <p className="py-4 text-center text-[13px] text-ink-400">No updates yet.</p>
             ) : (
-              <ol className="relative border-l border-hairline pl-6">
+              <ol className="relative pl-6">
                 {order.events.map((e, i) => (
                   <li key={e.id} className="relative pb-5 last:pb-0">
                     <span
                       className={cn(
-                        "absolute -left-[27px] top-1 h-3 w-3 rounded-full ring-4 ring-surface",
+                        "absolute -left-[27px] top-1 h-3 w-3 ring-4 ring-surface",
                         i === 0 ? "bg-brand-600" : "bg-ink-300",
                       )}
                     />
@@ -258,7 +258,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
           {order.returns.length > 0 && (
             <Card title="Returns from this order" padded={false}>
-              <ul className="divide-y divide-hairline">
+              <ul>
                 {order.returns.map((r) => (
                   <li key={r.id} className="flex items-center gap-3 px-5 py-3">
                     <RotateCcw size={14} className="shrink-0 text-brand-600" />
@@ -280,7 +280,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <aside className="space-y-5">
           <Card title="Customer">
             <div className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-[12px] font-bold text-brand-800">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-brand-100 text-[12px] font-bold text-brand-800">
                 {order.contactName
                   .split(" ")
                   .map((n) => n[0])
@@ -299,7 +299,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 ) : (
                   <span className="flex items-center gap-2 font-semibold text-ink-950">
                     {order.contactName}
-                    <span className="rounded-full bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-500">
+                    <span className="bg-ink-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em] text-ink-500">
                       Guest
                     </span>
                   </span>
@@ -336,7 +336,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 ))}
               </span>
             </p>
-            <div className="mt-3 border-t border-hairline pt-3">
+            <div className="mt-3 pt-3">
               <KeyValue
                 rows={[
                   { label: "Speed", value: DELIVERY_SPEED_LABEL[order.deliverySpeed] },
@@ -398,7 +398,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           )}
 
           <Card title="Fulfilment" padded={false}>
-            <ul className="divide-y divide-hairline text-[13px]">
+            <ul className="text-[13px]">
               <li className="flex items-center gap-2 px-5 py-2.5">
                 <Package size={14} className="text-ink-400" />
                 <span className="flex-1 text-ink-600">Courier</span>

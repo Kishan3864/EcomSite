@@ -72,8 +72,8 @@ export function AccountOverview({
       </div>
 
       {latest && (
-        <section className="border border-hairline bg-surface">
-          <header className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3 sm:px-5 sm:py-3.5">
+        <section className="bg-surface">
+          <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-3.5">
             <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Latest order
             </h2>
@@ -89,7 +89,7 @@ export function AccountOverview({
             </Link>
           </header>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-4 py-3 sm:gap-4 sm:px-5 sm:py-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-3.5">
             <div className="min-w-0">
               <p className="font-mono text-[13px] font-semibold text-ink-950">{latest.number}</p>
               <p className="mt-0.5 text-[13px] text-ink-500">
@@ -109,11 +109,11 @@ export function AccountOverview({
             {latest.lines.map((line) => (
               <li
                 key={line.id}
-                className="flex items-center gap-3 border-b border-hairline px-4 py-3.5 last:border-b-0 sm:gap-4 sm:px-5"
+                className="flex items-center gap-3 px-4 py-3.5 sm:gap-4 sm:px-5"
               >
                 <Link
                   href={`/p/${line.slug}`}
-                  className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
+                  className="relative h-16 w-14 shrink-0 overflow-hidden bg-ink-100"
                 >
                   <Image src={line.image} alt="" fill sizes="56px" className="object-cover" />
                 </Link>
@@ -139,8 +139,8 @@ export function AccountOverview({
 
       {/* grid-cols-1 so an unbroken address line wraps rather than widening the page. */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-        <section className="flex flex-col border border-hairline bg-surface">
-          <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5">
+        <section className="flex flex-col bg-surface">
+          <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5">
             Default address
           </h2>
           <div className="flex flex-1 flex-col px-4 py-3.5 sm:px-5 sm:py-4">
@@ -167,8 +167,8 @@ export function AccountOverview({
           </div>
         </section>
 
-        <section className="flex flex-col border border-hairline bg-surface">
-          <h2 className="border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5">
+        <section className="flex flex-col bg-surface">
+          <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5">
             Recent returns
           </h2>
           <div className="flex flex-1 flex-col px-4 py-3.5 sm:px-5 sm:py-4">

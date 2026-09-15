@@ -80,7 +80,7 @@ export default async function LoginPage({
           role="alert"
           /* A rule down the side rather than a tinted box, so a failed sign-in
              reads the same way as every other notice on the site. */
-          className="flex items-start gap-2.5 border-l-2 border-sale-600 py-1 pl-3 text-[13px] leading-[1.5] text-sale-700"
+          className="flex items-start gap-2.5 rule-l [--rule-color:var(--color-sale-600)] py-1 pl-3 text-[13px] leading-[1.5] text-sale-700"
         >
           <AlertTriangle size={14} className="mt-0.5 shrink-0" />
           {oauthError}

@@ -104,8 +104,8 @@ function Section({
   // The one block shape the whole account area is built from: a hairline
   // rectangle on the white sheet, small caps on a rule across the top.
   return (
-    <section id={id} className="scroll-mt-32 border border-hairline bg-surface">
-      <header className="border-b border-hairline px-4 py-3 sm:px-5 sm:py-3.5">
+    <section id={id} className="scroll-mt-32 bg-surface">
+      <header className="px-4 py-3 sm:px-5 sm:py-3.5">
         <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {title}
         </h2>
@@ -127,7 +127,7 @@ function Feedback({ state }: { state: AccountFormState }) {
     return (
       <p
         role="alert"
-        className="flex items-start gap-2 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
+        className="flex items-start gap-2 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
       >
         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
         {state.error}
@@ -138,7 +138,7 @@ function Feedback({ state }: { state: AccountFormState }) {
     return (
       <p
         role="status"
-        className="flex items-start gap-2 border-l-2 border-brand-700 bg-brand-50 px-3.5 py-3 text-[13px] leading-[1.5] text-brand-800"
+        className="flex items-start gap-2 rule-l [--rule-color:var(--color-brand-700)] bg-brand-50 px-3.5 py-3 text-[13px] leading-[1.5] text-brand-800"
       >
         <Check size={14} className="mt-0.5 shrink-0" />
         {state.message}

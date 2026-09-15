@@ -151,11 +151,11 @@ export function SearchBar({
       <Form onSubmit={submit} role="search">
         <div
           className={cn(
-            "flex items-center gap-2.5 rounded-xl border bg-surface px-3.5 transition-all duration-200",
+            "flex items-center gap-2.5 bg-ink-50 px-3.5 transition-all duration-200",
             variant === "header" ? "h-11" : "h-12",
             open
-              ? "border-brand-500 shadow-[0_0_0_3px_rgb(76_124_148/0.18)]"
-              : "border-hairline hover:border-ink-950",
+              ? "shadow-[0_0_0_3px_rgb(76_124_148/0.18)]"
+              : "",
           )}
         >
           <Search size={17} className="shrink-0 text-ink-400" />
@@ -201,7 +201,7 @@ export function SearchBar({
             // The shortcut hint is a legend a reader is expected to act on, so
             // it comes up off the 10px it was set at and onto the small-caps
             // label the rest of the site labels things with.
-            <kbd className="hidden shrink-0 rounded-md border border-hairline bg-canvas px-1.5 py-0.5 font-sans text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 lg:block">
+            <kbd className="hidden shrink-0 bg-canvas px-1.5 py-0.5 font-sans text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 lg:block">
               Ctrl K
             </kbd>
           )}
@@ -220,7 +220,7 @@ export function SearchBar({
             // is drawn: both are sheets laid over the same page, and a hairline
             // would lose its edge against the white tiles below the header.
             className={cn(
-              "z-50 overflow-hidden rounded-xl border border-ink-950 bg-surface shadow-lg",
+              "z-50 overflow-hidden bg-surface shadow-lg",
               variant === "header"
                 ? "absolute inset-x-0 top-[calc(100%+8px)]"
                 : "mt-3 flex min-h-0 flex-col",
@@ -269,7 +269,7 @@ export function SearchBar({
                           <button
                             key={s}
                             onClick={() => setTerm(s)}
-                            className="tap inline-flex h-8 max-w-full items-center truncate border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                            className="tap inline-flex h-8 max-w-full items-center truncate px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
                           >
                             {s}
                           </button>
@@ -311,7 +311,7 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 rounded-lg border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
                             >
                               <Clock size={12} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>
@@ -340,7 +340,7 @@ export function SearchBar({
                                 setOpen(variant === "sheet");
                                 onNavigate?.();
                               }}
-                              className="tap group flex h-10 items-center gap-2.5 border-b border-hairline text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700"
+                              className="tap group flex h-10 items-center gap-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700"
                             >
                               <TrendingUp
                                 size={14}
@@ -364,7 +364,7 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 rounded-lg border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
                             >
                               <Tag size={12} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>
@@ -401,16 +401,16 @@ function SuggestionRow({
           // The keyboard's position is marked by the paper changing plane
           // rather than by a tinted pill: canvas against surface is the same
           // contrast every white tile on the site is picked out with.
-          "tap flex w-full items-center gap-2.5 border-b border-hairline px-3 py-2 text-left transition-colors duration-200 sm:gap-3",
+          "tap flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors duration-200 sm:gap-3",
           active ? "bg-canvas" : "hover:bg-canvas",
         )}
       >
         {hit.image ? (
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden border border-hairline bg-canvas sm:h-11 sm:w-11">
+          <span className="relative h-10 w-10 shrink-0 overflow-hidden bg-canvas sm:h-11 sm:w-11">
             <Image src={hit.image} alt="" fill sizes="44px" className="object-cover" />
           </span>
         ) : (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-hairline bg-canvas text-ink-400 sm:h-11 sm:w-11">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-canvas text-ink-400 sm:h-11 sm:w-11">
             <Search size={15} />
           </span>
         )}

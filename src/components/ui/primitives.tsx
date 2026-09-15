@@ -21,7 +21,7 @@ const TONES: Record<Tone, string> = {
   gold: "bg-gold-400 text-ink-950",
   sale: "bg-sale-500 text-white",
   neutral: "bg-ink-950 text-white",
-  outline: "border border-ink-950 bg-surface text-ink-950",
+  outline: "bg-surface text-ink-950",
   success: "bg-brand-100 text-brand-800",
 };
 
@@ -37,7 +37,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-md px-2 py-1",
+        "inline-flex items-center gap-1 px-2 py-1",
         "text-[11px] font-semibold leading-none tracking-[0.01em]",
         TONES[tone],
         className,
@@ -126,7 +126,7 @@ export function RatingChip({
 
   return (
     <span className={cn("inline-flex items-center gap-1.5 text-[11.5px] sm:text-xs", className)}>
-      <span className="inline-flex items-center gap-1 rounded-md bg-brand-700 px-1.5 py-0.5 font-semibold text-white tabular-nums">
+      <span className="inline-flex items-center gap-1 bg-brand-700 px-1.5 py-0.5 font-semibold text-white tabular-nums">
         {value.toFixed(1)}
         <Star size={10} fill="currentColor" strokeWidth={0} />
       </span>
@@ -289,7 +289,7 @@ export function Breadcrumbs({ items, className }: { items: Crumb[]; className?: 
 /* ---------------------------- Skeletons --------------------------- */
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("skeleton rounded-lg", className)} />;
+  return <div className={cn("skeleton", className)} />;
 }
 
 /* --------------------------- Empty state -------------------------- */
@@ -328,7 +328,7 @@ export function EmptyState({
         // Vertical padding is one fluid class (~32–40px on a phone, 4rem from
         // 640px up) rather than py-10 sm:py-16: callers pass a plain py-*, and
         // a surviving sm:py-16 would override theirs on desktop.
-        "flex flex-col items-center justify-center rounded-xl border border-hairline bg-surface px-4 py-[min(4rem,10vw)] text-center sm:px-6",
+        "flex flex-col items-center justify-center bg-surface px-4 py-[min(4rem,10vw)] text-center sm:px-6",
         className,
       )}
     >

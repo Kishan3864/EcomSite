@@ -81,7 +81,7 @@ export function AccountNav({
   // One shape for a link and for the sign-out button, so the last row of the
   // index sits on exactly the same measure as the six above it.
   const row =
-    "tap flex h-11 items-center gap-2 whitespace-nowrap border-b-2 px-3.5 text-[13px] transition-colors duration-200 lg:h-12 lg:gap-3 lg:whitespace-normal lg:border-b-0 lg:border-l-2 lg:px-4 lg:text-[13.5px]";
+    "tap flex h-11 items-center gap-2 whitespace-nowrap rule-b px-3.5 text-[13px] transition-colors duration-200 lg:h-12 lg:gap-3 lg:whitespace-normal lg:rule-l lg:px-4 lg:text-[13.5px]";
 
   return (
     <div className="space-y-3 lg:space-y-4">
@@ -104,7 +104,7 @@ export function AccountNav({
         {/* Two figures on one rule, rather than a frosted panel inside a
             panel. The numerals are tabular so the points column does not
             shift as it grows. */}
-        <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-white/10 pt-3.5">
+        <dl className="mt-4 grid grid-cols-2 gap-4 pt-3.5">
           <div className="min-w-0">
             <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
               Membership
@@ -131,7 +131,7 @@ export function AccountNav({
       {/* A scrolling tab row below lg, the ruled index from lg up. */}
       <nav
         aria-label="Account"
-        className="border-b border-hairline lg:border lg:border-hairline lg:bg-surface"
+        className="lg:bg-surface"
       >
         <ul
           ref={tabs}
@@ -146,7 +146,7 @@ export function AccountNav({
             return (
               <li
                 key={link.href}
-                className="shrink-0 lg:border-t lg:border-hairline lg:first:border-t-0"
+                className="shrink-0"
               >
                 <Link
                   href={link.href}
@@ -155,8 +155,8 @@ export function AccountNav({
                     row,
                     "-mb-px lg:mb-0",
                     active
-                      ? "border-ink-950 font-semibold text-ink-950"
-                      : "border-transparent text-ink-600 hover:bg-ink-50 hover:text-ink-950",
+                      ? "[--rule-color:var(--color-ink-950)] font-semibold text-ink-950"
+                      : "[--rule-color:transparent] text-ink-600 hover:bg-ink-50 hover:text-ink-950",
                   )}
                 >
                   <link.icon size={16} className={active ? "text-ink-950" : "text-ink-400"} />
@@ -170,13 +170,13 @@ export function AccountNav({
               </li>
             );
           })}
-          <li className="shrink-0 lg:border-t lg:border-hairline">
+          <li className="shrink-0">
             <Form action={logoutAction}>
               <button
                 type="submit"
                 className={cn(
                   row,
-                  "-mb-px w-full border-transparent text-left text-ink-500 hover:bg-ink-50 hover:text-sale-600 lg:mb-0",
+                  "w-full [--rule-color:transparent] text-left text-ink-500 hover:bg-ink-50 hover:text-sale-600",
                 )}
               >
                 <LogOut size={16} className="text-ink-400" />

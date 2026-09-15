@@ -20,7 +20,7 @@ function Alert({ children }: { children: ReactNode }) {
   return (
     <p
       role="alert"
-      className="flex items-start gap-2 rounded-lg border border-sale-200 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
+      className="flex items-start gap-2 bg-sale-50 px-3 py-2 text-[12.5px] text-sale-700 sm:px-3.5 sm:py-2.5 sm:text-[13px]"
     >
       <AlertTriangle size={14} className="mt-0.5 shrink-0" />
       {children}
@@ -372,7 +372,7 @@ function PhoneProfileStep({ next }: { next?: string }) {
         });
       }}
     >
-      <p className="flex items-start gap-2 rounded-lg border border-brand-100 bg-brand-50 px-3 py-2 text-[12.5px] text-brand-800 sm:px-3.5 sm:py-2.5 sm:text-[13px]">
+      <p className="flex items-start gap-2 bg-brand-50 px-3 py-2 text-[12.5px] text-brand-800 sm:px-3.5 sm:py-2.5 sm:text-[13px]">
         <Check size={14} className="mt-0.5 shrink-0" />
         Number verified. Tell us who you are to finish creating your account.
       </p>

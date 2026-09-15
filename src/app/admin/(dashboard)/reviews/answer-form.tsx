@@ -54,7 +54,7 @@ export function AnswerForm({
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="mt-1.5 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[12px] font-medium text-brand-700 transition-colors hover:bg-brand-50"
+            className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 text-[12px] font-medium text-brand-700 transition-colors hover:bg-brand-50"
           >
             {hasAnswer ? <Pencil size={12} /> : <MessageSquareReply size={13} />}
             {hasAnswer ? "Edit answer" : "Answer"}
@@ -65,7 +65,7 @@ export function AnswerForm({
   }
 
   return (
-    <Form action={formAction} className="grid w-[min(520px,70vw)] gap-3 rounded-lg border border-hairline bg-canvas p-3">
+    <Form action={formAction} className="grid w-[min(520px,70vw)] gap-3 bg-canvas p-3">
       <input type="hidden" name="returnTo" value={returnTo} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
 
@@ -96,7 +96,7 @@ export function AnswerForm({
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-[12.5px] font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-900"
+          className="inline-flex h-8 items-center gap-1 px-2.5 text-[12.5px] font-medium text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-900"
         >
           <X size={13} /> Cancel
         </button>

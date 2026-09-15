@@ -40,7 +40,7 @@ const REASONS = [
 
 /** The heading every block on the account screens wears. */
 const PANEL_HEAD =
-  "border-b border-hairline px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5";
+  "px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5";
 
 /** The same heading, standing on its own above a block that draws its own box. */
 const LOOSE_HEAD =
@@ -122,7 +122,7 @@ export function ReturnsClient({
           />
         </section>
       ) : (
-        <section className="border border-hairline bg-surface">
+        <section className="bg-surface">
           <h2 className={PANEL_HEAD}>Your return requests</h2>
           <ul>
             <AnimatePresence initial={false}>
@@ -134,10 +134,9 @@ export function ReturnsClient({
                     layout
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="border-b border-hairline last:border-b-0"
                   >
                     <div className="flex gap-3 px-4 py-4 sm:gap-4 sm:px-5">
-                      <span className="relative h-[72px] w-[58px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-20 sm:w-16">
+                      <span className="relative h-[72px] w-[58px] shrink-0 overflow-hidden bg-ink-100 sm:h-20 sm:w-16">
                         <Image
                           src={request.image}
                           alt=""
@@ -166,7 +165,7 @@ export function ReturnsClient({
                       </div>
                     </div>
 
-                    <div className="border-t border-hairline px-4 py-3.5 sm:px-5">
+                    <div className="px-4 py-3.5 sm:px-5">
                       {request.status === "rejected" ? (
                         <p className="text-[13px] font-medium text-sale-600">
                           This return was not approved. Contact support for details.
@@ -182,7 +181,7 @@ export function ReturnsClient({
                                     aria-hidden
                                     className={cn(
                                       "h-[11px] w-[11px] shrink-0",
-                                      done ? "bg-brand-700" : "border border-rule bg-surface",
+                                      done ? "bg-brand-700" : "bg-surface",
                                     )}
                                   />
                                   <span
@@ -232,8 +231,8 @@ export function ReturnsClient({
           />
         </section>
       ) : (
-        <section className="border border-hairline bg-surface">
-          <header className="border-b border-hairline px-4 py-3 sm:px-5 sm:py-3.5">
+        <section className="bg-surface">
+          <header className="px-4 py-3 sm:px-5 sm:py-3.5">
             <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Start a new return
             </h2>
@@ -246,10 +245,9 @@ export function ReturnsClient({
             {eligible.map(({ order, line }) => (
               <li
                 key={`${order.id}-${line.id}`}
-                className="border-b border-hairline last:border-b-0"
               >
                 <div className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5">
-                  <span className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100">
+                  <span className="relative h-16 w-14 shrink-0 overflow-hidden bg-ink-100">
                     <Image src={line.image} alt="" fill sizes="56px" className="object-cover" />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -285,7 +283,7 @@ export function ReturnsClient({
                       transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="border-t border-hairline px-4 py-4 sm:px-5">
+                      <div className="px-4 py-4 sm:px-5">
                         <Field label="Why are you returning this?" htmlFor={`reason-${line.id}`}>
                           <Select
                             id={`reason-${line.id}`}
@@ -299,14 +297,14 @@ export function ReturnsClient({
                             ))}
                           </Select>
                         </Field>
-                        <p className="mt-3.5 border-l border-rule pl-3.5 text-[13px] leading-[1.55] text-ink-600">
+                        <p className="mt-3.5 pl-3.5 text-[13px] leading-[1.55] text-ink-600">
                           A pickup will be scheduled within 24 hours. Keep the item in its original
                           packaging with all tags attached.
                         </p>
                         {error && (
                           <p
                             role="alert"
-                            className="mt-3.5 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
+                            className="mt-3.5 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
                           >
                             {error}
                           </p>
@@ -339,7 +337,7 @@ export function ReturnsClient({
         </section>
       )}
 
-      <p className="border-l border-rule pl-3.5 text-[13px] leading-[1.6] text-ink-600">
+      <p className="pl-3.5 text-[13px] leading-[1.6] text-ink-600">
         Read the full{" "}
         <Link href="/legal/refunds" className="font-medium text-brand-700 hover:underline">
           return policy

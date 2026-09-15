@@ -19,8 +19,8 @@ import { CategoryForm } from "../category-form";
 import { CategoryIcon } from "../category-icon";
 import { Form } from "@/components/ui/form";
 
-const iconBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
-const iconBtnDisabled = "rounded-md p-1.5 text-ink-200";
+const iconBtn = "p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
+const iconBtnDisabled = "p-1.5 text-ink-200";
 
 export default async function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireAdmin("MANAGER");
@@ -59,7 +59,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                   {category.isActive ? "Active" : "Hidden"}
                 </Pill>
                 <span
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold"
                   style={{ backgroundColor: `${category.accent}22`, color: category.accent }}
                 >
                   <CategoryIcon name={category.icon} size={11} strokeWidth={2.5} /> {category.icon}
@@ -225,7 +225,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                         width={36}
                         height={36}
                         unoptimized
-                        className="h-9 w-9 shrink-0 rounded-md border border-hairline object-cover"
+                        className="h-9 w-9 shrink-0 object-cover"
                       />
                       <div className="min-w-0">
                         <Link
@@ -271,7 +271,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                           <Link
                             href={`/admin/categories/${category.id}/subcategories/${s.id}#danger`}
                             title={`Has ${s._count.products} products — open to move them before deleting`}
-                            className="rounded-md p-1.5 text-ink-300 transition-colors hover:bg-ink-100 hover:text-ink-700"
+                            className="p-1.5 text-ink-300 transition-colors hover:bg-ink-100 hover:text-ink-700"
                           >
                             <Trash2 size={14} />
                           </Link>
@@ -281,7 +281,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                             <button
                               type="submit"
                               title="Delete"
-                              className="rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
+                              className="p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600"
                             >
                               <Trash2 size={14} />
                             </button>

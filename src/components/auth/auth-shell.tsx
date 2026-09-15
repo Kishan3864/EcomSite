@@ -101,7 +101,7 @@ export function AuthShell({
               Encrypted connection. Your password is never stored in plain text.
             </p>
 
-            <div className="mt-4 border-t border-hairline pt-4 text-center text-[13px] leading-[1.5] text-ink-600">
+            <div className="mt-4 pt-4 text-center text-[13px] leading-[1.5] text-ink-600">
               {footer}
             </div>
           </div>
@@ -132,11 +132,11 @@ export function AuthShell({
             sign-in.
           </p>
 
-          <ul className="mt-7 border-b border-white/10">
+          <ul className="mt-7">
             {PROMISES.map((promise) => (
               <li
                 key={promise}
-                className="flex min-h-[46px] items-center border-t border-white/10 py-2.5 text-[13.5px] leading-[1.45] text-white/80"
+                className="flex min-h-[46px] items-center py-2.5 text-[13.5px] leading-[1.45] text-white/80"
               >
                 {promise}
               </li>

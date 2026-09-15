@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * this size gains nothing from the optimiser.
  */
 export function ReturnThumb({ src, alt, size = 40, className }: { src: string; alt: string; size?: number; className?: string }) {
-  const box = cn("shrink-0 overflow-hidden rounded-md border border-hairline bg-canvas", className);
+  const box = cn("shrink-0 overflow-hidden bg-canvas", className);
   if (!src) {
     return (
       <span className={cn(box, "flex items-center justify-center text-ink-300")} style={{ width: size, height: size }}>

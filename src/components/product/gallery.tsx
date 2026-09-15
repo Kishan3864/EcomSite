@@ -133,7 +133,7 @@ export function Gallery({
               aria-label={`View ${s.kind} ${i + 1}`}
               aria-current={i === index}
               className={cn(
-                "relative h-[68px] w-full overflow-hidden rounded-lg bg-ink-50 transition-all duration-200 md:h-[86px]",
+                "relative h-[68px] w-full overflow-hidden bg-ink-50 transition-all duration-200 md:h-[86px]",
                 i === index
                   ? "opacity-100 ring-2 ring-brand-700 ring-offset-1"
                   : "opacity-70 ring-1 ring-hairline hover:opacity-100",
@@ -181,7 +181,7 @@ export function Gallery({
             <button
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-lg border border-hairline bg-surface/95 text-ink-700 backdrop-blur"
+              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center bg-surface/95 text-ink-700 backdrop-blur"
             >
               <Expand size={16} />
             </button>
@@ -193,7 +193,7 @@ export function Gallery({
             onMouseMove={onMove}
             onMouseLeave={() => setZoom(null)}
             {...swipe}
-            className="group relative hidden aspect-[4/5] overflow-hidden rounded-xl border border-hairline bg-surface sm:block"
+            className="group relative hidden aspect-[4/5] overflow-hidden bg-surface sm:block"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -228,7 +228,7 @@ export function Gallery({
 
             {/* Zoom affordance */}
             {slide.kind === "image" && (
-              <span className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 rounded-lg border border-hairline bg-surface/95 px-2.5 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 md:flex">
+              <span className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 bg-surface/95 px-2.5 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 md:flex">
                 <ZoomIn size={12} className="text-ink-400" /> Hover to zoom
               </span>
             )}
@@ -236,7 +236,7 @@ export function Gallery({
             <button
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg border border-hairline bg-surface/95 text-ink-700 backdrop-blur transition-colors duration-200 hover:bg-ink-950 hover:text-white"
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center bg-surface/95 text-ink-700 backdrop-blur transition-colors duration-200 hover:bg-ink-950 hover:text-white"
             >
               <Expand size={15} />
             </button>
@@ -248,14 +248,14 @@ export function Gallery({
                 <button
                   onClick={() => step(-1)}
                   aria-label="Previous image"
-                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={() => step(1)}
                   aria-label="Next image"
-                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronRight size={18} />
                 </button>
@@ -309,7 +309,7 @@ export function Gallery({
                 <button
                   onClick={() => setLightbox(false)}
                   aria-label="Close"
-                  className="border border-white/25 bg-white/10 p-2.5 text-white transition-colors duration-200 hover:bg-white/20"
+                  className="bg-white/10 p-2.5 text-white transition-colors duration-200 hover:bg-white/20"
                 >
                   <X size={20} />
                 </button>
@@ -344,7 +344,7 @@ export function Gallery({
                         step(-1);
                       }}
                       aria-label="Previous image"
-                      className="absolute left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:left-3"
+                      className="absolute left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:left-3"
                     >
                       <ChevronLeft size={20} />
                     </button>
@@ -354,7 +354,7 @@ export function Gallery({
                         step(1);
                       }}
                       aria-label="Next image"
-                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center border border-white/25 bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:right-3"
+                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:right-3"
                     >
                       <ChevronRight size={20} />
                     </button>
@@ -378,7 +378,7 @@ export function Gallery({
                       className={cn(
                         // White, not aqua: the accent is spent on the page
                         // itself, and a lit frame reads as "this one" anyway.
-                        "relative h-14 w-12 shrink-0 overflow-hidden rounded-md transition-all duration-200",
+                        "relative h-14 w-12 shrink-0 overflow-hidden transition-all duration-200",
                         i === index
                           ? "opacity-100 ring-2 ring-white"
                           : "opacity-50 hover:opacity-90",

@@ -86,7 +86,7 @@ export default async function SearchPage({
                   <li key={s} className="shrink-0">
                     <Link
                       href={`/search?q=${encodeURIComponent(s)}`}
-                      className="tap inline-block whitespace-nowrap rounded-full border border-ink-200 bg-surface px-3 py-2 text-[12px] text-ink-700 transition-colors hover:border-brand-500 hover:text-brand-700 sm:px-3.5 sm:text-[12.5px]"
+                      className="tap inline-block whitespace-nowrap bg-surface px-3 py-2 text-[12px] text-ink-700 transition-colors hover:text-brand-700 sm:px-3.5 sm:text-[12.5px]"
                     >
                       {s}
                     </Link>
@@ -106,7 +106,7 @@ export default async function SearchPage({
                 <li key={c.slug} className="shrink-0">
                   <Link
                     href={`/c/${c.slug}`}
-                    className="tap inline-block whitespace-nowrap rounded-full bg-ink-100 px-3 py-2 text-[12px] font-medium text-ink-800 transition-colors hover:bg-brand-100 hover:text-brand-800 sm:px-3.5 sm:text-[12.5px]"
+                    className="tap inline-block whitespace-nowrap bg-ink-100 px-3 py-2 text-[12px] font-medium text-ink-800 transition-colors hover:bg-brand-100 hover:text-brand-800 sm:px-3.5 sm:text-[12.5px]"
                   >
                     {c.name}
                   </Link>

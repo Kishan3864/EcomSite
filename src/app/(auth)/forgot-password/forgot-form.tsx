@@ -37,7 +37,7 @@ export function ForgotForm() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-xl border border-hairline bg-surface p-4 sm:p-5"
+        className="bg-surface p-4 sm:p-5"
       >
         <span className="eyebrow">Request received</span>
         <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950">
@@ -89,7 +89,7 @@ export function ForgotForm() {
 
       {/* A rule rather than a tinted tray: the sentence is an aside, not an
           alarm, and the shop draws asides with a line down the side. */}
-      <p className="border-l border-rule pl-3.5 text-[13px] leading-[1.55] text-ink-600">
+      <p className="pl-3.5 text-[13px] leading-[1.55] text-ink-600">
         Automatic reset emails are not switched on yet, so a person handles this rather than a
         link landing in your inbox.
       </p>

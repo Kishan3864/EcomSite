@@ -51,7 +51,7 @@ export function BottomNav() {
       <div aria-hidden className="h-[calc(61px+env(safe-area-inset-bottom))] shrink-0 lg:hidden" />
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 bg-canvas/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
       >
         <ul className="grid grid-cols-5">
           {ITEMS.map((item) => {
@@ -90,7 +90,7 @@ export function BottomNav() {
                       /* Brand, to match the header's own count. A bag count is
                          a fact, not a reduction, and the two badges are on
                          screen together on a phone. */
-                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums">
+                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums">
                         {count > 9 ? "9+" : count}
                       </span>
                     )}

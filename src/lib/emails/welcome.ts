@@ -216,7 +216,7 @@ function button(href: string, label: string): string {
 </v:rect>
 <![endif]-->
 <!--[if !mso]><!-->
-<a href="${url}" target="_blank" style="display:inline-block;padding:18px 44px;border:1px solid ${C.brandDeep};background-color:${C.brandDeep};color:#ffffff;font-family:${SANS};font-size:13px;font-weight:700;line-height:18px;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;-webkit-text-size-adjust:none;">${esc(label)}</a>
+<a href="${url}" target="_blank" style="display:inline-block;padding:18px 44px;background-color:${C.brandDeep};color:#ffffff;font-family:${SANS};font-size:13px;font-weight:700;line-height:18px;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;-webkit-text-size-adjust:none;">${esc(label)}</a>
 <!--<![endif]-->
 </td>
 </tr>
@@ -226,8 +226,8 @@ function button(href: string, label: string): string {
 function expectRows(): string {
   return EXPECT.map(
     (point, i) => `<tr>
-<td width="44" valign="top" class="serif" style="padding:16px 0;border-top:1px solid ${C.hairline};font-family:${SERIF};font-size:15px;line-height:22px;color:${C.accentDeep};mso-line-height-rule:exactly;">${String(i + 1).padStart(2, "0")}</td>
-<td valign="top" style="padding:16px 0;border-top:1px solid ${C.hairline};">
+<td width="44" valign="top" class="serif" style="padding:16px 8px;background:${C.canvas};font-family:${SERIF};font-size:15px;line-height:22px;color:${C.accentDeep};mso-line-height-rule:exactly;">${String(i + 1).padStart(2, "0")}</td>
+<td valign="top" style="padding:16px 8px;background:${C.canvas};">
 <p style="margin:0;font-family:${SANS};font-size:15px;line-height:22px;font-weight:700;color:${C.ink};mso-line-height-rule:exactly;">${esc(point.title)}</p>
 <p style="margin:4px 0 0;font-family:${SANS};font-size:14px;line-height:22px;color:${C.soft};mso-line-height-rule:exactly;">${esc(point.body)}</p>
 </td>
@@ -378,7 +378,7 @@ ${p(intro[1], true)}
 <td bgcolor="${C.surface}" style="padding:28px 32px 8px;background-color:${C.surface};">
 <h2 class="serif" style="margin:0 0 8px;font-family:${SERIF};font-size:22px;line-height:30px;font-weight:normal;color:${C.brandDeep};mso-line-height-rule:exactly;">What to expect from us</h2>
 <p style="margin:0 0 16px;font-family:${SANS};font-size:14px;line-height:22px;color:${C.muted};mso-line-height-rule:exactly;">${esc(expectLead)}</p>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;border-bottom:1px solid ${C.hairline};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
 ${expectRows()}
 </table>
 </td>
@@ -387,7 +387,7 @@ ${expectRows()}
 <!-- Why shop with us -->
 <tr>
 <td bgcolor="${C.surface}" style="padding:28px 32px 8px;background-color:${C.surface};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.canvas}" style="border-collapse:collapse;background-color:${C.canvas};border:1px solid ${C.hairline};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="${C.canvas}" style="border-collapse:collapse;background-color:${C.canvas};">
 <tr>
 <td align="center" style="padding:28px 24px 4px;text-align:center;">
 <p style="margin:0 0 6px;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:${C.accentDeep};mso-line-height-rule:exactly;">Good to know</p>
@@ -419,7 +419,7 @@ ${p(signOff)}
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
 <tr>
 <td width="52" valign="top" style="padding:0 16px 0 0;"><img src="${esc(LINKS.mark)}" width="52" height="52" alt="${esc(brand)}" style="display:block;width:52px;height:52px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;"></td>
-<td valign="middle" style="padding:2px 0 2px 16px;border-left:2px solid ${C.accent};">
+<td valign="middle" style="padding:2px 0 2px 16px;background:${C.canvas};">
 <p class="serif" style="margin:0;font-family:${SERIF};font-size:19px;line-height:26px;color:${C.brandDeep};mso-line-height-rule:exactly;">${esc(BUSINESS.proprietorName)}</p>
 <p style="margin:4px 0 0;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${C.accentDeep};mso-line-height-rule:exactly;">Founder, ${esc(brand)}</p>
 </td>

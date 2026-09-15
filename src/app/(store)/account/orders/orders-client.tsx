@@ -69,10 +69,10 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
             key={f.id}
             onClick={() => setFilter(f.id)}
             className={cn(
-              "tap h-10 whitespace-nowrap border px-4 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[12px]",
+              "tap h-10 whitespace-nowrap px-4 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[12px]",
               filter === f.id
-                ? "border-brand-700 bg-brand-700 text-white"
-                : "border-hairline bg-surface text-ink-600 hover:border-ink-950 hover:text-ink-950",
+                ? "bg-brand-700 text-white"
+                : "bg-surface text-ink-600 hover:text-ink-950",
             )}
           >
             {f.label}
@@ -92,7 +92,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
           }
         />
       ) : (
-        <ul className="border border-hairline bg-surface">
+        <ul className="bg-surface">
           {filtered.map((order, i) => (
             <Reveal
               as="li"
@@ -100,7 +100,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
               // Capped at the sixth row: a delay that keeps climbing turns a
               // long history into a wave rolling down the page.
               delay={Math.min(i, 5) * 0.06}
-              className="border-b border-hairline px-4 py-4 last:border-b-0 sm:px-5 sm:py-5"
+              className="px-4 py-4 sm:px-5 sm:py-5"
             >
               {/* min-w-min keeps the order number whole: at 320px a long status
                   cannot share its line, so it drops below instead. */}
@@ -146,7 +146,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                   <li key={line.id} className="flex items-center gap-3 sm:gap-4">
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-[68px] sm:w-[58px]"
+                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden bg-ink-100 sm:h-[68px] sm:w-[58px]"
                     >
                       <Image
                         src={line.image}
@@ -189,7 +189,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
               </ul>
 
               {/* Phones give the two actions a full-width row of their own. */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-3.5">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3.5">
                 <p className="text-[13px] text-ink-600">
                   {order.status === "delivered"
                     ? `Delivered on ${formatDate(order.estimatedDelivery, "short")}`

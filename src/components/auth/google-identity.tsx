@@ -297,7 +297,7 @@ export function GoogleButton({
           // The same box Google's button will take when it arrives: 40px,
           // square, black — so the swap from one to the other does not move
           // anything on the page.
-          className="tap flex h-10 w-full items-center justify-center gap-3 border border-ink-950 bg-ink-950 px-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-6"
+          className="tap flex h-10 w-full items-center justify-center gap-3 bg-ink-950 px-4 text-[12px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-6"
         >
           {children}
         </a>

@@ -230,7 +230,7 @@ export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form(
           // already the loudest mark on the page, and it leaves the summary
           // sitting in the form rather than in a box bolted above it.
           className={cn(
-            "mb-5 border-l-2 border-sale-600 py-0.5 pl-4",
+            "mb-5 rule-l [--rule-color:var(--color-sale-600)] py-0.5 pl-4",
             "text-[13px] leading-[1.55] text-sale-700",
           )}
         >

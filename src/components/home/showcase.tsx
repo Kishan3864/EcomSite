@@ -77,7 +77,7 @@ function BandHeader({
         {href && (
           <Link
             href={href}
-            className="tap group col-start-2 row-start-2 inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-hairline bg-surface px-4 text-[12.5px] font-semibold text-brand-700 shadow-xs transition-colors duration-200 hover:border-brand-200 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
+            className="tap group col-start-2 row-start-2 inline-flex h-9 shrink-0 items-center gap-1.5 bg-surface px-4 text-[12.5px] font-semibold text-brand-700 shadow-xs transition-colors duration-200 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
           >
             {linkLabel}
             <ArrowRight
@@ -127,7 +127,7 @@ function CategorySpread({ category }: { category: Category }) {
           <div className="relative mx-auto aspect-square w-[148px] lg:mx-0 lg:w-[240px]">
             <span
               aria-hidden
-              className="absolute inset-[6%] translate-x-[10px] translate-y-[10px] border border-rule lg:translate-x-[14px] lg:translate-y-[14px]"
+              className="absolute inset-[6%] translate-x-[10px] translate-y-[10px] lg:translate-x-[14px] lg:translate-y-[14px]"
             />
             <DepartmentGlyph
               icon={category.icon}
@@ -154,12 +154,12 @@ function CategorySpread({ category }: { category: Category }) {
               {/* A ruled index, not a row of pills. This is the shortest route
                   from the homepage to the shelf somebody actually came for,
                   and an index is how a reader expects to be given one. */}
-              <ul className="mt-2 border-b border-hairline">
+              <ul className="mt-2">
                 {category.subcategories.map((sub) => (
                   <li key={sub.slug}>
                     <Link
                       href={`/c/${category.slug}/${sub.slug}`}
-                      className="tap group flex h-[52px] items-center justify-between gap-4 border-t border-hairline text-[13.5px] font-medium text-ink-900 transition-colors hover:text-brand-700"
+                      className="tap group flex h-[52px] items-center justify-between gap-4 text-[13.5px] font-medium text-ink-900 transition-colors hover:text-brand-700"
                     >
                       {sub.name}
                       <ChevronRight
@@ -337,7 +337,7 @@ export function Spotlight({
     <section className="container-page py-10 sm:py-20">
       <div className="grid items-start gap-7 lg:grid-cols-12 lg:gap-10">
         <div className="lg:col-span-6">
-          <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-hairline bg-ink-100 shadow-sm">
+          <div className="relative aspect-[4/5] overflow-hidden bg-ink-100 shadow-sm">
             <Image
               src={product.image}
               alt={product.imageAlt || product.title}
@@ -386,11 +386,11 @@ export function Spotlight({
               arrives, what happens if it is wrong, how it can be paid for and
               what the postage costs — which is every question a first-time
               customer of an unknown shop actually has. */}
-          <dl className="mt-6 border-b border-hairline">
+          <dl className="mt-6">
             {ledger.map((row) => (
               <div
                 key={row.label}
-                className="flex h-11 items-center justify-between gap-4 border-t border-hairline"
+                className="flex h-11 items-center justify-between gap-4"
               >
                 <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   {row.label}
@@ -411,7 +411,7 @@ export function Spotlight({
             </Link>
             <Link
               href={`/c/${product.categorySlug}`}
-              className="tap inline-flex h-12 items-center justify-center border border-ink-950 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-8 sm:text-[12px]"
+              className="tap inline-flex h-12 items-center justify-center px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-8 sm:text-[12px]"
             >
               More like this
             </Link>
@@ -541,7 +541,7 @@ export function EditorialBand({ banner }: { banner?: Banner }) {
             )}
             <Link
               href={banner?.href ?? "/products"}
-              className="tap mt-7 inline-flex h-12 items-center gap-2 rounded-xl bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:mt-9 sm:px-8"
+              className="tap mt-7 inline-flex h-12 items-center gap-2 bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:mt-9 sm:px-8"
             >
               {banner?.cta ?? "Browse the catalogue"} <ArrowRight size={15} />
             </Link>

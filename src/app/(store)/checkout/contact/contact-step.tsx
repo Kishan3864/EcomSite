@@ -90,8 +90,8 @@ export function ContactStep() {
       }
     >
       <Form id="checkout-contact" onSubmit={submit} className="space-y-6">
-        <section className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3 border-b border-hairline pb-3">
+        <section className="bg-surface p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 pb-3">
             <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Contact details
             </h2>
@@ -125,7 +125,7 @@ export function ContactStep() {
                   key={row.label}
                   className={cn(
                     "flex min-h-11 flex-wrap items-center gap-x-4 gap-y-0.5 py-2",
-                    i > 0 && "border-t border-hairline",
+                    i > 0 && "",
                   )}
                 >
                   <dt className="w-[72px] shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
@@ -198,7 +198,7 @@ export function ContactStep() {
 
           {/* A rule and a paragraph, rather than a tinted box: the note is read
               in the same ink as everything else on the page. */}
-          <p className="mt-4 border-t border-hairline pt-3.5 text-[13px] leading-[1.55] text-ink-600">
+          <p className="mt-4 pt-3.5 text-[13px] leading-[1.55] text-ink-600">
             {customer ? (
               <span className="min-w-0">
                 Signed in as{" "}

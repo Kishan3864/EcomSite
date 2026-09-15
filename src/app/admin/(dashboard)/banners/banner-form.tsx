@@ -94,8 +94,8 @@ export function BannerForm({
             <label
               key={p}
               className={cn(
-                "cursor-pointer rounded-xl border p-3 transition-colors",
-                placement === p ? "border-brand-700 bg-brand-50" : "border-ink-200 hover:border-ink-400",
+                "cursor-pointer p-3 transition-colors",
+                placement === p ? "bg-brand-50" : "",
                 readOnly && "pointer-events-none opacity-60",
               )}
             >
@@ -235,7 +235,7 @@ export function BannerForm({
             <span className="mb-1.5 block text-[12.5px] font-medium text-ink-800">Preview</span>
             <div
               className={cn(
-                "relative overflow-hidden rounded-lg border border-hairline bg-ink-100",
+                "relative overflow-hidden bg-ink-100",
                 isTile ? "aspect-square" : "aspect-[16/9]",
               )}
             >
@@ -300,7 +300,7 @@ export function BannerForm({
           {/* Rough preview of how the copy will stack on the storefront. */}
           <div
             className={cn(
-              "mt-1 overflow-hidden rounded-xl p-5",
+              "mt-1 overflow-hidden p-5",
               dark ? "bg-brand-950" : "bg-gold-50",
               align === "right" && "text-right",
             )}
@@ -308,7 +308,7 @@ export function BannerForm({
             {eyebrow && (
               <span
                 className={cn(
-                  "inline-block rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                  "inline-block px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em]",
                   dark ? "bg-white/10 text-gold-300" : "bg-gold-200 text-gold-900",
                 )}
               >
@@ -330,7 +330,7 @@ export function BannerForm({
             )}
             <span
               className={cn(
-                "mt-3 inline-block rounded-lg px-3 py-1.5 text-[12px] font-semibold",
+                "mt-3 inline-block px-3 py-1.5 text-[12px] font-semibold",
                 dark ? "bg-gold-500 text-ink-950" : "bg-brand-900 text-white",
               )}
             >

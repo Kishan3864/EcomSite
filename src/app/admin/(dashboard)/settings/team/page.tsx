@@ -33,7 +33,7 @@ export default async function TeamSettingsPage() {
       <AddMemberForm />
 
       {owners === 1 && (
-        <p className="rounded-lg border border-hairline bg-canvas px-3.5 py-2.5 text-[12.5px] text-ink-600">
+        <p className="bg-canvas px-3.5 py-2.5 text-[12.5px] text-ink-600">
           There is one active owner. Promote a second before anyone goes on leave — the last owner
           cannot be demoted or switched off.
         </p>

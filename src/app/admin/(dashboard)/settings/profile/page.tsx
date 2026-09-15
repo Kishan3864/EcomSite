@@ -26,8 +26,8 @@ export default async function ProfileSettingsPage() {
 
   return (
     <div className="grid max-w-3xl gap-4">
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-hairline bg-surface px-5 py-4">
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-900 text-[13px] font-bold text-white">
+      <div className="flex flex-wrap items-center gap-3 bg-surface px-5 py-4">
+        <span className="flex h-10 w-10 items-center justify-center bg-brand-900 text-[13px] font-bold text-white">
           {me.name
             .split(" ")
             .map((n) => n[0])
@@ -49,7 +49,7 @@ export default async function ProfileSettingsPage() {
       <ProfileForm name={me.name} email={me.email} />
       <PasswordForm />
 
-      <section className="rounded-xl border border-hairline bg-surface p-5">
+      <section className="bg-surface p-5">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
             Your recent changes

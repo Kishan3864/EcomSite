@@ -76,7 +76,7 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
         {error && (
           <p
             role="alert"
-            className="mt-3 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
+            className="mt-3 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
           >
             {error}
           </p>
@@ -172,7 +172,7 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
+            <div className="bg-surface p-4 sm:p-5">
               <h2 className="mb-3.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 New address
               </h2>
@@ -185,7 +185,7 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
         ) : (
           <button
             onClick={() => setAdding(true)}
-            className="tap flex h-12 w-full items-center justify-center gap-2 border border-ink-950 bg-surface text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:text-[12px]"
+            className="tap flex h-12 w-full items-center justify-center gap-2 bg-surface text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:text-[12px]"
           >
             <Plus size={15} /> Add a new address
           </button>

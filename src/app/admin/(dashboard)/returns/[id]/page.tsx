@@ -139,7 +139,7 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
           }
         >
           <div className="flex gap-4">
-            <ReturnThumb src={line.image} alt={line.title} size={88} className="rounded-lg" />
+            <ReturnThumb src={line.image} alt={line.title} size={88} />
             <div className="min-w-0 flex-1">
               <p className="text-[15px] font-medium leading-snug text-ink-950">{line.title}</p>
               <p className="mt-0.5 text-[12.5px] text-ink-500">
@@ -230,7 +230,7 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
       <aside className="space-y-4">
         <Card title="Timeline">
           <Timeline steps={timeline} rejected={row.status === "REJECTED"} />
-          <p className="mt-4 border-t border-hairline pt-3 text-[11.5px] text-ink-400">Last updated {formatDateTime(row.updatedAt)}</p>
+          <p className="mt-4 pt-3 text-[11.5px] text-ink-400">Last updated {formatDateTime(row.updatedAt)}</p>
         </Card>
 
         <Card
@@ -273,7 +273,7 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
               { label: "Ship to", value: `${row.order.shipCity}, ${row.order.shipState}` },
             ]}
           />
-          <div className="mt-3 border-t border-hairline pt-3">
+          <div className="mt-3 pt-3">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-400">
               Lines · {refundedLines.size}/{row.order.lines.length} refunded
             </p>
@@ -348,15 +348,15 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
 
 function Timeline({ steps, rejected }: { steps: TimelineStep[]; rejected: boolean }) {
   return (
-    <ol className="relative ml-1.5 border-l border-hairline">
+    <ol className="relative ml-1.5">
       {steps.map((s) => (
         <li key={s.status} className="relative pb-5 pl-5 last:pb-0">
           <span
             className={cn(
-              "absolute -left-[5.5px] top-1.5 h-2.5 w-2.5 rounded-full border-2",
-              s.state === "done" && "border-brand-600 bg-brand-600",
-              s.state === "current" && (rejected ? "border-sale-500 bg-sale-500" : "border-brand-600 bg-surface ring-4 ring-brand-100"),
-              s.state === "upcoming" && "border-ink-300 bg-surface",
+              "absolute -left-[5.5px] top-1.5 h-2.5 w-2.5",
+              s.state === "done" && "bg-brand-600",
+              s.state === "current" && (rejected ? "bg-sale-500" : "bg-surface ring-4 ring-brand-100"),
+              s.state === "upcoming" && "bg-surface",
             )}
           />
           <p className={cn("text-[13px] font-medium leading-tight", s.state === "upcoming" ? "text-ink-400" : "text-ink-900")}>{s.label}</p>

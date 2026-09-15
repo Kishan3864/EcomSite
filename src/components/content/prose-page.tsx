@@ -22,8 +22,8 @@ export interface PolicySection {
 // would otherwise cancel the hover state the chips set. That is why the border
 // and text colours appear twice; it is not a duplication to tidy away.
 const TOC_LINK =
-  "tap flex h-10 items-center gap-2.5 whitespace-nowrap border border-hairline bg-surface px-3.5 text-[13px] font-medium text-ink-700 transition-colors hover:border-ink-950 hover:text-brand-700 " +
-  "lg:h-auto lg:items-baseline lg:whitespace-normal lg:border-x-0 lg:border-b-0 lg:border-t lg:border-hairline lg:bg-transparent lg:px-0 lg:py-2.5 lg:font-normal lg:text-ink-600 lg:hover:border-hairline lg:hover:text-brand-700";
+  "tap flex h-10 items-center gap-2.5 whitespace-nowrap bg-surface px-3.5 text-[13px] font-medium text-ink-700 transition-colors hover:text-brand-700 " +
+  "lg:h-auto lg:items-baseline lg:whitespace-normal lg:bg-transparent lg:px-0 lg:py-2.5 lg:font-normal lg:text-ink-600 lg:hover:text-brand-700";
 
 /**
  * Shared layout for the policy pages and /services: a ruled index on the left,
@@ -57,7 +57,7 @@ export function ProsePage({
       <BreadcrumbJsonLd items={crumbs} />
       <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-      <header className="mb-7 border-b border-hairline pb-6 sm:mb-10 sm:pb-8">
+      <header className="mb-7 pb-6 sm:mb-10 sm:pb-8">
         <span className="eyebrow">{eyebrow}</span>
         <h1 className="mt-3 max-w-[22ch] font-display text-[26px] leading-[1.06] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[42px]">
           {title}
@@ -80,7 +80,7 @@ export function ProsePage({
           <p className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 lg:mb-3">
             On this page
           </p>
-          <ul className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 lg:block lg:border-b lg:border-hairline">
+          <ul className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 lg:block">
             {sections.map((section, i) => (
               <li key={section.id}>
                 <a href={`#${section.id}`} className={TOC_LINK}>
@@ -104,7 +104,7 @@ export function ProsePage({
             <section
               key={section.id}
               id={section.id}
-              className="scroll-mt-20 border-t border-hairline pt-6 sm:pt-9 lg:scroll-mt-32"
+              className="scroll-mt-20 pt-6 sm:pt-9 lg:scroll-mt-32"
             >
               <h2 className="max-w-[34ch] font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[26px]">
                 {section.heading}
@@ -142,7 +142,7 @@ export function ProsePage({
                 <div className="mt-5 overflow-x-auto sm:mt-6">
                   <table className="w-full border-collapse text-[13.5px] tabular-nums sm:min-w-[420px] sm:text-[14px]">
                     <thead>
-                      <tr className="border-b border-rule">
+                      <tr>
                         {section.table.head.map((cell) => (
                           <th
                             key={cell}
@@ -155,7 +155,7 @@ export function ProsePage({
                     </thead>
                     <tbody>
                       {section.table.rows.map((row) => (
-                        <tr key={row.join()} className="border-b border-hairline last:border-b-0">
+                        <tr key={row.join()}>
                           {row.map((cell, i) => (
                             <td
                               key={cell + i}
@@ -180,7 +180,7 @@ export function ProsePage({
           ))}
 
           {footerNote && (
-            <div className="max-w-[68ch] break-words rounded-xl border border-hairline bg-surface p-4 text-[13.5px] leading-[1.7] text-ink-600 sm:p-5">
+            <div className="max-w-[68ch] break-words bg-surface p-4 text-[13.5px] leading-[1.7] text-ink-600 sm:p-5">
               {footerNote}
             </div>
           )}

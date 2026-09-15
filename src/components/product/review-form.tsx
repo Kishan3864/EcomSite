@@ -20,7 +20,7 @@ import { Form } from "@/components/ui/form";
  */
 function Note({ label, children }: { label?: string; children: React.ReactNode }) {
   return (
-    <div className="mt-5 border-t border-hairline pt-4 sm:mt-6 sm:pt-5">
+    <div className="mt-5 pt-4 sm:mt-6 sm:pt-5">
       {label && (
         <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {label}
@@ -133,7 +133,7 @@ export function ReviewForm({ productId }: { productId: string }) {
 
   if (!open) {
     return (
-      <div className="mt-5 border-t border-hairline pt-4 sm:mt-6 sm:pt-5">
+      <div className="mt-5 pt-4 sm:mt-6 sm:pt-5">
         <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Write a review
         </p>
@@ -178,7 +178,7 @@ export function ReviewForm({ productId }: { productId: string }) {
   return (
     <Form
       onSubmit={submit}
-      className="mt-5 rounded-xl border border-hairline bg-surface p-4 sm:mt-6 sm:p-5"
+      className="mt-5 bg-surface p-4 sm:mt-6 sm:p-5"
     >
       <h3 className="text-[14px] font-semibold text-ink-950 sm:text-[15px]">Write a review</h3>
       <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500">
@@ -230,7 +230,7 @@ export function ReviewForm({ productId }: { productId: string }) {
           maxLength={1200}
           placeholder="How does it feel to use? Would you buy it again?"
           // 16px on phones: iOS zooms the page into any smaller field.
-          className="w-full rounded-field border border-ink-200 bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 hover:border-ink-300 focus:border-brand-500 sm:text-[14px]"
+          className="w-full bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px]"
         />
       </Field>
 

@@ -87,7 +87,7 @@ export default async function SubcategoryPage({
           <li>
             <Link
               href={`/c/${category.slug}`}
-              className="tap inline-block whitespace-nowrap rounded-full border border-ink-200 bg-surface px-3 py-2 text-[12px] font-medium text-ink-700 transition-colors hover:border-ink-400 sm:px-3.5 sm:text-[12.5px]"
+              className="tap inline-block whitespace-nowrap bg-surface px-3 py-2 text-[12px] font-medium text-ink-700 transition-colors sm:px-3.5 sm:text-[12.5px]"
             >
               All {category.name}
             </Link>
@@ -98,10 +98,10 @@ export default async function SubcategoryPage({
                 href={`/c/${category.slug}/${sub.slug}`}
                 aria-current={sub.slug === subcategory.slug ? "page" : undefined}
                 className={cn(
-                  "tap inline-block whitespace-nowrap rounded-full border px-3 py-2 text-[12px] font-medium transition-colors sm:px-3.5 sm:text-[12.5px]",
+                  "tap inline-block whitespace-nowrap px-3 py-2 text-[12px] font-medium transition-colors sm:px-3.5 sm:text-[12.5px]",
                   sub.slug === subcategory.slug
-                    ? "border-brand-900 bg-brand-900 text-white"
-                    : "border-ink-200 bg-surface text-ink-700 hover:border-ink-400",
+                    ? "bg-brand-900 text-white"
+                    : "bg-surface text-ink-700",
                 )}
               >
                 {sub.name}

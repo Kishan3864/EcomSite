@@ -124,15 +124,15 @@ export function ProcessingClient() {
   if (phase === "failed" && failure) {
     return (
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
-        <div className="w-full max-w-md rounded-xl border border-hairline bg-surface p-5 text-center sm:p-7">
+        <div className="w-full max-w-md bg-surface p-5 text-center sm:p-7">
           {/* A drawn frame around the glyph rather than a tinted tile; the
               colour that matters is in the mark, not behind it. */}
           <span
             className={cn(
-              "mx-auto flex h-12 w-12 items-center justify-center border sm:h-14 sm:w-14",
+              "mx-auto flex h-12 w-12 items-center justify-center sm:h-14 sm:w-14",
               failure.needsAccount
-                ? "border-hairline text-brand-700"
-                : "border-sale-300 text-sale-600",
+                ? "text-brand-700"
+                : "text-sale-600",
             )}
           >
             {failure.needsAccount ? <UserRound size={26} /> : <AlertTriangle size={26} />}
@@ -169,7 +169,7 @@ export function ProcessingClient() {
             )}
           </div>
 
-          <p className="mx-auto mt-6 max-w-[46ch] border-t border-hairline pt-4 text-[13px] leading-[1.55] text-ink-500">
+          <p className="mx-auto mt-6 max-w-[46ch] pt-4 text-[13px] leading-[1.55] text-ink-500">
             If money left your account, it is a bank-side hold and reverses on its own within 5 to 7
             business days. Send us the reference and we will chase it.
           </p>
@@ -186,7 +186,7 @@ export function ProcessingClient() {
             <Logo href={null} />
           </div>
 
-          <div className="border border-hairline bg-surface">
+          <div className="bg-surface">
             <div className="deep-plane px-4 py-7 text-center sm:px-6 sm:py-9">
               {/* Within the house limits: nothing here scales by more than
                   three per cent and nothing travels. The old frame popped from
@@ -196,7 +196,7 @@ export function ProcessingClient() {
                 initial={reduce ? false : { scale: 0.98, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="mx-auto flex h-14 w-14 items-center justify-center border border-white/20 sm:h-16 sm:w-16"
+                className="mx-auto flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16"
               >
                 <AnimatePresence mode="wait" initial={false}>
                   {complete ? (
@@ -234,11 +234,11 @@ export function ProcessingClient() {
             </div>
 
             <div className="px-4 sm:px-6">
-              <p className="border-t border-hairline py-4 text-[13px] leading-[1.55] text-ink-600 first:border-t-0">
+              <p className="py-4 text-[13px] leading-[1.55] text-ink-600">
                 Your card and UPI details are entered on PayU&apos;s secure page. They never
                 reach our servers.
               </p>
-              <p className="border-t border-hairline py-4 text-[13px] leading-[1.55] text-ink-600">
+              <p className="py-4 text-[13px] leading-[1.55] text-ink-600">
                 Do not close this tab. If the payment window did not open, check your pop-up
                 blocker.
               </p>

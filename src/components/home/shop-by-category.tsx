@@ -106,7 +106,7 @@ export function ShopByCategory({ categories }: { categories: Category[] }) {
           <li key={destination.href}>
             <Link
               href={destination.href}
-              className="group block overflow-hidden rounded-xl border border-hairline bg-surface shadow-xs transition-[box-shadow,transform,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md"
+              className="group block overflow-hidden bg-surface shadow-xs transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className={cn("relative overflow-hidden bg-ink-50", shape)}>
                 <Image

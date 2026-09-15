@@ -69,7 +69,7 @@ export function TrackingTimeline({ events }: { events: OrderTrackingEvent[] }) {
               transition={{ duration: 0.5, delay: 0.12 * i, ease: EASE }}
               className={cn(
                 NODE,
-                event.done ? "bg-brand-700" : "border border-rule bg-surface",
+                event.done ? "bg-brand-700" : "bg-surface",
               )}
             />
 

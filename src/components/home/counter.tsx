@@ -71,11 +71,11 @@ export function Counter({ payments }: { payments: PublicPayments }) {
   ];
 
   return (
-    <section className="border-b border-hairline">
+    <section>
       <div className="container-page">
         {/* Two across on a phone and four on a desktop — never a swipe rail.
             A fact hidden behind a horizontal scroll is a fact nobody reads. */}
-        <div className="tile-grid grid-cols-2 border-x-0 lg:grid-cols-4">
+        <div className="tile-grid grid-cols-2 lg:grid-cols-4">
           {cells.map((cell, i) => (
             <div key={cell.label} className="flex min-h-[72px] flex-col justify-center px-3.5 py-4 sm:min-h-[92px] sm:px-5">
               <div className="flex items-center gap-2">

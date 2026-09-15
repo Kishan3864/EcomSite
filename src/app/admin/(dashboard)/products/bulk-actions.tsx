@@ -59,7 +59,7 @@ export function BulkProvider({ children }: { children: React.ReactNode }) {
   return <SelectionContext.Provider value={value}>{children}</SelectionContext.Provider>;
 }
 
-const checkboxCls = "h-4 w-4 cursor-pointer rounded border-ink-300 accent-[var(--color-brand-700)]";
+const checkboxCls = "h-4 w-4 cursor-pointer accent-[var(--color-brand-700)]";
 
 export function RowCheckbox({ id, label }: { id: string; label: string }) {
   const { selected, toggle } = useSelection();
@@ -114,7 +114,7 @@ export function BulkBar({
   return (
     <Form
       action={action}
-      className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50 px-3.5 py-2.5 text-[13px] text-brand-900"
+      className="mb-3 flex flex-wrap items-center gap-2 bg-brand-50 px-3.5 py-2.5 text-[13px] text-brand-900"
       onSubmit={(e) => {
         const label = STATUS_VERB[status].toLowerCase();
         if (!window.confirm(`${STATUS_VERB[status]} for ${count} selected ${count === 1 ? "product" : "products"}? (${label})`)) {
@@ -137,7 +137,7 @@ export function BulkBar({
           name="status"
           value={status}
           onChange={(e) => setStatus(e.target.value as ProductStatusValue)}
-          className="h-8 rounded-md border border-brand-200 bg-surface px-2 text-[12.5px] text-ink-900 outline-none focus:border-brand-500"
+          className="h-8 bg-surface px-2 text-[12.5px] text-ink-900 outline-none"
           aria-label="Bulk status"
         >
           {PRODUCT_STATUSES.map((s) => (

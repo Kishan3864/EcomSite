@@ -111,13 +111,12 @@
      a hospital; a sheet of slightly warm paper reads as calm. */
   --color-canvas: #f4f3f0;
   --color-surface: #ffffff;
-  /* hairline is the visible 1px line of `.tile-grid` AND the default
-     border colour of every element on the site (see @layer base). With
-     a radius and real elevation doing the structural work it is a
-     divider, not a frame. */
+  /* hairline and rule no longer draw anything by themselves: the shop has
+     no borders, so neither is a border colour any more. They survive as the
+     two pale greys the app reaches for when something genuinely needs to be
+     a filled surface a shade off white — a disabled field, an inert track,
+     a skeleton. Anything that used to be a 1px line is now elevation. */
   --color-hairline: #e6e9ec;
-  /* A second, heavier rule for editorial dividers that need to be seen —
-     under band headers, around drawn frames. */
   --color-rule: #cdd3d8;
 
   /* Type */
@@ -141,20 +140,23 @@
      typeface nobody chose, different on every device. */
   --font-mono: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 
-  /* Radius — a real scale.
-     Corners used to be square by policy, every step collapsed to 2px, which
-     is what made the shop read as an editorial sheet rather than a place to
-     buy something. A commerce surface wants an object you could pick up.
-     Restrained, not a template: 6–12px on the things people touch. */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 12px;
-  --radius-2xl: 16px;
-  --radius-3xl: 20px;
-  --radius-4xl: 24px;
-  --radius-field: 8px;
+  /* Radius — none, at every step.
+     This is a project policy, not a taste: the shop has square corners and no
+     borders anywhere, and separation is carried entirely by elevation and by
+     the difference between canvas and surface. The scale is kept rather than
+     deleted so that the ~300 `rounded-*` utilities across the app resolve to
+     something valid instead of falling back to Tailwind's own values; every
+     one of them lands on 0. See the enforcement block in @layer base, which
+     also catches `rounded-full` and any arbitrary radius. */
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+  --radius-field: 0px;
 
   /* Elevation — present, and still quiet.
      Shadows used to be almost absent because hairlines carried all the
@@ -169,7 +171,11 @@
   --shadow-md: 0 4px 12px -2px rgb(18 23 27 / 0.09), 0 2px 4px -2px rgb(18 23 27 / 0.05);
   --shadow-lg: 0 12px 28px -8px rgb(18 23 27 / 0.14), 0 4px 10px -4px rgb(18 23 27 / 0.07);
   --shadow-xl: 0 24px 56px -16px rgb(18 23 27 / 0.2);
-  --shadow-ring: 0 0 0 1px rgb(230 233 236 / 1);
+  /* Was a 1px hairline ring drawn as a shadow — an outline by another name,
+     and so against the no-border policy. It is a soft lift now, so the few
+     surfaces that asked for `shadow-ring` still separate from what is behind
+     them without drawing a line around themselves. */
+  --shadow-ring: 0 1px 2px 0 rgb(18 23 27 / 0.06), 0 0 0 4px rgb(18 23 27 / 0.02);
 
   /* Motion */
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
@@ -199,8 +205,31 @@
 /* ------------------------------------------------------------------ */
 
 @layer base {
-  * {
-    border-color: var(--color-hairline);
+  /* ---------------------------------------------------------------- *
+   *  NO BORDERS, NO CORNERS — enforced here rather than trusted
+   *
+   *  The shop is borderless by policy: nothing draws a border, a border
+   *  colour, or a rounded corner. Structure comes from elevation, from
+   *  the step between canvas and surface, and from space.
+   *
+   *  This is declared once, globally, with `!important`, and that is
+   *  deliberate. An important declaration in a cascade layer beats a
+   *  normal one in every other layer, so this defeats Tailwind's own
+   *  utilities — including `rounded-full`, which is not part of the
+   *  radius scale above, and any arbitrary `rounded-[12px]`. Without it
+   *  the policy would hold only for as long as nobody typed a border
+   *  class again, across 139 files.
+   *
+   *  `outline` is deliberately NOT touched: it is a different property,
+   *  it does not affect layout, and the :focus-visible ring below is the
+   *  only thing telling a keyboard user where they are. Removing it
+   *  would fail WCAG 2.4.7 on a shop that takes payments.
+   * ---------------------------------------------------------------- */
+  *,
+  *::before,
+  *::after {
+    border-width: 0 !important;
+    border-radius: 0 !important;
   }
 
   html {
@@ -285,6 +314,21 @@
     text-wrap: pretty;
   }
 
+  /* Fields are filled, because they can no longer be outlined.
+     A text input used to be a white box inside a 1px rule; with no borders
+     left, a white box on a white card is not a field, it is a gap. So every
+     real control gets a surface a shade off the card it sits on, which is how
+     a borderless form says "type here". Checkboxes, radios, files, ranges and
+     colours are excluded — they draw themselves.
+     A control that sets its own background (the newsletter input on the dark
+     plane, a search field on a tinted bar) still wins: Tailwind's utilities
+     are a later layer than this one. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+  select,
+  textarea {
+    background-color: var(--color-ink-50);
+  }
+
   input[type="number"]::-webkit-inner-spin-button,
   input[type="number"]::-webkit-outer-spin-button {
     appearance: none;
@@ -340,10 +384,52 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* The one place a soft corner is allowed. */
+  /* Kept as a no-op so the call sites that name it still resolve. Corners
+     are square everywhere now; see the enforcement block in @layer base. */
   .rounded-field {
-    border-radius: var(--radius-field);
+    border-radius: 0;
   }
+
+}
+
+/* ------------------------------------------------------------------ *
+ *  Rules drawn as shadows
+ *
+ *  A handful of places genuinely need a line: the bar down the side of an
+ *  error message, the mark under the tab you are on, the divider between
+ *  rows of a table. Those were borders, and borders are gone.
+ *
+ *  An inset box-shadow draws exactly the same line and is a shadow, so it
+ *  stays inside the policy. It also behaves better than the border it
+ *  replaces: it costs no layout, so a tab no longer shifts by 2px when it
+ *  becomes active, and a row no longer grows by 1px when a rule is added.
+ *
+ *  Declared with `@utility` rather than in `@layer components`, because
+ *  these need variants — the account nav is a bottom rule on a phone and a
+ *  left rule from 1024px (`rule-b lg:rule-l`), and only a real utility gets
+ *  `lg:` generated for it. Two of them on one element is not a conflict:
+ *  they set the same property, so the later variant simply wins.
+ *
+ *  Colour comes from `--rule-color`, set alongside the class:
+ *      <div class="rule-l [--rule-color:var(--color-sale-600)]">
+ *  An inactive tab passes `transparent` rather than dropping the class, so
+ *  the element keeps its geometry.
+ * ------------------------------------------------------------------ */
+@utility rule-l {
+  box-shadow: inset 2px 0 0 0 var(--rule-color, var(--color-ink-300));
+}
+@utility rule-b {
+  box-shadow: inset 0 -2px 0 0 var(--rule-color, var(--color-ink-300));
+}
+/* The hairline versions, for dividers between rows and under headers. */
+@utility rule-hair-b {
+  box-shadow: inset 0 -1px 0 0 var(--rule-color, var(--color-hairline));
+}
+@utility rule-hair-t {
+  box-shadow: inset 0 1px 0 0 var(--rule-color, var(--color-hairline));
+}
+
+@layer components {
 
   /* Horizontal snap rails used across the storefront */
   .rail {
@@ -431,33 +517,33 @@
     background: var(--color-gold-400);
   }
 
-  /* A hairline grid that lets product tiles sit edge to edge with a single
-     shared rule between them, instead of every card drawing its own box.
+  /* The twenty grids across the shop — product tiles, the department index,
+     the account screens, the wishlist.
 
-     The rules are drawn by the tiles, not by the container.
+     It used to be a hairline grid: tiles edge to edge, a shared 1px rule
+     between them, drawn by the tiles themselves so that a short row ended
+     cleanly instead of showing grey holes where the empty cells were.
 
-     They used to be the container's own grey showing through a 1px gap, which
-     works perfectly until a row is not full — and then every empty cell is a
-     grey block, because an empty cell and a gap are the same thing to that
-     technique. Two collections in a four-column grid rendered as two tiles and
-     a grey slab; five products in a four-column grid rendered a second row that
-     was one card and three grey holes. It read as a broken page, and it was on
-     the category pages, the listings, the wishlist and the account screens
-     alike — every one of the twenty grids built on this class.
-
-     Each tile now paints its own 1px ring into the gap instead. Two neighbours
-     fill the same gap from either side, so the shared rule is identical to
-     before; the outer border is still the container's. A cell with nothing in
-     it paints nothing, so a short row simply ends. */
+     With borders gone the same job is done by separation instead of by a
+     line. Each tile is a white surface standing on the canvas with a real
+     gap around it and a quiet shadow under it, so the grid reads as a row of
+     objects rather than as a drawn table. The property that mattered survives
+     untouched: an empty cell paints nothing at all — no background, no shadow
+     — so two collections in a four-column grid are still two tiles and then
+     the row simply ends. */
   .tile-grid {
     display: grid;
-    gap: 1px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-hairline);
+    gap: 0.5rem;
+    background: transparent;
+  }
+  @media (min-width: 640px) {
+    .tile-grid {
+      gap: 0.75rem;
+    }
   }
   .tile-grid > * {
     background: var(--color-surface);
-    box-shadow: 0 0 0 1px var(--color-hairline);
+    box-shadow: var(--shadow-sm);
   }
 
   /* The one looping animation on the site: a small square that travels

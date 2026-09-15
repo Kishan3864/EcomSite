@@ -42,7 +42,7 @@ function joinNames(names: string[]) {
 const primary =
   "tap inline-flex h-12 items-center justify-center gap-2 bg-ink-950 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-8 sm:text-[12px]";
 const secondary =
-  "tap inline-flex h-12 items-center justify-center border border-ink-950 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-8 sm:text-[12px]";
+  "tap inline-flex h-12 items-center justify-center px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-8 sm:text-[12px]";
 
 export function HeroStatic({
   hasProducts,
@@ -85,7 +85,7 @@ export function HeroStatic({
       `${BRAND.name} holds its own stock and invoices every order itself. What is listed is in our hands, ready to ship — nothing is drop-shipped from a marketplace.`;
 
   return (
-    <section className="border-b border-ink-950">
+    <section>
       <div className="container-page pb-10 pt-6 sm:pb-20 sm:pt-10">
         <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-8">
           {/* Words */}
@@ -133,7 +133,7 @@ export function HeroStatic({
 
           {/* The goods. One product, framed, with the truth underneath it. */}
           <div className="min-w-0 lg:col-span-5 lg:col-start-8">
-            <div className="border border-hairline bg-surface">
+            <div className="bg-surface">
               {lead ? (
                 <Link
                   href={`/p/${lead.slug}`}
@@ -157,7 +157,7 @@ export function HeroStatic({
                 </div>
               )}
 
-              <div className="border-t border-hairline px-4 py-3.5 sm:px-5 sm:py-4">
+              <div className="px-4 py-3.5 sm:px-5 sm:py-4">
                 {lead ? (
                   <>
                     <div className="flex items-start justify-between gap-4">

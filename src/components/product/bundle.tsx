@@ -39,7 +39,7 @@ export function BundleSection({
 
   return (
     <section>
-      <div className="border-b border-hairline pb-3 sm:pb-4">
+      <div className="pb-3 sm:pb-4">
         <span className="eyebrow">Add to the order</span>
         <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
           Frequently bought together
@@ -107,7 +107,7 @@ export function BundleSection({
 
         {/* The total is ruled off from the list rather than boxed: a hairline
             above it on a phone, and beside it once there is room for a column. */}
-        <div className="border-t border-hairline pt-4 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+        <div className="pt-4 lg:pl-8 lg:pt-0">
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             Total for {selected.length} item{selected.length > 1 ? "s" : ""}
           </p>

@@ -48,7 +48,7 @@ export function QuickView({
       {/* The card only offers quick view from sm up; below that this is a
           bottom sheet, so the photo is kept short and the type at app scale. */}
       <div className="grid gap-0 bg-surface sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
-        <div className="relative aspect-square border-b border-hairline bg-ink-100 sm:aspect-auto sm:min-h-[420px] sm:border-b-0 sm:border-r">
+        <div className="relative aspect-square bg-ink-100 sm:aspect-auto sm:min-h-[420px]">
           <Image
             src={product.image}
             alt={product.imageAlt}
@@ -98,10 +98,10 @@ export function QuickView({
                     aria-label={c.name}
                     aria-pressed={color === c.name}
                     className={cn(
-                      "tap h-10 w-10 border transition-colors duration-200 sm:h-8 sm:w-8",
+                      "tap h-10 w-10 transition-colors duration-200 sm:h-8 sm:w-8",
                       color === c.name
-                        ? "border-ink-950 ring-1 ring-ink-950 ring-offset-2"
-                        : "border-hairline hover:border-ink-400",
+                        ? "ring-1 ring-ink-950 ring-offset-2"
+                        : "",
                     )}
                     style={{ backgroundColor: c.hex }}
                   />
@@ -111,7 +111,7 @@ export function QuickView({
           )}
 
           <div className="flex items-center gap-4">
-            <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline bg-surface">
+            <div className="inline-flex items-center overflow-hidden bg-surface">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"
@@ -169,17 +169,17 @@ export function QuickView({
               size="icon"
               aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
               onClick={() => toggleWishlist(fromCard(product))}
-              className={cn(wished && "border-sale-500 text-sale-500")}
+              className={cn(wished && "text-sale-500")}
             >
               <Heart size={17} fill={wished ? "currentColor" : "none"} />
             </Button>
           </div>
 
-          <dl className="border-b border-hairline">
+          <dl>
             {ledger.map((row) => (
               <div
                 key={row.label}
-                className="flex items-baseline justify-between gap-4 border-t border-hairline py-3"
+                className="flex items-baseline justify-between gap-4 py-3"
               >
                 <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   {row.label}

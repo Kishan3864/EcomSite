@@ -84,9 +84,9 @@ export function useDialogFocus(active: boolean, ref: React.RefObject<HTMLElement
  * separates a sheet of paper from the dimmed page it has slid over.
  */
 const SIDE_STYLES = {
-  right: { class: "inset-y-0 right-0 h-full border-l border-hairline", axis: "x", from: "100%" },
-  left: { class: "inset-y-0 left-0 h-full border-r border-hairline", axis: "x", from: "-100%" },
-  bottom: { class: "inset-x-0 bottom-0 w-full border-t border-hairline", axis: "y", from: "100%" },
+  right: { class: "inset-y-0 right-0 h-full", axis: "x", from: "100%" },
+  left: { class: "inset-y-0 left-0 h-full", axis: "x", from: "-100%" },
+  bottom: { class: "inset-x-0 bottom-0 w-full", axis: "y", from: "100%" },
 } as const;
 
 export function Drawer({
@@ -157,7 +157,7 @@ export function Drawer({
                 <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 bg-ink-300" />
               )}
               {title && (
-                <header className="flex shrink-0 items-start justify-between gap-4 border-b border-hairline px-4 py-3 sm:px-5 sm:py-4">
+                <header className="flex shrink-0 items-start justify-between gap-4 px-4 py-3 sm:px-5 sm:py-4">
                   <div className="min-w-0">
                     {/* Fraunces is never set below 20px anywhere on the site:
                         smaller than that its detail closes up and it reads as
@@ -191,7 +191,7 @@ export function Drawer({
                 {children}
               </div>
               {footer && (
-                <div className="shrink-0 border-t border-hairline bg-surface px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:px-5 sm:py-4 sm:pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+                <div className="shrink-0 bg-surface px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:px-5 sm:py-4 sm:pb-[calc(env(safe-area-inset-bottom)+1rem)]">
                   {footer}
                 </div>
               )}
@@ -252,14 +252,14 @@ export function Modal({
               // A bottom sheet on phones, clear of the home indicator; a centred
               // dialog from sm up.
               className={cn(
-                "relative flex max-h-[90dvh] w-full flex-col overflow-hidden border-t border-hairline bg-canvas pb-safe sm:max-h-[92vh] sm:max-w-2xl sm:border sm:pb-0",
+                "relative flex max-h-[90dvh] w-full flex-col overflow-hidden bg-canvas pb-safe sm:max-h-[92vh] sm:max-w-2xl sm:pb-0",
                 className,
               )}
             >
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="tap absolute right-2 top-2 z-10 rounded-lg border border-hairline bg-surface p-3 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:right-3 sm:top-3 sm:p-2"
+                className="tap absolute right-2 top-2 z-10 bg-surface p-3 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:right-3 sm:top-3 sm:p-2"
               >
                 <X size={16} />
               </button>

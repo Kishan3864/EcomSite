@@ -111,7 +111,7 @@ export function ShopByPrice({ prices }: { prices: number[] }) {
           <li key={band.href}>
             <Link
               href={band.href}
-              className="group flex h-full flex-col justify-between gap-5 rounded-xl border border-hairline bg-surface p-4 shadow-xs transition-[box-shadow,transform,border-color] duration-300 ease-out hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md sm:p-5"
+              className="group flex h-full flex-col justify-between gap-5 bg-surface p-4 shadow-xs transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md sm:p-5"
             >
               <span>
                 <span className="block text-[14px] font-bold tracking-[-0.01em] text-ink-950 sm:text-[15.5px]">
@@ -127,8 +127,8 @@ export function ShopByPrice({ prices }: { prices: number[] }) {
                   // The last door is the whole catalogue, so it is the one that
                   // carries the aqua: it is the way through, not a filter.
                   i === bands.length - 1
-                    ? "inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5"
-                    : "inline-flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-700 transition-transform duration-200 group-hover:translate-x-0.5"
+                    ? "inline-flex h-8 w-8 items-center justify-center bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5"
+                    : "inline-flex h-8 w-8 items-center justify-center bg-brand-50 text-brand-700 transition-transform duration-200 group-hover:translate-x-0.5"
                 }
               >
                 <ArrowRight size={15} />

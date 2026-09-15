@@ -45,7 +45,7 @@ export function AdminLoginForm({ next }: { next?: string }) {
             type="button"
             onClick={() => setShow((s) => !s)}
             aria-label={show ? "Hide password" : "Show password"}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-2 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-700"
           >
             {show ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>

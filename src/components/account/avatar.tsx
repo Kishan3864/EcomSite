@@ -77,7 +77,7 @@ export function Avatar({
 
   return (
     <span
-      className={cn("is-circle relative inline-flex shrink-0 overflow-hidden rounded-full", className)}
+      className={cn("is-circle relative inline-flex shrink-0 overflow-hidden", className)}
       style={{ width: size, height: size }}
     >
       {showPhoto ? (

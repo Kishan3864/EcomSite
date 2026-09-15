@@ -31,9 +31,9 @@ export function Pagination({
   // Square cells on a hairline, one of them inked: the same language as the
   // tile grid above it, so the foot of the page belongs to the page.
   const linkClass =
-    "inline-flex h-10 min-w-10 items-center justify-center border px-3 text-[13px] font-medium tabular-nums transition-colors duration-200";
-  const restClass = "border-hairline bg-surface text-ink-700 hover:border-ink-950 hover:text-ink-950";
-  const spentClass = "border-hairline bg-canvas text-ink-400";
+    "inline-flex h-10 min-w-10 items-center justify-center px-3 text-[13px] font-medium tabular-nums transition-colors duration-200";
+  const restClass = "bg-surface text-ink-700 hover:text-ink-950";
+  const spentClass = "bg-canvas text-ink-400";
   const gapClass = "px-1 text-[13px] text-ink-400";
 
   return (
@@ -82,7 +82,7 @@ export function Pagination({
                 linkClass,
                 "tap",
                 neighbour && "hidden sm:inline-flex",
-                p === page ? "border-ink-950 bg-ink-950 font-semibold text-white" : restClass,
+                p === page ? "bg-ink-950 font-semibold text-white" : restClass,
               )}
             >
               {p}

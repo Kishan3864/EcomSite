@@ -36,7 +36,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Form action={action} className="rounded-xl border border-hairline bg-surface p-4 sm:p-6">
+      <Form action={action} className="bg-surface p-4 sm:p-6">
         <Field
           label="Order number"
           htmlFor="order-number"
@@ -79,14 +79,14 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
           </h2>
           {/* A ruled index rather than a stack of little cards: four rows of
               the same shipment ledger the rest of the page is drawn in. */}
-          <ul className="mt-2.5 border-b border-hairline">
+          <ul className="mt-2.5">
             {orders.slice(0, 4).map((order) => (
               <li key={order.id}>
                 <Link
                   href={`/track/${order.id}`}
-                  className="tap group flex items-center gap-3 border-t border-hairline py-3 sm:gap-4"
+                  className="tap group flex items-center gap-3 py-3 sm:gap-4"
                 >
-                  <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100">
+                  <span className="relative h-14 w-12 shrink-0 overflow-hidden bg-ink-100">
                     <Image
                       src={order.lines[0].image}
                       alt=""
@@ -179,7 +179,7 @@ export function TrackDetail({ order }: { order: Order | null }) {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Reveal className="border border-hairline bg-surface">
+      <Reveal className="bg-surface">
         <div className="deep-plane px-4 py-6 sm:px-8 sm:py-9">
           <span className="eyebrow eyebrow-dark tabular-nums">{order.number}</span>
           <h1 className="mt-3 font-display text-[24px] leading-[1.08] tracking-[-0.025em] text-white sm:mt-4 sm:text-[36px]">
@@ -189,13 +189,13 @@ export function TrackDetail({ order }: { order: Order | null }) {
             {copy.body}
           </p>
 
-          <dl className="mt-6 grid border-t border-white/15 sm:mt-8 sm:grid-cols-3">
+          <dl className="mt-6 grid sm:mt-8 sm:grid-cols-3">
             {ledger.map((row, i) => (
               <div
                 key={row.label}
                 className={cn(
-                  "min-w-0 border-b border-white/15 py-3 sm:py-4",
-                  i > 0 && "sm:border-l sm:pl-5",
+                  "min-w-0 py-3 sm:py-4",
+                  i > 0 && "sm:pl-5",
                   i < ledger.length - 1 && "sm:pr-5",
                 )}
               >
@@ -220,7 +220,7 @@ export function TrackDetail({ order }: { order: Order | null }) {
           </section>
 
           <aside className="min-w-0">
-            <section className="border-t border-hairline pt-4">
+            <section className="pt-4">
               <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 In this shipment
               </h2>
@@ -229,7 +229,7 @@ export function TrackDetail({ order }: { order: Order | null }) {
                   <li key={line.id} className="flex gap-3">
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
+                      className="relative h-14 w-12 shrink-0 overflow-hidden bg-ink-100"
                     >
                       <Image src={line.image} alt="" fill sizes="48px" className="object-cover" />
                     </Link>
@@ -249,7 +249,7 @@ export function TrackDetail({ order }: { order: Order | null }) {
               </ul>
             </section>
 
-            <section className="mt-6 border-t border-hairline pt-4">
+            <section className="mt-6 pt-4">
               <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 Delivery address
               </h2>

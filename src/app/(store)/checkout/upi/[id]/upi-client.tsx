@@ -92,7 +92,7 @@ export function UpiClient({
   if (unavailable) {
     return (
       <Shell orderNumber={orderNumber} amount={amount}>
-        <div className="rounded-xl border border-sale-300 bg-surface p-4 text-[13px] leading-[1.55] text-ink-700">
+        <div className="bg-surface p-4 text-[13px] leading-[1.55] text-ink-700">
           <p className="flex items-start gap-2.5">
             <AlertCircle size={16} className="mt-0.5 shrink-0 text-sale-600" />
             <span>
@@ -113,8 +113,8 @@ export function UpiClient({
   if (waiting) {
     return (
       <Shell orderNumber={orderNumber} amount={amount}>
-        <div className="rounded-xl border border-hairline bg-surface p-5 text-center sm:p-7">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-hairline text-ink-900">
+        <div className="bg-surface p-5 text-center sm:p-7">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center text-ink-900">
             <Clock size={24} strokeWidth={1.5} />
           </span>
           <h2 className="mt-4 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
@@ -151,7 +151,7 @@ export function UpiClient({
   return (
     <Shell orderNumber={orderNumber} amount={amount}>
       {/* Step 1 — pay */}
-      <section className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
+      <section className="bg-surface p-4 sm:p-5">
         <h2 className={STEP_HEAD}>
           <span className={STEP_NUMBER}>1</span>
           Pay <span className="tabular-nums text-ink-950">{formatINR(amount)}</span>
@@ -182,7 +182,7 @@ export function UpiClient({
               quiet zone a scanner needs; the frame is drawn outside them and
               nothing here changes the code's own colours. */}
           <div
-            className="border border-hairline bg-white p-3 [&_svg]:h-[200px] [&_svg]:w-[200px] sm:[&_svg]:h-[220px] sm:[&_svg]:w-[220px]"
+            className="bg-white p-3 [&_svg]:h-[200px] [&_svg]:w-[200px] sm:[&_svg]:h-[220px] sm:[&_svg]:w-[220px]"
             /* Our own generated QR, not user input. */
             dangerouslySetInnerHTML={{ __html: qrSvg }}
           />
@@ -191,7 +191,7 @@ export function UpiClient({
           </p>
         </div>
 
-        <dl className="mt-4 border-b border-hairline">
+        <dl className="mt-4">
           <Row
             label="UPI ID"
             value={vpa}
@@ -210,7 +210,7 @@ export function UpiClient({
       </section>
 
       {/* Step 2 — tell us */}
-      <section className="mt-3 rounded-xl border border-hairline bg-surface p-4 sm:mt-4 sm:p-5">
+      <section className="mt-3 bg-surface p-4 sm:mt-4 sm:p-5">
         <h2 className={STEP_HEAD}>
           <span className={STEP_NUMBER}>2</span>
           Tell us the reference
@@ -249,7 +249,7 @@ export function UpiClient({
 
         {/* The sentence is the reassurance. A shield glyph beside it would add
             nothing a customer can check, which is the definition of a seal. */}
-        <p className="mt-4 border-t border-hairline pt-3.5 text-[13px] leading-[1.55] text-ink-500">
+        <p className="mt-4 pt-3.5 text-[13px] leading-[1.55] text-ink-500">
           Your money goes straight to {BUSINESS.legalName}&apos;s bank account. We never see your
           UPI PIN — it is entered only inside your own payment app.
         </p>
@@ -283,7 +283,7 @@ function Shell({
         {/* The amount is money, so it is set in the text face with tabular
             figures rather than in Fraunces, whose proportional numerals were
             never going to hold a column of rupees straight. */}
-        <header className="mb-5 border-b border-hairline pb-4 text-center sm:mb-6">
+        <header className="mb-5 pb-4 text-center sm:mb-6">
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             Order <span className="tabular-nums">{orderNumber}</span>
           </p>
@@ -314,7 +314,7 @@ function Row({
   mono?: boolean;
 }) {
   return (
-    <div className="flex h-11 items-center justify-between gap-3 border-t border-hairline">
+    <div className="flex h-11 items-center justify-between gap-3">
       <dt className="shrink-0 text-[13px] text-ink-600">{label}</dt>
       <dd className="flex min-w-0 items-center gap-2">
         <span

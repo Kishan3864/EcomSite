@@ -104,13 +104,13 @@ export function HeaderClient({
           not as a wall it sits behind. */}
       <header
         className={cn(
-          "sticky top-0 z-50 border-b border-hairline bg-surface/95 backdrop-blur-xl transition-shadow duration-300",
+          "sticky top-0 z-50 bg-surface/95 backdrop-blur-xl transition-shadow duration-300",
           // On a phone at rest the search strip under this bar closes the
           // masthead with its own hairline, so the bar's is made transparent
           // rather than removed — the 1px stays in the box, which is what the
           // listing toolbar's top-[57px] offset is measured against. Once the
           // page scrolls the strip is gone and the bar rules itself again.
-          !isFunnelRoute(pathname) && !scrolled && "max-sm:border-b-transparent",
+          !isFunnelRoute(pathname) && !scrolled && "",
           scrolled ? "shadow-sm" : "",
         )}
       >
@@ -136,7 +136,7 @@ export function HeaderClient({
               />
               <button
                 onClick={openCartDrawer}
-                className="group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-ink-100"
+                className="group relative flex items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-ink-100"
               >
                 <span className="relative">
                   <ShoppingBag size={19} className="text-ink-700" />
@@ -164,10 +164,10 @@ export function HeaderClient({
             would be a rule across the page with two links pushed to the far
             right — so it is left out until there is a category to put in it. */}
         {categories.length > 0 && (
-          <div className="hidden border-t border-hairline lg:block">
-            <div className="container-page flex items-center justify-between py-1">
+          <div className="hidden lg:block">
+            <div className="container-page flex items-center justify-between gap-6 py-1">
               <MegaMenu categories={categories} />
-              <div className="flex items-center gap-5 text-[13px]">
+              <div className="flex shrink-0 items-center gap-5 text-[13px]">
                 <Link
                   href="/track"
                   className="inline-flex items-center gap-1.5 text-ink-600 transition-colors duration-200 hover:text-brand-700"
@@ -193,7 +193,7 @@ export function HeaderClient({
             <button
               onClick={() => setMenuOpenAt(pathname)}
               aria-label="Open menu"
-              className="tap -ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap -ml-2 flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100"
             >
               <Menu size={21} />
             </button>
@@ -206,14 +206,14 @@ export function HeaderClient({
             <button
               onClick={() => setSearchOpenAt(pathname)}
               aria-label="Search"
-              className="tap ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100 sm:hidden"
+              className="tap ml-auto flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100 sm:hidden"
             >
               <Search size={20} />
             </button>
             <Link
               href="/wishlist"
               aria-label="Wishlist"
-              className="tap flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100"
             >
               <span className="relative">
                 <Heart size={20} />
@@ -223,7 +223,7 @@ export function HeaderClient({
             <button
               onClick={openCartDrawer}
               aria-label="Open bag"
-              className="tap -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap -mr-2 flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100"
             >
               <span className="relative">
                 <ShoppingBag size={20} />
@@ -240,7 +240,7 @@ export function HeaderClient({
           same hairline, so the masthead ends at one edge rather than leaving a
           field floating on the canvas under it. */}
       {!isFunnelRoute(pathname) && (
-        <div className="border-b border-hairline bg-surface sm:hidden">
+        <div className="bg-surface sm:hidden">
           <div className="container-page pb-2.5">
             <SearchField onOpen={() => setSearchOpenAt(pathname)} className="w-full" />
           </div>
@@ -283,7 +283,7 @@ function SearchField({ onOpen, className }: { onOpen: () => void; className?: st
       onClick={onOpen}
       aria-haspopup="dialog"
       className={cn(
-        "tap flex h-10 min-w-0 items-center gap-2.5 rounded-xl border border-hairline bg-surface px-3.5 text-left transition-colors duration-200 hover:border-ink-950",
+        "tap flex h-10 min-w-0 items-center gap-2.5 bg-ink-50 px-3.5 text-left transition-colors duration-200",
         className,
       )}
     >
@@ -308,7 +308,7 @@ function CountBubble({ count }: { count: number }) {
           // further down the page stops being believed. Brand-700 is dark
           // enough to carry white and is already the colour of "yours" across
           // the account menu, so the count reads as part of the same thing.
-          className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums"
+          className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums"
         >
           {count > 99 ? "99+" : count}
         </motion.span>
@@ -333,7 +333,7 @@ function HeaderAction({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-ink-100"
+      className="flex items-center gap-2.5 px-3 py-2 transition-colors hover:bg-ink-100"
     >
       <span className="relative text-ink-700">
         {icon}
@@ -368,7 +368,7 @@ function MenuLink({
       // Ruled rows, as the department menu indexes its collections: the rule
       // is what makes eight destinations read as one list rather than as eight
       // separate things floating in a panel.
-      className="group flex h-10 items-center gap-2.5 border-b border-hairline px-4 text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700 focus-visible:text-brand-700"
+      className="group flex h-10 items-center gap-2.5 px-4 text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700 focus-visible:text-brand-700"
     >
       <Icon
         size={15}
@@ -490,7 +490,7 @@ function AccountMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? "account-menu" : undefined}
-        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-ink-100"
+        className="flex items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-ink-100"
       >
         <span className="text-ink-700">
           <User size={19} />
@@ -526,7 +526,7 @@ function AccountMenu() {
             // The same sheet the department menu is drawn on, a quarter of the
             // width: a hairline and the same elevation, so the two panels that
             // can open from this one bar are plainly the same object.
-            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-hairline bg-surface shadow-xl"
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden bg-surface shadow-xl"
           >
             {!sessionChecked ? (
               <p className="px-4 py-6 text-center text-[13px] text-ink-500">
@@ -534,7 +534,7 @@ function AccountMenu() {
               </p>
             ) : customer ? (
               <>
-                <div role="none" className="flex items-center gap-3 border-b border-hairline px-4 py-3.5">
+                <div role="none" className="flex items-center gap-3 px-4 py-3.5">
                   <Avatar src={customer.avatarUrl} seed={customer.email} size={36} />
                   <span className="min-w-0">
                     <span className="block truncate text-[13.5px] font-semibold text-ink-950">
@@ -573,7 +573,7 @@ function AccountMenu() {
                 {/* The rule under the row above already separates signing in
                     from getting help; the last row of the panel draws none, so
                     that it does not double up with the frame's own edge. */}
-                <div role="none" className="[&>a:last-child]:border-b-0">
+                <div role="none" className="[&>">
                   {GUEST_HELP_LINKS.map((link) => (
                     <MenuLink key={link.href} {...link} onSelect={close} />
                   ))}
@@ -606,7 +606,7 @@ function AnnouncementBar() {
     // of the shop; on a light theme a black bar across the top of each one is
     // the single heaviest thing on the site, and it was the first thing the
     // owner asked to lose. A tint says the same thing at a whisper.
-    <div className="overflow-hidden border-b border-brand-100 bg-brand-50 py-1.5 text-brand-900 sm:py-2">
+    <div className="overflow-hidden bg-brand-50 py-1.5 text-brand-900 sm:py-2">
       {/* The speed is the one declared in globals.css. Hand-rolled at 38s this
           read as a news ticker, which is the opposite of what a shop wants:
           a sign is something you can finish reading. */}
@@ -673,12 +673,12 @@ function MobileMenu({
       side="left"
       className="max-w-[min(330px,calc(100vw-3rem))]"
     >
-      <div className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
+      <div className="flex items-center justify-between px-4 py-2.5">
         <Logo size="sm" />
         <button
           onClick={onClose}
           aria-label="Close menu"
-          className="tap -mr-2 flex h-10 w-10 items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100"
+          className="tap -mr-2 flex h-10 w-10 items-center justify-center text-ink-500 hover:bg-ink-100"
         >
           <X size={18} />
         </button>
@@ -688,7 +688,7 @@ function MobileMenu({
           Fraunces draws band titles and product titles, and at the 16px this
           line used to be it was neither — just the display face borrowed for a
           label, which is how a type system comes apart. */}
-      <div className="deep-plane border-b border-hairline px-4 py-4 text-white">
+      <div className="deep-plane px-4 py-4 text-white">
         <p className="text-[15px] font-semibold tracking-[-0.01em]">
           {customer ? `Hello, ${customer.name.split(" ")[0]}` : "Welcome back"}
         </p>
@@ -711,7 +711,7 @@ function MobileMenu({
               </Link>
               <Link
                 href="/account/settings"
-                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap border border-white/30 px-2.5 text-center text-[13px] font-semibold text-white"
+                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap px-2.5 text-center text-[13px] font-semibold text-white"
               >
                 Settings
               </Link>
@@ -726,7 +726,7 @@ function MobileMenu({
               </Link>
               <Link
                 href="/register"
-                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap border border-white/30 px-2.5 text-center text-[13px] font-semibold text-white"
+                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap px-2.5 text-center text-[13px] font-semibold text-white"
               >
                 Create account
               </Link>

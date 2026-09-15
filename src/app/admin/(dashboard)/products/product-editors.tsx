@@ -23,8 +23,8 @@ import {
 
 const smallInput = cn(inputCls, "h-9 text-[13px]");
 const smallSelect = cn(selectCls, "h-9 text-[13px]");
-const rowBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-400";
-const dangerBtn = "rounded-md p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600";
+const rowBtn = "p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-400";
+const dangerBtn = "p-1.5 text-ink-400 transition-colors hover:bg-sale-50 hover:text-sale-600";
 
 function move<T>(list: T[], from: number, to: number) {
   if (to < 0 || to >= list.length) return list;
@@ -80,13 +80,13 @@ export function ImagesEditor({ value, onChange }: { value: ImageInput[]; onChang
   return (
     <div className="grid gap-2.5">
       {value.length === 0 && (
-        <p className="rounded-lg border border-dashed border-ink-200 px-4 py-6 text-center text-[12.5px] text-ink-500">
+        <p className="px-4 py-6 text-center text-[12.5px] text-ink-500">
           No images yet. Upload them from this computer, or paste an address — the first
           image is the cover shown on cards.
         </p>
       )}
       {value.map((img, i) => (
-        <div key={i} className="flex items-start gap-3 rounded-lg border border-hairline bg-canvas p-2.5">
+        <div key={i} className="flex items-start gap-3 bg-canvas p-2.5">
           {img.url && isUrlish(img.url) ? (
             <Image
               src={img.url}
@@ -94,10 +94,10 @@ export function ImagesEditor({ value, onChange }: { value: ImageInput[]; onChang
               width={56}
               height={56}
               unoptimized
-              className="h-14 w-14 shrink-0 rounded-md border border-hairline bg-surface object-cover"
+              className="h-14 w-14 shrink-0 bg-surface object-cover"
             />
           ) : (
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-dashed border-ink-200 bg-surface text-ink-300">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center bg-surface text-ink-300">
               <ImageOff size={16} />
             </span>
           )}
@@ -118,7 +118,7 @@ export function ImagesEditor({ value, onChange }: { value: ImageInput[]; onChang
             />
           </div>
           <div className="flex shrink-0 items-center">
-            {i === 0 && <span className="mr-1 rounded-full bg-brand-100 px-1.5 py-0.5 text-[10.5px] font-semibold text-brand-800">Cover</span>}
+            {i === 0 && <span className="mr-1 bg-brand-100 px-1.5 py-0.5 text-[10.5px] font-semibold text-brand-800">Cover</span>}
             <button type="button" onClick={() => onChange(move(value, i, i - 1))} disabled={i === 0} title="Move up" className={rowBtn}>
               <ArrowUp size={14} />
             </button>
@@ -178,12 +178,12 @@ export function SpecsEditor({ value, onChange }: { value: SpecGroupInput[]; onCh
   return (
     <div className="grid gap-3">
       {value.length === 0 && (
-        <p className="rounded-lg border border-dashed border-ink-200 px-4 py-6 text-center text-[12.5px] text-ink-500">
+        <p className="px-4 py-6 text-center text-[12.5px] text-ink-500">
           No specifications. Add a group such as “General” or “In the box”, then its rows.
         </p>
       )}
       {value.map((g, gi) => (
-        <div key={gi} className="rounded-lg border border-hairline bg-canvas p-3">
+        <div key={gi} className="bg-canvas p-3">
           <div className="flex items-center gap-2">
             <input
               value={g.group}
@@ -261,14 +261,14 @@ export function VariantsEditor({ value, onChange }: { value: VariantGroupInput[]
   return (
     <div className="grid gap-3">
       {value.length === 0 && (
-        <p className="rounded-lg border border-dashed border-ink-200 px-4 py-6 text-center text-[12.5px] text-ink-500">
+        <p className="px-4 py-6 text-center text-[12.5px] text-ink-500">
           No variants. Add a group when shoppers must pick a colour, size, storage or another option.
         </p>
       )}
       {value.map((g, gi) => {
         const isColor = g.type === "COLOR";
         return (
-          <div key={gi} className="rounded-lg border border-hairline bg-canvas p-3">
+          <div key={gi} className="bg-canvas p-3">
             <div className="flex flex-wrap items-center gap-2">
               <input
                 value={g.name}
@@ -344,7 +344,7 @@ export function VariantsEditor({ value, onChange }: { value: VariantGroupInput[]
                               value={/^#[0-9a-f]{6}$/i.test(o.swatch) ? o.swatch : "#888888"}
                               onChange={(e) => updateOption(gi, oi, { swatch: e.target.value })}
                               aria-label={`Group ${gi + 1} option ${oi + 1} swatch colour`}
-                              className="h-9 w-9 shrink-0 cursor-pointer rounded-md border border-ink-200 bg-surface p-0.5"
+                              className="h-9 w-9 shrink-0 cursor-pointer bg-surface p-0.5"
                             />
                           )}
                           <input
@@ -453,14 +453,14 @@ export function RelationPicker({
           {value.map((id) => {
             const item = byId.get(id);
             return (
-              <li key={id} className="inline-flex items-center gap-1.5 rounded-full border border-ink-200 bg-surface py-1 pl-3 pr-1.5 text-[12.5px] text-ink-900">
+              <li key={id} className="inline-flex items-center gap-1.5 bg-surface py-1 pl-3 pr-1.5 text-[12.5px] text-ink-900">
                 <span className="max-w-[220px] truncate">{item?.title ?? "Unknown product"}</span>
                 {item && <span className="font-mono text-[10.5px] text-ink-400">{item.sku}</span>}
                 <button
                   type="button"
                   onClick={() => onChange(value.filter((v) => v !== id))}
                   aria-label={`Remove ${item?.title ?? "product"}`}
-                  className="rounded-full p-0.5 text-ink-400 hover:bg-ink-100 hover:text-ink-900"
+                  className="p-0.5 text-ink-400 hover:bg-ink-100 hover:text-ink-900"
                 >
                   <X size={12} />
                 </button>
@@ -472,7 +472,7 @@ export function RelationPicker({
         <p className="text-[12.5px] text-ink-400">None selected.</p>
       )}
       <div className="relative">
-        <div className={cn("flex h-9 items-center gap-2 rounded-lg border border-ink-200 bg-canvas px-3 focus-within:border-brand-500", full && "opacity-60")}>
+        <div className={cn("flex h-9 items-center gap-2 bg-canvas px-3", full && "opacity-60")}>
           <Search size={14} className="shrink-0 text-ink-400" />
           <input
             value={query}
@@ -489,7 +489,7 @@ export function RelationPicker({
           )}
         </div>
         {q && !full && (
-          <ul className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-ink-200 bg-surface shadow-lg">
+          <ul className="absolute z-20 mt-1 w-full overflow-hidden bg-surface shadow-lg">
             {results.length === 0 ? (
               <li className="px-3 py-2.5 text-[12.5px] text-ink-500">No active products match “{query.trim()}”.</li>
             ) : (

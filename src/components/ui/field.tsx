@@ -22,11 +22,11 @@ import { cn } from "@/lib/utils";
  */
 export const inputClasses = (invalid?: boolean) =>
   cn(
-    "h-11 w-full rounded-lg border bg-surface px-3.5 text-[16px] text-ink-900 sm:text-[14px]",
-    "transition-[border-color,box-shadow] duration-200 placeholder:text-ink-400",
+    "h-11 w-full bg-ink-50 px-3.5 text-[16px] text-ink-900 sm:text-[14px]",
+    "transition-[,box-shadow] duration-200 placeholder:text-ink-400",
     invalid
-      ? "border-sale-600 focus:border-sale-600 focus:shadow-[0_0_0_3px_rgb(184_58_84/0.12)]"
-      : "border-hairline hover:border-ink-300 focus:border-brand-600 focus:shadow-[0_0_0_3px_rgb(52_69_138/0.12)]",
+      ? "focus:shadow-[0_0_0_3px_rgb(184_58_84/0.12)]"
+      : "focus:shadow-[0_0_0_3px_rgb(52_69_138/0.12)]",
   );
 
 export function Field({
@@ -133,12 +133,12 @@ export function OptionCard({
   return (
     <div
       className={cn(
-        "rounded-field border bg-surface transition-colors duration-200",
+        "bg-surface shadow-sm transition-colors duration-200",
         // Choosing a card changes the colour of its rule; it does not lay a
         // second rule over the first. The shadow that used to sit here was only
         // ever faking a 2px border, and a shadow is the one thing this design
         // never draws structure with.
-        selected ? "border-brand-700" : "border-hairline",
+        selected ? "" : "",
         disabled && "opacity-55",
         className,
       )}
@@ -152,8 +152,8 @@ export function OptionCard({
       >
         <span
           className={cn(
-            "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center is-circle rounded-full border transition-all",
-            selected ? "border-[5px] border-brand-700" : "border-ink-300",
+            "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center is-circle transition-all",
+            selected ? "" : "",
           )}
         />
         <span className="min-w-0 flex-1">
@@ -170,7 +170,7 @@ export function OptionCard({
         {meta && <span className="shrink-0 text-right">{meta}</span>}
       </button>
       {selected && children && (
-        <div className="border-t border-hairline p-3 sm:p-4">{children}</div>
+        <div className="p-3 sm:p-4">{children}</div>
       )}
     </div>
   );

@@ -209,7 +209,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
         {hasFilters && (
           <Link
             href={withParams(BASE, {}, { sort: current.sort, dir: current.dir })}
-            className="inline-flex h-10 items-center gap-1 rounded-lg px-2.5 text-[12.5px] font-medium text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900"
+            className="inline-flex h-10 items-center gap-1 px-2.5 text-[12.5px] font-medium text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-900"
           >
             <X size={13} /> Clear
           </Link>
@@ -301,7 +301,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                             title={c.isActive ? "Deactivate" : "Reactivate"}
                             aria-label={c.isActive ? `Deactivate ${c.name}` : `Reactivate ${c.name}`}
                             className={cn(
-                              "rounded-md p-1.5 transition-colors hover:bg-ink-100",
+                              "p-1.5 transition-colors hover:bg-ink-100",
                               c.isActive ? "text-ink-400 hover:text-ink-900" : "text-brand-600 hover:text-brand-800",
                             )}
                           >

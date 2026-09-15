@@ -35,6 +35,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
              columns have lost their headings, is unreadable on paper. */
           tr { break-inside: avoid; }
           thead { display: table-header-group; }
+          /* The line grid is drawn in background bands rather than borders,
+             and a browser drops backgrounds when printing unless asked. */
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          thead th { background: #e9edf0 !important; }
+          tbody tr:nth-child(even) td { background: #f4f6f8 !important; }
         }
       `}</style>
 
@@ -49,13 +54,13 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       </div>
 
       {invoice.isBillOfSupply && (
-        <p className="mb-6 rounded-lg border border-sale-200 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700 print:hidden">
+        <p className="mb-6 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700 print:hidden">
           There is no seller GSTIN on file, so this prints as a bill of supply rather than a tax
           invoice. Add the GSTIN under Settings → Tax before issuing it.
         </p>
       )}
 
-      <header className="flex flex-wrap items-start justify-between gap-6 border-b border-ink-300 pb-5">
+      <header className="flex flex-wrap items-start justify-between gap-6 pb-5">
         <div className="max-w-sm">
           <p className="font-display text-[22px] font-semibold tracking-[-0.02em]">
             {seller.legalName}
@@ -93,7 +98,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
       </header>
 
-      <section className="grid gap-6 border-b border-ink-200 py-5 sm:grid-cols-2">
+      <section className="grid gap-6 py-5 sm:grid-cols-2">
         <Party title="Billed to" name={billTo.name} lines={billTo.lines}>
           {billTo.phone} · {billTo.email}
           <br />
@@ -207,7 +212,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
         <dl className="w-full max-w-xs text-[12px]">
           {/* Gross and discount are context, not addends — the sum starts below the rule. */}
-          <div className="space-y-1.5 border-b border-ink-200 pb-2">
+          <div className="space-y-1.5 pb-2">
             <Row
               label="Item total (incl. tax)"
               value={formatPaise(totals.itemsInclusiveBeforeDiscount)}
@@ -231,7 +236,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               />
             )}
           </div>
-          <div className="flex justify-between border-t border-ink-300 pt-2 text-[14px] font-bold">
+          <div className="flex justify-between pt-2 text-[14px] font-bold">
             <dt>Total payable</dt>
             <dd className="tabular-nums">₹ {formatPaise(totals.payable)}</dd>
           </div>
@@ -301,7 +306,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </div>
       </section>
 
-      <footer className="mt-8 flex flex-wrap items-end justify-between gap-6 break-inside-avoid border-t border-ink-200 pt-4">
+      <footer className="mt-8 flex flex-wrap items-end justify-between gap-6 break-inside-avoid pt-4">
         <p className="max-w-md text-[10.5px] leading-relaxed text-ink-500">
           Whether tax is payable on reverse charge: No. We declare that this invoice shows the
           actual price of the goods described and that all particulars are true and correct. This is
@@ -356,7 +361,7 @@ function Party({
 
 function Th({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <th className={`border border-ink-200 px-2 py-1.5 font-semibold ${className ?? ""}`}>
+    <th className={`bg-ink-100 px-2 py-1.5 font-semibold ${className ?? ""}`}>
       {children}
     </th>
   );
@@ -372,7 +377,7 @@ function Td({
   colSpan?: number;
 }) {
   return (
-    <td colSpan={colSpan} className={`border border-ink-200 px-2 py-1.5 ${className ?? ""}`}>
+    <td colSpan={colSpan} className={`px-2 py-1.5 ${className ?? ""}`}>
       {children}
     </td>
   );

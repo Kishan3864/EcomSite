@@ -25,6 +25,11 @@ export default function PrintLayout({ children }: { children: React.ReactNode })
           /* Widows and orphans read as mistakes on a printed invoice. */
           h1, h2, h3, table, tfoot, section { break-inside: avoid; }
           a[href]::after { content: none; }
+          /* The line grid is drawn in background bands rather than borders,
+             and a browser drops backgrounds when printing unless asked. */
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          thead th { background: #e9edf0 !important; }
+          tbody tr:nth-child(even) td { background: #f4f6f8 !important; }
         }
       `}</style>
       {children}

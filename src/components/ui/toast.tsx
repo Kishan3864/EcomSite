@@ -86,11 +86,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               // A square of ink with a hairline around it, solid rather than
               // frosted: a translucent panel over a photograph is the one place
               // this dark plane ever became hard to read.
-              className="pointer-events-auto w-full max-w-sm overflow-hidden rounded-xl border border-white/10 bg-ink-950 shadow-lg text-white"
+              className="pointer-events-auto w-full max-w-sm overflow-hidden bg-ink-950 shadow-lg text-white"
             >
               <div className="flex items-start gap-3 p-3">
                 {t.image ? (
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                  <div className="relative h-11 w-11 shrink-0 overflow-hidden bg-white/5">
                     <Image src={t.image} alt="" fill sizes="44px" className="object-cover" />
                   </div>
                 ) : (
@@ -104,7 +104,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                       t.tone === "wishlist"
                         ? "bg-sale-600 text-white"
                         : t.tone === "info"
-                          ? "rounded-md border border-white/25 text-white"
+                          ? "text-white"
                           : "bg-gold-400 text-ink-950",
                     )}
                   >

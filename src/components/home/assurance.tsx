@@ -84,7 +84,7 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
   ];
 
   return (
-    <section className="border-y border-hairline bg-canvas">
+    <section className="bg-canvas">
       <div className="container-page py-12 sm:py-20">
         <div className="max-w-[52ch]">
           <span className="eyebrow">Before you hand over money</span>
@@ -98,7 +98,7 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
 
         {/* Two across on a phone would put four words on a line. One column
             until 768px, then two, then four. */}
-        <ul className="mt-8 grid gap-px border border-hairline bg-hairline sm:mt-12 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mt-8 grid gap-px bg-hairline sm:mt-12 sm:grid-cols-2 xl:grid-cols-4">
           {points.map((point, i) => (
             <li key={point.title} className="bg-surface p-5 sm:p-6">
               <span

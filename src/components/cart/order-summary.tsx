@@ -77,8 +77,8 @@ export function OrderSummary({
     totals.savings > 0 || (showDeliveryEstimate && lines.length > 0) || toFree > 0;
 
   return (
-    <div className={cn("border border-hairline bg-surface", className)}>
-      <div className="border-b border-hairline px-4 py-3 sm:px-5">
+    <div className={cn("bg-surface", className)}>
+      <div className="px-4 py-3 sm:px-5">
         <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Order summary
         </h2>
@@ -90,7 +90,7 @@ export function OrderSummary({
             key={row.label}
             className={cn(
               "flex h-11 items-center justify-between gap-4",
-              i > 0 && "border-t border-hairline",
+              i > 0 && "",
             )}
           >
             <dt
@@ -118,7 +118,7 @@ export function OrderSummary({
 
         {/* The heavier rule is the one typographic signal that the column has
             been added up; nothing else on the summary is allowed to be louder. */}
-        <div className="flex h-14 items-center justify-between gap-4 border-t border-rule">
+        <div className="flex h-14 items-center justify-between gap-4">
           <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
             Total payable
           </dt>
@@ -137,7 +137,7 @@ export function OrderSummary({
       </dl>
 
       {notes && (
-        <div className="space-y-1.5 border-t border-hairline px-4 py-3 sm:px-5 sm:py-3.5">
+        <div className="space-y-1.5 px-4 py-3 sm:px-5 sm:py-3.5">
           {totals.savings > 0 && (
             <p className="text-[13px] leading-[1.5] text-ink-600">
               You save{" "}
@@ -167,7 +167,7 @@ export function OrderSummary({
       )}
 
       {cta && (
-        <div className="border-t border-hairline p-4 sm:p-5">
+        <div className="p-4 sm:p-5">
           {ctaHref ? (
             <Link href={ctaHref} className={buttonClasses("primary", "lg", CTA_FIT)}>
               {cta}

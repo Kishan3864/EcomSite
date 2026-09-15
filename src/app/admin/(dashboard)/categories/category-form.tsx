@@ -244,7 +244,7 @@ export function CategoryForm({
               </Label>
               <div className="flex items-center gap-2">
                 <span
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-hairline"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center"
                   style={{ backgroundColor: `${previewAccent}1a`, color: previewAccent }}
                   aria-hidden
                 >
@@ -276,10 +276,10 @@ export function CategoryForm({
                       aria-label={`Use icon ${key}`}
                       aria-pressed={selected}
                       className={cn(
-                        "flex h-8 w-8 items-center justify-center rounded-md border transition-colors",
+                        "flex h-8 w-8 items-center justify-center transition-colors",
                         selected
-                          ? "border-brand-600 bg-brand-50 text-brand-800"
-                          : "border-hairline text-ink-500 hover:border-ink-300 hover:text-ink-900",
+                          ? "bg-brand-50 text-brand-800"
+                          : "text-ink-500 hover:text-ink-900",
                       )}
                     >
                       <Icon size={15} />
@@ -299,14 +299,14 @@ export function CategoryForm({
                   value={previewAccent}
                   onChange={(e) => setAccent(e.target.value)}
                   aria-label="Pick accent colour"
-                  className="h-10 w-12 cursor-pointer rounded-lg border border-ink-200 bg-canvas p-1"
+                  className="h-10 w-12 cursor-pointer bg-canvas p-1"
                 />
                 <input
                   id="cat-accent"
                   name="accent"
                   value={accent}
                   onChange={(e) => setAccent(e.target.value.trim())}
-                  className={cn(inputCls, "max-w-[160px] font-mono text-[13px]", !accentValid && "border-sale-400")}
+                  className={cn(inputCls, "max-w-[160px] font-mono text-[13px]", !accentValid && "")}
                   placeholder="#2c837c"
                   maxLength={7}
                   required
@@ -348,7 +348,7 @@ export function CategoryForm({
 
           <div>
             <p className="mb-1.5 text-[12.5px] font-medium text-ink-800">Preview</p>
-            <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
+            <div className="overflow-hidden bg-surface">
               <div className="relative aspect-square bg-ink-100">
                 {previewImage ? (
                   <Image
@@ -369,7 +369,7 @@ export function CategoryForm({
               </div>
               <div className="flex items-center gap-2.5 px-3 py-2.5" style={{ borderTop: `3px solid ${previewAccent}` }}>
                 <span
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                  className="flex h-7 w-7 shrink-0 items-center justify-center"
                   style={{ backgroundColor: `${previewAccent}1a`, color: previewAccent }}
                 >
                   {PreviewIcon ? <PreviewIcon size={14} /> : <Tag size={14} />}
@@ -424,7 +424,7 @@ export function CategoryForm({
               Featured brands
             </Label>
             {brands.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-ink-200 px-3 py-4 text-center text-[12.5px] text-ink-500">
+              <p className="px-3 py-4 text-center text-[12.5px] text-ink-500">
                 No brands yet — add brands first, then feature them here.
               </p>
             ) : (
@@ -435,8 +435,8 @@ export function CategoryForm({
                     <label
                       key={b.slug}
                       className={cn(
-                        "flex cursor-pointer items-center gap-2.5 rounded-lg border px-3 py-2 text-[13px] transition-colors",
-                        checked ? "border-brand-300 bg-brand-50" : "border-hairline hover:border-ink-300",
+                        "flex cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition-colors",
+                        checked ? "bg-brand-50" : "",
                       )}
                     >
                       <input

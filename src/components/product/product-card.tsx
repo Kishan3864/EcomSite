@@ -62,9 +62,9 @@ export function ProductCard({
     <>
       <article
         className={cn(
-          "group relative flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface",
-          "shadow-xs transition-[box-shadow,transform,border-color] duration-300 ease-out",
-          "hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md",
+          "group relative flex flex-col overflow-hidden bg-surface",
+          "shadow-xs transition-[box-shadow,transform] duration-300 ease-out",
+          "hover:-translate-y-0.5 hover:shadow-md",
           // About 2.4 cards across a 390px phone, so the rail reads as scrollable.
           layout === "rail" && "w-[152px] sm:w-[236px]",
           className,
@@ -99,14 +99,14 @@ export function ProductCard({
 
           {/* Discount reads as a typographic mark in the corner, not a sticker. */}
           {off > 0 && !outOfStock && (
-            <span className="absolute left-2 top-2 rounded-md bg-sale-600 px-1.5 py-1 text-[10.5px] font-bold leading-none text-white shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2">
+            <span className="absolute left-2 top-2 bg-sale-600 px-1.5 py-1 text-[10.5px] font-bold leading-none text-white shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2">
               {off}% OFF
             </span>
           )}
 
           {outOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-canvas/70">
-              <span className="border border-ink-950 px-3.5 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-950">
+              <span className="px-3.5 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-950">
                 Sold out
               </span>
             </div>
@@ -127,7 +127,7 @@ export function ProductCard({
               className={cn(
                 // Phones: a 40px target around a 32px square kept flush in the
                 // corner; the padding sits on the inner sides, outside the paint.
-                "is-circle flex h-8 w-8 items-center justify-center rounded-full shadow-sm ring-1 ring-ink-950/5 transition-all duration-200",
+                "is-circle flex h-8 w-8 items-center justify-center shadow-sm ring-1 ring-ink-950/5 transition-all duration-200",
                 wished
                   ? "bg-sale-600 text-white"
                   : "bg-surface/95 text-ink-600 backdrop-blur-sm hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0",
@@ -143,7 +143,7 @@ export function ProductCard({
                 e.stopPropagation();
                 setQuickView(true);
               }}
-              className="is-circle hidden h-8 w-8 items-center justify-center rounded-full bg-surface/95 text-ink-600 shadow-sm ring-1 ring-ink-950/5 backdrop-blur-sm transition-all duration-200 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:flex [@media(hover:hover)]:opacity-0"
+              className="is-circle hidden h-8 w-8 items-center justify-center bg-surface/95 text-ink-600 shadow-sm ring-1 ring-ink-950/5 backdrop-blur-sm transition-all duration-200 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:flex [@media(hover:hover)]:opacity-0"
             >
               <Eye size={15} />
             </button>
@@ -155,7 +155,7 @@ export function ProductCard({
                 <span
                   key={name}
                   style={{ background: hex }}
-                  className="is-circle h-2.5 w-2.5 rounded-full ring-1 ring-white/80"
+                  className="is-circle h-2.5 w-2.5 ring-1 ring-white/80"
                 />
               ))}
             </div>
@@ -234,7 +234,7 @@ export function ProductCard({
               onClick={handleAdd}
               disabled={outOfStock}
               className={cn(
-                "tap relative flex h-10 w-full items-center justify-center gap-2 rounded-lg text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
+                "tap relative flex h-10 w-full items-center justify-center gap-2 text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
                 outOfStock
                   ? "cursor-not-allowed bg-ink-100 text-ink-400"
                   : added

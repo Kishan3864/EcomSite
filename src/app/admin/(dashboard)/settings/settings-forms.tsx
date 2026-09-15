@@ -110,7 +110,7 @@ function Toggle({
   defaultChecked: boolean;
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-hairline bg-canvas p-3.5 transition-colors hover:border-ink-300">
+    <label className="flex cursor-pointer items-start gap-3 bg-canvas p-3.5 transition-colors">
       <input
         type="checkbox"
         name={name}

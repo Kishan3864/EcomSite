@@ -17,7 +17,7 @@ import { BUSINESS } from "@/config/business";
  */
 
 const CARD =
-  "group flex flex-col rounded-xl border border-hairline bg-surface p-4 transition-[box-shadow,border-color,transform] duration-300 ease-out hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md sm:p-5";
+  "group flex flex-col bg-surface p-4 transition-[box-shadow,,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md sm:p-5";
 
 export function SupportBand() {
   const routes = [
@@ -45,7 +45,7 @@ export function SupportBand() {
   ];
 
   return (
-    <section className="border-t border-hairline bg-canvas">
+    <section className="bg-canvas">
       <div className="container-page py-10 sm:py-14">
         <div className="mb-5 sm:mb-7">
           <h2 className="font-display text-[20px] leading-[1.15] text-ink-950 sm:text-[24px]">

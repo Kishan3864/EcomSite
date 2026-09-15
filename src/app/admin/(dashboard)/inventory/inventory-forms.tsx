@@ -60,7 +60,7 @@ export function AdjustStockForm({
       <div className={cn("grid gap-4", !compact && "sm:grid-cols-[160px_minmax(0,1fr)]")}>
         <div>
           <Label>Direction</Label>
-          <div className="grid h-10 grid-cols-2 gap-0.5 rounded-lg border border-ink-200 bg-canvas p-0.5">
+          <div className="grid h-10 grid-cols-2 gap-0.5 bg-canvas p-0.5">
             {(
               [
                 { value: "add", label: "Add", icon: Plus },
@@ -69,7 +69,7 @@ export function AdjustStockForm({
             ).map((d) => (
               <label key={d.value} className="cursor-pointer">
                 <input type="radio" name="direction" value={d.value} defaultChecked={d.value === "add"} className="peer sr-only" />
-                <span className="flex h-full items-center justify-center gap-1 rounded-md text-[12.5px] font-medium text-ink-500 transition-colors peer-checked:bg-surface peer-checked:text-ink-950 peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500">
+                <span className="flex h-full items-center justify-center gap-1 text-[12.5px] font-medium text-ink-500 transition-colors peer-checked:bg-surface peer-checked:text-ink-950 peer-checked:shadow-sm peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500">
                   <d.icon size={13} strokeWidth={2.5} /> {d.label}
                 </span>
               </label>
@@ -219,9 +219,9 @@ export function AdjustStockButton({
             onKeyDown={(e) => {
               if (e.key === "Escape") setOpen(false);
             }}
-            className="w-full max-w-md overflow-hidden rounded-xl border border-hairline bg-surface shadow-xl"
+            className="w-full max-w-md overflow-hidden bg-surface shadow-xl"
           >
-            <header className="flex items-start justify-between gap-3 border-b border-hairline px-5 py-3.5">
+            <header className="flex items-start justify-between gap-3 px-5 py-3.5">
               <div className="min-w-0">
                 <h2 id={titleId} className="font-display text-[18px] tracking-[-0.015em] text-ink-950">
                   Adjust stock
@@ -234,7 +234,7 @@ export function AdjustStockButton({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close"
-                className="-m-1 rounded-md p-1 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
+                className="-m-1 p-1 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
               >
                 <X size={16} />
               </button>

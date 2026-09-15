@@ -38,11 +38,11 @@ const VARIANTS: Record<Variant, string> = {
   // through the bag to the last step of the checkout.
   primary: "bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900",
   accent: "bg-gold-400 text-ink-950 hover:bg-gold-300 active:bg-gold-500",
-  // A quiet bordered control rather than an inverting ink block. The old one
-  // filled with near-black on hover, which made every secondary action shout
-  // louder than the primary beside it at the moment of the decision.
-  outline:
-    "border border-ink-300 bg-surface text-ink-900 hover:border-ink-400 hover:bg-ink-50",
+  // Filled, not outlined — there are no outlines left. A secondary action is
+  // a step of grey off the card it sits on, which is enough to read as a
+  // button without competing with the primary beside it. The name stays
+  // `outline` because it is spelled out at call sites across the app.
+  outline: "bg-ink-100 text-ink-900 hover:bg-ink-200 active:bg-ink-300",
   ghost: "text-ink-700 hover:bg-ink-100 hover:text-ink-950 active:bg-ink-200",
   subtle: "bg-ink-100 text-ink-950 hover:bg-ink-200 active:bg-ink-300",
   danger: "bg-sale-600 text-white hover:bg-sale-700 active:bg-sale-700",
@@ -72,8 +72,8 @@ export function buttonClasses(
     // SET IN SMALL CAPS AT 0.12em, which is a gallery label, not a control —
     // it made "Add to bag" read as signage and cost a third of the button's
     // width in letter-spacing.
-    "inline-flex items-center justify-center rounded-lg font-semibold tracking-[0.005em]",
-    "transition-[background-color,border-color,color,box-shadow] duration-200",
+    "inline-flex items-center justify-center font-semibold tracking-[0.005em]",
+    "transition-[background-color,,color,box-shadow] duration-200",
     "disabled:pointer-events-none disabled:opacity-55",
     "whitespace-nowrap select-none",
     // Press feedback on touch screens only; outline and link have no active state.
@@ -111,7 +111,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {loading && (
           <span
             aria-hidden
-            className="mr-0.5 h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent"
+            className="mr-0.5 h-3.5 w-3.5 animate-spin"
           />
         )}
         {children}

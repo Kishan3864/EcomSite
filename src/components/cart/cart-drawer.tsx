@@ -38,7 +38,7 @@ export function CartDrawer() {
                 </dd>
               </div>
               {totals.savings > 0 && (
-                <div className="flex h-11 items-center justify-between gap-4 border-t border-hairline">
+                <div className="flex h-11 items-center justify-between gap-4">
                   <dt className="min-w-0 truncate text-[13px] text-ink-600">
                     You are saving on this order
                   </dt>
@@ -84,12 +84,12 @@ export function CartDrawer() {
                 Start shopping
               </Link>
             }
-            className="border-none bg-transparent py-8 sm:py-10"
+            className="bg-transparent py-8 sm:py-10"
           />
         </div>
       ) : (
         <>
-          <div className="border-b border-hairline bg-surface px-4 py-3 sm:px-5 sm:py-4">
+          <div className="bg-surface px-4 py-3 sm:px-5 sm:py-4">
             {toFreeShipping > 0 ? (
               <p className="text-[13px] leading-[1.5] text-ink-600">
                 Add{" "}
@@ -115,7 +115,7 @@ export function CartDrawer() {
             </div>
           </div>
 
-          <ul className="divide-y divide-hairline bg-surface">
+          <ul className="bg-surface">
             <AnimatePresence initial={false}>
               {cart.map((line) => (
                 <motion.li
@@ -131,7 +131,7 @@ export function CartDrawer() {
                     <Link
                       href={`/p/${line.slug}`}
                       onClick={closeCartDrawer}
-                      className="tap relative h-[84px] w-[70px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-24 sm:w-20"
+                      className="tap relative h-[84px] w-[70px] shrink-0 overflow-hidden bg-ink-100 sm:h-24 sm:w-20"
                     >
                       <Image src={line.image} alt="" fill sizes="80px" className="object-cover" />
                     </Link>
@@ -155,13 +155,13 @@ export function CartDrawer() {
 
                       {/* Wraps only in the extreme case: a six-figure line total at 320px. */}
                       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
-                        <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline">
+                        <div className="inline-flex items-center overflow-hidden">
                           <button
                             onClick={() =>
                               dispatch({ type: "cart/qty", id: line.id, quantity: line.quantity - 1 })
                             }
                             aria-label="Decrease quantity"
-                            className="tap flex h-10 w-10 items-center justify-center border-r border-hairline text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:h-8 sm:w-8"
+                            className="tap flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:h-8 sm:w-8"
                           >
                             <Minus size={13} />
                           </button>
@@ -174,7 +174,7 @@ export function CartDrawer() {
                             }
                             disabled={line.quantity >= line.stock}
                             aria-label="Increase quantity"
-                            className="tap flex h-10 w-10 items-center justify-center border-l border-hairline text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white disabled:pointer-events-none disabled:text-ink-400 sm:h-8 sm:w-8"
+                            className="tap flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white disabled:pointer-events-none disabled:text-ink-400 sm:h-8 sm:w-8"
                           >
                             <Plus size={13} />
                           </button>
@@ -200,7 +200,7 @@ export function CartDrawer() {
             </AnimatePresence>
           </ul>
 
-          <div className="border-t border-hairline p-4 sm:p-5">
+          <div className="p-4 sm:p-5">
             <Button
               variant="ghost"
               size="sm"
