@@ -394,15 +394,32 @@
   }
 
   /* A hairline grid that lets product tiles sit edge to edge with a single
-     shared rule between them, instead of every card drawing its own box. */
+     shared rule between them, instead of every card drawing its own box.
+
+     The rules are drawn by the tiles, not by the container.
+
+     They used to be the container's own grey showing through a 1px gap, which
+     works perfectly until a row is not full — and then every empty cell is a
+     grey block, because an empty cell and a gap are the same thing to that
+     technique. Two collections in a four-column grid rendered as two tiles and
+     a grey slab; five products in a four-column grid rendered a second row that
+     was one card and three grey holes. It read as a broken page, and it was on
+     the category pages, the listings, the wishlist and the account screens
+     alike — every one of the twenty grids built on this class.
+
+     Each tile now paints its own 1px ring into the gap instead. Two neighbours
+     fill the same gap from either side, so the shared rule is identical to
+     before; the outer border is still the container's. A cell with nothing in
+     it paints nothing, so a short row simply ends. */
   .tile-grid {
     display: grid;
     gap: 1px;
-    background: var(--color-hairline);
+    background: var(--color-surface);
     border: 1px solid var(--color-hairline);
   }
   .tile-grid > * {
     background: var(--color-surface);
+    box-shadow: 0 0 0 1px var(--color-hairline);
   }
 
   /* The one looping animation on the site: a small square that travels

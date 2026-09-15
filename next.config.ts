@@ -156,6 +156,13 @@ const nextConfig: NextConfig = {
     // Uploads are content-addressed by key and never change; a month of caching
     // saves the optimiser re-encoding the same photograph on every deploy.
     minimumCacheTTL: 2592000,
+    // Next 16 defaults this to [75] and refuses anything not on the list, so
+    // every photograph on the shop was being served at 75 with no way to ask
+    // for better. A catalogue photograph is the product — at 75 the AVIF
+    // encoder softens exactly the detail somebody is looking at it to judge.
+    // 90 is the site default now (see src/components/ui/image.tsx); 75 stays on
+    // the list for anything decorative that does not need the bytes.
+    qualities: [75, 90],
     // The optimiser will not process an SVG — one can carry script.
     dangerouslyAllowSVG: false,
   },

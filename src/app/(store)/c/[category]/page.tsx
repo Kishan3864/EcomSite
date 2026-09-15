@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { DepartmentGlyph } from "@/components/illustration/department-glyph";
 import { glyphNameFor } from "@/components/illustration/glyph-name";
+import { balancedColumnClass } from "@/lib/grid";
+import { cn } from "@/lib/utils";
 import { ListingShell } from "@/components/listing/listing-shell";
 import { toCardModels } from "@/lib/card";
 import { parseQuery, type RawSearchParams } from "@/lib/query";
@@ -80,7 +82,7 @@ export default async function CategoryPage({
              The tile depends on hover to say "this is a link", and a phone has
              no hover — so on a phone it is a row with a chevron instead, which
              says the same thing without one. */
-          <div className="tile-grid grid-cols-1 sm:grid-cols-4">
+          <div className={cn("tile-grid grid-cols-1", balancedColumnClass(category.subcategories.length, 4))}>
             {category.subcategories.map((sub) => (
               <Link
                 key={sub.slug}

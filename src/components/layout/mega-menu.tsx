@@ -8,6 +8,7 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowRight } from "lucide-react";
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { balancedColumns } from "@/lib/grid";
 
 /**
  * The department menu.
@@ -95,8 +96,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
   // the hole this menu was rebuilt to close. Taking the row count first and
   // dividing back gives 3x2 for six, 3+2 for five, 4+3 for seven.
   const count = active?.subcategories.length ?? 0;
-  const rows = Math.max(1, Math.ceil(count / MAX_COLUMNS));
-  const columns = Math.max(1, Math.ceil(count / rows));
+  const columns = balancedColumns(count, MAX_COLUMNS);
   const indexWidth = columns * TILE_WIDTH + (columns - 1) * TILE_GAP + PADDING;
   // A floor with two jobs. It stops a department whose collections are not set
   // up yet from opening as a sliver beside a photograph, and it keeps a
