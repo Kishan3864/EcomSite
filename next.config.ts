@@ -167,6 +167,27 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: false,
   },
 
+  /**
+   * Version-skew protection — the fix for "it worked a minute ago".
+   *
+   * A browser that had the shop open before a deploy is still running the old
+   * build's JavaScript. Its Server Action ids and its chunk URLs belong to a
+   * build that no longer exists on disk, so the next form submission answers
+   * "Failed to find Server Action …", and a client-side navigation can ask for
+   * a chunk that 404s. Both look to the shopper like the site randomly broke.
+   *
+   * With a deploymentId set, Next stamps `?dpl=` on static assets and sends an
+   * `x-deployment-id` header on navigations. When the server sees an id that is
+   * not its own it forces a hard navigation instead of a soft one, so the
+   * browser picks up the new build rather than failing against it.
+   *
+   * It comes from the environment, and `deploy/deploy.sh` sets it to the commit
+   * being released — so it is identical across every rebuild of the same commit
+   * and changes exactly when the code does. Unset (a local `next dev`/`build`),
+   * it is undefined and Next behaves as before.
+   */
+  deploymentId: process.env.DEPLOYMENT_ID,
+
   experimental: {
     optimizePackageImports: ["lucide-react", "motion"],
   },

@@ -247,7 +247,62 @@ async function markPaid(attemptId: string, orderId: string, verdict: Verdict): P
         lines: { select: { productId: true, quantity: true } },
       },
     });
-    if (!order || order.paymentStatus === "PAID") return;
+    if (!order) return;
+
+    /**
+     * A second payment on an order that is already paid.
+     *
+     * It happens for real: a UPI collect request times out in the browser, the
+     * shopper backs up and pays again, and then both collect requests are
+     * approved. Two authentic, hash-verified, amount-matching verdicts arrive
+     * for one order.
+     *
+     * This used to `return` here — before the attempt row was updated — so the
+     * second payment was silently dropped. The money was taken by PayU and
+     * this system held no record of it at all: nothing to reconcile against,
+     * nobody told, no refund raised. That is the worst class of payment bug,
+     * because it is invisible.
+     *
+     * Now the attempt is claimed instead. `updateMany` scoped to status
+     * CREATED is what separates the two cases: a genuinely new attempt is
+     * still CREATED and gets claimed, while PayU redelivering the webhook for
+     * the attempt that already won finds it CAPTURED, claims nothing, and
+     * stays the no-op it should be. The order itself is left exactly as it is
+     * — it is paid, and this does not pay it twice.
+     */
+    if (order.paymentStatus === "PAID") {
+      const claimed = await tx.paymentAttempt.updateMany({
+        where: { id: attemptId, status: "CREATED" },
+        data: {
+          status: "CAPTURED",
+          gatewayPaymentId: verdict.mihpayid || null,
+          method: verdict.mode.toLowerCase() || null,
+          payload: verdict.raw,
+          failureDescription: "Duplicate payment on an already-paid order — refund due",
+        },
+      });
+
+      if (claimed.count > 0) {
+        console.error("[payu] DUPLICATE PAYMENT on an already-paid order — refund due", {
+          orderId,
+          txnid: verdict.txnid,
+          mihpayid: verdict.mihpayid,
+        });
+        await tx.orderEvent.create({
+          data: {
+            orderId,
+            status: "CONFIRMED",
+            title: "Duplicate payment received — refund due",
+            description:
+              `${describePayu(verdict)} · ${verdict.mihpayid}. A second payment landed on an order ` +
+              `that was already paid. Refund this transaction from the PayU dashboard.`,
+            location: "Online",
+          },
+        });
+      }
+      return;
+    }
+
     moved = true;
 
     // Money that lands after the order lapsed is still money taken: honour the

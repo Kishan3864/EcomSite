@@ -17,6 +17,13 @@
 const name = process.env.APP_NAME || "weekendcart";
 const port = process.env.APP_PORT || "3040";
 const appEnv = process.env.APP_ENV || "production";
+/**
+ * The build this process is serving. deploy.sh exports it before calling PM2,
+ * so the running server and the client it served agree on which deployment
+ * they belong to; see `deploymentId` in next.config.ts. Empty when PM2 is
+ * started by hand, which simply turns skew detection off rather than breaking.
+ */
+const deploymentId = process.env.DEPLOYMENT_ID || "";
 
 module.exports = {
   apps: [
@@ -52,6 +59,17 @@ module.exports = {
         // Read by src/app/robots.ts and the environment badge: anything other
         // than "production" is closed to crawlers and marked in the corner.
         APP_ENV: appEnv,
+        DEPLOYMENT_ID: deploymentId,
+        /**
+         * The serving process is the ONLY thing allowed a large connection
+         * pool. `next build` forks eleven workers that each open their own,
+         * so a large default multiplies by eleven and exhausts Postgres for
+         * every app on the box. src/lib/db.ts defaults to 5 without this.
+         *
+         * 25 against a server that allows 100, with 18 in use by other apps
+         * when this was measured. Check `show max_connections` before raising.
+         */
+        DB_POOL_MAX: "25",
       },
       time: true,
       out_file: `logs/${name}-out.log`,

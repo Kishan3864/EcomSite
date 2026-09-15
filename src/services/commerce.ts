@@ -371,10 +371,32 @@ export async function placeOrder(
         });
 
         for (const l of priced) {
-          await tx.product.update({
-            where: { id: l.productId },
+          /**
+           * The decrement IS the stock check. This is the whole fix for
+           * overselling.
+           *
+           * Stock was validated far above, outside this transaction, and then
+           * subtracted unconditionally here — with the settings read, the tax
+           * maths, the order-number allocation and the order insert all sitting
+           * in between. Two shoppers buying the last unit both passed the check
+           * and both subtracted: stock went negative and two orders were taken
+           * for one item. On a quiet shop the window is invisible; at the scale
+           * of "everyone orders at once" it is the normal case.
+           *
+           * `updateMany` with the quantity in its WHERE emits
+           *   UPDATE "Product" SET stock = stock - $1 WHERE id = $2 AND stock >= $1
+           * and Postgres re-evaluates that predicate against the committed row
+           * after waiting on the row lock. So of N racing buyers exactly one
+           * matches; the rest update nothing, throw, and roll the whole
+           * transaction back — no order, no charge, no negative stock.
+           */
+          const claimed = await tx.product.updateMany({
+            where: { id: l.productId, stock: { gte: l.quantity } },
             data: { stock: { decrement: l.quantity }, soldCount: { increment: l.quantity } },
           });
+          if (claimed.count === 0) {
+            throw Object.assign(new Error(soldOutMessage(l.title)), { soldOut: true });
+          }
           await tx.stockMovement.create({
             data: {
               productId: l.productId,
@@ -399,6 +421,14 @@ export async function placeOrder(
         return order;
       });
     } catch (error) {
+      // Somebody else took the last one between the basket and the button.
+      // That is an ordinary shopping outcome, not a fault: it must reach the
+      // shopper as a sentence, never as an Internal Server Error. Returning
+      // here exits placeOrder; the transaction has already rolled back, so no
+      // order exists and nothing was charged.
+      if ((error as { soldOut?: boolean }).soldOut) {
+        return { ok: false, error: (error as Error).message };
+      }
       const code = (error as { code?: string }).code;
       if (code !== "P2002" || attempt === 2) throw error;
     }
@@ -413,9 +443,31 @@ export async function placeOrder(
   if (method === "COD") void sendOrderConfirmation(created.id);
 
   revalidatePath("/admin", "layout");
-  revalidatePath("/", "layout");
+  /**
+   * Only the pages this order actually changed.
+   *
+   * This used to be `revalidatePath("/", "layout")`, which carries the implicit
+   * `/layout` tag every app page is stamped with — so one order threw away the
+   * cached copy of every page on the site. At one order a minute that is a shop
+   * that is never cached, and every visitor afterwards rebuilds a page from the
+   * database. Exactly the wrong behaviour under the load the owner is worried
+   * about: the busier the shop, the less of it is cached.
+   *
+   * What an order really changes is the stock on the products in it. The
+   * listing and category pages read searchParams and are already dynamic, and
+   * the homepage refreshes itself every two minutes.
+   */
+  for (const line of priced) revalidatePath(`/p/${line.slug}`);
 
   return { ok: true, data: { orderId: created.id, number: created.number } };
+}
+
+/**
+ * What a shopper is told when the last one went while they were deciding.
+ * Kept here so the wording is the same wherever a claim fails.
+ */
+function soldOutMessage(title: string) {
+  return `${title} just sold out — someone else took the last one. Remove it from your bag and the rest of the order can go through.`;
 }
 
 /* ------------------------------ Returns ----------------------------- */

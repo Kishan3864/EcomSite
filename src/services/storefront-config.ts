@@ -156,15 +156,61 @@ function describeMethods(
  * gateway on in the admin panel quietly turned 200-odd prerendered pages into
  * pages rebuilt from the database on every single request.
  */
+/**
+ * "Is the owner the one looking at this page?" — asked so that it cannot fail.
+ *
+ * Kept apart from `getAdminSession()` deliberately. That function is right to
+ * throw for the admin panel, where a broken session lookup must stop the page;
+ * here the same throw would stop a customer's checkout, and the question being
+ * asked is only ever a courtesy to the owner. So the failure is swallowed and
+ * logged, and the answer defaults to "no".
+ */
+async function ownerIsSignedIn(): Promise<boolean> {
+  try {
+    return !!(await getAdminSession());
+  } catch (error) {
+    // Never swallow the framework's own control flow. Next signals redirect,
+    // not-found and "this route cannot be static after all" by THROWING, and a
+    // bare catch around a call that touches cookies() turns those signals into
+    // silence — a redirect that does not happen, or worse, a dynamic page that
+    // Next goes on believing it may cache. Only a genuine fault is swallowed.
+    if (isFrameworkSignal(error)) throw error;
+    console.error("[checkout] admin session lookup failed; treating as a customer:", error);
+    return false;
+  }
+}
+
+/** Next's control-flow throws, which carry a `digest` naming the signal. */
+function isFrameworkSignal(error: unknown): boolean {
+  const digest = (error as { digest?: unknown } | null)?.digest;
+  return (
+    typeof digest === "string" &&
+    (digest === "DYNAMIC_SERVER_USAGE" ||
+      digest.startsWith("NEXT_REDIRECT") ||
+      digest.startsWith("NEXT_HTTP_ERROR_FALLBACK"))
+  );
+}
+
 export async function getCheckoutPaymentMethods(): Promise<PaymentMethod[]> {
   const s = await getSettings();
   const { gatewaySwitchedOn, gatewayInTestMode, testGatewayIsPublic, gatewayForCustomers } =
     paymentSwitches(s);
 
   // Only ask who is here in the one case that can change the outcome.
+  //
+  // And never let the answer break the checkout. `getAdminSession()` reads a
+  // cookie AND queries the database; either can fail, and this runs inside the
+  // checkout LAYOUT, where a throw is not caught by the segment's own error
+  // boundary and the shopper gets a bare "Internal Server Error" instead of a
+  // page. A customer paying for a kettle must never be stopped by a lookup
+  // whose only purpose is to decide whether the OWNER sees an extra option.
+  //
+  // Failing closed is the safe direction: `false` means "not the owner", so
+  // the worst case is that the owner does not see their own test-mode option
+  // and has to reload. No customer is ever shown a gateway that is off.
   const ownerIsWatching =
     gatewaySwitchedOn && gatewayInTestMode && !testGatewayIsPublic
-      ? !!(await getAdminSession())
+      ? await ownerIsSignedIn()
       : false;
 
   return describeMethods(s, {

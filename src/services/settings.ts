@@ -85,7 +85,46 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   inventory: { lowStockThreshold: 12, allowBackorders: false },
 };
 
-export const getSettings = cache(async (): Promise<StoreSettings> => {
+/**
+ * The settings every storefront page needs, held in the process.
+ *
+ * `cache()` alone was not enough. React's cache is per REQUEST, so the store
+ * settings — a handful of rows that change when the owner clicks Save, perhaps
+ * weekly — were fetched from Postgres on every single page view. That is one
+ * round trip per visitor for data that is effectively constant, and worse: the
+ * read sits in the layout wrapping the whole shop, so the moment the database
+ * hiccuped, every page on the site answered 500 at once. That is the honest
+ * answer to "why does the site sometimes go down".
+ *
+ * Two changes fix it, and both matter under load:
+ *
+ *   a short TTL      one query every 30 seconds instead of one per visitor.
+ *                    At a hundred views a second that is 3,000 queries saved
+ *                    per window, and the connection pool (10) stops being the
+ *                    ceiling on how many people can look at the shop.
+ *   last-known-good  if the query fails, the previous value is served rather
+ *                    than thrown. A database blip becomes invisible instead of
+ *                    a site-wide outage; the shop keeps selling on settings
+ *                    that are at most seconds stale.
+ *
+ * Saving in the admin panel calls `invalidateSettings()`, so the owner still
+ * sees their change immediately rather than up to 30 seconds later.
+ *
+ * Safe because this process is a single PM2 fork (`instances: 1`): there is one
+ * cache and one writer. Running more than one instance would need this moved
+ * to a shared cache, or the TTL accepted as per-instance skew.
+ */
+const SETTINGS_TTL_MS = 30_000;
+
+let settingsCache: { value: StoreSettings; at: number } | null = null;
+let settingsInFlight: Promise<StoreSettings> | null = null;
+
+/** Drop the cached copy so the next read goes to the database. */
+export function invalidateSettings() {
+  settingsCache = null;
+}
+
+async function readSettings(): Promise<StoreSettings> {
   const rows = await db.storeSetting.findMany();
   const stored = Object.fromEntries(rows.map((r) => [r.key, r.value as object]));
 
@@ -96,6 +135,40 @@ export const getSettings = cache(async (): Promise<StoreSettings> => {
     tax: { ...DEFAULT_SETTINGS.tax, ...(stored.tax as object) },
     inventory: { ...DEFAULT_SETTINGS.inventory, ...(stored.inventory as object) },
   };
+}
+
+export const getSettings = cache(async (): Promise<StoreSettings> => {
+  const fresh = settingsCache && Date.now() - settingsCache.at < SETTINGS_TTL_MS;
+  if (fresh) return settingsCache!.value;
+
+  // One query at a time. Without this, the first request after the TTL expires
+  // lets every concurrent request through to the database at once — the
+  // stampede that turns a slow query into an exhausted connection pool.
+  if (!settingsInFlight) {
+    settingsInFlight = readSettings()
+      .then((value) => {
+        settingsCache = { value, at: Date.now() };
+        return value;
+      })
+      .finally(() => {
+        settingsInFlight = null;
+      });
+  }
+
+  try {
+    return await settingsInFlight;
+  } catch (error) {
+    // Serve what we had. Stale settings are a far smaller problem than a shop
+    // that will not load, and the defaults are a last resort rather than a
+    // silent change of prices: they are the same values a fresh install runs
+    // on, and the failure is logged loudly enough to act on.
+    if (settingsCache) {
+      console.error("[settings] read failed; serving the last known good copy:", error);
+      return settingsCache.value;
+    }
+    console.error("[settings] read failed and nothing is cached; using defaults:", error);
+    return DEFAULT_SETTINGS;
+  }
 });
 
 /**
@@ -121,4 +194,8 @@ export async function saveSetting<K extends keyof StoreSettings>(key: K, value: 
     create: { key, value: value as object },
     update: { value: value as object },
   });
+  // The owner has just changed something and expects to see it. Without this
+  // the change would sit behind the TTL for up to half a minute and read as
+  // "the save did not work".
+  invalidateSettings();
 }
