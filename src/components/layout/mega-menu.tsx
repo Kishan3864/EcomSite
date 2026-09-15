@@ -2,45 +2,48 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "@/components/ui/image";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowRight } from "lucide-react";
-import { DepartmentGlyph } from "@/components/illustration/department-glyph";
-import { glyphNameFor } from "@/components/illustration/glyph-name";
 import type { Category } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**
  * The department menu.
  *
- * Rebuilt around one rule the old panel broke: **the sheet is the size of what
- * is on it.** It used to be 1080px wide whatever it held, with a three-column
- * grid for the subcategories — so a department with two collections opened a
- * panel two thirds empty, and the emptiness read as a page that had failed to
- * load rather than as a shop with two shelves. The column count is now taken
- * from the number of collections and the width follows it, so the panel is
- * compact when the shop is small and grows on its own as departments fill up.
+ * Photographs, because a menu is where somebody decides which shelf to walk to
+ * and a picture of the shelf decides it faster than its name does. Every
+ * department and every collection already carries its own image — the same ones
+ * the category pages use — so this costs no new artwork and nothing to
+ * maintain: a collection added in the admin panel arrives here with its picture
+ * already attached.
  *
- * Gone with it: the 260px rail whose whole job was to hold a 96px drawing of an
- * oven. A department mark at that size beside four words of navigation is
- * decoration asking for a third of the sheet, and it was the other half of why
- * the panel looked so empty. The mark still identifies each collection at 22px,
- * where it is doing work.
+ * The sheet is still the size of what is on it. The column count comes from the
+ * number of collections and is chosen to fill its rows evenly, so two
+ * collections open a compact sheet and twelve open a wide one, and neither
+ * leaves a half-empty row. That is the one thing kept from the drawn-mark
+ * version, because it is what stopped the panel reading as a page that had
+ * failed to load.
  *
- * Gone too: the eyebrow. It printed the department's own name in small caps
- * directly above the department's name — "HOME & APPLIANCE" over "Home &
- * Appliance" — which is not a label, it is the same words twice.
- *
- * What is left is what somebody opening a menu is actually after: which
- * department this is, one line on what is in it, the way to all of it, and a
- * ruled index of the collections inside.
+ * The right rail is the department's own photograph, carrying the way through
+ * to all of it. It is the only place the department is named twice over, and
+ * deliberately: the heading says which department this is, the rail is the door
+ * out of the menu into it.
  */
 
-/** Past this the index reads as a wall rather than a list, and wraps instead. */
+/** Past this the index reads as a wall of tiles rather than a list, and wraps. */
 const MAX_COLUMNS = 4;
 
-/** Enough for the longest collection name the shop uses without truncating. */
-const COLUMN_WIDTH = 262;
+/** A tile wide enough for a photograph to be read as one, plus its gutter. */
+const TILE_WIDTH = 172;
+const TILE_GAP = 14;
+
+/** The department photograph down the right-hand edge. */
+const RAIL_WIDTH = 296;
+
+/** The sheet's own padding, both sides. */
+const PADDING = 48;
 
 export function MegaMenu({ categories }: { categories: Category[] }) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
@@ -87,18 +90,21 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
 
   // The sheet is sized from its contents, never the other way round.
   //
-  // Columns are chosen to fill the rows evenly rather than simply run to the
-  // maximum: six collections in four columns is a full row above a half-empty
-  // one, which is the same hole this rebuild set out to close, just smaller.
-  // Taking the row count first and dividing back gives 3×2 for six, 3+2 for
-  // five, 4+3 for seven — a last row that is full or nearly so, every time.
-  //
-  // A floor of 460px keeps a department with no collections yet, or one with a
-  // single collection, from opening as a sliver.
+  // Columns fill their rows evenly rather than running to the maximum: six
+  // collections in four columns is a full row above a half-empty one, which is
+  // the hole this menu was rebuilt to close. Taking the row count first and
+  // dividing back gives 3x2 for six, 3+2 for five, 4+3 for seven.
   const count = active?.subcategories.length ?? 0;
   const rows = Math.max(1, Math.ceil(count / MAX_COLUMNS));
   const columns = Math.max(1, Math.ceil(count / rows));
-  const sheetWidth = Math.max(columns * COLUMN_WIDTH + 48, 460);
+  const indexWidth = columns * TILE_WIDTH + (columns - 1) * TILE_GAP + PADDING;
+  // A floor with two jobs. It stops a department whose collections are not set
+  // up yet from opening as a sliver beside a photograph, and it keeps a
+  // department with one or two of them from being out-weighed by its own rail —
+  // at the tile's natural width, two collections left the sentence in a column
+  // narrower than the picture next to it. The tiles are `1fr` each, so the
+  // extra width goes into the photographs rather than into white space.
+  const sheetWidth = Math.max(indexWidth, 520) + RAIL_WIDTH;
 
   return (
     <div className="relative" onMouseLeave={scheduleClose}>
@@ -119,18 +125,15 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   )}
                 >
                   {category.name}
-                  {/* No chevron. With one department it pointed at a panel that
-                      opens on hover anyway; with six it would be six pieces of
-                      punctuation in a row saying the same thing. The rule below
-                      marks the open one, and it is drawn by an absolutely
-                      positioned span so that marking it costs the bar no height
-                      — every sticky offset under the header is measured from
-                      this bar, and a bar that grows on hover moves them all. */}
+                  {/* The rule is drawn by an absolutely positioned span so that
+                      marking the open department costs the bar no height —
+                      every sticky offset under the header is measured from this
+                      bar, and a bar that grows on hover moves them all. */}
                   <span
                     aria-hidden
                     className={cn(
-                      "absolute inset-x-3.5 bottom-0 h-[1.5px] origin-left transition-transform duration-200 ease-out",
-                      isOpen ? "scale-x-100 bg-ink-950" : "scale-x-0 bg-ink-950",
+                      "absolute inset-x-3.5 bottom-0 h-[1.5px] origin-left bg-ink-950 transition-transform duration-200 ease-out",
+                      isOpen ? "scale-x-100" : "scale-x-0",
                     )}
                   />
                 </Link>
@@ -154,98 +157,114 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
             // tiles it floats over.
             className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden border border-ink-950 bg-surface"
           >
-            {/* ── Masthead ─────────────────────────────────────────────── */}
-            <div className="px-6 pb-4 pt-5">
-              {/* The name and the way out of the menu share a line; the
-                  sentence gets the full width underneath. Holding all three in
-                  one flex row meant the description was laid out in whatever
-                  the CTA left over — on a two-column sheet that was half the
-                  width, and a plain sentence broke into three cramped lines
-                  beside a lot of white. */}
-              <div className="flex items-baseline justify-between gap-8">
-                <h3 className="min-w-0 truncate font-display text-[21px] leading-none tracking-[-0.02em] text-ink-950">
+            <div
+              className="grid"
+              style={{ gridTemplateColumns: `minmax(0,1fr) ${RAIL_WIDTH}px` }}
+            >
+              {/* ── The index ──────────────────────────────────────────── */}
+              <div className="p-6">
+                <h3 className="font-display text-[21px] leading-none tracking-[-0.02em] text-ink-950">
                   {active.name}
                 </h3>
-                <Link
-                  href={`/c/${active.slug}`}
-                  className="group inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors duration-200 hover:text-brand-700"
-                >
-                  Shop all
+                {/* Held to about 58 characters a line. Across a four-column
+                    sheet an unconstrained sentence runs to a width nobody
+                    tracks back from comfortably. */}
+                {active.description && (
+                  <p className="mt-2.5 max-w-[58ch] text-[13px] leading-[1.55] text-ink-600">
+                    {active.description}
+                  </p>
+                )}
+
+                {active.subcategories.length > 0 && (
+                  <ul
+                    className="mt-5 grid border-t border-ink-950 pt-5"
+                    style={{
+                      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+                      gap: `${TILE_GAP}px`,
+                    }}
+                  >
+                    {active.subcategories.map((sub) => (
+                      <li key={sub.slug}>
+                        <Link
+                          href={`/c/${active.slug}/${sub.slug}`}
+                          className="group block"
+                        >
+                          {/* 4:3, the shape the catalogue's photographs are cut
+                              to everywhere else. `overflow-hidden` on the frame
+                              rather than the image so the zoom is cropped by
+                              the frame instead of pushing the tile about. */}
+                          <div className="relative aspect-[4/3] overflow-hidden bg-canvas">
+                            <Image
+                              src={sub.image.url}
+                              alt={sub.image.alt || sub.name}
+                              fill
+                              sizes={`${TILE_WIDTH}px`}
+                              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                            />
+                          </div>
+                          <span className="mt-2.5 flex items-center gap-1.5">
+                            <span className="min-w-0 truncate text-[13.5px] font-medium text-ink-900 transition-colors duration-200 group-hover:text-brand-700">
+                              {sub.name}
+                            </span>
+                            <ArrowRight
+                              size={13}
+                              aria-hidden
+                              className="shrink-0 -translate-x-1 text-brand-700 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
+                            />
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {active.featuredBrands.length > 0 && (
+                  <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-hairline pt-4">
+                    <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                      Top brands
+                    </span>
+                    {active.featuredBrands.map((slug) => (
+                      <Link
+                        key={slug}
+                        href={`/products?brands=${slug}&category=${active.slug}`}
+                        className="inline-flex h-7 items-center border border-hairline px-2.5 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                      >
+                        {slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* ── The department, and the door out of the menu ────────── */}
+              <Link
+                href={`/c/${active.slug}`}
+                className="group relative overflow-hidden border-l border-hairline bg-canvas"
+              >
+                <Image
+                  src={active.image.url}
+                  alt={active.image.alt || active.name}
+                  fill
+                  sizes={`${RAIL_WIDTH}px`}
+                  className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.05]"
+                />
+                {/* A scrim rather than a flat tint: white type has to hold its
+                    contrast over whatever photograph a department is given, and
+                    a department photo is chosen for the shelf it shows, not for
+                    how dark its bottom third happens to be. */}
+                <span
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/25 to-transparent"
+                />
+                <span className="absolute inset-x-5 bottom-5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-white">
+                  Shop all {active.name.toLowerCase()}
                   <ArrowRight
                     size={14}
                     className="transition-transform duration-200 group-hover:translate-x-1"
                   />
-                </Link>
-              </div>
-
-              {/* Held to about 58 characters a line. Across a four-column sheet
-                  an unconstrained sentence runs to a width nobody tracks back
-                  from comfortably. */}
-              {active.description && (
-                <p className="mt-3 max-w-[58ch] text-[13px] leading-[1.55] text-ink-600">
-                  {active.description}
-                </p>
-              )}
-            </div>
-
-            {/* ── The index ────────────────────────────────────────────── */}
-            {active.subcategories.length > 0 && (
-              <div className="px-6 pb-5">
-                <ul
-                  className="grid gap-x-8 border-t border-ink-950 pt-1"
-                  style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
-                >
-                  {active.subcategories.map((sub) => (
-                    <li key={sub.slug}>
-                      <Link
-                        href={`/c/${active.slug}/${sub.slug}`}
-                        className="group flex h-12 items-center gap-3 border-b border-hairline transition-colors duration-200 hover:border-ink-950"
-                      >
-                        {/* Its own mark, read from its own name. Every row
-                            carrying the department's mark made four identical
-                            drawings down one column, which reads as a fault
-                            rather than as a family. */}
-                        <DepartmentGlyph
-                          icon={glyphNameFor(sub.name) ?? active.icon}
-                          name={sub.name}
-                          size={22}
-                          className="shrink-0 text-ink-500 transition-colors duration-200 group-hover:text-brand-700"
-                        />
-                        <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-ink-800 transition-colors duration-200 group-hover:text-brand-700">
-                          {sub.name}
-                        </span>
-                        {/* Arrives on hover, from the left. The row already
-                            reads as a link; this only confirms which one the
-                            pointer has. */}
-                        <ArrowRight
-                          size={14}
-                          aria-hidden
-                          className="shrink-0 -translate-x-1 text-brand-700 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
-                        />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* ── Brands ───────────────────────────────────────────────── */}
-            {active.featuredBrands.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-hairline bg-canvas px-6 py-3.5">
-                <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                  Top brands
                 </span>
-                {active.featuredBrands.map((slug) => (
-                  <Link
-                    key={slug}
-                    href={`/products?brands=${slug}&category=${active.slug}`}
-                    className="inline-flex h-7 items-center border border-hairline bg-surface px-2.5 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
-                  >
-                    {slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
-                  </Link>
-                ))}
-              </div>
-            )}
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
