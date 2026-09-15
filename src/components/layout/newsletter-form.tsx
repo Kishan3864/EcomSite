@@ -80,7 +80,7 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
         />
         <SubscribeButton />
       </div>
-      {/* The message is set in white and marked by a ember rule rather than
+      {/* The message is set in white and marked by an ember rule rather than
           being written in ember itself: on this plane the only other gold is
           the subscribe button, and an error painted the same colour as the
           thing that caused it reads as part of the button. */}

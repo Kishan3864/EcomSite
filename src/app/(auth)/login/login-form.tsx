@@ -10,7 +10,7 @@ import { loginAction } from "@/services/commerce";
 import { Form } from "@/components/ui/form";
 
 /**
- * The shape every failure on these screens takes: an rose rule down the
+ * The shape every failure on these screens takes: a rose rule down the
  * left, the sentence beside it, nothing rounded. It is deliberately the same
  * block the shared `Form` draws when the browser's own constraints fail, so a
  * server saying no and a field saying no do not look like two different
