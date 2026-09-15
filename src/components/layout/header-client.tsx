@@ -141,15 +141,21 @@ export function HeaderClient({
                   <CountBubble count={count} />
                 </span>
                 <span className="hidden xl:block">
-                  {/* The three controls in this row all carry a sublabel over a
-                      name, so all three are set as the site's small-caps label
-                      rather than as 10px of decorative ink-400: at that size
-                      and that contrast it was the one line in the masthead
-                      nobody could actually read. */}
-                  <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                  {/* The three controls in this row all carry a sublabel over
+                      a name, and all three are set the same.
+
+                      They were a step larger. The size came down because the
+                      masthead now has eleven departments under it and the row
+                      was shouting over them; what did NOT come down is the
+                      contrast. An earlier version set this line at 10px in
+                      ink-400 and it was the one thing in the masthead nobody
+                      could read — the fault was the colour, not the size. At
+                      ink-500 it is 5.1:1 on white, so it stays legible small,
+                      and the letter-spacing keeps the small caps open. */}
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-500">
                     Your bag
                   </span>
-                  <span className="block text-[13px] font-semibold text-ink-900">
+                  <span className="block text-[12px] font-semibold text-ink-900">
                     {count > 0 ? `${count} item${count > 1 ? "s" : ""}` : "Empty"}
                   </span>
                 </span>
@@ -338,10 +344,10 @@ function HeaderAction({
         <CountBubble count={count} />
       </span>
       <span className="hidden xl:block">
-        <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-500">
           {sublabel}
         </span>
-        <span className="block text-[13px] font-semibold text-ink-900">{label}</span>
+        <span className="block text-[12px] font-semibold text-ink-900">{label}</span>
       </span>
     </Link>
   );
@@ -495,10 +501,10 @@ function AccountMenu() {
         </span>
         <span className="sr-only xl:hidden">Account</span>
         <span className="hidden xl:block">
-          <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-500">
             {customer ? "Your account" : sessionChecked ? "Sign in" : ""}
           </span>
-          <span className="block text-[13px] font-semibold text-ink-900">
+          <span className="block text-[12px] font-semibold text-ink-900">
             {customer ? `Hi, ${customer.name.split(" ")[0]}` : "Account"}
           </span>
         </span>
