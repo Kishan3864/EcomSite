@@ -249,7 +249,7 @@ export function ReviewStep() {
               <li key={line.id} className="flex gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
                 <Link
                   href={`/p/${line.slug}`}
-                  className="relative h-20 w-16 shrink-0 overflow-hidden border border-hairline bg-ink-100"
+                  className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
                 >
                   <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                 </Link>

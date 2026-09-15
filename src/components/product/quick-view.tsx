@@ -111,7 +111,7 @@ export function QuickView({
           )}
 
           <div className="flex items-center gap-4">
-            <div className="inline-flex items-center border border-hairline bg-surface">
+            <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline bg-surface">
               <button
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
                 className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"

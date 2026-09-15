@@ -36,7 +36,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Form action={action} className="border border-hairline bg-surface p-4 sm:p-6">
+      <Form action={action} className="rounded-xl border border-hairline bg-surface p-4 sm:p-6">
         <Field
           label="Order number"
           htmlFor="order-number"
@@ -86,7 +86,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
                   href={`/track/${order.id}`}
                   className="tap group flex items-center gap-3 border-t border-hairline py-3 sm:gap-4"
                 >
-                  <span className="relative h-14 w-12 shrink-0 overflow-hidden border border-hairline bg-ink-100">
+                  <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100">
                     <Image
                       src={order.lines[0].image}
                       alt=""
@@ -229,7 +229,7 @@ export function TrackDetail({ order }: { order: Order | null }) {
                   <li key={line.id} className="flex gap-3">
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-14 w-12 shrink-0 overflow-hidden border border-hairline bg-ink-100"
+                      className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
                     >
                       <Image src={line.image} alt="" fill sizes="48px" className="object-cover" />
                     </Link>

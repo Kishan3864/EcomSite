@@ -221,7 +221,7 @@ export function CheckoutAside() {
             {/* Routed through the shared image component like every other
                 picture on the site, so the remote-image policy applies here
                 too; it used to be a raw <img> with the lint rule switched off. */}
-            <span className="relative h-14 w-12 shrink-0 overflow-hidden border border-hairline bg-ink-100">
+            <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100">
               <Image src={line.image} alt="" fill sizes="48px" className="object-cover" />
             </span>
             <span className="min-w-0 flex-1">

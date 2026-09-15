@@ -181,7 +181,7 @@ export function Gallery({
             <button
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center border border-hairline bg-surface/95 text-ink-700 backdrop-blur"
+              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-lg border border-hairline bg-surface/95 text-ink-700 backdrop-blur"
             >
               <Expand size={16} />
             </button>
@@ -228,7 +228,7 @@ export function Gallery({
 
             {/* Zoom affordance */}
             {slide.kind === "image" && (
-              <span className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 border border-hairline bg-surface/95 px-2.5 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 md:flex">
+              <span className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 rounded-lg border border-hairline bg-surface/95 px-2.5 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 md:flex">
                 <ZoomIn size={12} className="text-ink-400" /> Hover to zoom
               </span>
             )}
@@ -236,7 +236,7 @@ export function Gallery({
             <button
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center border border-hairline bg-surface/95 text-ink-700 backdrop-blur transition-colors duration-200 hover:bg-ink-950 hover:text-white"
+              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg border border-hairline bg-surface/95 text-ink-700 backdrop-blur transition-colors duration-200 hover:bg-ink-950 hover:text-white"
             >
               <Expand size={15} />
             </button>
@@ -248,14 +248,14 @@ export function Gallery({
                 <button
                   onClick={() => step(-1)}
                   aria-label="Previous image"
-                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
                   onClick={() => step(1)}
                   aria-label="Next image"
-                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-hairline bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
                 >
                   <ChevronRight size={18} />
                 </button>

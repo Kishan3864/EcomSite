@@ -131,7 +131,7 @@ export function CartDrawer() {
                     <Link
                       href={`/p/${line.slug}`}
                       onClick={closeCartDrawer}
-                      className="tap relative h-[84px] w-[70px] shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-24 sm:w-20"
+                      className="tap relative h-[84px] w-[70px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-24 sm:w-20"
                     >
                       <Image src={line.image} alt="" fill sizes="80px" className="object-cover" />
                     </Link>
@@ -155,7 +155,7 @@ export function CartDrawer() {
 
                       {/* Wraps only in the extreme case: a six-figure line total at 320px. */}
                       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
-                        <div className="inline-flex items-center border border-hairline">
+                        <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline">
                           <button
                             onClick={() =>
                               dispatch({ type: "cart/qty", id: line.id, quantity: line.quantity - 1 })

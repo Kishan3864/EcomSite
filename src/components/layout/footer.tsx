@@ -82,7 +82,7 @@ export async function Footer() {
           standing on when they decide whether to buy. */}
       <div className="border-b border-hairline">
         <div className="container-page py-4 sm:py-8">
-          <div className="tile-grid grid-cols-2 lg:grid-cols-4">
+          <div className="tile-grid overflow-hidden rounded-xl grid-cols-2 lg:grid-cols-4">
             {trustBadges.map((badge) => {
               const Icon = TRUST_ICONS[badge.icon as keyof typeof TRUST_ICONS];
               return (
@@ -175,7 +175,7 @@ export async function Footer() {
                 aria-label={label}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="tap flex h-10 w-10 items-center justify-center border border-hairline text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 lg:h-9 lg:w-9"
+                className="tap is-circle flex h-10 w-10 items-center justify-center rounded-full border border-hairline text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:bg-ink-50 hover:text-ink-950 lg:h-9 lg:w-9"
               >
                 <Icon size={16} />
               </a>
@@ -260,7 +260,7 @@ export async function Footer() {
                 <li key={c.slug}>
                   <Link
                     href={`/c/${c.slug}`}
-                    className="tap inline-block border border-ink-950 px-2.5 py-1.5 text-[13px] font-medium text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-3"
+                    className="tap inline-block rounded-lg border border-ink-950 px-2.5 py-1.5 text-[13px] font-medium text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-3"
                   >
                     {c.name}
                   </Link>
@@ -269,7 +269,7 @@ export async function Footer() {
                   <li key={`${c.slug}-${s.slug}`}>
                     <Link
                       href={`/c/${c.slug}/${s.slug}`}
-                      className="tap inline-block border border-hairline px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 sm:px-3"
+                      className="tap inline-block rounded-lg border border-hairline px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950 sm:px-3"
                     >
                       {s.name}
                     </Link>

@@ -201,7 +201,7 @@ export function SearchBar({
             // The shortcut hint is a legend a reader is expected to act on, so
             // it comes up off the 10px it was set at and onto the small-caps
             // label the rest of the site labels things with.
-            <kbd className="hidden shrink-0 border border-hairline bg-canvas px-1.5 py-0.5 font-sans text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 lg:block">
+            <kbd className="hidden shrink-0 rounded-md border border-hairline bg-canvas px-1.5 py-0.5 font-sans text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 lg:block">
               Ctrl K
             </kbd>
           )}
@@ -220,7 +220,7 @@ export function SearchBar({
             // is drawn: both are sheets laid over the same page, and a hairline
             // would lose its edge against the white tiles below the header.
             className={cn(
-              "z-50 overflow-hidden border border-ink-950 bg-surface",
+              "z-50 overflow-hidden rounded-xl border border-ink-950 bg-surface shadow-lg",
               variant === "header"
                 ? "absolute inset-x-0 top-[calc(100%+8px)]"
                 : "mt-3 flex min-h-0 flex-col",
@@ -311,7 +311,7 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 rounded-lg border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
                             >
                               <Clock size={12} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>
@@ -364,7 +364,7 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 rounded-lg border border-hairline px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
                             >
                               <Tag size={12} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>

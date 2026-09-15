@@ -172,7 +172,7 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="border border-hairline bg-surface p-4 sm:p-5">
+            <div className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
               <h2 className="mb-3.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 New address
               </h2>

@@ -137,7 +137,7 @@ export function ReturnsClient({
                     className="border-b border-hairline last:border-b-0"
                   >
                     <div className="flex gap-3 px-4 py-4 sm:gap-4 sm:px-5">
-                      <span className="relative h-[72px] w-[58px] shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-20 sm:w-16">
+                      <span className="relative h-[72px] w-[58px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-20 sm:w-16">
                         <Image
                           src={request.image}
                           alt=""
@@ -249,7 +249,7 @@ export function ReturnsClient({
                 className="border-b border-hairline last:border-b-0"
               >
                 <div className="flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-5">
-                  <span className="relative h-16 w-14 shrink-0 overflow-hidden border border-hairline bg-ink-100">
+                  <span className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100">
                     <Image src={line.image} alt="" fill sizes="56px" className="object-cover" />
                   </span>
                   <div className="min-w-0 flex-1">

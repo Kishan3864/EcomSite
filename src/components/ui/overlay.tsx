@@ -259,7 +259,7 @@ export function Modal({
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="tap absolute right-2 top-2 z-10 border border-hairline bg-surface p-3 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:right-3 sm:top-3 sm:p-2"
+                className="tap absolute right-2 top-2 z-10 rounded-lg border border-hairline bg-surface p-3 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:right-3 sm:top-3 sm:p-2"
               >
                 <X size={16} />
               </button>

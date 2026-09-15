@@ -202,7 +202,7 @@ export function OrderClient({ order }: { order: Order | null }) {
           )}
 
           {/* Delivery promise */}
-          <div className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-surface p-4 sm:gap-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-hairline bg-surface p-4 sm:gap-4 sm:p-5">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 Estimated delivery
@@ -232,7 +232,7 @@ export function OrderClient({ order }: { order: Order | null }) {
                 <li key={line.id} className="flex gap-3 px-4 py-4 sm:gap-4 sm:px-5">
                   <Link
                     href={`/p/${line.slug}`}
-                    className="relative h-20 w-16 shrink-0 overflow-hidden border border-hairline bg-ink-100"
+                    className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
                   >
                     <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                   </Link>

@@ -29,7 +29,7 @@ function SubscribeButton() {
     <button
       type="submit"
       disabled={pending}
-      className="tap inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-70 sm:text-[12px]"
+      className="tap inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-6 text-[13.5px] font-semibold tracking-[0.005em] text-ink-950 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-70"
     >
       {pending ? "Signing you up…" : "Subscribe"}
       <ArrowRight size={16} />
@@ -76,7 +76,7 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
           // which is what squashed this input to a sliver on phones.
           // text-base on phones: iOS zooms the page into any input set smaller
           // than 16px the moment it is focused.
-          className="h-12 w-full shrink-0 rounded-field border border-white/20 bg-white/5 px-4 text-base text-white outline-none transition-colors duration-200 placeholder:text-white/45 focus:border-gold-400 focus:bg-white/10 sm:w-auto sm:flex-1 sm:text-[14px]"
+          className="h-12 w-full shrink-0 rounded-lg border border-white/20 bg-white/5 px-4 text-base text-white outline-none transition-colors duration-200 placeholder:text-white/45 focus:border-gold-400 focus:bg-white/10 sm:w-auto sm:flex-1 sm:text-[14px]"
         />
         <SubscribeButton />
       </div>

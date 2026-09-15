@@ -146,7 +146,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                   <li key={line.id} className="flex items-center gap-3 sm:gap-4">
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-[68px] sm:w-[58px]"
+                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-[68px] sm:w-[58px]"
                     >
                       <Image
                         src={line.image}

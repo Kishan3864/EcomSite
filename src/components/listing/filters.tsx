@@ -111,7 +111,7 @@ function CheckRow({
     <label className="tap group flex cursor-pointer items-center gap-2.5 py-2.5 lg:py-1.5">
       <span
         className={cn(
-          "flex h-[17px] w-[17px] shrink-0 items-center justify-center border transition-colors duration-150",
+          "flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-[4px] border transition-colors duration-150",
           checked
             ? "border-ink-950 bg-ink-950"
             : "border-ink-300 bg-surface group-hover:border-ink-950",
@@ -132,7 +132,7 @@ function CheckRow({
       <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
       {swatch && (
         <span
-          className="h-3.5 w-3.5 shrink-0 border border-ink-300"
+          className="h-3.5 w-3.5 shrink-0 rounded-[3px] border border-ink-300"
           style={{ backgroundColor: swatch }}
         />
       )}
@@ -311,7 +311,7 @@ export function FilterPanel({
                     square rail and a second use of the accent colour. */}
                 <span
                   className={cn(
-                    "flex h-[17px] w-[17px] shrink-0 items-center justify-center border transition-colors duration-150",
+                    "flex h-[17px] w-[17px] shrink-0 items-center justify-center rounded-[4px] border transition-colors duration-150",
                     chosen ? "border-ink-950" : "border-ink-300 group-hover:border-ink-950",
                   )}
                 >
@@ -413,7 +413,7 @@ function PriceRange({
             min={min}
             max={hi}
             onChange={(e) => setLo(Number(e.target.value))}
-            className="h-10 w-full border border-hairline bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-ink-950 sm:text-[13px] lg:h-9"
+            className="h-10 w-full rounded-lg border border-hairline bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-ink-950 sm:text-[13px] lg:h-9"
           />
         </label>
         <span aria-hidden className="mt-6 text-ink-400">
@@ -429,7 +429,7 @@ function PriceRange({
             min={lo}
             max={max}
             onChange={(e) => setHi(Number(e.target.value))}
-            className="h-10 w-full border border-hairline bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-ink-950 sm:text-[13px] lg:h-9"
+            className="h-10 w-full rounded-lg border border-hairline bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-ink-950 sm:text-[13px] lg:h-9"
           />
         </label>
       </div>

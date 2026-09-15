@@ -135,7 +135,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
                 >
                   <Link
                     href={`/p/${line.slug}`}
-                    className="relative h-[72px] w-[58px] shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-20 sm:w-16"
+                    className="relative h-[72px] w-[58px] shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-20 sm:w-16"
                   >
                     <Image
                       src={line.image}

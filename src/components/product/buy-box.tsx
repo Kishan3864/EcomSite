@@ -151,7 +151,7 @@ export function BuyBox({
           {product.badges.slice(0, 2).map((b) => (
             <span
               key={b}
-              className="border border-hairline px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600"
+              className="rounded-md border border-hairline px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600"
             >
               {b === "bestseller" ? "Bestseller" : b === "new" ? "New in" : b}
             </span>
@@ -281,7 +281,7 @@ export function BuyBox({
 
       {/* Quantity and stock */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div className="inline-flex items-center border border-hairline bg-surface">
+        <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline bg-surface">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={qty <= 1}

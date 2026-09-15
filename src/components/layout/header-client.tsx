@@ -498,7 +498,7 @@ function AccountMenu() {
             // The same sheet the department menu is drawn on, a quarter of the
             // width: an ink frame and no shadow, so the two panels that can
             // open from this one bar are plainly the same object.
-            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden border border-ink-950 bg-surface"
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden rounded-xl border border-ink-950 bg-surface shadow-lg"
           >
             {!sessionChecked ? (
               <p className="px-4 py-6 text-center text-[13px] text-ink-500">

@@ -113,7 +113,7 @@ export function AccountOverview({
               >
                 <Link
                   href={`/p/${line.slug}`}
-                  className="relative h-16 w-14 shrink-0 overflow-hidden border border-hairline bg-ink-100"
+                  className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
                 >
                   <Image src={line.image} alt="" fill sizes="56px" className="object-cover" />
                 </Link>

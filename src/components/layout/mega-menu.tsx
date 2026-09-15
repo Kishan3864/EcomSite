@@ -155,7 +155,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
             // An ink frame rather than a soft shadow: the panel is a sheet laid
             // on the page, and a hairline would lose its edge against the white
             // tiles it floats over.
-            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden border border-ink-950 bg-surface"
+            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-xl border border-ink-950 bg-surface shadow-lg"
           >
             <div
               className="grid"
@@ -227,7 +227,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                       <Link
                         key={slug}
                         href={`/products?brands=${slug}&category=${active.slug}`}
-                        className="inline-flex h-7 items-center border border-hairline px-2.5 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
+                        className="inline-flex h-7 items-center rounded-md border border-hairline px-2.5 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-ink-950 hover:text-ink-950"
                       >
                         {slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
                       </Link>

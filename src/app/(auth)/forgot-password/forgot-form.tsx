@@ -37,7 +37,7 @@ export function ForgotForm() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-        className="border border-hairline bg-surface p-4 sm:p-5"
+        className="rounded-xl border border-hairline bg-surface p-4 sm:p-5"
       >
         <span className="eyebrow">Request received</span>
         <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950">

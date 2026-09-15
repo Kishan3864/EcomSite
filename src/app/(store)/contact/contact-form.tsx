@@ -63,7 +63,7 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <Reveal className="min-w-0 border border-hairline bg-surface p-5 sm:p-8">
+      <Reveal className="min-w-0 rounded-xl border border-hairline bg-surface p-5 sm:p-8">
         <span className="eyebrow">Received</span>
         <h2 className="mt-3 font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
           Message received
@@ -94,7 +94,7 @@ export function ContactForm() {
   }
 
   return (
-    <Form onSubmit={submit} className="min-w-0 border border-hairline bg-surface p-4 sm:p-8">
+    <Form onSubmit={submit} className="min-w-0 rounded-xl border border-hairline bg-surface p-4 sm:p-8">
       <h2 className="font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
         Send us a message
       </h2>

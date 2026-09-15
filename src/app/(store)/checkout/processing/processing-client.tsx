@@ -124,7 +124,7 @@ export function ProcessingClient() {
   if (phase === "failed" && failure) {
     return (
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
-        <div className="w-full max-w-md border border-hairline bg-surface p-5 text-center sm:p-7">
+        <div className="w-full max-w-md rounded-xl border border-hairline bg-surface p-5 text-center sm:p-7">
           {/* A drawn frame around the glyph rather than a tinted tile; the
               colour that matters is in the mark, not behind it. */}
           <span

@@ -117,7 +117,7 @@ export function CartClient() {
                         <div className="flex gap-3 py-3 sm:gap-5 sm:py-4">
                           <Link
                             href={`/p/${line.slug}`}
-                            className="relative h-24 w-20 shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:h-32 sm:w-28"
+                            className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:h-32 sm:w-28"
                           >
                             <Image
                               src={line.image}
@@ -158,7 +158,7 @@ export function CartClient() {
                             </p>
 
                             <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 pt-3">
-                              <div className="inline-flex items-center border border-hairline">
+                              <div className="inline-flex items-center overflow-hidden rounded-lg border border-hairline">
                                 <button
                                   onClick={() =>
                                     dispatch({
@@ -280,7 +280,7 @@ export function CartClient() {
                   >
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-24 w-20 shrink-0 overflow-hidden border border-hairline bg-ink-100"
+                      className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100"
                     >
                       <Image src={line.image} alt="" fill sizes="80px" className="object-cover" />
                     </Link>

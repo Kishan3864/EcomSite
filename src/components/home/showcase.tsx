@@ -329,7 +329,7 @@ export function Spotlight({
     <section className="container-page py-10 sm:py-20">
       <div className="grid items-start gap-7 lg:grid-cols-12 lg:gap-10">
         <div className="lg:col-span-6">
-          <div className="relative aspect-[4/5] overflow-hidden border border-hairline bg-ink-100">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-lg border border-hairline bg-ink-100">
             <Image
               src={product.image}
               alt={product.imageAlt || product.title}

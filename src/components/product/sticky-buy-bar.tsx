@@ -50,7 +50,7 @@ export function StickyBuyBar({ product }: { product: ProductCardModel }) {
                 for a thumb. A title truncated to a dozen letters tells the
                 shopper nothing, so it waits for the width sm brings. */}
             <div className="container-page flex items-center gap-2 py-2 sm:gap-3 sm:py-2.5">
-              <div className="relative hidden h-12 w-11 shrink-0 overflow-hidden border border-hairline bg-ink-100 sm:block">
+              <div className="relative hidden h-12 w-11 shrink-0 overflow-hidden rounded-lg border border-hairline bg-ink-100 sm:block">
                 <Image src={product.image} alt="" fill sizes="44px" className="object-cover" />
               </div>
               <div className="min-w-0 flex-1">

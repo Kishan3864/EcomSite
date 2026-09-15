@@ -92,7 +92,7 @@ export function UpiClient({
   if (unavailable) {
     return (
       <Shell orderNumber={orderNumber} amount={amount}>
-        <div className="border border-sale-300 bg-surface p-4 text-[13px] leading-[1.55] text-ink-700">
+        <div className="rounded-xl border border-sale-300 bg-surface p-4 text-[13px] leading-[1.55] text-ink-700">
           <p className="flex items-start gap-2.5">
             <AlertCircle size={16} className="mt-0.5 shrink-0 text-sale-600" />
             <span>
@@ -113,8 +113,8 @@ export function UpiClient({
   if (waiting) {
     return (
       <Shell orderNumber={orderNumber} amount={amount}>
-        <div className="border border-hairline bg-surface p-5 text-center sm:p-7">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center border border-hairline text-ink-900">
+        <div className="rounded-xl border border-hairline bg-surface p-5 text-center sm:p-7">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-hairline text-ink-900">
             <Clock size={24} strokeWidth={1.5} />
           </span>
           <h2 className="mt-4 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
@@ -151,7 +151,7 @@ export function UpiClient({
   return (
     <Shell orderNumber={orderNumber} amount={amount}>
       {/* Step 1 — pay */}
-      <section className="border border-hairline bg-surface p-4 sm:p-5">
+      <section className="rounded-xl border border-hairline bg-surface p-4 sm:p-5">
         <h2 className={STEP_HEAD}>
           <span className={STEP_NUMBER}>1</span>
           Pay <span className="tabular-nums text-ink-950">{formatINR(amount)}</span>
@@ -210,7 +210,7 @@ export function UpiClient({
       </section>
 
       {/* Step 2 — tell us */}
-      <section className="mt-3 border border-hairline bg-surface p-4 sm:mt-4 sm:p-5">
+      <section className="mt-3 rounded-xl border border-hairline bg-surface p-4 sm:mt-4 sm:p-5">
         <h2 className={STEP_HEAD}>
           <span className={STEP_NUMBER}>2</span>
           Tell us the reference
