@@ -114,7 +114,7 @@ export function CartClient() {
                         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                         className="overflow-hidden"
                       >
-                        <div className="flex gap-3 py-3 sm:gap-5 sm:py-4">
+                        <div className="table-row-line flex gap-3 py-3 sm:gap-5 sm:py-4">
                           <Link
                             href={`/p/${line.slug}`}
                             className="relative h-24 w-20 shrink-0 overflow-hidden bg-ink-100 sm:h-32 sm:w-28"

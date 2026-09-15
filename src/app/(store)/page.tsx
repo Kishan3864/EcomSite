@@ -94,8 +94,8 @@ async function EmptyHome() {
   return (
     <>
       <HeroBanner hasProducts={false} categories={categories} banner={banners.hero[0]} />
-      <Counter payments={payments} />
       <ShopByCategory categories={categories} />
+      <Counter payments={payments} />
       <Assurance payments={payments} />
       <OrderJourney payments={payments} />
       <RecentlyViewed />
@@ -129,7 +129,6 @@ async function SparseHome() {
   return (
     <>
       <HeroBanner hasProducts categories={categories} lead={heroLead} banner={banners.hero[0]} />
-      <Counter payments={payments} />
       <ShopByCategory categories={categories} />
 
       <ProductGrid
@@ -150,6 +149,7 @@ async function SparseHome() {
 
       <Spotlight product={spread} eyebrow="In the shop" payments={payments} />
 
+      <Counter payments={payments} />
       <Assurance payments={payments} />
       <OrderJourney payments={payments} />
       <RecentlyViewed />
@@ -180,7 +180,6 @@ async function FullHome() {
   return (
     <>
       <HeroBanner hasProducts categories={categories} lead={best[0]} banner={banners.hero[0]} />
-      <Counter payments={payments} />
       <ShopByCategory categories={categories} />
       <ShopByPrice prices={priceLadder} />
 
@@ -211,6 +210,7 @@ async function FullHome() {
         tone="sale"
       />
 
+      <Counter payments={payments} />
       <Assurance payments={payments} />
 
       <ProductGrid

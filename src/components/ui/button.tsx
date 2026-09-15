@@ -73,12 +73,23 @@ export function buttonClasses(
     // it made "Add to bag" read as signage and cost a third of the button's
     // width in letter-spacing.
     "inline-flex items-center justify-center font-semibold tracking-[0.005em]",
-    "transition-[background-color,,color,box-shadow] duration-200",
+    // The stray double comma here made the whole shorthand invalid, so no
+    // button was transitioning anything.
+    "transition-[background-color,color,box-shadow] duration-200",
     "disabled:pointer-events-none disabled:opacity-55",
     "whitespace-nowrap select-none",
     // Press feedback on touch screens only; outline and link have no active state.
     "tap",
     VARIANTS[variant],
+    // A light edge on every solid button.
+    //
+    // Tinted black at 8% rather than a grey, because it has to sit on gold,
+    // on ocean and on pale grey alike: a fixed grey that reads as an edge on
+    // the secondary button reads as a scratch on the gold one. An inset ring
+    // also keeps the button exactly its stated height.
+    //
+    // `ghost` and `link` are words, not boxes, and are left alone.
+    variant !== "ghost" && variant !== "link" && "shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]",
     SIZES[size],
     // `link` is a word inside a sentence rather than a control, so it gives the
     // box back after the size has been applied. tailwind-merge keeps the last

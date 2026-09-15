@@ -173,11 +173,24 @@
      These spell out ink-950 as rgb triples — a custom property cannot be
      interpolated into an rgb() alpha here — so they do NOT follow the
      tokens above and have to be restated by hand. */
-  --shadow-xs: 0 1px 2px 0 rgb(18 23 27 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(18 23 27 / 0.07), 0 1px 2px -1px rgb(18 23 27 / 0.06);
-  --shadow-md: 0 4px 12px -2px rgb(18 23 27 / 0.09), 0 2px 4px -2px rgb(18 23 27 / 0.05);
-  --shadow-lg: 0 12px 28px -8px rgb(18 23 27 / 0.14), 0 4px 10px -4px rgb(18 23 27 / 0.07);
-  --shadow-xl: 0 24px 56px -16px rgb(18 23 27 / 0.2);
+/**
+   * Every elevation now carries a hairline as its first layer.
+   *
+   * A shadow alone was not enough to say where a card ended: on an off-white
+   * page a white tile with a soft shadow under it reads as a smudge rather
+   * than as an object. One very light ring — 7% ink, so about #edeeef on
+   * white — gives it an edge at every size.
+   *
+   * Put here rather than on each card because it then reaches everything that
+   * was already raised: the product tiles, the department grid, the facts
+   * strip, the bag panel, the dropdowns. It is an OUTER ring, not inset, so
+   * it never clips a photograph inside the card.
+   */
+  --shadow-xs: 0 0 0 1px rgb(18 23 27 / 0.07), 0 1px 2px 0 rgb(18 23 27 / 0.05);
+  --shadow-sm: 0 0 0 1px rgb(18 23 27 / 0.07), 0 1px 3px 0 rgb(18 23 27 / 0.07), 0 1px 2px -1px rgb(18 23 27 / 0.06);
+  --shadow-md: 0 0 0 1px rgb(18 23 27 / 0.07), 0 4px 12px -2px rgb(18 23 27 / 0.09), 0 2px 4px -2px rgb(18 23 27 / 0.05);
+  --shadow-lg: 0 0 0 1px rgb(18 23 27 / 0.07), 0 12px 28px -8px rgb(18 23 27 / 0.14), 0 4px 10px -4px rgb(18 23 27 / 0.07);
+  --shadow-xl: 0 0 0 1px rgb(18 23 27 / 0.07), 0 24px 56px -16px rgb(18 23 27 / 0.2);
   /* Was a 1px hairline ring drawn as a shadow — an outline by another name,
      and so against the no-border policy. It is a soft lift now, so the few
      surfaces that asked for `shadow-ring` still separate from what is behind
