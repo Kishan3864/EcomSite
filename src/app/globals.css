@@ -461,6 +461,20 @@
 }
 
 /**
+ * A field-alike wrapper owns the edge; the control inside it must not draw a
+ * second one. The search bar is a wrapper holding a magnifier, a transparent
+ * input and a CTRL-K badge — with the base ring on the input as well, it came
+ * out as a box drawn inside a box.
+ */
+@layer base {
+  .field-edge input,
+  .field-edge select,
+  .field-edge textarea {
+    box-shadow: none !important;
+  }
+}
+
+/**
  * One row of a small table — the delivery ledger on a product, a block of
  * specifications. A hairline under each row, drawn as a shadow so adding it
  * costs the row no height.
