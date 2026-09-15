@@ -87,13 +87,19 @@
   /* Planes. canvas against surface separates at 1.13:1 — up from the old
      1.06:1 — so a white tile reads as an object laid on the page, and
      not as a slightly different white, on a mid-range LCD in daylight. */
-  --color-canvas: #eef1f5;
+  /* Warmed and lightened. The old canvas was a cool blue-grey heavy enough
+     that white tiles read as panels cut into a background; a shop wants the
+     page to feel like clean daylight with the goods sitting on it. */
+  --color-canvas: #f5f6f8;
   --color-surface: #ffffff;
   /* hairline is the visible 1px line of `.tile-grid` AND the default
      border colour of every element on the site (see @layer base). With
      no radius and almost no shadow it is the only structure the page
      has, so it is set stronger than before: 1.41:1 on white. */
-  --color-hairline: #d4dae1;
+  /* Lighter than before. With a radius and real elevation doing the
+     structural work, a hairline this visible turned every card into a boxed
+     diagram; it is now a divider, not a frame. */
+  --color-hairline: #e2e6eb;
   /* A second, heavier rule for editorial dividers that need to be seen —
      under band headers, around drawn frames. */
   --color-rule: #bcc3cc;
@@ -101,38 +107,53 @@
   /* Type */
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
-  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  /* Display is the UI face, not the serif.
+     Fraunces set every heading on the shop and it is what made the site read
+     as a magazine about a shop rather than the shop: a serif headline over a
+     product grid is an editorial signal, and shoppers read editorial as
+     "someone's project", not "somewhere I can buy a kettle". The 54 files
+     using `font-display` now get the same family as the body at a tighter
+     grade, which is how commerce sites set a heading.
+     Fraunces is still loaded and still available as `font-serif` for the few
+     places a serif genuinely earns its keep. */
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
   /* Codes — order numbers, coupons, GSTINs, AWBs — in the UI face with
      tabular figures. Tailwind's default mono stack meant Consolas on Windows,
      Menlo on a Mac and something else again on Android: a third and fourth
      typeface nobody chose, different on every device. */
   --font-mono: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 
-  /* Radius — square by policy. Every step is the same 2px so no component
-     can quietly reintroduce a soft corner by reaching for a bigger name. */
-  --radius-xs: 2px;
-  --radius-sm: 2px;
-  --radius-md: 2px;
-  --radius-lg: 2px;
-  --radius-xl: 2px;
-  --radius-2xl: 2px;
-  --radius-3xl: 2px;
-  --radius-4xl: 2px;
-  /* The single exception: form controls, where a little softening helps
-     the eye find the input. Use `rounded-field`. */
-  --radius-field: 4px;
+  /* Radius — a real scale.
+     Corners used to be square by policy, every step collapsed to 2px, which
+     is what made the shop read as an editorial sheet rather than a place to
+     buy something. A commerce surface wants an object you could pick up.
+     Restrained, not a template: 6–12px on the things people touch. */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+  --radius-field: 8px;
 
-  /* Elevation — shadows are almost absent. Depth comes from hairlines and
-     from the flat planes of canvas against surface. */
-  /* These spell out ink-950 and hairline as rgb triples — a custom
-     property cannot be interpolated into an rgb() alpha here — so they
-     do NOT follow the tokens above and have to be restated by hand. */
-  --shadow-xs: 0 1px 1px 0 rgb(10 12 15 / 0.04);
-  --shadow-sm: 0 1px 2px 0 rgb(10 12 15 / 0.05);
-  --shadow-md: 0 2px 8px -2px rgb(10 12 15 / 0.07);
-  --shadow-lg: 0 8px 24px -10px rgb(10 12 15 / 0.12);
-  --shadow-xl: 0 20px 48px -20px rgb(10 12 15 / 0.18);
-  --shadow-ring: 0 0 0 1px rgb(212 218 225 / 1);
+  /* Elevation — present, and still quiet.
+     Shadows used to be almost absent because hairlines carried all the
+     structure. With a radius they have to do real work: a product card is
+     an object lifted off the page, not a rectangle drawn on it. Tight,
+     low-alpha and short-throw, so nothing floats.
+     These spell out ink-950 as rgb triples — a custom property cannot be
+     interpolated into an rgb() alpha here — so they do NOT follow the
+     tokens above and have to be restated by hand. */
+  --shadow-xs: 0 1px 2px 0 rgb(10 12 15 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(10 12 15 / 0.07), 0 1px 2px -1px rgb(10 12 15 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(10 12 15 / 0.09), 0 2px 4px -2px rgb(10 12 15 / 0.05);
+  --shadow-lg: 0 12px 28px -8px rgb(10 12 15 / 0.14), 0 4px 10px -4px rgb(10 12 15 / 0.07);
+  --shadow-xl: 0 24px 56px -16px rgb(10 12 15 / 0.2);
+  --shadow-ring: 0 0 0 1px rgb(226 230 235 / 1);
 
   /* Motion */
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
@@ -211,12 +232,9 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* `rounded-full` is Tailwind's own value, not one of our tokens, so the
-     radius policy has to catch it here. Genuine circles — colour swatches,
-     avatars, dots — opt back in with `.is-circle`. */
-  .rounded-full:not(.is-circle) {
-    border-radius: 2px;
-  }
+  /* `rounded-full` is Tailwind's own value and now means what it says. The
+     square-corner policy used to clamp it to 2px, which quietly turned every
+     avatar, swatch and status dot in the app into a tiny square. */
 
   ::selection {
     background: var(--color-brand-900);
@@ -238,9 +256,13 @@
     letter-spacing: 0.01em;
   }
 
-  /* Fraunces defaults to old-style figures; product names need lining ones. */
+  /* Headings are set in the UI face now, tightened so they read as headings
+     rather than as large body copy. The weight is here rather than at 54 call
+     sites, which all say `font-display` and nothing about weight. */
   .font-display {
     font-variant-numeric: lining-nums proportional-nums;
+    letter-spacing: -0.022em;
+    font-weight: 700;
   }
 
   p {

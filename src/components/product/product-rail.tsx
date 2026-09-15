@@ -89,7 +89,10 @@ export function ProductGrid({
   return (
     <div
       className={cn(
-        "tile-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
+        // Cards with air between them, not tiles fused into one sheet. A
+        // shared 1px grid made twenty products read as one table of data;
+        // separate objects are what a shopper scans.
+        "grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5",
         className,
       )}
     >

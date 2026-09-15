@@ -488,7 +488,7 @@ export function ProductGrid({
         className="mb-6 sm:mb-10"
       />
 
-      <div className={cn("tile-grid grid-cols-2", SM_COLS[smCols], LG_COLS[lgCols])}>
+      <div className={cn("grid grid-cols-2 gap-2.5 sm:gap-4", SM_COLS[smCols], LG_COLS[lgCols])}>
         {shown.map((product, i) => (
           <ProductCard
             key={product.id}

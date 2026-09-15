@@ -58,8 +58,9 @@ export function ProductCard({
     <>
       <article
         className={cn(
-          "group relative flex flex-col bg-surface transition-colors duration-300",
-          "hover:bg-ink-50/60",
+          "group relative flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface",
+          "shadow-xs transition-[box-shadow,transform,border-color] duration-300 ease-out",
+          "hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md",
           // About 2.4 cards across a 390px phone, so the rail reads as scrollable.
           layout === "rail" && "w-[152px] sm:w-[236px]",
           className,
@@ -67,7 +68,7 @@ export function ProductCard({
       >
         <Link
           href={`/p/${product.slug}`}
-          className="tap relative block aspect-[3/4] overflow-hidden bg-ink-100"
+          className="tap relative block aspect-[4/5] overflow-hidden bg-ink-50"
         >
           <Image
             src={product.image}
@@ -94,8 +95,8 @@ export function ProductCard({
 
           {/* Discount reads as a typographic mark in the corner, not a sticker. */}
           {off > 0 && !outOfStock && (
-            <span className="absolute left-0 top-0 bg-ink-950 px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-white sm:px-2.5 sm:py-1.5">
-              {off}% off
+            <span className="absolute left-2 top-2 rounded-md bg-sale-600 px-1.5 py-1 text-[10.5px] font-bold leading-none text-white shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2">
+              {off}% OFF
             </span>
           )}
 
@@ -109,7 +110,7 @@ export function ProductCard({
 
           {/* Utilities stay square and appear only on intent where a pointer
               can hover; a touch screen has no hover, so there they stay put. */}
-          <div className="absolute right-0 top-0 flex flex-col">
+          <div className="absolute right-2 top-2 flex flex-col gap-1.5 sm:right-2.5 sm:top-2.5">
             <button
               type="button"
               aria-label={wished ? "Remove from wishlist" : "Save for later"}
@@ -122,10 +123,10 @@ export function ProductCard({
               className={cn(
                 // Phones: a 40px target around a 32px square kept flush in the
                 // corner; the padding sits on the inner sides, outside the paint.
-                "flex h-10 w-10 items-center justify-center bg-clip-content pb-2 pl-2 transition-colors duration-200 sm:h-9 sm:w-9 sm:p-0",
+                "is-circle flex h-8 w-8 items-center justify-center rounded-full shadow-sm ring-1 ring-ink-950/5 transition-all duration-200",
                 wished
                   ? "bg-sale-600 text-white"
-                  : "bg-surface/85 text-ink-600 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0",
+                  : "bg-surface/95 text-ink-600 backdrop-blur-sm hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0",
               )}
             >
               <Heart size={15} className={wished ? "fill-current" : undefined} />
@@ -138,7 +139,7 @@ export function ProductCard({
                 e.stopPropagation();
                 setQuickView(true);
               }}
-              className="hidden h-9 w-9 items-center justify-center bg-surface/85 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:flex [@media(hover:hover)]:opacity-0"
+              className="is-circle hidden h-8 w-8 items-center justify-center rounded-full bg-surface/95 text-ink-600 shadow-sm ring-1 ring-ink-950/5 backdrop-blur-sm transition-all duration-200 hover:bg-ink-950 hover:text-white focus-visible:opacity-100 group-hover:opacity-100 sm:flex [@media(hover:hover)]:opacity-0"
             >
               <Eye size={15} />
             </button>
@@ -157,11 +158,11 @@ export function ProductCard({
           )}
         </Link>
 
-        <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-4">
+        <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3 sm:pb-3.5 sm:pt-3">
           {/* Ink, not saffron. The accent is worth something only while it is
               rare, and a grid of twenty tiles was spending it twenty times on
               the least important line in the card. */}
-          <p className="mb-1 truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-1.5">
+          <p className="mb-1 truncate text-[10.5px] font-semibold uppercase tracking-[0.13em] text-ink-400">
             {product.brand}
           </p>
 
@@ -174,14 +175,23 @@ export function ProductCard({
           {/* Prices are set in the text face, not the display face: Fraunces'
               figures are proportional, so a column of prices down a grid
               wandered left and right by a couple of pixels a row. */}
-          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 sm:mt-2.5 sm:gap-x-2">
-            <span className="text-[13.5px] font-semibold leading-none tabular-nums text-ink-900 sm:text-[14px]">
+          {/* The price is the loudest line on the card. It used to sit at
+              13.5px — a hair above the brand line and below the product name —
+              which is the wrong order of importance for somebody scanning a
+              grid to decide what to open. */}
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <span className="text-[16px] font-bold leading-none tracking-[-0.02em] tabular-nums text-ink-950 sm:text-[17px]">
               {formatINR(product.price)}
             </span>
             {product.mrp > product.price && (
-              <span className="text-[11.5px] leading-none tabular-nums text-ink-400 line-through sm:text-[12px]">
-                {formatINR(product.mrp)}
-              </span>
+              <>
+                <span className="text-[12px] leading-none tabular-nums text-ink-400 line-through">
+                  {formatINR(product.mrp)}
+                </span>
+                <span className="text-[12px] font-semibold leading-none text-sale-600">
+                  {off}% off
+                </span>
+              </>
             )}
           </div>
 
@@ -220,12 +230,12 @@ export function ProductCard({
               onClick={handleAdd}
               disabled={outOfStock}
               className={cn(
-                "tap relative flex h-10 w-full items-center justify-center gap-2 border text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[12px]",
+                "tap relative flex h-10 w-full items-center justify-center gap-2 rounded-lg text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
                 outOfStock
-                  ? "cursor-not-allowed border-ink-200 text-ink-400"
+                  ? "cursor-not-allowed bg-ink-100 text-ink-400"
                   : added
-                    ? "border-brand-700 bg-brand-700 text-white"
-                    : "border-ink-950 text-ink-950 hover:bg-ink-950 hover:text-white",
+                    ? "bg-brand-800 text-white"
+                    : "bg-brand-700 text-white hover:bg-brand-800",
               )}
             >
               <AnimatePresence mode="wait" initial={false}>

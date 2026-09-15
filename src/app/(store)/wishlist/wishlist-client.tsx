@@ -22,7 +22,7 @@ export function WishlistClient() {
 
   if (!hydrated) {
     return (
-      <div className="tile-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
         {[0, 1, 2, 3, 4].map((i) => (
           <ProductCardSkeleton key={i} />
         ))}
@@ -84,7 +84,7 @@ export function WishlistClient() {
         </Button>
       </div>
 
-      <ul className="tile-grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5">
         <AnimatePresence initial={false}>
           {wishlist.map((item) => (
             <motion.li

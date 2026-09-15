@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { HeroLead } from "@/components/home/hero-lead";
 import { Assurance } from "@/components/home/assurance";
+import { ShopByCategory } from "@/components/home/shop-by-category";
 import { Counter } from "@/components/home/counter";
 import { OrderJourney } from "@/components/home/order-journey";
 import {
-  CategoryMosaic,
   EditorialBand,
   ProductGrid,
   Spotlight,
@@ -91,7 +91,7 @@ async function EmptyHome() {
     <>
       <HeroLead hasProducts={false} categories={categories} />
       <Counter payments={payments} />
-      <CategoryMosaic categories={categories} />
+      <ShopByCategory categories={categories} />
       <Assurance payments={payments} />
       <OrderJourney payments={payments} />
       <EditorialBand banner={banners.mid[0]} />
@@ -123,7 +123,7 @@ async function SparseHome() {
     <>
       <HeroLead hasProducts categories={categories} lead={heroLead} />
       <Counter payments={payments} />
-      <CategoryMosaic categories={categories} />
+      <ShopByCategory categories={categories} />
 
       <ProductGrid
         eyebrow={spread ? "The rest of the shelf" : "The catalogue"}
@@ -165,7 +165,7 @@ async function FullHome() {
     <>
       <HeroLead hasProducts categories={categories} lead={best[0]} />
       <Counter payments={payments} />
-      <CategoryMosaic categories={categories} />
+      <ShopByCategory categories={categories} />
 
       <ProductGrid
         eyebrow="Proven"

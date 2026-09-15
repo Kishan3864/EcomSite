@@ -31,10 +31,10 @@ import { formatINR } from "@/lib/utils";
  */
 
 const primary =
-  "inline-flex h-11 items-center justify-center gap-2 bg-ink-950 px-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-white transition-colors duration-200 hover:bg-brand-700 sm:h-12";
+  "inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-700 px-6 text-[14px] font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-brand-800 sm:h-12";
 
 const secondary =
-  "inline-flex h-11 items-center justify-center gap-2 border border-ink-950 px-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:h-12";
+  "inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-ink-300 bg-surface px-6 text-[14px] font-semibold text-ink-900 transition-colors duration-200 hover:border-ink-400 hover:bg-ink-50 sm:h-12";
 
 export function HeroLead({
   hasProducts,

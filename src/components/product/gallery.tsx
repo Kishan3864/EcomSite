@@ -123,8 +123,10 @@ export function Gallery({
               aria-label={`View ${s.kind} ${i + 1}`}
               aria-current={i === index}
               className={cn(
-                "relative h-[68px] w-full overflow-hidden bg-ink-100 transition-opacity duration-200 md:h-[86px]",
-                i === index ? "opacity-100" : "opacity-60 hover:opacity-100",
+                "relative h-[68px] w-full overflow-hidden rounded-lg bg-ink-50 transition-all duration-200 md:h-[86px]",
+                i === index
+                  ? "opacity-100 ring-2 ring-brand-700 ring-offset-1"
+                  : "opacity-70 ring-1 ring-hairline hover:opacity-100",
               )}
             >
               <Image src={s.url} alt="" fill sizes="74px" className="object-cover" />
@@ -184,7 +186,7 @@ export function Gallery({
             onMouseMove={onMove}
             onMouseLeave={() => setZoom(null)}
             {...swipe}
-            className="group relative hidden aspect-[4/5] overflow-hidden border border-hairline bg-surface sm:block"
+            className="group relative hidden aspect-[4/5] overflow-hidden rounded-xl border border-hairline bg-surface sm:block"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div

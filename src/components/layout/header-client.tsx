@@ -94,13 +94,14 @@ export function HeaderClient({
     <>
       <AnnouncementBar />
 
-      {/* Scrolling draws a rule under the chrome and nothing else. The soft
-          shadow that used to lift it off the page was the one piece of the old
-          header that made a printed sheet look like a floating widget. */}
+      {/* White, and it lifts once the page moves under it. The chrome used to
+          share the page's grey and mark a scroll with a hairline only, which
+          kept the masthead visually part of the page rather than above it —
+          the one place on a shop where "above" is the whole point. */}
       <header
         className={cn(
-          "sticky top-0 z-50 border-b bg-canvas/85 backdrop-blur-xl transition-colors duration-300",
-          scrolled ? "border-rule" : "border-transparent",
+          "sticky top-0 z-50 border-b bg-surface/95 backdrop-blur-xl transition-shadow duration-300",
+          scrolled ? "border-hairline shadow-sm" : "border-hairline",
         )}
       >
         <div className="container-page">
@@ -149,7 +150,7 @@ export function HeaderClient({
               right — so it is left out until there is a category to put in it. */}
           {categories.length > 0 && (
           <div className="hidden border-t border-hairline lg:block">
-            <div className="flex items-center justify-between py-1.5">
+            <div className="flex items-center justify-between py-1">
               <MegaMenu categories={categories} />
               <div className="flex items-center gap-4 text-[13px]">
                 <Link
