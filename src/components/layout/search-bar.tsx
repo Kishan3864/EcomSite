@@ -151,7 +151,7 @@ export function SearchBar({
       <Form onSubmit={submit} role="search">
         <div
           className={cn(
-            "flex items-center gap-2.5 bg-ink-50 px-3.5 transition-all duration-200",
+            "field-edge flex items-center gap-2.5 bg-ink-50 px-3.5 transition-all duration-200",
             variant === "header" ? "h-11" : "h-12",
             open
               ? "shadow-[0_0_0_3px_rgb(76_124_148/0.18)]"

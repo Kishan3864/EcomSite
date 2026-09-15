@@ -334,6 +334,20 @@
   select,
   textarea {
     background-color: var(--color-ink-50);
+    /* The edge, drawn as a shadow.
+       A filled panel alone turned out to be too quiet: on the sign-in and
+       register forms the fields read as pale blocks rather than as things you
+       type into. This is a 1px inset ring — visually the hairline a border
+       would draw, but it is a box-shadow, so the no-borders rule still holds
+       and the control still costs no layout. */
+    box-shadow: inset 0 0 0 1px var(--color-ink-200);
+  }
+
+  /* Focus deepens the same ring rather than adding a second one beside it. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):focus,
+  select:focus,
+  textarea:focus {
+    box-shadow: inset 0 0 0 1px var(--color-brand-400);
   }
 
   input[type="number"]::-webkit-inner-spin-button,
@@ -434,6 +448,25 @@
 }
 @utility rule-hair-t {
   box-shadow: inset 0 1px 0 0 var(--rule-color, var(--color-hairline));
+}
+
+/**
+ * The same hairline edge, for the things that look like a field but are not an
+ * an input element: the search bar's wrapper, the button that stands in on a
+ * phone, the quantity stepper, the button beside the pincode box. They sit
+ * next to real controls and have to match them.
+ */
+@utility field-edge {
+  box-shadow: inset 0 0 0 1px var(--color-ink-200);
+}
+
+/**
+ * One row of a small table — the delivery ledger on a product, a block of
+ * specifications. A hairline under each row, drawn as a shadow so adding it
+ * costs the row no height.
+ */
+@utility table-row-line {
+  box-shadow: inset 0 -1px 0 0 var(--color-hairline);
 }
 
 @layer components {

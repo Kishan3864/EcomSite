@@ -283,7 +283,7 @@ export function BuyBox({
 
       {/* Quantity and stock */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div className="inline-flex items-center overflow-hidden bg-ink-100">
+        <div className="field-edge inline-flex items-center overflow-hidden bg-ink-100">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={qty <= 1}
@@ -399,7 +399,7 @@ export function BuyBox({
         {ledger.map((row) => (
           <div
             key={row.label}
-            className="flex min-h-[44px] items-center justify-between gap-4 py-2"
+            className="table-row-line flex min-h-[44px] items-center justify-between gap-4 py-2.5"
           >
             <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               {row.label}

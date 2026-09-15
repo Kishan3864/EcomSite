@@ -245,7 +245,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                       {group.items.map((item) => (
                         <div
                           key={item.label}
-                          className="flex min-h-[44px] items-center justify-between gap-4 py-2.5"
+                          className="table-row-line flex min-h-[44px] items-center justify-between gap-4 py-2.5"
                         >
                           <dt className="min-w-0 break-words text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                             {item.label}

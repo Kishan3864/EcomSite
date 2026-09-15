@@ -287,7 +287,7 @@ function SearchField({ onOpen, className }: { onOpen: () => void; className?: st
       onClick={onOpen}
       aria-haspopup="dialog"
       className={cn(
-        "tap flex h-10 min-w-0 items-center gap-2.5 bg-ink-50 px-3.5 text-left transition-colors duration-200",
+        "field-edge tap flex h-10 min-w-0 items-center gap-2.5 bg-ink-50 px-3.5 text-left transition-colors duration-200",
         className,
       )}
     >
