@@ -7,15 +7,36 @@ One command, from your PC. No SSH, no server commands.
 **Windows**
 
 ```powershell
-git push production main
+npm run deploy
 ```
 
-That is it. The push lands in a bare repository on the server, whose
-`post-receive` hook runs the deploy for you and prints the whole thing back
-into your terminal — backup, build, swap, health check. Set it up once with
-**[Deploying without GitHub](#deploying-without-github)** below.
+That is it. It checks your tree is clean and on `main`, **pushes to GitHub**,
+then has the server pull from GitHub and build — printing the whole thing back
+into your terminal as it runs: backup, build, swap, health check. At the end it
+reads the server's commit back and tells you what is actually live.
 
-The old way still works if you are already logged in to the box:
+```
+local commit  →  push to GitHub  →  server pulls from GitHub  →  build → swap
+```
+
+**GitHub is the single source of truth.** Whatever is live is a commit you can
+open on github.com. Nothing reaches the server by any other road.
+
+That matters more than it sounds. There used to be a second road — pushing
+straight to the box, bypassing GitHub — and the two fought: the server ran a
+redesign GitHub had never seen, then an ordinary deploy pulled GitHub's older
+`main` and took the redesign back off the live shop, hours after it went up.
+That door is now bolted; see
+**[If GitHub is unreachable](#if-github-is-unreachable-from-the-server)**.
+
+The staging site is the same command with a target:
+
+```powershell
+npm run deploy staging
+```
+
+If you are already logged in to the box, the script underneath is the same one
+and is safe to run by hand:
 
 **Server (VPS)**
 
@@ -50,50 +71,65 @@ cd ~/ecom.flexypdf.com && bash deploy/rollback.sh
 
 ---
 
-## Deploying without GitHub
+## If GitHub is unreachable from the server
 
-This VPS cannot open a connection to `github.com:443`. The cause is now
-measured rather than guessed: **its IPv4 route out is broken and its IPv6 route
-is healthy** — a TCP connect to Google's token endpoint answers over IPv6 in
-7ms and times out over IPv4 after 10 seconds (`npx tsx scripts/check-auth.ts`
-prints both). `github.com` publishes no IPv6 address at all, so IPv4 is the
-only road to it and that road is shut; forcing `-4` changed nothing for exactly
-that reason. `registry.npmjs.org` kept working because it is reachable over
-IPv6.
+**This is no longer the normal state, and has not been since 15 September
+2026.** It is written down because it was true for months and the workaround it
+produced is still installed on the box.
 
-Until the host repairs IPv4, a deploy that pulls from GitHub cannot run here.
+The VPS could not open a connection to `github.com:443`. The cause was measured
+rather than guessed: **its IPv4 route out was broken and its IPv6 route was
+healthy** — a TCP connect to Google's token endpoint answered over IPv6 in 7ms
+and timed out over IPv4 after 10 seconds. `github.com` publishes no IPv6 address
+at all, so IPv4 was the only road to it and that road was shut.
 
-> Do **not** add an IPv4 precedence line to `/etc/gai.conf` on this box — it
-> would force the broken family on git, npm, curl and the app alike.
-
-So the code goes the other way. Your PC can reach GitHub *and* the server, so it
-pushes straight to the server, and the server's network never enters into it.
-
-**Server (VPS)** — once:
+That road is open again. From the server, all three of these now work:
 
 ```bash
-cd ~/ecom.flexypdf.com
-bash deploy/setup-push-deploy.sh
+curl -sS -o /dev/null -w '%{http_code}\n' https://github.com      # 200
+git ls-remote https://github.com/Kishan3864/EcomSite.git HEAD     # answers
+ssh -T git@github.com                                             # authenticates
 ```
 
-That creates `~/weekendcart.git` (a bare repository), installs the deploy hook
-into it, and adds it to the app directory as a remote called `local`.
+so `npm run deploy` — which has the server pull from GitHub — is the flow, and
+the one below is only for if IPv4 breaks again.
 
-**Windows** — once:
+> Do **not** add an IPv4 precedence line to `/etc/gai.conf` on this box — it
+> would force one family on git, npm, curl and the app alike.
 
-```powershell
-git remote add production ssh://flexyuser@187.127.141.107/home/flexyuser/weekendcart.git
+### The temporary way round
+
+The bare repo at `~/weekendcart.git` and its `post-receive` hook are still
+installed, and the `production` remote still exists on your PC. The hook now
+**refuses** by default, because a push that bypasses GitHub is what let the
+server and GitHub drift apart and cost a redesign. To open it deliberately:
+
+**Server (VPS)**
+
+```bash
+touch ~/.deploy-allow-direct
 ```
 
-**Windows** — every time after that:
+**Windows**
 
 ```powershell
 git push production main
 ```
 
-The server output appears in your own terminal as it runs. Push to GitHub as
-well, whenever it suits you (`git push origin main`) — that is the backup copy,
-not the deploy path.
+**Server (VPS)** — straight afterwards:
+
+```bash
+rm ~/.deploy-allow-direct
+```
+
+Then push the same commits to GitHub from your PC as soon as it is reachable
+(`git push origin main`). Until you do, the server is ahead of GitHub, and the
+next ordinary `npm run deploy` will reset it back to GitHub's version — which
+is the accident this whole arrangement exists to prevent. The hook prints that
+reminder itself.
+
+If the bare repo was never set up on a fresh box, `bash
+deploy/setup-push-deploy.sh` creates it and installs the hook.
 
 ### If a deploy says "Killed"
 
@@ -414,18 +450,12 @@ git add -A
 git commit -m "What changed, in one line"
 ```
 
-**Windows** — send it to staging:
+**Windows** — send it to staging and deploy it:
 
 ```powershell
 git checkout staging
 git merge change/short-name
-git push origin staging
-```
-
-**Server (VPS)** — deploy staging and look at it:
-
-```bash
-cd ~/staging.weekendcart.com && bash deploy/deploy.sh staging
+npm run deploy staging
 ```
 
 Open https://staging.weekendcart.com and walk the paths that matter: home, a category, a
@@ -436,14 +466,12 @@ product, add to cart, checkout as far as payment, `/admin`. Only then:
 ```powershell
 git checkout main
 git merge staging
-git push origin main
+npm run deploy
 ```
 
-**Server (VPS)** — deploy the live shop:
-
-```bash
-cd ~/ecom.flexypdf.com && bash deploy/deploy.sh
-```
+`npm run deploy` pushes to GitHub itself, so there is no separate
+`git push origin` step to forget — and forgetting it is precisely what put
+GitHub five commits behind the live shop once before.
 
 Rules worth keeping:
 
