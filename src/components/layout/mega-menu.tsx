@@ -107,13 +107,18 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
   const sheetWidth = Math.max(indexWidth, 520) + RAIL_WIDTH;
 
   return (
-    <div className="relative" onMouseLeave={scheduleClose}>
+    // `min-w-0 flex-1` belongs HERE, on the element that is actually the flex
+    // item in the masthead row — not on the <nav> inside it. It was on the nav,
+    // which did nothing: this div sized itself to its content, went 1494px wide
+    // inside a 1408px container, and pushed the whole document into a
+    // horizontal scroll at every width.
+    <div className="relative min-w-0 flex-1" onMouseLeave={scheduleClose}>
       {/* One line, always. Eleven departments do not fit a 1408px container,
           and a wrapping rail pushes the page down by a row and collides with
           the links on the right. It scrolls sideways instead — the scrollbar
           is hidden, and the panels still open from wherever a name lands. */}
-      <nav aria-label="Product categories" className="min-w-0 flex-1">
-        <ul className="no-scrollbar flex items-center overflow-x-auto">
+      <nav aria-label="Product categories" className="min-w-0">
+        <ul className="dept-rail no-scrollbar flex items-center overflow-x-auto">
           {categories.map((category) => {
             const isOpen = openSlug === category.slug;
             return (
@@ -131,7 +136,10 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                     isOpen ? "font-semibold text-ink-950" : "font-medium text-ink-700 hover:text-ink-950",
                   )}
                 >
-                  {category.name}
+                  {/* The short label, not the full department name. The field
+                      exists for exactly this: "Audio & Headphones" is the page
+                      heading, "Audio" is what fits in a rail of eleven. */}
+                  {category.menuLabel || category.name}
                   {/* The rule is drawn by an absolutely positioned span so that
                       marking the open department costs the bar no height —
                       every sticky offset under the header is measured from this

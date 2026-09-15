@@ -454,6 +454,21 @@
   .rail > * { scroll-snap-align: start; flex: none; }
   @media (min-width: 640px) { .rail { scroll-padding-inline: 1.5rem; } }
 
+  /* The department rail.
+
+     All eleven departments fit from 1280px. Between the point the rail
+     appears (1024px) and there, a few of them sit off the right-hand edge,
+     and a hidden scrollbar gives no hint that they do. A short fade on that
+     edge is the hint: it says "there is more this way" without adding a
+     control, and it is a mask rather than a line, so it stays inside the
+     no-borders policy. Above 1280px nothing is clipped and no fade is
+     declared, so the last department keeps its full contrast. */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    .dept-rail {
+      mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent 100%);
+    }
+  }
+
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
 

@@ -160,7 +160,7 @@ const CATEGORIES: C[] = [
     slug: "kitchen-dining",
     face: 4,
     name: "Kitchen & Dining",
-    menuLabel: "Kitchen & Dining",
+    menuLabel: "Kitchen",
     icon: "kettle",
     accent: "#2f5265",
     description:
@@ -664,7 +664,7 @@ const CATEGORIES: C[] = [
   {
     slug: "laundry-cleaning",
     name: "Laundry & Cleaning",
-    menuLabel: "Laundry & Cleaning",
+    menuLabel: "Laundry",
     icon: "spray",
     accent: "#2f5265",
     description:

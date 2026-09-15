@@ -39,14 +39,14 @@ export const MARK = {
 
 export const LOGO_COLOURS = {
   light: {
-    accent: "#26988f",
+    accent: "#a9820f",
     peak: "#2f5265",
     tail: "#2f5265",
     word: "#12171b",
     tagline: "#12171b"
   },
   dark: {
-    accent: "#4fbdb7",
+    accent: "#dcaf1f",
     peak: "#94b7c8",
     tail: "#94b7c8",
     word: "#f4f6f8",

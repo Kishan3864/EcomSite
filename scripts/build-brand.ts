@@ -41,9 +41,9 @@ const out = (...parts: string[]) => join(root, ...parts);
  */
 const COLOURS = {
   /** For light backgrounds. */
-  light: { accent: "#26988f", peak: "#2f5265", tail: "#2f5265", word: "#12171b", tagline: "#12171b" },
+  light: { accent: "#a9820f", peak: "#2f5265", tail: "#2f5265", word: "#12171b", tagline: "#12171b" },
   /** For dark backgrounds. */
-  dark: { accent: "#4fbdb7", peak: "#94b7c8", tail: "#94b7c8", word: "#f4f6f8", tagline: "#f4f6f8" },
+  dark: { accent: "#dcaf1f", peak: "#94b7c8", tail: "#94b7c8", word: "#f4f6f8", tagline: "#f4f6f8" },
 } as const;
 type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
 
@@ -61,9 +61,9 @@ type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
  */
 const TILE = "#1c333f";
 
-/** The W as the icon draws it: white strokes, one aqua accent, on the tile. */
+/** The W as the icon draws it: white strokes, one gold accent, on the tile. */
 const ICON = {
-  accent: "#4fbdb7",
+  accent: "#dcaf1f",
   peak: "#ffffff",
   tail: "#ffffff",
   word: "#ffffff",
