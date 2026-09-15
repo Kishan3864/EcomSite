@@ -123,7 +123,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
-          <section className="bg-surface">
+          <section className="bg-surface shadow-sm">
             <h2 className={PANEL_HEAD}>Items in this order</h2>
             <ul>
               {order.lines.map((line) => (
@@ -174,7 +174,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
             </ul>
           </section>
 
-          <section className="bg-surface">
+          <section className="bg-surface shadow-sm">
             <h2 className={PANEL_HEAD}>Shipment progress</h2>
             <div className="px-4 py-5 sm:px-5 sm:py-6">
               <TrackingTimeline events={order.tracking} />
@@ -186,7 +186,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
             block across the full width. grid-cols-1 and min-w-0 let a long AWB
             wrap inside its column instead of stretching it. */}
         <aside className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:block lg:space-y-4">
-          <section className="bg-surface">
+          <section className="bg-surface shadow-sm">
             <h2 className={PANEL_HEAD}>Payment summary</h2>
             {/* A ledger, the same one the homepage sets under a product: label
                 left, figure right, a rule between every pair. */}
@@ -216,7 +216,7 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
           </section>
 
           {facts.map((fact) => (
-            <section key={fact.title} className="bg-surface">
+            <section key={fact.title} className="bg-surface shadow-sm">
               <h2 className={PANEL_HEAD}>{fact.title}</h2>
               {/* Long AWBs and unbroken address lines wrap instead of widening
                   the column. */}

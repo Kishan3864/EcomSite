@@ -81,15 +81,36 @@ export function buttonClasses(
     // Press feedback on touch screens only; outline and link have no active state.
     "tap",
     VARIANTS[variant],
-    // A light edge on every solid button.
-    //
-    // Tinted black at 8% rather than a grey, because it has to sit on gold,
-    // on ocean and on pale grey alike: a fixed grey that reads as an edge on
-    // the secondary button reads as a scratch on the gold one. An inset ring
-    // also keeps the button exactly its stated height.
-    //
-    // `ghost` and `link` are words, not boxes, and are left alone.
-    variant !== "ghost" && variant !== "link" && "shadow-[inset_0_0_0_1px_rgb(0_0_0/0.08)]",
+    /**
+     * Three layers, and each is doing a job.
+     *
+     *   inset 0 1px white/13%   a lit top edge. One pixel of the button's own
+     *                           colour mixed towards white, which is what a
+     *                           physical key looks like under a room light and
+     *                           is most of why a button reads as pressable
+     *                           rather than as a coloured rectangle.
+     *   inset ring black/9%     the edge. Tinted black rather than a fixed
+     *                           grey, because the same class sits on gold, on
+     *                           ocean and on pale grey — a grey that reads as
+     *                           an edge on the secondary button reads as a
+     *                           scratch on the gold one. Inset, so the button
+     *                           stays exactly its stated height.
+     *   0 1px 2px black/9%      the ground shadow, barely there.
+     *
+     * Hover lifts it — the ring tightens and the ground shadow spreads — and
+     * press inverts it: the top highlight goes out and the shadow moves
+     * inside, so the button looks pushed into the page rather than merely
+     * recoloured. `transition` above already covers box-shadow.
+     *
+     * `ghost` and `link` are words, not boxes, and are left alone.
+     */
+    variant !== "ghost" &&
+      variant !== "link" &&
+      [
+        "shadow-[inset_0_1px_0_0_rgb(255_255_255/0.13),inset_0_0_0_1px_rgb(0_0_0/0.09),0_1px_2px_0_rgb(18_23_27/0.09)]",
+        "hover:shadow-[inset_0_1px_0_0_rgb(255_255_255/0.16),inset_0_0_0_1px_rgb(0_0_0/0.11),0_3px_8px_-2px_rgb(18_23_27/0.17)]",
+        "active:shadow-[inset_0_0_0_1px_rgb(0_0_0/0.13),inset_0_2px_5px_-1px_rgb(18_23_27/0.2)]",
+      ].join(" "),
     SIZES[size],
     // `link` is a word inside a sentence rather than a control, so it gives the
     // box back after the size has been applied. tailwind-merge keeps the last

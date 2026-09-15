@@ -328,7 +328,7 @@ export function EmptyState({
         // Vertical padding is one fluid class (~32–40px on a phone, 4rem from
         // 640px up) rather than py-10 sm:py-16: callers pass a plain py-*, and
         // a surviving sm:py-16 would override theirs on desktop.
-        "flex flex-col items-center justify-center bg-surface px-4 py-[min(4rem,10vw)] text-center sm:px-6",
+        "flex flex-col items-center justify-center bg-surface shadow-sm px-4 py-[min(4rem,10vw)] text-center sm:px-6",
         className,
       )}
     >

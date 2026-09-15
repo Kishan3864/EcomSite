@@ -56,7 +56,11 @@ const remove = process.argv.includes("--remove");
 
 const POOL: Record<string, string[]> = {
   "kitchen-dining": [
-    "1556909114-f6e7ad7d3136", "1584990347449-a2d4c2c9ca42", "1590794056226-79ef3a8147e1",
+    // Slot 1 held 1584990347449-a2d4c2c9ca42 until Unsplash retired it, which
+    // left the tawa and the kadai as blank grey tiles on the homepage. It is a
+    // duplicate of slot 10 for now — nine apart in the rotation, so the two
+    // products never land next to each other in a grid.
+    "1556909114-f6e7ad7d3136", "1593618998160-e34014e67546", "1590794056226-79ef3a8147e1",
     "1565958011703-44f9829ba187", "1610701596007-11502861dcfa", "1607098665874-fd193397547b",
     "1544787219-7f47ccb76574", "1600585154340-be6161a56a0c", "1594385208974-2e75f8d7bb48",
     "1578916171728-46686eac8d58", "1563822249366-3efb23b8e0c9", "1593618998160-e34014e67546",
@@ -113,7 +117,9 @@ const POOL: Record<string, string[]> = {
     "1556909212-d5b604d0c90d", "1585659722983-3a675dabf23d", "1574269909862-7e1d70bb8078",
     "1584622650111-993a426fbf0a", "1586208958839-06c17cacdf08", "1595246140625-573b715d11dc",
     "1631679706909-1844bbd07221", "1600585152220-90363fe7e115", "1556911220-bff31c812dba",
-    "1616628188540-925618b98319", "1583845112203-29329902332e", "1558618666-fcd25c85cd64",
+    // Slot 9 held 1616628188540-925618b98319, retired the same way; it took the
+    // floor wiper and the pedal bin with it. Duplicate of slot 3.
+    "1584622650111-993a426fbf0a", "1583845112203-29329902332e", "1558618666-fcd25c85cd64",
   ],
 };
 

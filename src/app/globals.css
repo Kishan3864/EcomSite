@@ -65,11 +65,21 @@
      CONSTRAINT: gold-400 is the accent button's fill and carries
      ink-950 text, not white — 8.76:1 that way. The white-on-gold version
      of that button belongs on gold-600 (4.97:1). */
-  --color-gold-50: #fdf7e8;
-  --color-gold-100: #faedc6;
-  --color-gold-200: #f4dc8c;
-  --color-gold-300: #ebc64f;
-  --color-gold-400: #dcaf1f;
+  /* The top of the scale was softened on 15 Sep. #dcaf1f was a saturated
+     mustard: it read as a highlighter rather than as gold, and on a page
+     this pale it was the loudest thing on screen — which is wrong when the
+     product photograph is supposed to be. Same hue, chroma pulled back and
+     lightness raised, so it reads as antique gold. Ink still sits on the
+     button at 9.5:1, comfortably past the 4.5:1 it needs.
+
+     Only 50-400 moved. 500 is the focus ring and 600-900 are lettering;
+     lightening those would cost contrast that is already close to its
+     floor (the ring is 3.24:1 against canvas, and needs 3.0). */
+  --color-gold-50: #fdf8ec;
+  --color-gold-100: #faf0d2;
+  --color-gold-200: #f2e2ad;
+  --color-gold-300: #e8cf8b;
+  --color-gold-400: #ddb85e;
   --color-gold-500: #a9820f;
   --color-gold-600: #8c6b0d;
   --color-gold-700: #74590e;
@@ -494,6 +504,30 @@
  */
 @utility table-row-line {
   box-shadow: inset 0 -1px 0 0 var(--color-hairline);
+}
+
+/**
+ * A block of details, drawn as a panel.
+ *
+ * The delivery ledger under a price, the specifications on a product, the
+ * registration facts on the about page: rows of label-and-value that were
+ * sitting directly on the canvas with nothing holding them, so they read as
+ * loose text rather than as a printed table.
+ *
+ * A white surface, the hairline that `--shadow-sm` carries as its first
+ * layer, and two soft layers under it. Deliberately the lightest elevation
+ * the site has — it has to say "this is one object" and then stop, because
+ * the thing next to it is usually a photograph.
+ */
+@utility detail-panel {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+
+  /* The last row would otherwise draw its own rule along the panel's bottom
+     edge — two hairlines a pixel apart. */
+  & > *:last-child {
+    box-shadow: none;
+  }
 }
 
 @layer components {

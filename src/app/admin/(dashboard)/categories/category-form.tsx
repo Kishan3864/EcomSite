@@ -306,7 +306,7 @@ export function CategoryForm({
                   name="accent"
                   value={accent}
                   onChange={(e) => setAccent(e.target.value.trim())}
-                  className={cn(inputCls, "max-w-[160px] font-mono text-[13px]", !accentValid && "")}
+                  className={cn(inputCls, "max-w-[160px] font-mono text-[13px]", !accentValid && "shadow-[inset_0_0_0_1px_var(--color-sale-500)]")}
                   placeholder="#2c837c"
                   maxLength={7}
                   required

@@ -46,7 +46,7 @@ export const LOGO_COLOURS = {
     tagline: "#12171b"
   },
   dark: {
-    accent: "#dcaf1f",
+    accent: "#ddb85e",
     peak: "#94b7c8",
     tail: "#94b7c8",
     word: "#f4f6f8",

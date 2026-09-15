@@ -33,7 +33,7 @@ export function GstInvoiceOption({
   }
 
   return (
-    <div className="bg-surface p-4">
+    <div className="bg-surface shadow-sm p-4">
       <label className="flex cursor-pointer items-start gap-3">
         <input
           type="checkbox"

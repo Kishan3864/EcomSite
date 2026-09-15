@@ -90,7 +90,7 @@ export function ContactStep() {
       }
     >
       <Form id="checkout-contact" onSubmit={submit} className="space-y-6">
-        <section className="bg-surface p-4 sm:p-5">
+        <section className="bg-surface shadow-sm p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3 pb-3">
             <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Contact details
@@ -125,7 +125,7 @@ export function ContactStep() {
                   key={row.label}
                   className={cn(
                     "flex min-h-11 flex-wrap items-center gap-x-4 gap-y-0.5 py-2",
-                    i > 0 && "",
+                    i > 0 && "rule-hair-t",
                   )}
                 >
                   <dt className="w-[72px] shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">

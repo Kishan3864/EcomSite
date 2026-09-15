@@ -175,11 +175,11 @@ export function QuickView({
             </Button>
           </div>
 
-          <dl>
+          <dl className="detail-panel px-4">
             {ledger.map((row) => (
               <div
                 key={row.label}
-                className="flex items-baseline justify-between gap-4 py-3"
+                className="table-row-line flex items-baseline justify-between gap-4 py-3"
               >
                 <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   {row.label}

@@ -80,7 +80,7 @@ export function AddMemberForm() {
   }
 
   return (
-    <Form action={action} className="grid gap-4 bg-surface p-5">
+    <Form action={action} className="grid gap-4 bg-surface shadow-sm p-5">
       <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">
         Add a team member
       </h2>
@@ -148,7 +148,7 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <div className="bg-surface p-5">
+    <div className="bg-surface shadow-sm p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-[14px] font-semibold text-ink-950">

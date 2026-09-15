@@ -122,7 +122,7 @@ export function ReturnsClient({
           />
         </section>
       ) : (
-        <section className="bg-surface">
+        <section className="bg-surface shadow-sm">
           <h2 className={PANEL_HEAD}>Your return requests</h2>
           <ul>
             <AnimatePresence initial={false}>
@@ -231,7 +231,7 @@ export function ReturnsClient({
           />
         </section>
       ) : (
-        <section className="bg-surface">
+        <section className="bg-surface shadow-sm">
           <header className="px-4 py-3 sm:px-5 sm:py-3.5">
             <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Start a new return

@@ -36,7 +36,7 @@ export function TrackLookup({ orders }: { orders: Order[] }) {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Form action={action} className="bg-surface p-4 sm:p-6">
+      <Form action={action} className="bg-surface shadow-sm p-4 sm:p-6">
         <Field
           label="Order number"
           htmlFor="order-number"
@@ -179,7 +179,7 @@ export function TrackDetail({ order }: { order: Order | null }) {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Reveal className="bg-surface">
+      <Reveal className="bg-surface shadow-sm">
         <div className="deep-plane px-4 py-6 sm:px-8 sm:py-9">
           <span className="eyebrow eyebrow-dark tabular-nums">{order.number}</span>
           <h1 className="mt-3 font-display text-[24px] leading-[1.08] tracking-[-0.025em] text-white sm:mt-4 sm:text-[36px]">

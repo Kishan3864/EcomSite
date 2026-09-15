@@ -138,7 +138,7 @@ export function ListingToolbar({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.16 }}
-                  className="absolute right-0 top-[calc(100%+6px)] z-20 w-60 bg-surface"
+                  className="absolute right-0 top-[calc(100%+6px)] z-20 w-60 bg-surface shadow-lg"
                 >
                   {SORT_OPTIONS.map((option) => {
                     const selected = currentSort === option.value;

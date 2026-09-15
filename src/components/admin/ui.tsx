@@ -64,7 +64,7 @@ export function Card({
   padded?: boolean;
 }) {
   return (
-    <section className={cn("overflow-hidden bg-surface", className)}>
+    <section className={cn("overflow-hidden bg-surface shadow-sm", className)}>
       {(title || actions) && (
         <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
           <div>
@@ -133,7 +133,7 @@ export function StatCard({
       {body}
     </Link>
   ) : (
-    <div className="bg-surface p-4">{body}</div>
+    <div className="bg-surface shadow-sm p-4">{body}</div>
   );
 }
 
@@ -239,7 +239,7 @@ export function statusLabelOf(status: string) {
 
 export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("overflow-x-auto bg-surface", className)}>
+    <div className={cn("overflow-x-auto bg-surface shadow-sm", className)}>
       <table className="w-full min-w-[640px] border-collapse text-[13px]">{children}</table>
     </div>
   );
@@ -408,7 +408,7 @@ export function FormSection({
   className?: string;
 }) {
   return (
-    <section className={cn("bg-surface p-5", className)}>
+    <section className={cn("bg-surface shadow-sm p-5", className)}>
       <h2 className="text-[12px] font-semibold uppercase tracking-[0.1em] text-ink-900">{title}</h2>
       {description && <p className="mt-1 text-[12.5px] text-ink-500">{description}</p>}
       <div className="mt-4 grid gap-4">{children}</div>

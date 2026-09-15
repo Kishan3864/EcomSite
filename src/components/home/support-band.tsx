@@ -17,7 +17,7 @@ import { BUSINESS } from "@/config/business";
  */
 
 const CARD =
-  "group flex flex-col bg-surface p-4 transition-[box-shadow,,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md sm:p-5";
+  "group flex flex-col bg-surface p-4 transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md sm:p-5";
 
 export function SupportBand() {
   const routes = [

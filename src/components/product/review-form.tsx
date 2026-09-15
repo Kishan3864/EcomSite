@@ -178,7 +178,7 @@ export function ReviewForm({ productId }: { productId: string }) {
   return (
     <Form
       onSubmit={submit}
-      className="mt-5 bg-surface p-4 sm:mt-6 sm:p-5"
+      className="mt-5 bg-surface shadow-sm p-4 sm:mt-6 sm:p-5"
     >
       <h3 className="text-[14px] font-semibold text-ink-950 sm:text-[15px]">Write a review</h3>
       <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500">

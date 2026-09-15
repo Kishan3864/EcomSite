@@ -472,7 +472,7 @@ export function RelationPicker({
         <p className="text-[12.5px] text-ink-400">None selected.</p>
       )}
       <div className="relative">
-        <div className={cn("flex h-9 items-center gap-2 bg-canvas px-3", full && "opacity-60")}>
+        <div className={cn("field-edge flex h-9 items-center gap-2 bg-canvas px-3", full && "opacity-60")}>
           <Search size={14} className="shrink-0 text-ink-400" />
           <input
             value={query}

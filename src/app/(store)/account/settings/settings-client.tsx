@@ -104,7 +104,7 @@ function Section({
   // The one block shape the whole account area is built from: a hairline
   // rectangle on the white sheet, small caps on a rule across the top.
   return (
-    <section id={id} className="scroll-mt-32 bg-surface">
+    <section id={id} className="scroll-mt-32 bg-surface shadow-sm">
       <header className="px-4 py-3 sm:px-5 sm:py-3.5">
         <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {title}

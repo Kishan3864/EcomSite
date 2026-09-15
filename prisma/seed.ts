@@ -44,6 +44,7 @@ import {
   savedAddresses,
 } from "../src/data/marketing";
 import { demoOrders } from "../src/data/orders";
+import { repairRetiredPhotographs } from "../scripts/repair-images";
 
 const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -655,6 +656,18 @@ async function main() {
 
   await seedAdmin();
   await seedSettings();
+
+  /**
+   * Heal photographs whose source has been retired.
+   *
+   * Runs on every deploy and before the early return below, because the live
+   * catalogue was not written by this file — it came from
+   * `scripts/seed-catalogue.ts` — and a dead photograph there shows up as a
+   * blank grey tile with a price under it. It writes nothing once the rows are
+   * already correct, and it never fails the seed if Unsplash is unreachable.
+   */
+  const healed = await repairRetiredPhotographs(db, { write: true, quiet: true });
+  if (healed) console.log(`  repointed ${healed} retired photograph(s)`);
 
   if (!withDemo) {
     console.log("\nDone — essentials only.");

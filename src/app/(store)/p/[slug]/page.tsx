@@ -241,7 +241,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                     {/* The row is 44px tall and no taller until it has to be:
                         a long value on a phone wraps and takes the height it
                         needs rather than being squeezed into a fixed column. */}
-                    <dl className="mt-2">
+                    <dl className="detail-panel mt-2 px-4 sm:px-5">
                       {group.items.map((item) => (
                         <div
                           key={item.label}

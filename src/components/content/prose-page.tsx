@@ -180,7 +180,7 @@ export function ProsePage({
           ))}
 
           {footerNote && (
-            <div className="max-w-[68ch] break-words bg-surface p-4 text-[13.5px] leading-[1.7] text-ink-600 sm:p-5">
+            <div className="max-w-[68ch] break-words bg-surface shadow-sm p-4 text-[13.5px] leading-[1.7] text-ink-600 sm:p-5">
               {footerNote}
             </div>
           )}

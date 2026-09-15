@@ -80,7 +80,7 @@ export function RecentlyViewed({
             <Link
               key={item.productId}
               href={`/p/${item.slug}`}
-              className="tap group flex flex-col overflow-hidden bg-surface shadow-xs transition-[box-shadow,,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
+              className="tap group flex flex-col overflow-hidden bg-surface shadow-xs transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
             >
               {/* The same 3:4 crop as the product tile and its loading
                   skeleton, so a product does not change shape between the

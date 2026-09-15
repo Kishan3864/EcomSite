@@ -124,7 +124,7 @@ export function ProcessingClient() {
   if (phase === "failed" && failure) {
     return (
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
-        <div className="w-full max-w-md bg-surface p-5 text-center sm:p-7">
+        <div className="w-full max-w-md bg-surface shadow-sm p-5 text-center sm:p-7">
           {/* A drawn frame around the glyph rather than a tinted tile; the
               colour that matters is in the mark, not behind it. */}
           <span
@@ -186,7 +186,7 @@ export function ProcessingClient() {
             <Logo href={null} />
           </div>
 
-          <div className="bg-surface">
+          <div className="bg-surface shadow-sm">
             <div className="deep-plane px-4 py-7 text-center sm:px-6 sm:py-9">
               {/* Within the house limits: nothing here scales by more than
                   three per cent and nothing travels. The old frame popped from

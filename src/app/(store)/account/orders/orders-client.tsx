@@ -92,7 +92,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
           }
         />
       ) : (
-        <ul className="bg-surface">
+        <ul className="bg-surface shadow-sm">
           {filtered.map((order, i) => (
             <Reveal
               as="li"

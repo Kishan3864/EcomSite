@@ -27,7 +27,7 @@ export function Shimmer({ className }: { className?: string }) {
  */
 export function ProductCardSkeleton() {
   return (
-    <div className="bg-surface">
+    <div className="bg-surface shadow-sm">
       <Shimmer className="aspect-[3/4] w-full" />
       <div className="px-2.5 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-4">
         <Shimmer className="h-[11px] w-14 sm:w-16" />

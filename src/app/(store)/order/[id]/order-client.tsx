@@ -120,7 +120,7 @@ export function OrderClient({ order }: { order: Order | null }) {
             )}
           </p>
 
-          <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-surface px-3 py-2.5 sm:mt-6 sm:px-4">
+          <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-surface shadow-sm px-3 py-2.5 sm:mt-6 sm:px-4">
             <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Order number
             </span>
@@ -202,7 +202,7 @@ export function OrderClient({ order }: { order: Order | null }) {
           )}
 
           {/* Delivery promise */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-surface p-4 sm:gap-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-surface shadow-sm p-4 sm:gap-4 sm:p-5">
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 Estimated delivery
@@ -222,7 +222,7 @@ export function OrderClient({ order }: { order: Order | null }) {
           </div>
 
           {/* Items */}
-          <section className="bg-surface">
+          <section className="bg-surface shadow-sm">
             <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
               <span className="tabular-nums">{order.lines.length}</span> item
               {order.lines.length > 1 ? "s" : ""}
@@ -316,7 +316,7 @@ export function OrderClient({ order }: { order: Order | null }) {
           </div>
 
           {/* Totals */}
-          <section className="bg-surface">
+          <section className="bg-surface shadow-sm">
             <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
               Payment summary
             </h2>

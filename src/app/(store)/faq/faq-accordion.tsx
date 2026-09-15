@@ -38,7 +38,11 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
     // min-w-0: this is a grid column, and the chip rail's full width would
     // otherwise become its minimum and push the page sideways on a phone.
     <div className="min-w-0">
-      <div className="mb-3 flex h-11 items-center gap-2.5 bg-canvas px-3.5 transition-colors sm:mb-5 sm:h-12 sm:px-4">
+      {/* The wrapper owns the edge and the input inside it draws none --
+          same arrangement as the masthead search, and for the same reason:
+          with the base ring left on the input it came out as a box drawn
+          inside a box. */}
+      <div className="field-edge mb-3 flex h-11 items-center gap-2.5 bg-canvas px-3.5 transition-colors sm:mb-5 sm:h-12 sm:px-4">
         <Search size={16} className="shrink-0 text-ink-400" />
         <label htmlFor="faq-search" className="sr-only">
           Search the help centre
@@ -73,7 +77,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
       </div>
 
       {total === 0 ? (
-        <div className="bg-surface px-4 py-10 text-center sm:px-6 sm:py-14">
+        <div className="bg-surface shadow-sm px-4 py-10 text-center sm:px-6 sm:py-14">
           <PaperMark size={120} className="mx-auto text-ink-300" />
           {/* break-words: the query is echoed back and may be one long word. */}
           <h2 className="mt-5 break-words font-display text-[20px] tracking-[-0.02em] text-ink-950">

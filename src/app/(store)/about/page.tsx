@@ -234,28 +234,28 @@ export default function AboutPage() {
               <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                 Business details
               </h3>
-              <dl className="mt-3">
-                <div className="flex items-baseline justify-between gap-5 py-3">
+              <dl className="detail-panel mt-3 px-4 sm:px-5">
+                <div className="table-row-line flex items-baseline justify-between gap-5 py-3">
                   <dt className="shrink-0 text-[13px] text-ink-500">Trading name</dt>
                   <dd className="min-w-0 text-right text-[13px] font-medium text-ink-900 wrap-break-word">
                     {BUSINESS.legalName}
                   </dd>
                 </div>
-                <div className="flex items-baseline justify-between gap-5 py-3">
+                <div className="table-row-line flex items-baseline justify-between gap-5 py-3">
                   <dt className="shrink-0 text-[13px] text-ink-500">Operated by</dt>
                   <dd className="min-w-0 text-right text-[13px] font-medium text-ink-900 wrap-break-word">
                     {BUSINESS.proprietorName}
                   </dd>
                 </div>
                 {isFilled(BUSINESS.gstin) ? (
-                  <div className="flex items-baseline justify-between gap-5 py-3">
+                  <div className="table-row-line flex items-baseline justify-between gap-5 py-3">
                     <dt className="shrink-0 text-[13px] text-ink-500">GSTIN</dt>
                     <dd className="min-w-0 text-right text-[13px] font-medium tabular-nums text-ink-900 wrap-break-word">
                       {BUSINESS.gstin}
                     </dd>
                   </div>
                 ) : null}
-                <div className="flex items-baseline justify-between gap-5 py-3">
+                <div className="table-row-line flex items-baseline justify-between gap-5 py-3">
                   <dt className="shrink-0 text-[13px] text-ink-500">Business address</dt>
                   <dd className="min-w-0 text-right text-[13px] font-medium leading-[1.55] text-ink-900 wrap-break-word">
                     {formatAddress()}

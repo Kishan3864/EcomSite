@@ -395,7 +395,7 @@ export function BuyBox({
       {/* The ledger. Four icon tiles said less than five ruled lines do, and
           the warranty no longer has to be cut to its first three words to fit
           a tile — it is printed as the manufacturer wrote it. */}
-      <dl>
+      <dl className="detail-panel px-4 sm:px-5">
         {ledger.map((row) => (
           <div
             key={row.label}

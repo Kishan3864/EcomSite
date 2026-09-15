@@ -84,12 +84,14 @@ export function CartDrawer() {
                 Start shopping
               </Link>
             }
-            className="bg-transparent py-8 sm:py-10"
+            /* The drawer is already a panel, so the empty state gives back
+               both the surface and the edge that go with it. */
+            className="bg-transparent py-8 shadow-none sm:py-10"
           />
         </div>
       ) : (
         <>
-          <div className="bg-surface px-4 py-3 sm:px-5 sm:py-4">
+          <div className="bg-surface shadow-sm px-4 py-3 sm:px-5 sm:py-4">
             {toFreeShipping > 0 ? (
               <p className="text-[13px] leading-[1.5] text-ink-600">
                 Add{" "}
@@ -115,7 +117,7 @@ export function CartDrawer() {
             </div>
           </div>
 
-          <ul className="bg-surface">
+          <ul className="bg-surface shadow-sm">
             <AnimatePresence initial={false}>
               {cart.map((line) => (
                 <motion.li

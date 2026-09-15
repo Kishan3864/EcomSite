@@ -180,7 +180,7 @@ export function SearchBox({
   return (
     <div
       className={cn(
-        "flex h-10 items-center gap-2 bg-surface px-3 transition-colors",
+        "field-edge flex h-10 items-center gap-2 bg-surface px-3 transition-colors",
         className,
       )}
     >

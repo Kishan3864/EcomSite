@@ -386,11 +386,11 @@ export function Spotlight({
               arrives, what happens if it is wrong, how it can be paid for and
               what the postage costs — which is every question a first-time
               customer of an unknown shop actually has. */}
-          <dl className="mt-6">
+          <dl className="detail-panel mt-6 px-4 sm:px-5">
             {ledger.map((row) => (
               <div
                 key={row.label}
-                className="flex h-11 items-center justify-between gap-4"
+                className="table-row-line flex h-11 items-center justify-between gap-4"
               >
                 <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   {row.label}
