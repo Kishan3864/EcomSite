@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import type { PaymentMethodId } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
+import { useCheckoutPaymentMethods } from "@/components/checkout/payment-methods";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ const CHIP =
  */
 export function PaymentStep() {
   const { cart, checkout, config, customer, dispatch, hydrated } = useStore();
+  const paymentMethods = useCheckoutPaymentMethods();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +65,7 @@ export function PaymentStep() {
     ? `${prepaidOnly.title} is prepaid only, so this order cannot be sent cash on delivery.`
     : `Cash on delivery is available on orders up to ${formatINR(config.codLimit)}.`;
 
-  const available = config.paymentMethods.map((m) => m.id);
+  const available = paymentMethods.map((m) => m.id);
 
   // A draft saved in this browser before the shop's payment options changed may
   // name one that is no longer offered — "card" from when the gateway listed
@@ -81,10 +83,10 @@ export function PaymentStep() {
   useEffect(() => {
     if (!hydrated || checkout.paymentMethod || !customer?.preferredPayment) return;
     const preferred = customer.preferredPayment as PaymentMethodId;
-    if (!config.paymentMethods.some((m) => m.id === preferred)) return;
+    if (!paymentMethods.some((m) => m.id === preferred)) return;
     if (preferred === "cod" && !codAllowed) return;
     dispatch({ type: "checkout/patch", patch: { paymentMethod: preferred, paymentDetail: null } });
-  }, [hydrated, checkout.paymentMethod, customer, config.paymentMethods, codAllowed, dispatch]);
+  }, [hydrated, checkout.paymentMethod, customer, paymentMethods, codAllowed, dispatch]);
 
   function choose(id: PaymentMethodId) {
     dispatch({ type: "checkout/patch", patch: { paymentMethod: id, paymentDetail: null } });
@@ -136,7 +138,7 @@ export function PaymentStep() {
     >
       <div className="space-y-3 sm:space-y-4">
         <ul className="space-y-2 sm:space-y-3">
-          {config.paymentMethods.map((method) => {
+          {paymentMethods.map((method) => {
             const disabled = method.id === "cod" && !codAllowed;
 
             return (

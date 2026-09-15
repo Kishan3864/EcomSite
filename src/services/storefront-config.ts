@@ -107,6 +107,73 @@ function paymentSwitches(s: StoreSettings) {
   };
 }
 
+/**
+ * The payment options as words, given whether the gateway is being offered.
+ *
+ * Shared by the shell and the checkout so the two can never describe the same
+ * option differently — the only thing that varies between them is whether the
+ * gateway is in the list at all.
+ */
+function describeMethods(
+  s: StoreSettings,
+  opts: { gatewayOn: boolean; gatewayInTestMode: boolean; testGatewayIsPublic: boolean },
+): PaymentMethod[] {
+  const { upi } = paymentSwitches(s);
+
+  // Order matters: this is the order the payment step lists them in.
+  const enabled: PaymentMethod["id"][] = [
+    ...(upi ? (["upi"] as const) : []),
+    ...(opts.gatewayOn ? (["online"] as const) : []),
+    ...(s.payments.cod ? (["cod"] as const) : []),
+  ];
+
+  return enabled.map((id) => {
+    const copy = PAYMENT_COPY[id];
+    // Whoever reaches this branch needs telling which of the two systems
+    // they are about to pay on, and what it will and will not do.
+    if (id === "online" && opts.gatewayInTestMode) {
+      return {
+        id,
+        name: copy.name,
+        description: opts.testGatewayIsPublic
+          ? "Demo — this is the card and net-banking checkout being tested. No real money moves and nothing is dispatched. Use UPI above for a real order."
+          : "Test mode — only you can see this option. No real money moves, and the order it confirms is a test order. Customers are offered UPI.",
+        badge: opts.testGatewayIsPublic ? "Demo only" : "Test · owner only",
+      };
+    }
+    return { id, ...copy };
+  });
+}
+
+/**
+ * What the checkout offers, which is the only place the owner's own session
+ * can change the answer.
+ *
+ * This reads cookies, so it belongs to `/checkout` and nowhere else. It used to
+ * live in `getStorefrontConfig()` — which the shell around *every* storefront
+ * page calls — and the cost of that was the whole shop: one `cookies()` read in
+ * a shared layout opts every route into dynamic rendering, so switching the
+ * gateway on in the admin panel quietly turned 200-odd prerendered pages into
+ * pages rebuilt from the database on every single request.
+ */
+export async function getCheckoutPaymentMethods(): Promise<PaymentMethod[]> {
+  const s = await getSettings();
+  const { gatewaySwitchedOn, gatewayInTestMode, testGatewayIsPublic, gatewayForCustomers } =
+    paymentSwitches(s);
+
+  // Only ask who is here in the one case that can change the outcome.
+  const ownerIsWatching =
+    gatewaySwitchedOn && gatewayInTestMode && !testGatewayIsPublic
+      ? !!(await getAdminSession())
+      : false;
+
+  return describeMethods(s, {
+    gatewayOn: gatewayForCustomers || ownerIsWatching,
+    gatewayInTestMode,
+    testGatewayIsPublic,
+  });
+}
+
 export async function getStorefrontConfig(): Promise<StorefrontConfig> {
   const s = await getSettings();
 
@@ -128,48 +195,18 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     },
   ];
 
-  const {
-    upi: upiOn,
-    gatewaySwitchedOn,
-    gatewayInTestMode,
-    testGatewayIsPublic,
-    gatewayForCustomers,
-  } = paymentSwitches(s);
+  const { gatewayInTestMode, testGatewayIsPublic, gatewayForCustomers } = paymentSwitches(s);
 
-  // The admin session is the one part of the answer that differs from visitor
-  // to visitor, so it is asked for here rather than in the shared helper — and
-  // only in the case that can change the outcome, because reading the cookie at
-  // all is what forces a page into dynamic rendering.
-  const ownerIsWatching =
-    gatewaySwitchedOn && gatewayInTestMode && !testGatewayIsPublic
-      ? !!(await getAdminSession())
-      : false;
-  const gatewayOn = gatewayForCustomers || ownerIsWatching;
-
-  // Order matters: this is the order the payment step lists them in.
-  const enabled: PaymentMethod["id"][] = [
-    ...(upiOn ? (["upi"] as const) : []),
-    ...(gatewayOn ? (["online"] as const) : []),
-    ...(s.payments.cod ? (["cod"] as const) : []),
-  ];
-
+  // Deliberately no admin session, therefore no cookies: this is the shell
+  // around every page, and one cookie read here costs the whole site its
+  // static rendering. The owner's own view of a test gateway is resolved in
+  // `getCheckoutPaymentMethods()`, on the one route that can afford it.
   return {
     deliveryOptions,
-    paymentMethods: enabled.map((id) => {
-      const copy = PAYMENT_COPY[id];
-      // Whoever reaches this branch needs telling which of the two systems
-      // they are about to pay on, and what it will and will not do.
-      if (id === "online" && gatewayInTestMode) {
-        return {
-          id,
-          name: copy.name,
-          description: testGatewayIsPublic
-            ? "Demo — this is the card and net-banking checkout being tested. No real money moves and nothing is dispatched. Use UPI above for a real order."
-            : "Test mode — only you can see this option. No real money moves, and the order it confirms is a test order. Customers are offered UPI.",
-          badge: testGatewayIsPublic ? "Demo only" : "Test · owner only",
-        };
-      }
-      return { id, ...copy };
+    paymentMethods: describeMethods(s, {
+      gatewayOn: gatewayForCustomers,
+      gatewayInTestMode,
+      testGatewayIsPublic,
     }),
     rates: {
       freeThreshold: s.shipping.freeThreshold,

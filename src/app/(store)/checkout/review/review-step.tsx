@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
+import { useCheckoutPaymentMethods } from "@/components/checkout/payment-methods";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Price } from "@/components/ui/primitives";
@@ -19,6 +20,7 @@ const SIGN_IN_HREF = "/login?next=/checkout/review";
 export function ReviewStep() {
   const { cart, checkout, addresses, config, customer, dispatch, hydrated, sessionChecked } =
     useStore();
+  const paymentMethods = useCheckoutPaymentMethods();
   const router = useRouter();
   const [placing, setPlacing] = useState(false);
 
@@ -30,7 +32,7 @@ export function ReviewStep() {
   const address = addresses.find((a) => a.id === checkout.addressId);
   const delivery =
     config.deliveryOptions.find((d) => d.id === checkout.deliveryId) ?? config.deliveryOptions[0];
-  const payment = config.paymentMethods.find((p) => p.id === checkout.paymentMethod);
+  const payment = paymentMethods.find((p) => p.id === checkout.paymentMethod);
   const totals = computeTotals(cart, {
     delivery,
     rates: config.rates,
