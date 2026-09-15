@@ -121,7 +121,7 @@ export function PaperMark({ size, className }: { size?: number; className?: stri
        * The address label, and the only colour and the only filled shape in the
        * drawing. It is a grid cell less a hairline of air on each side, which is
        * why it is 6 and not 8 — it belongs to the grid rather than floating on
-       * top of it. One small aqua square against an otherwise monochrome
+       * top of it. One small gold square against an otherwise monochrome
        * drawing is what stops the mark reading as a technical diagram, and being
        * the single filled thing means it survives at 120px, where an outline
        * this size would close up.

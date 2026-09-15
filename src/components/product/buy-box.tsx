@@ -229,8 +229,10 @@ export function BuyBox({
                       // The colour sits inset inside its own frame, so the
                       // chosen one is marked by the frame going to ink rather
                       // than by a ring that would shift the row as it lands.
+                      // The frame is a background behind 3px of padding now,
+                      // which draws the same band a border used to.
                       "tap relative flex h-10 w-10 items-center justify-center p-[3px] transition-colors duration-200 sm:h-9 sm:w-9",
-                      selected ? "" : "",
+                      selected ? "bg-ink-950" : "bg-ink-200 hover:bg-ink-400",
                       !option.inStock && "opacity-40",
                     )}
                   >
@@ -327,12 +329,12 @@ export function BuyBox({
           hand at sm:h-13 — a class the theme does not define — and sat a few
           pixels proud of the row. */}
       <div className="flex items-stretch gap-2 sm:gap-2.5">
-        {/* Aqua, and the first of the pair.
+        {/* Gold, and the first of the pair.
             "Add to bag" was an outline control beside a filled "Buy now",
             which reads as a shop steering every visitor into a one-item
             checkout. Adding to the bag is the action most people want and the
             one the product grid has been training them to press, so it gets
-            the same aqua here that it has on every card. */}
+            the same gold here that it has on every card. */}
         <Button
           size="lg"
           variant="accent"

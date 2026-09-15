@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
  * smaller than 16px the moment it is focused, which no app would do.
  *
  * The field no longer suppresses its outline. That `outline-none` was throwing
- * away the aqua focus ring the whole site is keyboard-navigated by, leaving
+ * away the gold focus ring the whole site is keyboard-navigated by, leaving
  * a one-shade border change as the only sign of where the cursor was.
  */
 export const inputClasses = (invalid?: boolean) =>
@@ -133,12 +133,14 @@ export function OptionCard({
   return (
     <div
       className={cn(
-        "bg-surface shadow-sm transition-colors duration-200",
-        // Choosing a card changes the colour of its rule; it does not lay a
-        // second rule over the first. The shadow that used to sit here was only
-        // ever faking a 2px border, and a shadow is the one thing this design
-        // never draws structure with.
-        selected ? "" : "",
+        "transition-colors duration-200",
+        // The chosen card is the one that is tinted and lifted, with an ocean
+        // bar down its edge. It used to be marked by its border going to
+        // brand-700; there are no borders now, so the state is carried by a
+        // fill, a shadow and an inset rule instead.
+        selected
+          ? "bg-brand-50 shadow-md rule-l [--rule-color:var(--color-brand-700)]"
+          : "bg-surface shadow-sm",
         disabled && "opacity-55",
         className,
       )}
@@ -152,8 +154,13 @@ export function OptionCard({
       >
         <span
           className={cn(
-            "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center is-circle transition-all",
-            selected ? "" : "",
+            "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center transition-all",
+            // A filled square with a white centre punched out of it by an
+            // inset shadow: the same read as a radio button, drawn without a
+            // border and without a radius.
+            selected
+              ? "bg-brand-700 shadow-[inset_0_0_0_4px_var(--color-surface)]"
+              : "bg-ink-200",
           )}
         />
         <span className="min-w-0 flex-1">

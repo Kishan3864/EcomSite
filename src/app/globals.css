@@ -1,23 +1,26 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ *
- *  OCEAN & AQUA — design tokens
+ *  OCEAN & GOLD — design tokens
  *
  *  Direction: a light, calm shop. The page is an off-white sheet; the
  *  chrome is white; a deep, desaturated ocean blue carries structure
- *  (links, primary buttons, the few dark planes) and a soft aqua
- *  carries every action. Both are cool. Nothing on the site is warm
- *  except the faint warmth of the paper itself, which is what keeps a
- *  cool palette from feeling clinical.
+ *  (links, primary buttons, the few dark planes) and a muted gold
+ *  carries every action.
+ *
+ *  The accent was a soft aqua before this, and it failed for a reason
+ *  worth recording: it sat about 25° of hue from the brand, so on
+ *  anything small — a badge, an icon, a chip — "navigate" and "buy"
+ *  read as the same colour. Gold sits opposite the blue instead, which
+ *  is the whole job of an accent on a shop: the button is never missed.
  *
  *  The owner's brief, verbatim: "lite theme, off white, calm, cool and
  *  peace colour combination". The dark-green-and-orange scheme before
  *  this one was rejected on sight for being heavy; this is its opposite
  *  in weight and the same in structure. The split of labour has not
  *  moved: `brand-*` is still the structural colour and `gold-*` is
- *  still the single accent. `gold-*` is now an aqua scale; the name is
- *  kept because it is spelled out in class strings across the app and
- *  renaming it would touch every one of them for no visual gain.
+ *  still the single accent — and for once the name `gold-*` is honest
+ *  about what is in it.
  *
  *  Token NAMES are load-bearing — 153 of the files under src/ name them
  *  as Tailwind classes. Change values here; never rename.
@@ -47,28 +50,31 @@
   --color-brand-900: #1c333f;
   --color-brand-950: #12222b;
 
-  /* Gold — aqua. Misnamed by history and kept that way on purpose (see
-     the header above). The one colour on the site that means "press
-     this": the eyebrow rule, the focus ring, and the filled call to
-     action. It sits about 25° of hue from the brand and far lighter, so
-     a shopper never confuses "navigate" with "buy".
+  /* Gold — a muted, slightly dusty gold. The one colour on the site that
+     means "press this": the eyebrow rule, the focus ring, and the filled
+     call to action. It is the complement of the ocean brand rather than a
+     neighbour of it, which is what stops a buy button and a link reading
+     as the same thing at badge size.
+
+     Deliberately not the bright orange an earlier scheme used — that was
+     rejected for being heavy. This is the same family two steps quieter.
 
      CONSTRAINT: gold-500 is the global :focus-visible outline, at
-     3.17:1 on canvas. Brightening it fails SC 1.4.11 site-wide with no
+     3.21:1 on canvas. Brightening it fails SC 1.4.11 site-wide with no
      error anywhere.
      CONSTRAINT: gold-400 is the accent button's fill and carries
-     ink-950 text, not white — 7.98:1 that way, 2.26:1 the other. The
-     white-on-aqua version of that button belongs on gold-600. */
-  --color-gold-50: #eaf7f6;
-  --color-gold-100: #cfeeeb;
-  --color-gold-200: #a6e0dc;
-  --color-gold-300: #7ccfca;
-  --color-gold-400: #4fbdb7;
-  --color-gold-500: #26988f;
-  --color-gold-600: #1d7d7a;
-  --color-gold-700: #1a6a68;
-  --color-gold-800: #17544f;
-  --color-gold-900: #113f3c;
+     ink-950 text, not white — 8.76:1 that way. The white-on-gold version
+     of that button belongs on gold-600 (4.97:1). */
+  --color-gold-50: #fdf7e8;
+  --color-gold-100: #faedc6;
+  --color-gold-200: #f4dc8c;
+  --color-gold-300: #ebc64f;
+  --color-gold-400: #dcaf1f;
+  --color-gold-500: #a9820f;
+  --color-gold-600: #8c6b0d;
+  --color-gold-700: #74590e;
+  --color-gold-800: #5f4a0f;
+  --color-gold-900: #4f3d0e;
 
   /* Sale — cool raspberry. Blue-leaning on purpose, so it stays in the
      cool family with everything else, and the most saturated swatch on
@@ -106,9 +112,10 @@
      tile reads as an object laid on the page and not as a slightly
      different white, on a mid-range LCD in daylight.
 
-     The canvas is off-white with the faintest warmth — the one warm note
-     on the site. Under cool blues and aquas a cool grey canvas reads as
-     a hospital; a sheet of slightly warm paper reads as calm. */
+     The canvas is off-white with the faintest warmth, which sits under
+     both the cool blue and the warm gold without fighting either. A cool
+     grey canvas under this palette reads as a hospital; a sheet of
+     slightly warm paper reads as calm. */
   --color-canvas: #f4f3f0;
   --color-surface: #ffffff;
   /* hairline and rule no longer draw anything by themselves: the shop has
@@ -464,7 +471,7 @@
   }
 
   /* The few dark planes: the editorial band, the footer, the auth panel, the
-     admin sign-in. Ocean holds it; aqua lights one corner.
+     admin sign-in. Ocean holds it; gold lights one corner.
      `.peacock-surface` was the old name and stays as an alias so the
      eight existing call sites keep working; new code says `.deep-plane`.
 
@@ -489,7 +496,7 @@
       );
   }
 
-  /* Section eyebrow: small caps over a short aqua rule. Used instead
+  /* Section eyebrow: small caps over a short gold rule. Used instead
      of the coloured pill labels the old design repeated on every band. */
   .eyebrow {
     display: inline-flex;

@@ -105,12 +105,10 @@ export function HeaderClient({
       <header
         className={cn(
           "sticky top-0 z-50 bg-surface/95 backdrop-blur-xl transition-shadow duration-300",
-          // On a phone at rest the search strip under this bar closes the
-          // masthead with its own hairline, so the bar's is made transparent
-          // rather than removed — the 1px stays in the box, which is what the
-          // listing toolbar's top-[57px] offset is measured against. Once the
-          // page scrolls the strip is gone and the bar rules itself again.
-          !isFunnelRoute(pathname) && !scrolled && "",
+          // The masthead is separated from the page by elevation alone now: it
+          // had a hairline under it, and a transparency trick on phones so the
+          // search strip below could own the one edge. With no borders left,
+          // neither exists and the shadow on scroll does the whole job.
           scrolled ? "shadow-sm" : "",
         )}
       >

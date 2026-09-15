@@ -21,8 +21,8 @@ import { QuickView } from "./quick-view";
  * selling — everything else on the tile is set quietly around it — but the
  * tile is a thing lying on the page rather than a rectangle drawn on it.
  *
- * The action is aqua, and it is the only aqua on the tile. Ocean carries
- * structure across the site and aqua carries what you press; in a grid that
+ * The action is gold, and it is the only gold on the tile. Ocean carries
+ * structure across the site and gold carries what you press; in a grid that
  * distinction is what lets somebody buy without reading, because the button is
  * the one thing that is not the same colour as everything around it.
  */
@@ -163,7 +163,7 @@ export function ProductCard({
         </Link>
 
         <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3 sm:pb-3.5 sm:pt-3">
-          {/* Ink, not aqua. The accent is worth something only while it is
+          {/* Ink, not gold. The accent is worth something only while it is
               rare, and a grid of twenty tiles was spending it twenty times on
               the least important line in the card. */}
           <p className="mb-1 truncate text-[10.5px] font-semibold uppercase tracking-[0.13em] text-ink-400">
@@ -240,7 +240,7 @@ export function ProductCard({
                   : added
                     // Confirmation flips to ocean on purpose: the button
                     // stops being an invitation the moment it has been taken,
-                    // and a still-aqua "Added" invites a second press.
+                    // and a still-gold "Added" invites a second press.
                     ? "bg-brand-700 text-white"
                     : "bg-gold-400 text-ink-950 hover:bg-gold-300",
               )}

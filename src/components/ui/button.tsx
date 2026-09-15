@@ -14,15 +14,15 @@ type Size = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
 /**
  * Buttons carry the site's two colours, each with one job.
  *
- * `accent` is aqua, and it means "this is the thing to press": add to bag,
- * wherever a bag exists. It is the same aqua on a product card, in the quick
+ * `accent` is gold, and it means "this is the thing to press": add to bag,
+ * wherever a bag exists. It is the same gold on a product card, in the quick
  * view, on the product page and in the bar that follows you down a phone
  * screen, so the action is one recognisable object the whole way through.
  *
  * `primary` is ocean, and it means "go on": buy now, place the order,
  * continue. Structure is ocean everywhere else on the site, so an ocean
  * button reads as part of the shop rather than as a second accent competing
- * with the aqua one.
+ * with the gold one.
  *
  * Everything secondary is a plain rule on the surface.
  *

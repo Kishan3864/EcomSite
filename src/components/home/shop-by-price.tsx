@@ -125,7 +125,7 @@ export function ShopByPrice({ prices }: { prices: number[] }) {
                 aria-hidden
                 className={
                   // The last door is the whole catalogue, so it is the one that
-                  // carries the aqua: it is the way through, not a filter.
+                  // carries the gold: it is the way through, not a filter.
                   i === bands.length - 1
                     ? "inline-flex h-8 w-8 items-center justify-center bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5"
                     : "inline-flex h-8 w-8 items-center justify-center bg-brand-50 text-brand-700 transition-transform duration-200 group-hover:translate-x-0.5"

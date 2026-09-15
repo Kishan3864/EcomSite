@@ -306,13 +306,13 @@ export function FilterPanel({
                   onChange={() => setParams({ rating: r.value })}
                   className="sr-only"
                 />
-                {/* A filled square inside an outlined one. The old radio was a
-                    ring of ocean, which was both the one round thing in a
-                    square rail and a second use of the accent colour. */}
+                {/* A small dark square inside a filled one. It was an
+                    outlined box until borders went; the box is now a grey
+                    fill and the chosen state is the ink square inside it. */}
                 <span
                   className={cn(
                     "flex h-[17px] w-[17px] shrink-0 items-center justify-center transition-colors duration-150",
-                    chosen ? "" : "",
+                    chosen ? "bg-ink-300" : "bg-ink-200 group-hover:bg-ink-300",
                   )}
                 >
                   {chosen && <span className="h-[9px] w-[9px] bg-ink-950" />}

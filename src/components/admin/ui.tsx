@@ -148,7 +148,7 @@ const TONE_CLASS: Record<Tone, string> = {
   sale: "bg-sale-100 text-sale-700",
   ink: "bg-ink-900 text-white",
   // Lavender rather than the teal this tone once was: the brand ramp is now
-  // ocean and the accent is aqua, so a teal pill and a brand pill read as the
+  // ocean and the accent is gold, so a teal pill and a brand pill read as the
   // same thing and an order in transit stops being distinguishable from one
   // already delivered. Lavender is the one cool hue nothing else on the site
   // uses, which keeps the admin inside the shop's all-cool palette rather

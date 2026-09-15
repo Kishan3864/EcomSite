@@ -18,8 +18,8 @@ async function subscribe(_prev: State, formData: FormData): Promise<State> {
 }
 
 /**
- * White rather than aqua, even though this is the strongest thing on the
- * plane. The footer is on every page of the shop, and aqua is spent on one
+ * White rather than gold, even though this is the strongest thing on the
+ * plane. The footer is on every page of the shop, and gold is spent on one
  * filled call to action per page — if the newsletter took it here, no page
  * could ever have its own. White on ocean is the stronger fill in any case.
  */
@@ -80,8 +80,8 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
         />
         <SubscribeButton />
       </div>
-      {/* The message is set in white and marked by an aqua rule rather than
-          being written in aqua itself: on this plane the only other gold is
+      {/* The message is set in white and marked by a gold rule rather than
+          being written in gold itself: on this plane the only other gold is
           the subscribe button, and an error painted the same colour as the
           thing that caused it reads as part of the button. */}
       {state.error && (

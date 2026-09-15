@@ -79,13 +79,30 @@ export function PaymentStep() {
         ? "online"
         : null;
 
-  // How this customer usually pays, offered until they choose for themselves.
+  // Arrive with a method already chosen, rather than with nothing chosen.
+  //
+  // In order of what we know about this shopper:
+  //   1. how they usually pay, if they are signed in and have a preference;
+  //   2. otherwise the first method the shop offers — which is the one the
+  //      list calls Recommended, because `paymentMethods` is already in the
+  //      order the shop wants them read.
+  //
+  // Cash on delivery is never auto-selected: it is the one method that can be
+  // unavailable for the basket in front of them, and it is the one where a
+  // default nobody noticed costs the shop money. It is always a deliberate
+  // choice. Anything already stored on the draft wins over both.
   useEffect(() => {
-    if (!hydrated || checkout.paymentMethod || !customer?.preferredPayment) return;
-    const preferred = customer.preferredPayment as PaymentMethodId;
-    if (!paymentMethods.some((m) => m.id === preferred)) return;
-    if (preferred === "cod" && !codAllowed) return;
-    dispatch({ type: "checkout/patch", patch: { paymentMethod: preferred, paymentDetail: null } });
+    if (!hydrated || checkout.paymentMethod) return;
+
+    const preferred = customer?.preferredPayment as PaymentMethodId | undefined;
+    const usable = (id: PaymentMethodId | undefined): id is PaymentMethodId =>
+      Boolean(id) && paymentMethods.some((m) => m.id === id) && !(id === "cod" && !codAllowed);
+
+    const fallback = paymentMethods.find((m) => m.id !== "cod")?.id;
+    const pick = usable(preferred) ? preferred : usable(fallback) ? fallback : undefined;
+    if (!pick) return;
+
+    dispatch({ type: "checkout/patch", patch: { paymentMethod: pick, paymentDetail: null } });
   }, [hydrated, checkout.paymentMethod, customer, paymentMethods, codAllowed, dispatch]);
 
   function choose(id: PaymentMethodId) {

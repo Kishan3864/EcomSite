@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 /**
- * The head of a detail section, set the way the homepage bands are: an aqua
+ * The head of a detail section, set the way the homepage bands are: a gold
  * rule and small caps, the name in the display face, and a rule under the pair.
  * It is a step smaller than a band title so that the product's own name — the
  * only h1 on the page — still outranks everything written about it.
