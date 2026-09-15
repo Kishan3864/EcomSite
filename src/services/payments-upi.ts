@@ -120,8 +120,8 @@ Nothing is dispatched until you confirm.`,
 <p>UPI reference (UTR): <strong style="font-family:monospace;font-size:16px">${utr}</strong><br>
 Phone: ${order.contactPhone}<br>Email: ${order.contactEmail}</p>
 <p>Check <strong>${utr}</strong> for <strong>${formatINR(order.total)}</strong> in your bank or UPI app, then confirm or reject it:</p>
-<p><a href="${url}" style="background:#0a0c0b;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px">Open the order</a></p>
-<p style="color:#676d69">Nothing is dispatched until you confirm.</p>`,
+<p><a href="${url}" style="background:#12171b;color:#fff;padding:10px 18px;text-decoration:none;border-radius:6px">Open the order</a></p>
+<p style="color:#627079">Nothing is dispatched until you confirm.</p>`,
   }).catch(() => {});
 
   revalidatePath(`/order/${order.id}`);

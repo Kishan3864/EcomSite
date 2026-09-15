@@ -27,8 +27,8 @@ import { cn, discountPercent, formatINR } from "@/lib/utils";
  * everything flat in hairlines on paper — beautiful, and the reason the shop
  * read as a printed catalogue rather than a place to buy a kettle.
  *
- * Colour is spent to one rule: evergreen is structure and orientation, ember
- * is the thing to press. A band may carry one ember object and no more.
+ * Colour is spent to one rule: ocean is structure and orientation, aqua
+ * is the thing to press. A band may carry one aqua object and no more.
  */
 
 /* ------------------------------------------------------------------ *
@@ -59,7 +59,7 @@ function BandHeader({
   // it was the single strongest reason the shop read as a printed catalogue:
   // ruled bands stack down the page like chapters. A shelf in a shop is not a
   // chapter, so the rule is gone and the shelf is marked the way a shop marks
-  // one — a short ember tick, the name, and a way through to the rest of it.
+  // one — a short aqua tick, the name, and a way through to the rest of it.
   return (
     <div className={className}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-4">

@@ -85,7 +85,7 @@ export function BundleSection({
                   className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-700)] disabled:opacity-60"
                 />
                 <span className="min-w-0 flex-1">
-                  {/* Ink, not evergreen. The one coloured word in the whole band
+                  {/* Ink, not ocean. The one coloured word in the whole band
                       was sitting on its least important line — the label that
                       only says which of these is the product already open. */}
                   {i === 0 && (

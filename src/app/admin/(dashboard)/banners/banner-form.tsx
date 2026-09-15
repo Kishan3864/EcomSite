@@ -277,7 +277,7 @@ export function BannerForm({
             </div>
             {placement === "MID" && (
               <div>
-                <Label htmlFor="b-theme" hint="Dark sits on the evergreen plane; light on a pale card.">
+                <Label htmlFor="b-theme" hint="Dark sits on the ocean plane; light on a pale card.">
                   Theme
                 </Label>
                 <select

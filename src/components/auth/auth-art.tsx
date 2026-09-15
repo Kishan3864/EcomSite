@@ -15,11 +15,11 @@ import { cn } from "@/lib/utils";
  * This is inline SVG — a couple of kilobytes in the HTML, no request, no
  * layout shift, and it sharpens rather than blurs on a retina screen. The
  * geometry follows the rest of the shop: square corners, hairlines, one accent
- * in ember. Purely decorative, so it is hidden from screen readers; the
+ * in aqua. Purely decorative, so it is hidden from screen readers; the
  * panel's heading and list carry the meaning.
  *
  * Not one colour here is a hex. The drawing sat on this panel through a repaint
- * of the whole site still wearing the old evergreen and brass, which is how the
+ * of the whole site still wearing the old ocean and brass, which is how the
  * problem was noticed at all, and a literal colour is only a promise to be
  * stale again next time. Everything is a token or is currentColor, and the
  * default ink goes through `cn` first, so a caller that wants a different ink
@@ -55,7 +55,7 @@ export function AuthArt({ className }: { className?: string }) {
           renderer that does not premultiply drags the wash through grey on the
           way out. */}
       <defs>
-        <radialGradient id="auth-wash-ember" cx="0.5" cy="0.5" r="0.5">
+        <radialGradient id="auth-wash-aqua" cx="0.5" cy="0.5" r="0.5">
           <stop
             offset="0"
             stopColor="color-mix(in oklab, var(--color-gold-500) 34%, transparent)"
@@ -66,7 +66,7 @@ export function AuthArt({ className }: { className?: string }) {
             stopOpacity="0"
           />
         </radialGradient>
-        <radialGradient id="auth-wash-evergreen" cx="0.5" cy="0.5" r="0.5">
+        <radialGradient id="auth-wash-ocean" cx="0.5" cy="0.5" r="0.5">
           <stop
             offset="0"
             stopColor="color-mix(in oklab, var(--color-brand-500) 40%, transparent)"
@@ -78,8 +78,8 @@ export function AuthArt({ className }: { className?: string }) {
           />
         </radialGradient>
       </defs>
-      <circle cx="380" cy="110" r="150" fill="url(#auth-wash-ember)" />
-      <circle cx="130" cy="360" r="170" fill="url(#auth-wash-evergreen)" />
+      <circle cx="380" cy="110" r="150" fill="url(#auth-wash-aqua)" />
+      <circle cx="130" cy="360" r="170" fill="url(#auth-wash-ocean)" />
 
       {/* The route a parcel takes: dashed, with the doorstep at the end. The
           dash repeats every 12 units so it divides the 60-unit grid behind it
@@ -95,8 +95,8 @@ export function AuthArt({ className }: { className?: string }) {
       />
       <rect x="34" y="398" width="12" height="12" fill="var(--color-gold-400)" />
 
-      {/* The parcel. Front, top and side faces — square, banded in ember.
-          Three steps of the one evergreen do all the shading, and the face that
+      {/* The parcel. Front, top and side faces — square, banded in aqua.
+          Three steps of the one ocean do all the shading, and the face that
           turns away is the panel's own brand-950, so the box loses itself in the
           ground there and only its edge holds the silhouette. */}
       <g>
@@ -105,7 +105,7 @@ export function AuthArt({ className }: { className?: string }) {
         <polygon points="170,190 310,190 310,336 170,336" fill="var(--color-brand-800)" />
 
         {/* The band, carried across all three faces so the box reads as solid.
-            One ember at three strengths — brightest where the top catches the
+            One aqua at three strengths — brightest where the top catches the
             light, held back where the side turns away — rather than three
             separate mixed colours doing the same job. */}
         <polygon

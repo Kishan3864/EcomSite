@@ -327,12 +327,12 @@ export function BuyBox({
           hand at sm:h-13 — a class the theme does not define — and sat a few
           pixels proud of the row. */}
       <div className="flex items-stretch gap-2 sm:gap-2.5">
-        {/* Ember, and the first of the pair.
+        {/* Aqua, and the first of the pair.
             "Add to bag" was an outline control beside a filled "Buy now",
             which reads as a shop steering every visitor into a one-item
             checkout. Adding to the bag is the action most people want and the
             one the product grid has been training them to press, so it gets
-            the same ember here that it has on every card. */}
+            the same aqua here that it has on every card. */}
         <Button
           size="lg"
           variant="accent"

@@ -119,13 +119,12 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   onMouseEnter={() => open(category.slug)}
                   onFocus={() => open(category.slug)}
                   aria-expanded={isOpen}
-                  // The rail this sits on is evergreen now, so the department
-                  // names are set in white rather than ink and the marker
-                  // under the open one is ember: it is the only thing in the
-                  // masthead that says "you are pointing at this".
+                  // Ink on the light rail, and a brand-coloured marker under
+                  // the open department: the one thing in the masthead that
+                  // says "you are pointing at this".
                   className={cn(
                     "relative inline-flex items-center px-3.5 py-2 text-[13.5px] transition-colors duration-200",
-                    isOpen ? "font-semibold text-white" : "font-medium text-brand-100 hover:text-white",
+                    isOpen ? "font-semibold text-ink-950" : "font-medium text-ink-700 hover:text-ink-950",
                   )}
                 >
                   {category.name}
@@ -136,7 +135,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   <span
                     aria-hidden
                     className={cn(
-                      "absolute inset-x-3.5 bottom-0 h-[2px] origin-left bg-gold-400 transition-transform duration-200 ease-out",
+                      "absolute inset-x-3.5 bottom-0 h-[2px] origin-left bg-brand-600 transition-transform duration-200 ease-out",
                       isOpen ? "scale-x-100" : "scale-x-0",
                     )}
                   />
@@ -157,9 +156,9 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
             onMouseEnter={() => open(active.slug)}
             style={{ width: `min(${sheetWidth}px, calc(100vw - 4rem))` }}
             // A hairline and a real shadow, not the old ink frame. The frame
-            // was there to give the sheet an edge against the white tiles it
-            // floats over; dropping out of an evergreen bar it already has
-            // one, and the black outline only made it look like a dialog.
+            // gave the sheet an edge against the white tiles it floats over,
+            // but the black outline made it look like a dialog; the elevation
+            // does the same job without the weight.
             className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-2xl border border-hairline bg-surface shadow-xl"
           >
             <div

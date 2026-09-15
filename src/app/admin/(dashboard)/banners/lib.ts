@@ -33,7 +33,7 @@ export const PLACEMENT_META: Record<BannerPlacement, { label: string; descriptio
   MID: {
     label: "Feature banners",
     description: "Split image-and-copy panels between product rails. The first two live banners are shown.",
-    hint: "Landscape image around 1200×900. Light theme sits on a pale card; dark on the evergreen plane.",
+    hint: "Landscape image around 1200×900. Light theme sits on a pale card; dark on the ocean plane.",
   },
   PROMO_TILE: {
     label: "Promo tiles",

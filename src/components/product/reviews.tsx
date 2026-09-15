@@ -105,8 +105,8 @@ export function ReviewsSection({
               </div>
             )}
 
-            {/* Five bars in one ink. Colouring the top two evergreen, the middle
-                one ember and the bottom two rose turned a record of what
+            {/* Five bars in one ink. Colouring the top two ocean, the middle
+                one aqua and the bottom two rose turned a record of what
                 customers said into the shop's own verdict on it, and spent the
                 two colours that are meant to mean a signal and a reduction on
                 a chart. The bar is a measure; only the filtered row changes

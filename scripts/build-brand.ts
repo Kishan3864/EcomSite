@@ -29,7 +29,7 @@ const out = (...parts: string[]) => join(root, ...parts);
 /* ------------------------------------------------------------- colours */
 
 /**
- * The site's evergreen and ember. These are literals rather than tokens
+ * The site's ocean and aqua. These are literals rather than tokens
  * because the assets below are written straight to disk as SVG and PNG, where
  * no stylesheet — and so no `var(--color-…)` — can reach them; they are kept in
  * step with the @theme block in src/app/globals.css by hand.
@@ -41,14 +41,14 @@ const out = (...parts: string[]) => join(root, ...parts);
  */
 const COLOURS = {
   /** For light backgrounds. */
-  light: { accent: "#e35510", peak: "#0a5f48", tail: "#0a5f48", word: "#0a0c0b", tagline: "#0a0c0b" },
+  light: { accent: "#26988f", peak: "#2f5265", tail: "#2f5265", word: "#12171b", tagline: "#12171b" },
   /** For dark backgrounds. */
-  dark: { accent: "#fa7e38", peak: "#76cfab", tail: "#76cfab", word: "#f7f7f6", tagline: "#f7f7f6" },
+  dark: { accent: "#4fbdb7", peak: "#94b7c8", tail: "#94b7c8", word: "#f4f6f8", tagline: "#f4f6f8" },
 } as const;
 type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
 
 /**
- * Favicon tile: the brand's deep evergreen, not the page canvas.
+ * Favicon tile: the brand's deep ocean, not the page canvas.
  *
  * The icon used to be the W in indigo on a near-white tile, which is almost
  * invisible at 16px in a browser tab — a pale square among other pale squares,
@@ -59,11 +59,11 @@ type Palette = Record<"accent" | "peak" | "tail" | "word" | "tagline", string>;
  * palette is dark ink meant for a pale background, and putting it on this tile
  * would be near-black on near-black.
  */
-const TILE = "#06382c";
+const TILE = "#1c333f";
 
-/** The W as the icon draws it: white strokes, one ember accent, on the tile. */
+/** The W as the icon draws it: white strokes, one aqua accent, on the tile. */
 const ICON = {
-  accent: "#fa7e38",
+  accent: "#4fbdb7",
   peak: "#ffffff",
   tail: "#ffffff",
   word: "#ffffff",

@@ -14,15 +14,15 @@ type Size = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
 /**
  * Buttons carry the site's two colours, each with one job.
  *
- * `accent` is ember, and it means "this is the thing to press": add to bag,
- * wherever a bag exists. It is the same orange on a product card, in the quick
+ * `accent` is aqua, and it means "this is the thing to press": add to bag,
+ * wherever a bag exists. It is the same aqua on a product card, in the quick
  * view, on the product page and in the bar that follows you down a phone
  * screen, so the action is one recognisable object the whole way through.
  *
- * `primary` is evergreen, and it means "go on": buy now, place the order,
- * continue. Structure is evergreen everywhere else on the site, so a green
+ * `primary` is ocean, and it means "go on": buy now, place the order,
+ * continue. Structure is ocean everywhere else on the site, so an ocean
  * button reads as part of the shop rather than as a second accent competing
- * with the orange one.
+ * with the aqua one.
  *
  * Everything secondary is a plain rule on the surface.
  *
@@ -32,7 +32,7 @@ type Size = "xs" | "sm" | "md" | "lg" | "icon" | "icon-sm";
  * barely darker than the page it stood on.
  */
 const VARIANTS: Record<Variant, string> = {
-  // Evergreen, not near-black. A filled black button is a typographic device;
+  // Ocean, not near-black. A filled black button is a typographic device;
   // a shop's buy button should be the brand's own colour, so that "the thing
   // you press to spend money" is one recognisable object from the product card
   // through the bag to the last step of the checkout.

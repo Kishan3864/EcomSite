@@ -22,8 +22,8 @@ export interface TrendPoint {
 // chart's hues are spelled out here and kept in step with the theme by hand.
 // These two are brand-700 and the same hue at the weight a fill needs to sit
 // under a 2px line without competing with it.
-const MARK = "#0a5f48";
-const MARK_SOFT = "rgba(38, 52, 110, 0.12)";
+const MARK = "#2f5265";
+const MARK_SOFT = "rgba(47, 82, 101, 0.12)";
 
 export function TrendChart({
   points,
@@ -102,8 +102,8 @@ export function TrendChart({
           const v = niceMax - (niceMax / gridSteps) * i;
           return (
             <g key={i}>
-              <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="#e2e4e1" strokeWidth="1" />
-              <text x={W - PAD.right} y={y - 4} textAnchor="end" fontSize="10" fill="#9aa09b">
+              <line x1={PAD.left} x2={W - PAD.right} y1={y} y2={y} stroke="#d7dde2" strokeWidth="1" />
+              <text x={W - PAD.right} y={y - 4} textAnchor="end" fontSize="10" fill="#627079">
                 {format === "money" ? compactMoney(v) : Math.round(v).toLocaleString("en-IN")}
               </text>
             </g>
@@ -129,7 +129,7 @@ export function TrendChart({
               y={H - 8}
               textAnchor={i === 0 ? "start" : i === points.length - 1 ? "end" : "middle"}
               fontSize="10"
-              fill="#676d69"
+              fill="#627079"
             >
               {p.label}
             </text>
@@ -139,7 +139,7 @@ export function TrendChart({
         {/* Hover crosshair */}
         {hover != null && (
           <g>
-            <line x1={xy[hover].x} x2={xy[hover].x} y1={PAD.top} y2={PAD.top + innerH} stroke="#c8cbc7" strokeWidth="1" strokeDasharray="3 3" />
+            <line x1={xy[hover].x} x2={xy[hover].x} y1={PAD.top} y2={PAD.top + innerH} stroke="#bcc5cc" strokeWidth="1" strokeDasharray="3 3" />
             <circle cx={xy[hover].x} cy={xy[hover].y} r="5" fill="#fff" stroke={MARK} strokeWidth="2" />
           </g>
         )}

@@ -46,20 +46,20 @@ const LINKS = {
  * looks like, so that a change of theme cannot leave the names telling lies.
  */
 const C = {
-  canvas: "#f6f7f5",
+  canvas: "#f4f3f0",
   surface: "#ffffff",
-  brandDeep: "#06382c",
-  brandSoft: "#0a5f48",
-  brandTint: "#d5f2e4",
-  accent: "#e35510",
-  accentSoft: "#fa7e38",
-  accentDeep: "#9c340c",
-  ink: "#141715",
-  body: "#3b403c",
-  soft: "#515652",
-  muted: "#676d69",
+  brandDeep: "#1c333f",
+  brandSoft: "#2f5265",
+  brandTint: "#dbe7ed",
+  accent: "#26988f",
+  accentSoft: "#4fbdb7",
+  accentDeep: "#1a6a68",
+  ink: "#1f262b",
+  body: "#414c54",
+  soft: "#4d5962",
+  muted: "#627079",
   hairline: "#d4dae1",
-  rule: "#c8cbc7",
+  rule: "#bcc5cc",
 };
 
 const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
@@ -226,7 +226,7 @@ function button(href: string, label: string): string {
 function expectRows(): string {
   return EXPECT.map(
     (point, i) => `<tr>
-<td width="44" valign="top" class="serif" style="padding:16px 0;border-top:1px solid ${C.hairline};font-family:${SERIF};font-size:15px;line-height:22px;color:${C.accent};mso-line-height-rule:exactly;">${String(i + 1).padStart(2, "0")}</td>
+<td width="44" valign="top" class="serif" style="padding:16px 0;border-top:1px solid ${C.hairline};font-family:${SERIF};font-size:15px;line-height:22px;color:${C.accentDeep};mso-line-height-rule:exactly;">${String(i + 1).padStart(2, "0")}</td>
 <td valign="top" style="padding:16px 0;border-top:1px solid ${C.hairline};">
 <p style="margin:0;font-family:${SANS};font-size:15px;line-height:22px;font-weight:700;color:${C.ink};mso-line-height-rule:exactly;">${esc(point.title)}</p>
 <p style="margin:4px 0 0;font-family:${SANS};font-size:14px;line-height:22px;color:${C.soft};mso-line-height-rule:exactly;">${esc(point.body)}</p>

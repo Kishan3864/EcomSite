@@ -129,7 +129,7 @@ export async function Footer() {
       {/* Links */}
       <div className="container-page grid gap-6 py-7 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:py-14 md:grid-cols-4 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-12">
         <div className="sm:col-span-2 md:col-span-4 lg:col-span-1">
-          <Logo href={null} />
+          <Logo />
           <p className="mt-3.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:mt-4 sm:text-[14px] sm:leading-[1.6]">
             {BRAND.description}
           </p>

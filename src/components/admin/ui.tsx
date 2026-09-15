@@ -147,11 +147,14 @@ const TONE_CLASS: Record<Tone, string> = {
   gold: "bg-gold-100 text-gold-800",
   sale: "bg-sale-100 text-sale-700",
   ink: "bg-ink-900 text-white",
-  // Teal rather than the blue this tone once was: the brand ramp is now evergreen,
-  // so a blue pill and a brand pill read as the same thing and an order in
-  // transit stops being distinguishable from one already delivered. Literal,
-  // because this is the one tone with no home in the scale.
-  sky: "bg-[#dcecf3] text-[#0e5266]",
+  // Lavender rather than the teal this tone once was: the brand ramp is now
+  // ocean and the accent is aqua, so a teal pill and a brand pill read as the
+  // same thing and an order in transit stops being distinguishable from one
+  // already delivered. Lavender is the one cool hue nothing else on the site
+  // uses, which keeps the admin inside the shop's all-cool palette rather
+  // than reaching for a warm swatch to stand apart. Literal, because this is
+  // the one tone with no home in the scale; 7.1:1 for the text on its ground.
+  sky: "bg-[#e8e4f7] text-[#4b3f8a]",
 };
 
 export function Pill({

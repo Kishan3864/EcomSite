@@ -87,10 +87,10 @@ export function BottomNav() {
                       )}
                     />
                     {count > 0 && (
-                      /* Ink, to match the header's own count. A bag count is
+                      /* Brand, to match the header's own count. A bag count is
                          a fact, not a reduction, and the two badges are on
                          screen together on a phone. */
-                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-ink-950 px-1 text-[10px] font-bold leading-none text-white tabular-nums">
+                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums">
                         {count > 9 ? "9+" : count}
                       </span>
                     )}

@@ -49,13 +49,13 @@ const SITE = (isFilled(BUSINESS.url) ? BUSINESS.url : "http://localhost:3000").r
  * describing a colour the file no longer uses.
  */
 const C = {
-  canvas: "#f6f7f5",
+  canvas: "#f4f3f0",
   surface: "#ffffff",
-  brandDeep: "#06382c",
-  brandTint: "#ade4cc",
-  ink: "#141715",
-  body: "#3b403c",
-  muted: "#676d69",
+  brandDeep: "#1c333f",
+  brandTint: "#bcd3de",
+  ink: "#1f262b",
+  body: "#414c54",
+  muted: "#627079",
   hairline: "#d4dae1",
 };
 

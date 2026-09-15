@@ -109,16 +109,26 @@ function Lockup({
   );
 }
 
-export function Logo({
-  className,
-  size = "md",
-  href = "/",
-}: {
+interface LogoProps {
   className?: string;
   size?: "sm" | "md" | "lg";
+  /**
+   * Where the logo goes. Defaults to home, because a logo that does nothing
+   * when clicked is the one convention every shopper has already learned.
+   * Pass `null` only where the logo is purely a mark — a printed invoice, an
+   * email — and there is no page to go to.
+   */
   href?: string | null;
-}) {
-  const inner = <Lockup tone="light" size={size} className={className} />;
+}
+
+/**
+ * One wrapper for both tones, so the reversed logo cannot drift from the
+ * standard one. It did: `LogoLight` was a bare SVG with no link around it, and
+ * the moment the header switched to the reversed logo the site's logo stopped
+ * going home. Both tones now go through here.
+ */
+function LinkedLockup({ tone, className, size = "md", href = "/" }: LogoProps & { tone: LogoTone }) {
+  const inner = <Lockup tone={tone} size={size} className={className} />;
   if (!href) return inner;
 
   return (
@@ -128,13 +138,11 @@ export function Logo({
   );
 }
 
-/** Reversed logo for dark surfaces (footer, hero overlays). */
-export function LogoLight({
-  className,
-  size = "md",
-}: {
-  className?: string;
-  size?: "sm" | "md" | "lg";
-}) {
-  return <Lockup tone="dark" size={size} className={className} />;
+export function Logo(props: LogoProps) {
+  return <LinkedLockup tone="light" {...props} />;
+}
+
+/** Reversed logo for dark surfaces (footer band, auth panel, hero overlays). */
+export function LogoLight(props: LogoProps) {
+  return <LinkedLockup tone="dark" {...props} />;
 }

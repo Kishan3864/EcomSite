@@ -18,8 +18,9 @@ import { discountPercent, formatINR } from "@/lib/utils";
  *
  * It is a panel with corners rather than a full-bleed band, so the first thing
  * on the page reads as an object laid on the shop rather than as the page
- * itself continuing under the header. That is also what keeps it from merging
- * into the evergreen masthead directly above it.
+ * itself continuing under the header. The panel is a soft brand tint on the
+ * off-white canvas — light, like everything else on the site now — with the
+ * product photograph as the one saturated thing in it.
  *
  * Everything on it is real:
  *
@@ -38,7 +39,7 @@ const primaryCta =
   "inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300";
 
 const secondaryCta =
-  "inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/25 bg-white/10 px-6 text-[14px] font-semibold text-white backdrop-blur-sm transition-colors duration-200 hover:bg-white/20";
+  "inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-ink-300 bg-surface px-6 text-[14px] font-semibold text-ink-900 transition-colors duration-200 hover:border-ink-400 hover:bg-ink-50";
 
 export function HeroBanner({
   hasProducts,
@@ -108,13 +109,13 @@ export function HeroBanner({
 
   return (
     <section className="container-page pt-3 sm:pt-5">
-      <div className="deep-plane relative overflow-hidden rounded-3xl">
+      <div className="relative overflow-hidden rounded-3xl border border-brand-100 bg-brand-50">
         <div className="grid items-center gap-0 lg:grid-cols-[1.05fr_0.95fr]">
           {/* ── The words ─────────────────────────────────────────────── */}
           <div className="order-2 px-5 pb-8 pt-7 sm:px-9 sm:pb-11 sm:pt-10 lg:order-1 lg:py-16 lg:pl-12 lg:pr-8">
-            <span className="eyebrow eyebrow-dark">{eyebrow}</span>
+            <span className="eyebrow">{eyebrow}</span>
 
-            <h1 className="mt-4 font-display leading-[1.04] tracking-[-0.035em] text-white">
+            <h1 className="mt-4 font-display leading-[1.04] tracking-[-0.035em] text-ink-950">
               <span className="text-[clamp(30px,7.6vw,38px)] lg:text-[clamp(38px,3.5vw,54px)]">
                 {heading}
               </span>
@@ -123,7 +124,7 @@ export function HeroBanner({
             {/* A measure, not a breakpoint. About 46 characters is the width a
                 line can reach before the eye loses its place returning to the
                 left edge, and it holds at every screen size. */}
-            <p className="mt-4 max-w-[46ch] text-[14px] leading-[1.65] text-brand-100 sm:text-[15px]">
+            <p className="mt-4 max-w-[46ch] text-[14px] leading-[1.65] text-ink-600 sm:text-[15px]">
               {body}
             </p>
 
@@ -137,10 +138,10 @@ export function HeroBanner({
               </Link>
             </div>
 
-            <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/15 pt-5">
+            <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-brand-100 pt-5">
               {promises.map(({ icon: Icon, label }) => (
-                <li key={label} className="flex items-center gap-2 text-[12.5px] text-brand-100">
-                  <Icon size={15} className="shrink-0 text-gold-300" aria-hidden />
+                <li key={label} className="flex items-center gap-2 text-[12.5px] text-ink-600">
+                  <Icon size={15} className="shrink-0 text-brand-600" aria-hidden />
                   {label}
                 </li>
               ))}
@@ -155,9 +156,9 @@ export function HeroBanner({
                   makes it read as a product rather than as a backdrop. */}
               {/* Square on desktop, not 4/5. The taller crop made the panel
                   about 850px high beside a column of words about 560px high,
-                  and `items-center` spent the difference as empty evergreen
+                  and `items-center` spent the difference as empty panel
                   above and below the text. */}
-              <div className="relative aspect-[16/11] w-full overflow-hidden bg-brand-800 sm:aspect-[16/9] lg:aspect-square lg:rounded-2xl lg:shadow-xl">
+              <div className="relative aspect-[16/11] w-full overflow-hidden bg-ink-100 sm:aspect-[16/9] lg:aspect-square lg:rounded-2xl lg:shadow-lg">
                 <Image
                   src={picture.url}
                   alt={picture.alt}

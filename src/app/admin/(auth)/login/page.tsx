@@ -45,7 +45,7 @@ export default async function AdminLoginPage({
           <h2 className="mt-4 max-w-md font-display text-[34px] leading-[1.1] tracking-[-0.025em] text-white">
             Everything a customer sees is decided in here.
           </h2>
-          {/* A ruled index rather than a column of gold ticks: ember is spent
+          {/* A ruled index rather than a column of gold ticks: aqua is spent
               on the eyebrow rule and nowhere else on this screen. */}
           <ul className="mt-7 max-w-md border-b border-white/15">
             {[

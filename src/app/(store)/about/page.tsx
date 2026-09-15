@@ -111,7 +111,7 @@ function Band({
 }) {
   return (
     <div className={className}>
-      {/* Matched to the shelf headings on the homepage: an ember eyebrow, the
+      {/* Matched to the shelf headings on the homepage: an aqua eyebrow, the
           name, and a pill through to the rest. The ruled band this used to sit
           in is gone for the same reason it went there — ruled bands stack down
           a page like chapters of a book, and this is a shop. */}
@@ -379,7 +379,7 @@ export default function AboutPage() {
         </section>
       </div>
 
-      {/* The full stop: the page's one dark plane and its one filled ember
+      {/* The full stop: the page's one dark plane and its one filled aqua
           call to action, placed last so it lands as an ending rather than
           competing with the masthead. */}
       <section className="deep-plane">

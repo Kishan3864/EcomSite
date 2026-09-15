@@ -25,7 +25,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { Logo, LogoLight } from "@/components/brand/logo";
+import { Logo } from "@/components/brand/logo";
 import { DepartmentGlyph } from "@/components/illustration/department-glyph";
 import { MegaMenu } from "./mega-menu";
 import { SearchBar } from "./search-bar";
@@ -94,21 +94,24 @@ export function HeaderClient({
     <>
       <AnnouncementBar />
 
-      {/* Evergreen, not white.
-          A white masthead over a white product grid gives the page no top: the
-          chrome and the goods are the same plane, and the shopper has to read
-          the header to find it. A saturated bar is the oldest device in retail
-          for a reason — it says "the shop starts here", it makes the search
-          field an object sitting IN something rather than a rectangle drawn on
-          nothing, and it gives the one ember accent (the bag count) a ground
-          dark enough to shout from.
-          The bar is brand-900 with the announcement strip a shade darker above
-          it and the department rail a shade lighter below, so the whole
-          masthead reads as one block with its own internal order. */}
+      {/* A light masthead on a light page.
+          It was briefly a saturated dark bar — the classic retail device — and
+          the owner's verdict was that it made the shop feel heavy. So the
+          chrome is white again, and what marks "the shop starts here" is not
+          weight but order: a tinted announcement strip above, a ruled
+          department rail below, and a shadow that arrives only once the page
+          has moved underneath. The bar reads as a shelf the page slides under,
+          not as a wall it sits behind. */}
       <header
         className={cn(
-          "sticky top-0 z-50 bg-brand-900 text-white transition-shadow duration-300",
-          scrolled ? "shadow-lg" : "",
+          "sticky top-0 z-50 border-b border-hairline bg-surface/95 backdrop-blur-xl transition-shadow duration-300",
+          // On a phone at rest the search strip under this bar closes the
+          // masthead with its own hairline, so the bar's is made transparent
+          // rather than removed — the 1px stays in the box, which is what the
+          // listing toolbar's top-[57px] offset is measured against. Once the
+          // page scrolls the strip is gone and the bar rules itself again.
+          !isFunnelRoute(pathname) && !scrolled && "max-sm:border-b-transparent",
+          scrolled ? "shadow-sm" : "",
         )}
       >
         {/* Each row carries its own container rather than one wrapping them
@@ -118,7 +121,7 @@ export function HeaderClient({
         <div className="container-page">
           {/* ---------------------------- Desktop --------------------------- */}
           <div className="hidden items-center gap-6 py-3 lg:flex">
-            <LogoLight />
+            <Logo />
             <div className="max-w-2xl flex-1">
               <SearchBar docs={searchDocs} />
             </div>
@@ -133,10 +136,10 @@ export function HeaderClient({
               />
               <button
                 onClick={openCartDrawer}
-                className="group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/10"
+                className="group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-ink-100"
               >
                 <span className="relative">
-                  <ShoppingBag size={19} className="text-white" />
+                  <ShoppingBag size={19} className="text-ink-700" />
                   <CountBubble count={count} />
                 </span>
                 <span className="hidden xl:block">
@@ -145,10 +148,10 @@ export function HeaderClient({
                       rather than as 10px of decorative ink-400: at that size
                       and that contrast it was the one line in the masthead
                       nobody could actually read. */}
-                  <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-200">
+                  <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     Your bag
                   </span>
-                  <span className="block text-[13px] font-semibold text-white">
+                  <span className="block text-[13px] font-semibold text-ink-900">
                     {count > 0 ? `${count} item${count > 1 ? "s" : ""}` : "Empty"}
                   </span>
                 </span>
@@ -161,19 +164,19 @@ export function HeaderClient({
             would be a rule across the page with two links pushed to the far
             right — so it is left out until there is a category to put in it. */}
         {categories.length > 0 && (
-          <div className="hidden bg-brand-800 lg:block">
+          <div className="hidden border-t border-hairline lg:block">
             <div className="container-page flex items-center justify-between py-1">
               <MegaMenu categories={categories} />
               <div className="flex items-center gap-5 text-[13px]">
                 <Link
                   href="/track"
-                  className="inline-flex items-center gap-1.5 text-brand-100 transition-colors duration-200 hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-ink-600 transition-colors duration-200 hover:text-brand-700"
                 >
                   <Package size={14} /> Track order
                 </Link>
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-1.5 text-brand-100 transition-colors duration-200 hover:text-white"
+                  className="inline-flex items-center gap-1.5 text-ink-600 transition-colors duration-200 hover:text-brand-700"
                 >
                   <LifeBuoy size={14} /> Help
                 </Link>
@@ -190,11 +193,11 @@ export function HeaderClient({
             <button
               onClick={() => setMenuOpenAt(pathname)}
               aria-label="Open menu"
-              className="tap -ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+              className="tap -ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
             >
               <Menu size={21} />
             </button>
-            <LogoLight size="sm" className="h-[34px] w-[126px] sm:h-[38px] sm:w-[141px]" />
+            <Logo size="sm" className="h-[34px] w-[126px] sm:h-[38px] sm:w-[141px]" />
             {/* Tablets have the width for the field itself. */}
             <SearchField
               onOpen={() => setSearchOpenAt(pathname)}
@@ -203,14 +206,14 @@ export function HeaderClient({
             <button
               onClick={() => setSearchOpenAt(pathname)}
               aria-label="Search"
-              className="tap ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10 sm:hidden"
+              className="tap ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100 sm:hidden"
             >
               <Search size={20} />
             </button>
             <Link
               href="/wishlist"
               aria-label="Wishlist"
-              className="tap flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+              className="tap flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
             >
               <span className="relative">
                 <Heart size={20} />
@@ -220,7 +223,7 @@ export function HeaderClient({
             <button
               onClick={openCartDrawer}
               aria-label="Open bag"
-              className="tap -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10"
+              className="tap -mr-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink-700 transition-colors hover:bg-ink-100"
             >
               <span className="relative">
                 <ShoppingBag size={20} />
@@ -233,12 +236,11 @@ export function HeaderClient({
 
       {/* Phones lead with a full-width search field, as shopping apps do. It
           scrolls away with the page and the magnifier in the sticky bar takes
-          over from there — but it keeps the evergreen ground rather than
-          sitting on the canvas, so the masthead reads as one block that ends
-          at a single edge instead of a green bar with a grey strip stuck
-          underneath it. */}
+          over from there. It shares the bar's white ground and closes with the
+          same hairline, so the masthead ends at one edge rather than leaving a
+          field floating on the canvas under it. */}
       {!isFunnelRoute(pathname) && (
-        <div className="bg-brand-900 sm:hidden">
+        <div className="border-b border-hairline bg-surface sm:hidden">
           <div className="container-page pb-2.5">
             <SearchField onOpen={() => setSearchOpenAt(pathname)} className="w-full" />
           </div>
@@ -301,12 +303,12 @@ function CountBubble({ count }: { count: number }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={reduce ? { opacity: 0 } : { scale: 0.4, opacity: 0 }}
           transition={{ type: "spring", stiffness: 560, damping: 20 }}
-          // Ember, not sale colour. A bag count is a fact, not a reduction,
+          // Brand, not sale colour. A bag count is a fact, not a reduction,
           // and sale colour spent on it is the reason a genuine price cut
-          // further down the page stops being believed. Ink was right while
-          // the masthead was white; on the evergreen bar it disappears, and
-          // ember is the one colour on the site that means "yours to act on".
-          className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold-400 px-1 text-[10px] font-bold leading-none text-ink-950 tabular-nums"
+          // further down the page stops being believed. Brand-700 is dark
+          // enough to carry white and is already the colour of "yours" across
+          // the account menu, so the count reads as part of the same thing.
+          className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums"
         >
           {count > 99 ? "99+" : count}
         </motion.span>
@@ -331,17 +333,17 @@ function HeaderAction({
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-white/10"
+      className="flex items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-ink-100"
     >
-      <span className="relative text-white">
+      <span className="relative text-ink-700">
         {icon}
         <CountBubble count={count} />
       </span>
       <span className="hidden xl:block">
-        <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-200">
+        <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {sublabel}
         </span>
-        <span className="block text-[13px] font-semibold text-white">{label}</span>
+        <span className="block text-[13px] font-semibold text-ink-900">{label}</span>
       </span>
     </Link>
   );
@@ -488,24 +490,24 @@ function AccountMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? "account-menu" : undefined}
-        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/10"
+        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition-colors hover:bg-ink-100"
       >
-        <span className="text-white">
+        <span className="text-ink-700">
           <User size={19} />
         </span>
         <span className="sr-only xl:hidden">Account</span>
         <span className="hidden xl:block">
-          <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-200">
+          <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             {customer ? "Your account" : sessionChecked ? "Sign in" : ""}
           </span>
-          <span className="block text-[13px] font-semibold text-white">
+          <span className="block text-[13px] font-semibold text-ink-900">
             {customer ? `Hi, ${customer.name.split(" ")[0]}` : "Account"}
           </span>
         </span>
         <ChevronDown
           size={13}
           className={cn(
-            "hidden text-brand-300 transition-transform duration-200 xl:block",
+            "hidden text-ink-400 transition-transform duration-200 xl:block",
             open && "rotate-180",
           )}
         />
@@ -600,11 +602,11 @@ function AnnouncementBar() {
   ];
 
   return (
-    // brand-950, a shade under the bar below it. The strip used to be the
-    // `deep-plane` gradient, which was right while the header was white and
-    // this was the only dark thing on the page; over an evergreen masthead the
-    // gradient's lit corner reads as a smudge rather than as a separate rail.
-    <div className="overflow-hidden bg-brand-950 py-1.5 text-white sm:py-2">
+    // A soft brand tint rather than a dark plane. The strip is on every page
+    // of the shop; on a light theme a black bar across the top of each one is
+    // the single heaviest thing on the site, and it was the first thing the
+    // owner asked to lose. A tint says the same thing at a whisper.
+    <div className="overflow-hidden border-b border-brand-100 bg-brand-50 py-1.5 text-brand-900 sm:py-2">
       {/* The speed is the one declared in globals.css. Hand-rolled at 38s this
           read as a news ticker, which is the opposite of what a shop wants:
           a sign is something you can finish reading. */}
@@ -614,12 +616,12 @@ function AnnouncementBar() {
             {items.map((item) => (
               <li
                 key={item}
-                className="flex items-center gap-3 whitespace-nowrap px-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-brand-100 sm:px-6"
+                className="flex items-center gap-3 whitespace-nowrap px-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-brand-800 sm:px-6"
               >
-                {/* Ember is worth something only while it is rare, and a strip
+                {/* Aqua is worth something only while it is rare, and a strip
                     that repeats it six times a loop on every page of the shop
                     spends it faster than anything else could. */}
-                <span aria-hidden className="h-px w-3 shrink-0 bg-white/30" />
+                <span aria-hidden className="h-px w-3 shrink-0 bg-brand-300" />
                 {item}
               </li>
             ))}

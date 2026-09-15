@@ -104,7 +104,7 @@ function CheckRow({
   count?: number;
   swatch?: string;
 }) {
-  // Ink, not evergreen: a column of twenty ticks is the most repeated element on
+  // Ink, not ocean: a column of twenty ticks is the most repeated element on
   // the page, and colouring every one of them spends the accent on the least
   // important thing in the rail.
   return (
@@ -307,7 +307,7 @@ export function FilterPanel({
                   className="sr-only"
                 />
                 {/* A filled square inside an outlined one. The old radio was a
-                    ring of evergreen, which was both the one round thing in a
+                    ring of ocean, which was both the one round thing in a
                     square rail and a second use of the accent colour. */}
                 <span
                   className={cn(

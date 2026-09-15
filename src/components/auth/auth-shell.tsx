@@ -40,7 +40,7 @@ const ASSURANCES = [
  * and to a search engine rather than a darkened stock photograph.
  *
  * What it promises is set as a ruled index rather than a list of ticks in
- * ember boxes. Four ember squares repeated down one panel spend the site's
+ * aqua boxes. Four aqua squares repeated down one panel spend the site's
  * only warm colour on its least important line, which is precisely what makes
  * an accent stop meaning anything; the rules between the rows do the same work
  * and cost nothing.
@@ -66,7 +66,7 @@ export function AuthShell({
       {/* Only this column may scroll, and only when it has to. */}
       <div className="flex flex-col px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-8 sm:pt-5 sm:pb-5 lg:overflow-y-auto lg:px-12">
         <header className="flex shrink-0 items-center justify-between gap-3">
-          <Logo href={null} size="sm" />
+          <Logo size="sm" />
           <Link
             href="/"
             className="tap -mr-2 inline-flex h-9 items-center gap-1.5 px-2 text-[13px] font-medium text-ink-600 transition-colors duration-200 hover:text-brand-700 sm:mr-0 sm:px-0"

@@ -17,8 +17,8 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#f6f7f5",
-          color: "#141715",
+          background: "#f4f3f0",
+          color: "#1f262b",
           fontFamily: "system-ui, -apple-system, 'Segoe UI', sans-serif",
           padding: "2rem",
         }}
@@ -27,11 +27,11 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
           <h1 style={{ fontSize: "1.5rem", margin: 0, letterSpacing: "-0.02em" }}>
             The site is temporarily unavailable
           </h1>
-          <p style={{ marginTop: "0.75rem", fontSize: "0.9rem", color: "#3b403c", lineHeight: 1.7 }}>
+          <p style={{ marginTop: "0.75rem", fontSize: "0.9rem", color: "#414c54", lineHeight: 1.7 }}>
             We are already looking at it. Please try again in a few minutes.
           </p>
           {error.digest && (
-            <p style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#676d69" }}>
+            <p style={{ marginTop: "1rem", fontSize: "0.75rem", color: "#627079" }}>
               Reference {error.digest}
             </p>
           )}
@@ -45,7 +45,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
               display: "inline-block",
               marginTop: "1.5rem",
               padding: "0.75rem 2rem",
-              background: "#0a0c0b",
+              background: "#12171b",
               color: "#fff",
               textDecoration: "none",
               fontSize: "0.72rem",

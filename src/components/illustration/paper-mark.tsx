@@ -8,7 +8,7 @@ import { Ink } from "./ink";
  * there is nothing to list, it is the quiet figure on the dark editorial band,
  * and it sits inside every EmptyState — cart, wishlist, listings, orders. So it
  * has to hold together at 120px and at 320px, and in white at a quarter opacity
- * on a near-black evergreen plane as readily as in ink on paper. Everything below
+ * on a near-black ocean plane as readily as in ink on paper. Everything below
  * is in service of that range: few lines and long ones, nothing smaller than a
  * grid cell, one weight for the parcel and a lighter one for the tape, and a
  * single spot of colour to stop the whole thing reading as a diagram.
@@ -121,7 +121,7 @@ export function PaperMark({ size, className }: { size?: number; className?: stri
        * The address label, and the only colour and the only filled shape in the
        * drawing. It is a grid cell less a hairline of air on each side, which is
        * why it is 6 and not 8 — it belongs to the grid rather than floating on
-       * top of it. One small ember square against an otherwise monochrome
+       * top of it. One small aqua square against an otherwise monochrome
        * drawing is what stops the mark reading as a technical diagram, and being
        * the single filled thing means it survives at 120px, where an outline
        * this size would close up.

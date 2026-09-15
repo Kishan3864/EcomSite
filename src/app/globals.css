@@ -1,117 +1,124 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------ *
- *  EVERGREEN & EMBER — design tokens
+ *  OCEAN & AQUA — design tokens
  *
- *  Direction: a shop, not a document. Deep evergreen carries every
- *  structural surface — the header, the dark planes, the links — and a
- *  warm ember orange carries every action. Two colours, each with one
- *  job, is what makes a commerce page legible at a glance: green is
- *  where you are, orange is what you press.
+ *  Direction: a light, calm shop. The page is an off-white sheet; the
+ *  chrome is white; a deep, desaturated ocean blue carries structure
+ *  (links, primary buttons, the few dark planes) and a soft aqua
+ *  carries every action. Both are cool. Nothing on the site is warm
+ *  except the faint warmth of the paper itself, which is what keeps a
+ *  cool palette from feeling clinical.
  *
- *  This replaces the indigo-and-saffron scheme. The split of labour is
- *  the same, so nothing downstream has to change: `brand-*` is still the
- *  structural colour and `gold-*` is still the single accent. Only the
- *  hues moved. `gold-*` is now an orange scale; the name is kept because
- *  it is spelled out in class strings across the app and renaming it
- *  would touch every one of them for no visual gain.
+ *  The owner's brief, verbatim: "lite theme, off white, calm, cool and
+ *  peace colour combination". The dark-green-and-orange scheme before
+ *  this one was rejected on sight for being heavy; this is its opposite
+ *  in weight and the same in structure. The split of labour has not
+ *  moved: `brand-*` is still the structural colour and `gold-*` is
+ *  still the single accent. `gold-*` is now an aqua scale; the name is
+ *  kept because it is spelled out in class strings across the app and
+ *  renaming it would touch every one of them for no visual gain.
  *
  *  Token NAMES are load-bearing — 153 of the files under src/ name them
  *  as Tailwind classes. Change values here; never rename.
  * ------------------------------------------------------------------ */
 
 @theme {
-  /* Brand — deep evergreen. All structural colour: the header, dark
-     planes, links, the focus of attention. Near-black at 900–950 so
-     every white-on-brand scrim and gradient already in the repo keeps
-     working untouched.
+  /* Brand — ocean. A blue-leaning teal at very low chroma: it carries
+     links and the primary "go on" button at 700 without shouting, and
+     drops to slate-navy planes at 900–950 that hold white text at
+     better than 13:1, so every white-on-brand scrim and gradient in the
+     repo keeps working untouched. 50 is the tint the hero panel and the
+     announcement strip sit on.
 
      CONSTRAINT: brand-700 does two contradictory jobs — text on canvas
      and on surface, AND a background under white text. It clears both
-     here (7.1:1 on canvas, 7.7:1 under white). Lightening it breaks
-     both at once, silently. */
-  --color-brand-50: #eefaf4;
-  --color-brand-100: #d5f2e4;
-  --color-brand-200: #ade4cc;
-  --color-brand-300: #76cfab;
-  --color-brand-400: #3bb187;
-  --color-brand-500: #17926c;
-  --color-brand-600: #0c7558;
-  --color-brand-700: #0a5f48;
-  --color-brand-800: #084a39;
-  --color-brand-900: #06382c;
-  --color-brand-950: #04211a;
+     here (7.52:1 on canvas, 8.35:1 under white). Lightening it
+     breaks both at once, silently. */
+  --color-brand-50: #eef4f7;
+  --color-brand-100: #dbe7ed;
+  --color-brand-200: #bcd3de;
+  --color-brand-300: #94b7c8;
+  --color-brand-400: #6a97ad;
+  --color-brand-500: #4c7c94;
+  --color-brand-600: #3b6579;
+  --color-brand-700: #2f5265;
+  --color-brand-800: #264352;
+  --color-brand-900: #1c333f;
+  --color-brand-950: #12222b;
 
-  /* Gold — ember orange. Misnamed by history and kept that way on
-     purpose (see the header above). The only warm colour on the site,
-     and the only one that means "press this": the eyebrow rule, the
-     focus ring, and the filled call to action.
+  /* Gold — aqua. Misnamed by history and kept that way on purpose (see
+     the header above). The one colour on the site that means "press
+     this": the eyebrow rule, the focus ring, and the filled call to
+     action. It sits about 25° of hue from the brand and far lighter, so
+     a shopper never confuses "navigate" with "buy".
 
      CONSTRAINT: gold-500 is the global :focus-visible outline, at
-     3.51:1 on canvas. Brightening it fails SC 1.4.11 site-wide with no
+     3.17:1 on canvas. Brightening it fails SC 1.4.11 site-wide with no
      error anywhere.
      CONSTRAINT: gold-400 is the accent button's fill and carries
-     ink-950 text, not white — 7.6:1 that way, 2.6:1 the other. The
-     white-on-orange version of that button belongs on gold-600. */
-  --color-gold-50: #fff5ed;
-  --color-gold-100: #ffe8d4;
-  --color-gold-200: #fecda8;
-  --color-gold-300: #fdab71;
-  --color-gold-400: #fa7e38;
-  --color-gold-500: #e35510;
-  --color-gold-600: #c4420a;
-  --color-gold-700: #9c340c;
-  --color-gold-800: #7e2d0f;
-  --color-gold-900: #67280f;
+     ink-950 text, not white — 7.98:1 that way, 2.26:1 the other. The
+     white-on-aqua version of that button belongs on gold-600. */
+  --color-gold-50: #eaf7f6;
+  --color-gold-100: #cfeeeb;
+  --color-gold-200: #a6e0dc;
+  --color-gold-300: #7ccfca;
+  --color-gold-400: #4fbdb7;
+  --color-gold-500: #26988f;
+  --color-gold-600: #1d7d7a;
+  --color-gold-700: #1a6a68;
+  --color-gold-800: #17544f;
+  --color-gold-900: #113f3c;
 
-  /* Sale — deep rose. Pulled cool and pink on purpose: with ember
-     carrying every button, a reduction printed in another orange would
-     read as one more thing to press. This one reads as a price. */
-  --color-sale-50: #fef2f4;
-  --color-sale-100: #fde3e7;
-  --color-sale-200: #fac7d0;
-  --color-sale-300: #f297a9;
-  --color-sale-400: #e4617e;
-  --color-sale-500: #d02f56;
-  --color-sale-600: #b01d45;
-  --color-sale-700: #8f1739;
+  /* Sale — cool raspberry. Blue-leaning on purpose, so it stays in the
+     cool family with everything else, and the most saturated swatch on
+     the site on purpose too: it is used only where a price has come
+     down, and a markdown that whispers is a markdown nobody sees. */
+  --color-sale-50: #fdeef3;
+  --color-sale-100: #fad9e3;
+  --color-sale-200: #f4b6c9;
+  --color-sale-300: #ea8aa8;
+  --color-sale-400: #dc5f88;
+  --color-sale-500: #c93d6d;
+  --color-sale-600: #ab2a5a;
+  --color-sale-700: #8a2149;
 
-  /* Ink — near-neutral graphite with the faintest green cast, so it
-     sits under evergreen without reading as a second hue. Carries most
-     of the site.
+  /* Ink — near-neutral graphite with the faintest blue cast, so it
+     sits under ocean without reading as a second hue. Carries most of
+     the site.
 
-     ink-400 is DECORATIVE ONLY (2.6:1 on white): glyph strokes,
+     ink-400 is DECORATIVE ONLY (2.55:1 on white): glyph strokes,
      disabled states, chevrons, struck-through MRP. Never body copy.
-     ink-500 at 4.92:1 on canvas is the floor for anything readable. */
-  --color-ink-50: #f7f7f6;
-  --color-ink-100: #eeefed;
-  --color-ink-200: #e2e4e1;
-  --color-ink-300: #c8cbc7;
-  --color-ink-400: #9aa09b;
-  --color-ink-500: #676d69;
-  --color-ink-600: #515652;
-  --color-ink-700: #3b403c;
-  --color-ink-800: #262a27;
-  --color-ink-900: #141715;
-  --color-ink-950: #0a0c0b;
+     ink-500 at 4.6:1 on canvas is the floor for anything readable. */
+  --color-ink-50: #f4f6f8;
+  --color-ink-100: #e9edf0;
+  --color-ink-200: #d7dde2;
+  --color-ink-300: #bcc5cc;
+  --color-ink-400: #98a4ad;
+  --color-ink-500: #627079;
+  --color-ink-600: #4d5962;
+  --color-ink-700: #414c54;
+  --color-ink-800: #2f383f;
+  --color-ink-900: #1f262b;
+  --color-ink-950: #12171b;
 
-  /* Planes. canvas against surface separates at about 1.13:1, so a white
+  /* Planes. canvas against surface separates at 1.11:1, so a white
      tile reads as an object laid on the page and not as a slightly
      different white, on a mid-range LCD in daylight.
 
-     The cast is off-neutral toward green rather than blue now, which is
-     what keeps a page of white product tiles from looking cold under
-     the evergreen header. */
-  --color-canvas: #f6f7f5;
+     The canvas is off-white with the faintest warmth — the one warm note
+     on the site. Under cool blues and aquas a cool grey canvas reads as
+     a hospital; a sheet of slightly warm paper reads as calm. */
+  --color-canvas: #f4f3f0;
   --color-surface: #ffffff;
   /* hairline is the visible 1px line of `.tile-grid` AND the default
      border colour of every element on the site (see @layer base). With
      a radius and real elevation doing the structural work it is a
      divider, not a frame. */
-  --color-hairline: #e4e7e3;
+  --color-hairline: #e6e9ec;
   /* A second, heavier rule for editorial dividers that need to be seen —
      under band headers, around drawn frames. */
-  --color-rule: #bec4bd;
+  --color-rule: #cdd3d8;
 
   /* Type */
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
@@ -157,12 +164,12 @@
      These spell out ink-950 as rgb triples — a custom property cannot be
      interpolated into an rgb() alpha here — so they do NOT follow the
      tokens above and have to be restated by hand. */
-  --shadow-xs: 0 1px 2px 0 rgb(10 12 11 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(10 12 11 / 0.07), 0 1px 2px -1px rgb(10 12 11 / 0.06);
-  --shadow-md: 0 4px 12px -2px rgb(10 12 11 / 0.09), 0 2px 4px -2px rgb(10 12 11 / 0.05);
-  --shadow-lg: 0 12px 28px -8px rgb(10 12 11 / 0.14), 0 4px 10px -4px rgb(10 12 11 / 0.07);
-  --shadow-xl: 0 24px 56px -16px rgb(10 12 11 / 0.2);
-  --shadow-ring: 0 0 0 1px rgb(228 231 227 / 1);
+  --shadow-xs: 0 1px 2px 0 rgb(18 23 27 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(18 23 27 / 0.07), 0 1px 2px -1px rgb(18 23 27 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(18 23 27 / 0.09), 0 2px 4px -2px rgb(18 23 27 / 0.05);
+  --shadow-lg: 0 12px 28px -8px rgb(18 23 27 / 0.14), 0 4px 10px -4px rgb(18 23 27 / 0.07);
+  --shadow-xl: 0 24px 56px -16px rgb(18 23 27 / 0.2);
+  --shadow-ring: 0 0 0 1px rgb(230 233 236 / 1);
 
   /* Motion */
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
@@ -370,8 +377,8 @@
     animation: var(--animate-shimmer);
   }
 
-  /* The one dark plane: hero, editorial band, footer, auth panel, the
-     admin sign-in. Indigo holds it; saffron warms one corner.
+  /* The few dark planes: the editorial band, the footer, the auth panel, the
+     admin sign-in. Ocean holds it; aqua lights one corner.
      `.peacock-surface` was the old name and stays as an alias so the
      eight existing call sites keep working; new code says `.deep-plane`.
 
@@ -396,7 +403,7 @@
       );
   }
 
-  /* Section eyebrow: small caps over a short saffron rule. Used instead
+  /* Section eyebrow: small caps over a short aqua rule. Used instead
      of the coloured pill labels the old design repeated on every band. */
   .eyebrow {
     display: inline-flex;
