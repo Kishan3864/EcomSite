@@ -22,11 +22,11 @@ import { cn } from "@/lib/utils";
  */
 export const inputClasses = (invalid?: boolean) =>
   cn(
-    "h-11 w-full rounded-field border bg-canvas px-3.5 text-[16px] text-ink-900 sm:text-[14px]",
-    "transition-colors duration-200 placeholder:text-ink-400",
+    "h-11 w-full rounded-lg border bg-surface px-3.5 text-[16px] text-ink-900 sm:text-[14px]",
+    "transition-[border-color,box-shadow] duration-200 placeholder:text-ink-400",
     invalid
-      ? "border-sale-600 focus:border-sale-600"
-      : "border-hairline hover:border-rule focus:border-ink-950",
+      ? "border-sale-600 focus:border-sale-600 focus:shadow-[0_0_0_3px_rgb(184_58_84/0.12)]"
+      : "border-hairline hover:border-ink-300 focus:border-brand-600 focus:shadow-[0_0_0_3px_rgb(52_69_138/0.12)]",
   );
 
 export function Field({

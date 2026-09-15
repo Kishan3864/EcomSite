@@ -75,17 +75,17 @@ export function RecentlyViewed({
           className="mb-4 sm:mb-6"
         />
 
-        <div className={cn("tile-grid", n === 1 ? "grid-cols-1" : "grid-cols-2", SM_COLS[n], LG_COLS[n])}>
+        <div className={cn("grid gap-2.5 sm:gap-4", n === 1 ? "grid-cols-1" : "grid-cols-2", SM_COLS[n], LG_COLS[n])}>
           {shown.map((item) => (
             <Link
               key={item.productId}
               href={`/p/${item.slug}`}
-              className="tap group flex flex-col p-2 sm:p-3"
+              className="tap group flex flex-col overflow-hidden rounded-xl border border-hairline bg-surface shadow-xs transition-[box-shadow,border-color,transform] duration-300 ease-out hover:-translate-y-0.5 hover:border-ink-200 hover:shadow-md"
             >
               {/* The same 3:4 crop as the product tile and its loading
                   skeleton, so a product does not change shape between the
                   grid it came from and this band. */}
-              <div className="relative aspect-[3/4] overflow-hidden bg-ink-100">
+              <div className="relative aspect-[4/5] overflow-hidden bg-ink-50">
                 <Image
                   src={item.image}
                   alt=""
@@ -96,10 +96,10 @@ export function RecentlyViewed({
               </div>
               {/* Two lines reserved whether or not the title needs them, so
                   every price in the row sits on one baseline. */}
-              <p className="mt-2 line-clamp-2 min-h-[2.7em] text-[13px] font-medium leading-[1.35] text-ink-900 group-hover:text-brand-700">
+              <p className="mt-2 line-clamp-2 min-h-[2.7em] px-2.5 text-[13px] font-medium leading-[1.35] text-ink-900 group-hover:text-brand-700 sm:px-3">
                 {item.title}
               </p>
-              <Price price={item.price} mrp={item.mrp} size="sm" className="mt-1" />
+              <Price price={item.price} mrp={item.mrp} size="sm" className="mt-1 px-2.5 pb-3 sm:px-3" />
             </Link>
           ))}
         </div>

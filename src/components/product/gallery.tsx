@@ -109,12 +109,22 @@ export function Gallery({
 
   return (
     <>
-      <div className="flex flex-col-reverse gap-3 md:flex-row md:gap-4">
-        {/* Thumbnails — phones swipe the photos themselves instead. One
-            hairline grid holds them: a row that scrolls below 768px, a column
-            beside the stage above it. The current frame is marked with a rule
-            drawn inside the cell, so selecting one moves nothing. */}
-        <div className="tile-grid hidden grid-flow-col auto-cols-[58px] overflow-x-auto no-scrollbar sm:grid md:w-[74px] md:grid-flow-row md:auto-cols-auto md:overflow-visible">
+      {/* `min-w-0` is load-bearing. Without it this flex box takes its
+          min-content width from the horizontal snap track inside it and sits a
+          few pixels wider than the grid column it is in — which the mobile
+          track's -mx-3 full-bleed then doubles, putting the whole product page
+          into a horizontal scroll at 320px. */}
+      <div className="flex min-w-0 flex-col-reverse gap-3 md:flex-row md:gap-4">
+        {/* Thumbnails — phones swipe the photos themselves instead. A row that
+            scrolls below 768px, a column beside the stage above it.
+
+            `auto-rows` and `self-start` are the whole fix for a column that
+            used to fall down the page: as a stretched flex child the grid took
+            the stage's full height and split it between however many
+            thumbnails there were, so two photos sat at the top and bottom of a
+            700px column with a canyon between them. The rows are now the
+            thumbnail's own height and the column stops where they do. */}
+        <div className="hidden grid-flow-col auto-cols-[58px] gap-2 overflow-x-auto no-scrollbar sm:grid md:w-[74px] md:auto-rows-[86px] md:grid-flow-row md:auto-cols-auto md:self-start md:overflow-visible">
           {slides.map((s, i) => (
             <button
               key={s.url + i}
@@ -134,9 +144,6 @@ export function Gallery({
                 <span className="absolute inset-0 flex items-center justify-center bg-brand-950/45">
                   <Play size={16} className="text-white" fill="currentColor" />
                 </span>
-              )}
-              {i === index && (
-                <span aria-hidden className="absolute inset-0 border-2 border-ink-950" />
               )}
             </button>
           ))}
@@ -371,10 +378,10 @@ export function Gallery({
                       className={cn(
                         // White, not saffron: the accent is spent on the page
                         // itself, and a lit frame reads as "this one" anyway.
-                        "relative h-14 w-12 shrink-0 overflow-hidden border-2 transition-opacity duration-200",
+                        "relative h-14 w-12 shrink-0 overflow-hidden rounded-md transition-all duration-200",
                         i === index
-                          ? "border-white"
-                          : "border-transparent opacity-50 hover:opacity-90",
+                          ? "opacity-100 ring-2 ring-white"
+                          : "opacity-50 hover:opacity-90",
                       )}
                     >
                       <Image src={s.url} alt="" fill sizes="48px" className="object-cover" />

@@ -28,7 +28,14 @@ export async function StoreChrome({ children }: { children: React.ReactNode }) {
           <Header />
           {/* The bottom nav reserves its own height after the footer, so this is
               only the breathing room between the page and the footer. */}
-          <main id="main" className="flex-1 pb-8 lg:pb-0">
+          {/* `overflow-x-clip`, not `hidden`. A full-bleed band that reaches
+              past the gutter — the product gallery's snap track on a phone is
+              the one that bites — can put the whole document into a horizontal
+              scroll from a couple of stray pixels, and chasing each one is
+              endless. `clip` trims the bleed without creating a scroll
+              container, so the sticky header and the listing toolbar keep
+              working; `hidden` would break both. */}
+          <main id="main" className="flex-1 overflow-x-clip pb-8 lg:pb-0">
             <PageTransition>{children}</PageTransition>
           </main>
           <Footer />

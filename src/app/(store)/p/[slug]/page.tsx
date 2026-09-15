@@ -155,7 +155,7 @@ export default async function ProductPage({ params }: { params: Params }) {
         <Breadcrumbs items={crumbs} className="mb-3 sm:mb-6" />
 
         <div className="grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] lg:gap-12 xl:gap-16">
-          <div className="lg:sticky lg:top-[132px] lg:h-fit">
+          <div className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
             <Gallery
               images={product.images}
               videoPoster={product.videoPoster}
@@ -275,7 +275,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           {/* Policy sidebar. One ruled block, not three cards: these three
               paragraphs are the shop's promise, and a promise reads as a
               promise when it is set as a document rather than as furniture. */}
-          <aside className="lg:sticky lg:top-[132px] lg:h-fit">
+          <aside className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
             <div className="border-t border-ink-950 pt-4 sm:pt-5">
               <span className="eyebrow">Every order</span>
               <dl className="mt-4 border-b border-hairline sm:mt-5">

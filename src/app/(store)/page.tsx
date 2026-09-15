@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { HeroLead } from "@/components/home/hero-lead";
 import { Assurance } from "@/components/home/assurance";
 import { ShopByCategory } from "@/components/home/shop-by-category";
+import { SupportBand } from "@/components/home/support-band";
+import { RecentlyViewed } from "@/components/product/recently-viewed";
 import { Counter } from "@/components/home/counter";
 import { OrderJourney } from "@/components/home/order-journey";
 import {
@@ -94,6 +96,8 @@ async function EmptyHome() {
       <ShopByCategory categories={categories} />
       <Assurance payments={payments} />
       <OrderJourney payments={payments} />
+      <RecentlyViewed />
+      <SupportBand />
       <EditorialBand banner={banners.mid[0]} />
     </>
   );
@@ -140,6 +144,8 @@ async function SparseHome() {
 
       <Assurance payments={payments} />
       <OrderJourney payments={payments} />
+      <RecentlyViewed />
+      <SupportBand />
       <EditorialBand banner={banners.mid[0]} />
     </>
   );
@@ -207,6 +213,8 @@ async function FullHome() {
       />
 
       <OrderJourney payments={payments} />
+      <RecentlyViewed />
+      <SupportBand />
       <EditorialBand banner={banners.mid[0]} />
     </>
   );
