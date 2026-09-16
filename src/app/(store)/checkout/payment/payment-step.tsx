@@ -14,7 +14,7 @@ import { OptionCard } from "@/components/ui/field";
 import { PaymentMark, type PaymentMarkName } from "@/components/brand/payment-marks";
 import { useStore } from "@/store/store";
 import { computeTotals } from "@/lib/pricing";
-import { formatINR } from "@/lib/utils";
+import { cn, formatINR } from "@/lib/utils";
 
 /**
  * The two rows of marks, and why the gateway carries all seven.
@@ -81,6 +81,17 @@ const GATEWAY_ROUTES: readonly { id: PaymentMarkName; label: string }[] = [
  * checkout, rather than in any one instrument. Cash keeps its banknote and the
  * UPI card its phone; neither is repeated anywhere on the page.
  */
+/**
+ * The marks whose artwork runs edge to edge of its own square canvas.
+ *
+ * PhonePe's disc and Google Pay's ribbons touch all four sides; every other
+ * asset here is a wordmark inset in a band across the middle. Contained in the
+ * same box these two come out about twice the visual mass, so the row insets
+ * them to match. Nothing to do with the files being wrong — it is how each
+ * scheme composed its own square.
+ */
+const EDGE_TO_EDGE_MARKS = new Set<PaymentMarkName>(["gpay", "phonepe"]);
+
 const LEAD_MARKS: Partial<Record<PaymentMethodId, PaymentMarkName>> = {
   upi: "upiapp",
   cod: "cod",
@@ -201,18 +212,36 @@ function MarkRow({
           // each mark to fill the slot's height (or its width, for the one
           // wordmark), so they now match optically and not just nominally.
           <li key={item.id} className="flex items-center gap-2 text-ink-500">
-            {/* Four of these marks are wordmarks — UPI, Google Pay, Visa and
-                Paytm are all wider than they are tall — so the tile is sized by
-                the widest of them, not by the square glyphs, which then sit
-                centred with more air around them.
-                Kept deliberately small: this is a list of what the NEXT screen
-                accepts, so it has to be legible and nothing more. Anything
-                bigger competes with the choice the page is actually asking for. */}
-            <span className="flex h-6 w-10 shrink-0 items-center justify-center bg-ink-50 sm:h-7 sm:w-12">
+            {/* No tile behind the mark. The grey plate was holding the row's
+                alignment while the marks were mismatched; the fixed box does
+                that on its own, and on the white plinth the plate was just a
+                second rectangle around every logo.
+
+                THE INSET IS AN OPTICAL CORRECTION, not a whim. Every asset is
+                a 512-square, but the schemes fill that square differently:
+                PhonePe's disc and Google Pay's ribbons run edge to edge, while
+                UPI, Paytm, Visa and Mastercard are wordmarks sitting in a band
+                across the middle with the scheme's own padding above and below.
+                Contained in the same box, the two round ones therefore render
+                roughly twice the visual mass of the words. The inset takes them
+                back down so the row reads as one size. */}
+            <span
+              className={cn(
+                "flex h-6 w-10 shrink-0 items-center justify-center sm:h-7 sm:w-12",
+                EDGE_TO_EDGE_MARKS.has(item.id) && "p-1 sm:p-[5px]",
+              )}
+            >
               <PaymentMark name={item.id} size={15} />
             </span>
-            {/* Also the item's only accessible name — every mark is aria-hidden. */}
-            <span className="min-w-0 text-[9.5px] font-semibold uppercase leading-none tracking-[0.05em] text-ink-600 sm:text-[10px] sm:tracking-[0.07em]">
+            {/* Sentence case, not uppercase. These are brand names and the
+                brands capitalise them themselves — PhonePe, Paytm, Mastercard
+                — so forcing caps overrode the spelling each of them is
+                trademarked under. UPI stays all-caps because UPI is an
+                initialism, which the data now carries rather than the CSS.
+                Tracking goes with it: letterspacing is for uppercase runs and
+                only smears lowercase.
+                Also the item's only accessible name — every mark is aria-hidden. */}
+            <span className="min-w-0 text-[10.5px] font-semibold leading-none text-ink-600 sm:text-[11px]">
               {item.label}
             </span>
           </li>
