@@ -203,7 +203,12 @@ function MarkRow({
         // Below it the captions go screen-reader-only — eight 28px marks and
         // seven gaps is 266px inside a 294px plinth, so a phone gets the strip
         // on one line too rather than four stacked rows of two.
-        className="mt-2.5 flex flex-nowrap items-center justify-between gap-x-1.5 sm:flex-wrap sm:justify-start sm:gap-x-3.5 sm:gap-y-2"
+        // Above sm the spacing is the DIVIDERS' padding, not a flex gap, so a
+        // gap of zero here is deliberate: a gap plus padding would double the
+        // space and push the line over. Below sm there are no dividers, so the
+        // gap comes back and `justify-between` spreads the eight bare marks
+        // evenly across whatever width the phone has.
+        className="mt-2.5 flex flex-nowrap items-center justify-between gap-x-1.5 sm:mt-3 sm:flex-wrap sm:justify-start sm:gap-x-0 sm:gap-y-2"
       >
         {items.map((item) => (
           // ink-500, up from ink-400: these are the house glyphs, and at 2.55:1
@@ -224,7 +229,22 @@ function MarkRow({
           // beginning at the same offset in every cell. PaymentMark scales
           // each mark to fill the slot's height (or its width, for the one
           // wordmark), so they now match optically and not just nominally.
-          <li key={item.id} className="flex items-center gap-1.5 text-ink-500">
+          // A HAIRLINE BETWEEN EACH PAIR, and none before the first.
+          //
+          // The mark and its word are one object and now sit 5px apart; the
+          // space that separates one pair from the NEXT is the divider's own
+          // padding, so the two spacings can no longer be confused for each
+          // other — which is what made the row read as eight loose things
+          // rather than eight labelled marks.
+          //
+          // `rule-hair-l` is the house divider at #e6e9ec: one pixel, and dim
+          // enough that it organises the row without being a line you look at.
+          // Dividers only from sm, because below it there are no words to
+          // divide — just the marks, spread evenly.
+          <li
+            key={item.id}
+            className="flex items-center gap-1 text-ink-500 sm:gap-1 sm:rule-hair-l sm:px-2 sm:first:pl-0 sm:first:shadow-none"
+          >
             {/* No tile behind the mark. The grey plate was holding the row's
                 alignment while the marks were mismatched; the fixed box does
                 that on its own, and on the white plinth the plate was just a
@@ -240,11 +260,11 @@ function MarkRow({
                 back down so the row reads as one size. */}
             <span
               className={cn(
-                "flex h-5 w-7 shrink-0 items-center justify-center sm:h-6 sm:w-9",
+                "flex h-6 w-7 shrink-0 items-center justify-center sm:h-7 sm:w-8",
                 EDGE_TO_EDGE_MARKS.has(item.id) && "p-[3px] sm:p-1",
               )}
             >
-              <PaymentMark name={item.id} size={13} />
+              <PaymentMark name={item.id} size={20} />
             </span>
             {/* Sentence case, not uppercase. These are brand names and the
                 brands capitalise them themselves — PhonePe, Paytm, Mastercard
@@ -258,7 +278,7 @@ function MarkRow({
                 eight marks — but sr-only rather than `hidden`, so the mark is
                 still named to a screen reader instead of becoming an empty
                 list item. `not-sr-only` puts it back from sm up. */}
-            <span className="sr-only text-[10px] font-semibold leading-none whitespace-nowrap text-ink-600 sm:not-sr-only">
+            <span className="sr-only text-[9.5px] font-semibold leading-none whitespace-nowrap text-ink-600 sm:not-sr-only">
               {item.label}
             </span>
           </li>
