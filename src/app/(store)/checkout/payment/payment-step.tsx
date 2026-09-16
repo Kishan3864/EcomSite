@@ -61,7 +61,11 @@ const GATEWAY_ROUTES: readonly { id: PaymentMarkName; label: string }[] = [
   { id: "gpay", label: "Google Pay" },
   { id: "phonepe", label: "PhonePe" },
   { id: "paytm", label: "Paytm" },
-  { id: "cards", label: "Cards" },
+  // Cards is two schemes, not one category. A single generic card glyph said
+  // "some card" where the two marks a shopper is holding say "your card", and
+  // recognition is the entire reason these are logos and not words.
+  { id: "visa", label: "Visa" },
+  { id: "mastercard", label: "Mastercard" },
   { id: "netbanking", label: "Net banking" },
   { id: "wallets", label: "Wallets" },
 ];
@@ -170,7 +174,7 @@ function MarkRow({
         // So the phone drops the caption to 10px/0.06em (~78px) and the column
         // to 8.25rem, which fits two. Same tile, same alignment, half the
         // height.
-        className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(8.25rem,1fr))] items-center gap-x-3 gap-y-2 sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] sm:gap-y-2.5"
+        className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] items-center gap-x-3 gap-y-2 sm:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] sm:gap-y-2.5"
       >
         {items.map((item) => (
           // ink-500, up from ink-400: these are the house glyphs, and at 2.55:1
@@ -192,8 +196,12 @@ function MarkRow({
           // each mark to fill the slot's height (or its width, for the one
           // wordmark), so they now match optically and not just nominally.
           <li key={item.id} className="flex items-center gap-2 text-ink-500">
-            <span className="flex h-7 w-10 shrink-0 items-center justify-center bg-ink-50">
-              <PaymentMark name={item.id} size={19} />
+            {/* 48 on a phone, 56 from sm. Four of these marks are wordmarks —
+                UPI, Google Pay, Visa, Paytm are all wider than they are tall —
+                so the tile is sized by the widest of them rather than by the
+                square glyphs, which then simply sit centred with more air. */}
+            <span className="flex h-8 w-12 shrink-0 items-center justify-center bg-ink-50 sm:w-14">
+              <PaymentMark name={item.id} size={18} />
             </span>
             {/* Also the item's only accessible name — every mark is aria-hidden. */}
             <span className="min-w-0 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] text-ink-600 sm:text-[11px] sm:tracking-[0.1em]">

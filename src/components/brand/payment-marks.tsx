@@ -95,9 +95,26 @@ type MarkProps = { size?: number };
  */
 export function UpiMark({ size = 16 }: MarkProps) {
   return (
-    <svg {...base} width={size} height={size}>
-      <path fill="#0f8a45" d="M9.9 3.2h4.3l-5.2 17.6H4.7L9.9 3.2Z" />
-      <path fill="#f26522" d="M15.6 3.2h4.3l-5.2 17.6h-4.3l5.2-17.6Z" />
+    <svg {...base} viewBox="0 0 64 24" width={Math.round(size * 2.35)} height={Math.round(size * 0.88)}>
+      {/* The scheme's own lockup: the slanted UPI letters in NPCI grey, then
+          the arrowhead split into the flag's saffron and green. The strapline
+          under it — UNIFIED PAYMENTS INTERFACE — is dropped, as it is set at
+          roughly a fifth of the letter height and would be sub-pixel here. */}
+      <text
+        x="0"
+        y="19"
+        textLength="42"
+        lengthAdjust="spacingAndGlyphs"
+        fontFamily={WORDMARK_STACK}
+        fontSize="21"
+        fontWeight="700"
+        fontStyle="italic"
+        fill="#747474"
+      >
+        UPI
+      </text>
+      <path fill="#f26a21" d="M46 3.5 62 12l-10.4 0L46 3.5Z" />
+      <path fill="#0f8a45" d="M51.6 12 62 12 46 20.5 51.6 12Z" />
     </svg>
   );
 }
@@ -109,15 +126,53 @@ export function UpiMark({ size = 16 }: MarkProps) {
  * auth/social-sign-in.tsx; this is the single copy now and that file imports
  * from here, so the mark cannot drift into two versions.
  *
- * Stated plainly because it matters: this is the Google mark, not the Google
- * Pay lockup, which pairs the G with its own wordmark. It is used here beside
- * the visible words "Google Pay" to identify the app, which is the accurate
- * half of a mark we cannot draw in full rather than an approximation of the
- * whole. Swap it the day an official asset is to hand.
+ * This is the G on its own, which is what the sign-in button wants. The
+ * payments row wants `GooglePayMark` below — the G Pay lockup.
  */
 export function GoogleMark({ size = 16 }: MarkProps) {
   return (
     <svg {...base} width={size} height={size}>
+      <GoogleG />
+    </svg>
+  );
+}
+
+/**
+ * Google Pay — the G Pay lockup: Google's four-colour G beside "Pay".
+ *
+ * This is the mark Google publishes for "pay with Google Pay" placements, and
+ * it is the one of the two official forms that survives being 20px tall. The
+ * other — the four-ribbon app icon — is a pinwheel of overlapping translucent
+ * capsules whose whole character is in the blends; redrawn by hand at this size
+ * it would be four coloured smudges, and a trademark approximated badly is
+ * worse than the correct lockup shown small.
+ */
+export function GooglePayMark({ size = 16 }: MarkProps) {
+  return (
+    <svg {...base} viewBox="0 0 64 24" width={Math.round(size * 2.35)} height={Math.round(size * 0.88)}>
+      <g transform="translate(0 1) scale(0.92)">
+        <GoogleG />
+      </g>
+      <text
+        x="27"
+        y="18"
+        textLength="36"
+        lengthAdjust="spacingAndGlyphs"
+        fontFamily={WORDMARK_STACK}
+        fontSize="19"
+        fontWeight="500"
+        fill="#5f6368"
+      >
+        Pay
+      </text>
+    </svg>
+  );
+}
+
+/** The G alone, shared by the plain mark and the Pay lockup. */
+function GoogleG() {
+  return (
+    <>
       <path
         fill="#4285f4"
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1Z"
@@ -134,7 +189,7 @@ export function GoogleMark({ size = 16 }: MarkProps) {
         fill="#ea4335"
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 0 0-9.82 6.05l3.66 2.84c.87-2.6 3.3-4.51 6.16-4.51Z"
       />
-    </svg>
+    </>
   );
 }
 
@@ -158,24 +213,79 @@ export function GoogleMark({ size = 16 }: MarkProps) {
 export function PhonePeMark({ size = 16 }: MarkProps) {
   return (
     <svg {...base} width={size} height={size}>
-      <rect x="1" y="1" width="22" height="22" rx="5" fill="#5f259f" />
-      <circle cx="12" cy="12" r="7.3" fill="#ffffff" />
-      {size >= 24 && (
-        // lucide's IndianRupee geometry, scaled to 0.62 and centred on the
-        // disc: its bbox is x 6–15.7, y 3–21, so the glyph lands 6–18 in both
-        // axes. Stroke 2.6 × 0.62 = 1.6 units, the house weight at this scale.
-        <g
-          transform="translate(5.27 4.56) scale(0.62)"
-          fill="none"
-          stroke="#5f259f"
-          strokeWidth="2.6"
-          strokeLinecap="square"
-          strokeLinejoin="miter"
-        >
-          <path d="M6 3h12M6 8h12M6 13l8.5 8M6 13h3" />
-          <path d="M9 13c6.667 0 6.667-10 0-10" />
-        </g>
-      )}
+      <circle cx="12" cy="12" r="12" fill="#5f259f" />
+      {/* "पे" — the app icon's own glyph, drawn rather than set in a Devanagari
+          face, because whether one is installed is the device's business and a
+          missing face would leave a bare purple disc.
+          Four strokes, which is how the letter is actually written: the
+          shirorekha across the top, the bowl hanging from its left end, the
+          stem dropping from its right, and the e-matra flying above it. Round
+          caps because the logo's own terminals are round — inside a brand mark
+          that is the brand's geometry, not this shop's. */}
+      <g
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth="1.85"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M5.7 10.4h11.3" />
+        <path d="M7.5 10.4v3.5a2.9 2.9 0 0 0 2.9 2.9h1.6" />
+        <path d="M14.4 10.4v8" />
+        <path d="m12.8 5.3 4.4 3.1" />
+      </g>
+    </svg>
+  );
+}
+
+/**
+ * Visa — the wordmark in its own blue, on nothing.
+ *
+ * No card outline. The asset it is drawn from sets the wordmark inside a grey
+ * rounded rectangle, which is a container the scheme supplies for use on a
+ * white page; here every mark already sits in the row's own tile, so keeping
+ * Visa's would be a box inside a box, and a rounded one in a square-cornered
+ * shop. The wordmark is the trademark; the rectangle is packaging.
+ *
+ * Set in text, pinned with `textLength`, for the reason given at PaytmMark.
+ */
+export function VisaMark({ size = 16 }: MarkProps) {
+  return (
+    <svg {...base} viewBox="0 0 60 24" width={Math.round(size * 1.9)} height={Math.round(size * 0.76)}>
+      <text
+        x="0"
+        y="18"
+        textLength="60"
+        lengthAdjust="spacingAndGlyphs"
+        fontFamily={WORDMARK_STACK}
+        fontSize="20"
+        fontWeight="700"
+        fontStyle="italic"
+        fill="#1434cb"
+      >
+        VISA
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * Mastercard — the two interlocking circles.
+ *
+ * The wordmark under them is dropped on purpose: at the 20px this renders at,
+ * "mastercard" would be under two pixels tall and would read as a smudge. The
+ * circles alone are the part that identifies the scheme at a glance, and the
+ * row's own caption says what it is.
+ *
+ * The overlap is not a third shape stacked on top — it is the orange circle
+ * drawn with `multiply`, so the intersection resolves to the scheme's own
+ * #ff5f00 the way its published construction does.
+ */
+export function MastercardMark({ size = 16 }: MarkProps) {
+  return (
+    <svg {...base} viewBox="0 0 36 24" width={Math.round(size * 1.5)} height={size}>
+      <circle cx="14" cy="12" r="8.2" fill="#eb001b" />
+      <circle cx="22" cy="12" r="8.2" fill="#f79e1b" style={{ mixBlendMode: "multiply" }} />
     </svg>
   );
 }
@@ -351,6 +461,8 @@ export type PaymentMarkName =
   | "gpay"
   | "phonepe"
   | "paytm"
+  | "visa"
+  | "mastercard"
   | "cards"
   | "netbanking"
   | "wallets"
@@ -364,9 +476,11 @@ export type PaymentMarkName =
  */
 export const PAYMENT_MARKS: Record<PaymentMarkName, (props: MarkProps) => ReactElement> = {
   upi: UpiMark,
-  gpay: GoogleMark,
+  gpay: GooglePayMark,
   phonepe: PhonePeMark,
   paytm: PaytmMark,
+  visa: VisaMark,
+  mastercard: MastercardMark,
   cards: CardsMark,
   netbanking: NetBankingMark,
   wallets: WalletsMark,
