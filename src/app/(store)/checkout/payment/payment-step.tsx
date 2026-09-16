@@ -40,10 +40,12 @@ import { formatINR } from "@/lib/utils";
  * processor takes afterwards. Three apps, and the line under them says every
  * other UPI app works the same way.
  */
-const UPI_APPS: readonly { id: PaymentMarkName; label: string }[] = [
+const UPI_APPS: readonly { id: PaymentMarkName; label: string | null }[] = [
   { id: "gpay", label: "Google Pay" },
   { id: "phonepe", label: "PhonePe" },
-  { id: "paytm", label: "Paytm" },
+  // `null` for the same reason as the gateway row: PaytmMark is the wordmark,
+  // so a caption beside it printed the name twice. See GATEWAY_ROUTES.
+  { id: "paytm", label: null },
 ];
 
 /**
