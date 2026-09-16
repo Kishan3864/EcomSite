@@ -71,17 +71,6 @@ const GATEWAY_ROUTES: readonly { id: PaymentMarkName; label: string }[] = [
 ];
 
 /**
- * One mark per method, on the card's title line.
- *
- * The gateway's lead is a GLOBE, not a card. It was CardsMark, which put the
- * same drawing on the title line and again as CARDS in the row 215px below it —
- * one picture, two meanings, on one card. That is the defect the trust row's
- * Landmark was changed for, reintroduced at half the distance. A globe says
- * what the card actually is: the payment happens somewhere else, on PayU's
- * checkout, rather than in any one instrument. Cash keeps its banknote and the
- * UPI card its phone; neither is repeated anywhere on the page.
- */
-/**
  * The marks whose artwork runs edge to edge of its own square canvas.
  *
  * PhonePe's disc and Google Pay's ribbons touch all four sides; every other
@@ -92,6 +81,17 @@ const GATEWAY_ROUTES: readonly { id: PaymentMarkName; label: string }[] = [
  */
 const EDGE_TO_EDGE_MARKS = new Set<PaymentMarkName>(["gpay", "phonepe"]);
 
+/**
+ * One mark per method, on the card's title line.
+ *
+ * The gateway's lead is a GLOBE, not a card. It was CardsMark, which put the
+ * same drawing on the title line and again as Cards in the row below it — one
+ * picture, two meanings, on one card. That is the defect the trust row's
+ * Landmark was changed for, reintroduced at half the distance. A globe says
+ * what the card actually is: the payment happens somewhere else, on PayU's
+ * checkout, rather than in any one instrument. Cash keeps its banknote and the
+ * UPI card its phone; neither is repeated anywhere on the page.
+ */
 const LEAD_MARKS: Partial<Record<PaymentMethodId, PaymentMarkName>> = {
   upi: "upiapp",
   cod: "cod",
@@ -123,14 +123,14 @@ function MethodLead({ id }: { id: PaymentMethodId }) {
   if (id === "online") {
     return (
       <span className={wrap}>
-        <Globe size={17} strokeWidth={1.6} aria-hidden />
+        <Globe size={15} strokeWidth={1.6} aria-hidden />
       </span>
     );
   }
   if (!name) return null;
   return (
     <span className={wrap}>
-      <PaymentMark name={name} size={17} />
+      <PaymentMark name={name} size={15} />
     </span>
   );
 }
@@ -144,14 +144,19 @@ function MethodLead({ id }: { id: PaymentMethodId }) {
  * stamps this replaces had no shadow at all, so they were invisible white on a
  * white card and would have been white blocks on the tint.
  *
- * A COLUMN GRID, NOT `flex-wrap`. Seven items of five different widths wrapped
- * by flex leave whatever happens to be last stranded alone on its own line —
- * at 390px the gateway row broke 3 / 3 / 1, with WALLETS orphaned. `auto-fill`
- * with a 7.5rem floor lays the same seven into whatever number of equal columns
- * fits: two on a phone, three or four as the card widens, with the last cell
- * simply empty. 7.5rem is set by the widest item, NET BANKING at ~115px. The
- * rows line up under each other, which is the only way a list this long reads
- * as a table of routes rather than as spillage.
+ * ONE LINE, AND WHY IT IS FLEX AND NOT A GRID.
+ *
+ * This row went through a column grid first, to stop flex stranding the last
+ * item alone on its own line. It fixed that and introduced a worse fault: a
+ * grid column is as wide as its widest member, so every column was sized for
+ * "Mastercard" and "UPI" sat in one with forty pixels of air after it. The gaps
+ * were not in the marks, they were in the layout.
+ *
+ * Flex sizes each item to its own mark and word, which closes them up, and the
+ * whole strip then fits one line — about 780px of a card that has well over a
+ * thousand. On a phone there is no line that holds eight marks AND eight words,
+ * so the words go `sr-only` there and the eight marks alone come to 266px
+ * inside a 294px plinth. Still one line, still named to a screen reader.
  *
  * `role="list"` because Tailwind's preflight strips `list-style`, and Safari
  * drops listitem semantics with it; `aria-label` because the caption beside it
@@ -185,12 +190,20 @@ function MarkRow({
         // So the phone drops the caption to 10px/0.06em (~78px) and the column
         // to 8.25rem, which fits two. Same tile, same alignment, half the
         // height.
-        // A FIXED COUNT, not auto-fill. auto-fill sized the columns off the
-        // container and split eight marks 5 and 3, which leaves a hole at the
-        // end of the first row — the exact raggedness this row keeps being
-        // rebuilt to remove. Two and four divide eight evenly, so the grid is
-        // always complete: four rows of two on a phone, two rows of four above.
-        className="mt-2.5 grid grid-cols-2 items-center gap-x-3 gap-y-1.5 sm:grid-cols-4 sm:gap-y-2"
+        // FLEX, NOT GRID — and this is what finally closed the gaps.
+        //
+        // A grid gives every column the same width, so the column is as wide as
+        // "Mastercard" and "UPI" sits in it with 40px of air after it. Nothing
+        // was wrong with the marks; the empty space belonged to the layout. Flex
+        // lets each item be exactly as wide as its own mark and word, so the
+        // only space left between them is the gap itself.
+        //
+        // One line at both sizes, which is the point. Above sm the eight marks
+        // and their captions come to roughly 780px and fit the card outright.
+        // Below it the captions go screen-reader-only — eight 28px marks and
+        // seven gaps is 266px inside a 294px plinth, so a phone gets the strip
+        // on one line too rather than four stacked rows of two.
+        className="mt-2.5 flex flex-nowrap items-center justify-between gap-x-1.5 sm:flex-wrap sm:justify-start sm:gap-x-3.5 sm:gap-y-2"
       >
         {items.map((item) => (
           // ink-500, up from ink-400: these are the house glyphs, and at 2.55:1
@@ -211,7 +224,7 @@ function MarkRow({
           // beginning at the same offset in every cell. PaymentMark scales
           // each mark to fill the slot's height (or its width, for the one
           // wordmark), so they now match optically and not just nominally.
-          <li key={item.id} className="flex items-center gap-2 text-ink-500">
+          <li key={item.id} className="flex items-center gap-1.5 text-ink-500">
             {/* No tile behind the mark. The grey plate was holding the row's
                 alignment while the marks were mismatched; the fixed box does
                 that on its own, and on the white plinth the plate was just a
@@ -227,11 +240,11 @@ function MarkRow({
                 back down so the row reads as one size. */}
             <span
               className={cn(
-                "flex h-6 w-10 shrink-0 items-center justify-center sm:h-7 sm:w-12",
-                EDGE_TO_EDGE_MARKS.has(item.id) && "p-1 sm:p-[5px]",
+                "flex h-5 w-7 shrink-0 items-center justify-center sm:h-6 sm:w-9",
+                EDGE_TO_EDGE_MARKS.has(item.id) && "p-[3px] sm:p-1",
               )}
             >
-              <PaymentMark name={item.id} size={15} />
+              <PaymentMark name={item.id} size={13} />
             </span>
             {/* Sentence case, not uppercase. These are brand names and the
                 brands capitalise them themselves — PhonePe, Paytm, Mastercard
@@ -241,7 +254,11 @@ function MarkRow({
                 Tracking goes with it: letterspacing is for uppercase runs and
                 only smears lowercase.
                 Also the item's only accessible name — every mark is aria-hidden. */}
-            <span className="min-w-0 text-[10.5px] font-semibold leading-none text-ink-600 sm:text-[11px]">
+            {/* Hidden on phones, where eight captions cannot share a line with
+                eight marks — but sr-only rather than `hidden`, so the mark is
+                still named to a screen reader instead of becoming an empty
+                list item. `not-sr-only` puts it back from sm up. */}
+            <span className="sr-only text-[10px] font-semibold leading-none whitespace-nowrap text-ink-600 sm:not-sr-only">
               {item.label}
             </span>
           </li>
