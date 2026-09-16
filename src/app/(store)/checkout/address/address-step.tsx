@@ -99,8 +99,10 @@ export function AddressStep() {
                       {address.fullName}
                       {/* An outlined stamp rather than a grey pill: the chip is a
                           label on a repeating row and has no business carrying a
-                          fill of its own. */}
-                      <span className="px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-500">
+                          fill of its own. ink-600, not ink-500 — the chosen card
+                          is filled brand-100 now, where ink-500 is 4.05:1 and
+                          fails. Same reason for the phone line below. */}
+                      <span className="px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600">
                         {address.label}
                       </span>
                       {address.isDefault && <Badge tone="success">Default</Badge>}
@@ -115,7 +117,7 @@ export function AddressStep() {
                       {address.city}, {address.state}{" "}
                       <span className="tabular-nums">{address.pincode}</span>
                       <br />
-                      <span className="text-ink-500">
+                      <span className="text-ink-600">
                         Phone: <span className="tabular-nums">{address.phone}</span>
                       </span>
                     </>

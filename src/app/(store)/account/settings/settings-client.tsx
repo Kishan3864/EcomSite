@@ -438,7 +438,7 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
                 title={
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     {address.fullName}
-                    <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                    <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-600">
                       {address.label}
                     </span>
                     {address.isDefault && (
@@ -512,7 +512,12 @@ function PaymentSection() {
                     onSelect={() => setMethod(option.id)}
                     title={
                       <span className="flex items-center gap-2">
-                        <Icon size={16} className="text-ink-400" />
+                        {/* ink-600, not ink-400. The chosen card's fill is
+                            brand-100 now, where ink-400 is 2.02:1 — this glyph
+                            got fainter the moment the selected state got
+                            louder, and it is 2.55:1 on the white cards either
+                            side of it too. */}
+                        <Icon size={16} className="text-ink-600" />
                         {option.name}
                       </span>
                     }

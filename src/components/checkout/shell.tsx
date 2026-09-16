@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/primitives";
+import { CheckoutTrustRow } from "@/components/checkout/trust-row";
 import { useStore } from "@/store/store";
 import { cn, formatINR } from "@/lib/utils";
 
@@ -66,6 +67,14 @@ export function CheckoutShell({
     return (
       <div className="container-page py-6 sm:py-10">
         <div className="skeleton h-12 sm:h-16" />
+        {/* The trust panel's own height, reserved. It renders below the heading
+            on every step and only after hydration, so with nothing standing in
+            for it the whole page jumped by the panel's height the moment the
+            store arrived. ~126px stacked on a phone, ~112px once it is three
+            columns from md. The heading block above it is still unmatched —
+            that is older and not this change's to fix, but this is the tall
+            part. */}
+        <div className="skeleton mt-4 h-[126px] sm:mt-6 md:h-28" />
         <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_368px]">
           <div className="skeleton h-80 sm:h-96" />
           <div className="skeleton h-72" />
@@ -92,17 +101,14 @@ export function CheckoutShell({
 
   return (
     <div className="pb-6 sm:pb-10">
-      {/* Reassurance strip. The sentences are the reassurance; the padlock and
-          shield glyphs that used to sit beside them are the badge every scam
-          site wears, and they were spending the page's one warm colour three
-          times over on a line nobody was meant to look at. */}
-      <div className="bg-surface">
-        <div className="container-page flex flex-wrap items-center justify-center gap-x-5 gap-y-1 py-2.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-500 sm:gap-x-8 sm:py-3 sm:text-[11.5px] sm:tracking-[0.12em]">
-          <span>Secure checkout</span>
-          <span>256-bit encryption</span>
-          <span className="hidden sm:inline">Easy returns on everything</span>
-        </div>
-      </div>
+      {/* The reassurance strip used to be here, above the progress nav: three
+          uppercase stamps in a full-bleed band, the first thing on the page and
+          the last thing anyone read. It is now CheckoutTrustRow, under the
+          heading, where it has room to say what it means. The note that stood
+          here argued that the padlock and shield glyphs it once carried were the
+          badge every scam site wears; that argument has moved with it, along
+          with the distinction it was missing and the owner's own decision to
+          overrule half of it — see trust-row.tsx. */}
 
       {/* The progress indicator is one rule across the page with the current
           step marked in ink, the steps behind it in grey and the ones ahead in
@@ -156,6 +162,13 @@ export function CheckoutShell({
             </p>
           )}
         </header>
+
+        {/* Under the heading rather than above the nav, and outside the motion
+            grid below: anything inside that re-slides on every step change,
+            and a promise that animates in four times reads as decoration. On a
+            phone this is the first thing past the title, which is where a
+            first-time shopper's nerve is actually tested. */}
+        <CheckoutTrustRow className="mb-6 sm:mb-8" />
 
         <motion.div
           key={pathname}

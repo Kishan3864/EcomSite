@@ -28,8 +28,24 @@ const PATHS: Record<CounterGlyphName, string[]> = {
   phone: ["M4 3 H9 L11 8 L8 10 A10 10 0 0 0 14 16 L16 13 L21 15 V20 H17 A14 14 0 0 1 4 7 Z"],
   /* A delivery van: body, cab, two wheels, one line of movement behind it. */
   van: ["M2 6 H14 V16 H2 Z", "M14 9 H18 L21 12 V16 H14 Z", "M5 16 H8 V19 H5 Z", "M16 16 H19 V19 H16 Z"],
-  /* A banknote with a rupee stroked inside it. */
-  note: ["M2 6 H22 V18 H2 Z", "M9 9 H15", "M9 12 H15", "M14 9 A3 3 0 0 1 11 15 L9 15 L15 15"],
+  /* A banknote with a rupee stroked inside it.
+
+     The rupee used to be `M14 9 A3 3 0 0 1 11 15 L9 15 L15 15` — an arc whose
+     chord (6.71) is longer than the diameter it asks for (6), which the SVG
+     spec makes the browser scale up silently, so it drew a flat semicircle
+     instead of a bowl and then retraced its own bottom bar, leaving the glyph
+     with no stem and no leg. It is now lucide's IndianRupee at half size,
+     centred in the note: two bars, the bowl as a cubic, the stub and the leg.
+     brand/payment-marks.tsx draws the same note for the cash-on-delivery mark
+     and carries the same paths — keep the two in step by hand. */
+  note: [
+    "M2 6 H22 V18 H2 Z",
+    "M9.6 7.5 H15.6",
+    "M9.6 10 H15.6",
+    "M9.6 12.5 H11.1",
+    "M11.1 12.5 C14.4 12.5 14.4 7.5 11.1 7.5",
+    "M9.6 12.5 L13.9 16.5",
+  ],
 };
 
 /* Two short lines behind the van, drawn separately so they can be given a

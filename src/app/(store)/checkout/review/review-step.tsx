@@ -154,7 +154,12 @@ export function ReviewStep() {
             cta={payLabel}
             ctaHref={needsAccount ? REGISTER_HREF : undefined}
             onCta={pay}
-            footnote="256-bit encrypted. Nothing is charged until you confirm on the payment page."
+            // The encryption half of this sentence has gone. CheckoutTrustRow
+            // now states it under the heading on every step, so saying it again
+            // a few hundred pixels lower was the same promise twice on one
+            // screen — which reads as a shop insisting rather than a shop
+            // informing. What is left is the part only this step can say.
+            footnote="Nothing is charged until you confirm on the payment page."
           />
         </>
       }

@@ -180,7 +180,12 @@ export function OrderSummary({
             </button>
           )}
           {/* The sentence does the reassuring. A padlock glyph beside it is the
-              badge every scam site wears, and it is worth less than the words. */}
+              badge every scam site wears, and it is worth less than the words.
+              That still holds here, and it is not contradicted by the marks the
+              payment step now carries: those name a mechanism a customer is
+              scanning for — a card, a banknote, PhonePe — where a padlock beside
+              "secure" only asserts a virtue about us. Wayfinding gets a glyph.
+              A claim does not. This line is a claim. */}
           <p className="mt-3 text-center text-[13px] leading-[1.5] text-ink-500">
             {footnote ?? "Secure checkout. Your details are never shared."}
           </p>

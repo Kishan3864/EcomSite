@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Globe } from "lucide-react";
 import type { PaymentMethodId } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { useCheckoutPaymentMethods } from "@/components/checkout/payment-methods";
@@ -11,19 +11,179 @@ import { OrderSummary } from "@/components/cart/order-summary";
 import { Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
+import { PaymentMark, type PaymentMarkName } from "@/components/brand/payment-marks";
 import { useStore } from "@/store/store";
 import { computeTotals } from "@/lib/pricing";
 import { formatINR } from "@/lib/utils";
 
-/** What PayU's checkout offers once the customer reaches it. */
-const GATEWAY_METHODS = ["UPI", "Google Pay", "PhonePe", "Paytm", "Cards", "Net banking", "Wallets"];
+/**
+ * The two rows of marks, and why the gateway carries all seven.
+ *
+ * THE SEVEN LIVE ON THE GATEWAY CARD, and that is the load-bearing fact here.
+ * The owner asked for UPI, Google Pay, PhonePe, Paytm, cards, net banking and
+ * wallets, each with an icon. They were briefly split — apps on the UPI card,
+ * categories on the gateway card — which reads well and is wrong, because the
+ * UPI card is conditional: `paymentSwitches()` in storefront-config.ts only
+ * offers it when the UPI toggle is on AND a VPA/QR is configured, and in this
+ * shop's live config it is neither. The gateway and cash are all that render.
+ * So three of the owner's seven were invisible to every real customer. The list
+ * has to survive the UPI card being absent, and it does now.
+ *
+ * It is not padding. Every one of these is a route waiting inside PayU's own
+ * checkout: it opens on UPI with Google Pay, PhonePe and Paytm as the intent
+ * apps, and offers cards, net banking and wallets beside them. The row states
+ * what the next screen will offer.
+ *
+ * THE UPI CARD'S ROW STAYS DIFFERENT, because it is a different deal — paid
+ * straight into the shop's account with no gateway in between, so what matters
+ * there is which app can pay the QR in front of you, not which route a
+ * processor takes afterwards. Three apps, and the line under them says every
+ * other UPI app works the same way.
+ */
+const UPI_APPS: readonly { id: PaymentMarkName; label: string }[] = [
+  { id: "gpay", label: "Google Pay" },
+  { id: "phonepe", label: "PhonePe" },
+  { id: "paytm", label: "Paytm" },
+];
 
-/** Every UPI app can pay the QR; these are the ones people look for by name. */
-const UPI_APP_NAMES = ["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay", "Any UPI app"];
+/**
+ * `label: null` where the mark is already a wordmark.
+ *
+ * Paytm has no icon-only device — its mark IS the word, in two colours — so
+ * pairing it with a "PAYTM" caption printed the name twice, and it was the one
+ * item in the row that did. Every other mark here is a glyph that needs telling
+ * what it is.
+ */
+/** Spoken names for the marks whose caption is dropped because the mark is the word. */
+const MARK_NAMES: Partial<Record<PaymentMarkName, string>> = { paytm: "Paytm" };
 
-/** The named apps and gateway methods, set as outlined stamps rather than pills. */
-const CHIP =
-  "bg-surface px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600";
+const GATEWAY_ROUTES: readonly { id: PaymentMarkName; label: string | null }[] = [
+  { id: "upi", label: "UPI" },
+  { id: "gpay", label: "Google Pay" },
+  { id: "phonepe", label: "PhonePe" },
+  { id: "paytm", label: null },
+  { id: "cards", label: "Cards" },
+  { id: "netbanking", label: "Net banking" },
+  { id: "wallets", label: "Wallets" },
+];
+
+/**
+ * One mark per method, on the card's title line.
+ *
+ * The gateway's lead is a GLOBE, not a card. It was CardsMark, which put the
+ * same drawing on the title line and again as CARDS in the row 215px below it —
+ * one picture, two meanings, on one card. That is the defect the trust row's
+ * Landmark was changed for, reintroduced at half the distance. A globe says
+ * what the card actually is: the payment happens somewhere else, on PayU's
+ * checkout, rather than in any one instrument. Cash keeps its banknote and the
+ * UPI card its phone; neither is repeated anywhere on the page.
+ */
+const LEAD_MARKS: Partial<Record<PaymentMethodId, PaymentMarkName>> = {
+  upi: "upiapp",
+  cod: "cod",
+};
+
+/**
+ * The mark beside a method's name.
+ *
+ * Ink only, every one of them — but ink-600, not the ink-400 decorative glyph
+ * strokes usually take. These carry information, so SC 1.4.11's 3:1 applies,
+ * and ink-400 is 2.55:1 on the white card and 2.02:1 on the brand-100 fill of
+ * the chosen one — faintest on the card the customer has actually picked, and
+ * on a phone outdoors effectively not there at all. ink-600 is 7.3:1 on white
+ * and 5.35:1 on the fill. Colour is still rationed to the panel below, and that
+ * panel only exists on the chosen card, so at most one coloured row is ever on
+ * screen and it is always on the card just picked. That is what keeps the
+ * logos from out-shouting the selection state they sit inside.
+ *
+ * Returns null for a method it does not know: the gateway card is absent
+ * whenever PayU is unconfigured, and the shop can add a route tomorrow.
+ */
+function MethodLead({ id }: { id: PaymentMethodId }) {
+  const name = LEAD_MARKS[id];
+  // mt-px against `items-start`, not `items-center`: the longest method name
+  // wraps to two lines on a phone, and a mark centred on a two-line block
+  // floats between them instead of sitting on the name.
+  const wrap = "mt-px shrink-0 text-ink-600";
+
+  if (id === "online") {
+    return (
+      <span className={wrap}>
+        <Globe size={17} strokeWidth={1.6} aria-hidden />
+      </span>
+    );
+  }
+  if (!name) return null;
+  return (
+    <span className={wrap}>
+      <PaymentMark name={name} size={17} />
+    </span>
+  );
+}
+
+/**
+ * A white plinth of marks inside a chosen card.
+ *
+ * White on purpose. Brand colours shift on a tinted ground, and one white
+ * object holding all of them is both truer to each mark and quieter than seven
+ * loose logos scattered on the fill. `shadow-xs` for the 1px ink ring: the
+ * stamps this replaces had no shadow at all, so they were invisible white on a
+ * white card and would have been white blocks on the tint.
+ *
+ * A COLUMN GRID, NOT `flex-wrap`. Seven items of five different widths wrapped
+ * by flex leave whatever happens to be last stranded alone on its own line —
+ * at 390px the gateway row broke 3 / 3 / 1, with WALLETS orphaned. `auto-fill`
+ * with a 7.5rem floor lays the same seven into whatever number of equal columns
+ * fits: two on a phone, three or four as the card widens, with the last cell
+ * simply empty. 7.5rem is set by the widest item, NET BANKING at ~115px. The
+ * rows line up under each other, which is the only way a list this long reads
+ * as a table of routes rather than as spillage.
+ *
+ * `role="list"` because Tailwind's preflight strips `list-style`, and Safari
+ * drops listitem semantics with it; `aria-label` because the caption beside it
+ * is a sibling span, so without one a screen reader gets "list, 7 items, UPI,
+ * Google Pay…" with nothing saying these are what the next screen accepts.
+ */
+function MarkRow({
+  label,
+  items,
+}: {
+  label: string;
+  items: readonly { id: PaymentMarkName; label: string | null }[];
+}) {
+  return (
+    <div className="bg-surface px-2.5 py-2.5 shadow-xs">
+      <span className="block text-[10.5px] font-semibold uppercase leading-none tracking-[0.12em] text-ink-500">
+        {label}
+      </span>
+      <ul
+        role="list"
+        aria-label={label}
+        className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] items-center gap-x-3 gap-y-2.5"
+      >
+        {items.map((item) => (
+          // ink-500, up from ink-400: these are the house glyphs, and at 2.55:1
+          // they read as marks that failed to load beside the full-colour ones.
+          // ink-500 is 5.02:1 on this white plinth, which the row always has —
+          // the plinth is why they do not need ink-600 the way the lead marks
+          // on the tinted card do.
+          <li key={item.id} className="flex items-center gap-1.5 text-ink-500">
+            <PaymentMark name={item.id} size={18} />
+            {item.label ? (
+              <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600">
+                {item.label}
+              </span>
+            ) : (
+              // Every mark is aria-hidden, so a wordmark with its caption
+              // dropped would reach a screen reader as an empty list item.
+              <span className="sr-only">{MARK_NAMES[item.id]}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 /**
  * How the customer would like to pay.
@@ -90,9 +250,20 @@ export function PaymentStep() {
   // Cash on delivery is never auto-selected: it is the one method that can be
   // unavailable for the basket in front of them, and it is the one where a
   // default nobody noticed costs the shop money. It is always a deliberate
-  // choice. Anything already stored on the draft wins over both.
+  // choice. Anything already stored on the draft wins over both — unless what
+  // is stored is a cash-on-delivery choice the basket has since outgrown.
+  //
+  // That last clause is new, and it is the other half of making selection
+  // visible. A card that cannot be used no longer renders as chosen, so a stale
+  // `cod` draft would otherwise leave the page with nothing marked at all and
+  // the reason buried in a dimmed card's subtitle. Treating it as unset lets
+  // the rules below move the customer to a prepaid method they can actually
+  // use; the dimmed card and its sentence still explain why cash is out.
+  const storedCodDead = checkout.paymentMethod === "cod" && !codAllowed;
+
   useEffect(() => {
-    if (!hydrated || checkout.paymentMethod) return;
+    if (!hydrated) return;
+    if (checkout.paymentMethod && !storedCodDead) return;
 
     const preferred = customer?.preferredPayment as PaymentMethodId | undefined;
     const usable = (id: PaymentMethodId | undefined): id is PaymentMethodId =>
@@ -103,7 +274,27 @@ export function PaymentStep() {
     if (!pick) return;
 
     dispatch({ type: "checkout/patch", patch: { paymentMethod: pick, paymentDetail: null } });
-  }, [hydrated, checkout.paymentMethod, customer, paymentMethods, codAllowed, dispatch]);
+  }, [
+    hydrated,
+    checkout.paymentMethod,
+    storedCodDead,
+    customer,
+    paymentMethods,
+    codAllowed,
+    dispatch,
+  ]);
+
+  /** Cash on delivery is the one method a basket can rule out. */
+  const codDisabled = (id: PaymentMethodId) => id === "cod" && !codAllowed;
+
+  // One tab stop for the whole group, which is what a radio group is: Tab
+  // lands on the chosen card and the arrow keys move between them. If nothing
+  // is chosen — the effect above can find no usable method and returns — the
+  // first card that CAN be picked takes the stop, because a group where every
+  // card is `tabIndex={-1}` has left the tab order entirely.
+  const activeId = selected && !codDisabled(selected) ? selected : null;
+  const tabbableId =
+    activeId ?? paymentMethods.find((m) => !codDisabled(m.id))?.id ?? paymentMethods[0]?.id;
 
   function choose(id: PaymentMethodId) {
     dispatch({ type: "checkout/patch", patch: { paymentMethod: id, paymentDetail: null } });
@@ -154,32 +345,111 @@ export function PaymentStep() {
       }
     >
       <div className="space-y-3 sm:space-y-4">
-        <ul className="space-y-2 sm:space-y-3">
+        {/* A radio group, not three unrelated toggles.
+            These cards are mutually exclusive — picking one unpicks the rest —
+            and they used to ship as separate `aria-pressed` buttons inside a
+            bare <ul>: no group, no name, no "1 of 3", and nothing telling a
+            screen reader that the options are one choice. Visible selection was
+            fixed while programmatic selection was not, which is half a fix. A
+            <div> rather than a <ul> because a radiogroup's children are radios,
+            not list items, and <li role="presentation"> is a longer way to say
+            the same thing. */}
+        <div role="radiogroup" aria-label="Payment method" className="space-y-2 sm:space-y-3">
           {paymentMethods.map((method) => {
-            const disabled = method.id === "cod" && !codAllowed;
+            const disabled = codDisabled(method.id);
+            const active = selected === method.id && !disabled;
 
             return (
-              <li key={method.id}>
-                {/* No glyph beside the name. A shield next to "pay online" is a
-                    trust seal, and a trust seal is the one decoration this page
-                    cannot afford — the words have to carry it. */}
+              <div key={method.id}>
+                {/* There is a glyph beside the name now, and the rule that said
+                    there must not be is still mostly right.
+
+                    What it banned was a trust SEAL: a shield stamped on "pay
+                    online" to make the option feel safer than the one beside
+                    it. That is a virtue asserted about ourselves, it is the
+                    badge every scam site wears, and it stays banned — which is
+                    why the gateway card takes a CARD and not the ShieldCheck
+                    the account settings page happens to map it to. A mark that
+                    says what a method IS is a different object. It is
+                    wayfinding: the customer is scanning for the way they
+                    actually pay, and a phone, a card and a banknote sort three
+                    cards faster than three sentences do.
+
+                    (The trust panel above the cards does now carry a thin
+                    ShieldCheck for SECURE CHECKOUT. The owner asked for it, and
+                    it replaced a bank building that was also the NET BANKING
+                    mark down here — one drawing, two meanings, one screen. A
+                    line glyph in a row of line glyphs is not the seal the ban
+                    was written against; a shield on one of three competing
+                    payment options would be. See trust-row.tsx.)
+
+                    The colour follows the same line. Ink strokes up here, where
+                    a mark is a signpost; the brands' own colours only inside the
+                    panel below, which renders only on the chosen card — so the
+                    page can never hold more than one coloured row, and the row
+                    it holds is always confirming the choice just made rather
+                    than competing with it. */}
                 <OptionCard
+                  radio
+                  tabbable={method.id === tabbableId}
                   selected={selected === method.id}
                   onSelect={() => choose(method.id)}
                   disabled={disabled}
-                  title={method.name}
-                  badge={method.badge ? <Badge tone="outline">{method.badge}</Badge> : null}
-                  subtitle={disabled ? codReason : method.description}
+                  // The sentence naming why cash is unavailable, rendered below
+                  // the card instead of inside it. As the dimmed subtitle it
+                  // composited to 2.53:1 and sat on a card that `disabled` had
+                  // taken out of the tab order, so the one person who most
+                  // needed telling was never told. See field.tsx.
+                  note={disabled ? codReason : undefined}
+                  title={
+                    <span className="flex items-start gap-2">
+                      <MethodLead id={method.id} />
+                      {method.name}
+                    </span>
+                  }
+                  // The word, spelled out, because the owner asked to be able to
+                  // tell at a glance and three visual signals are still three
+                  // visual signals. Two things about where it sits.
+                  //
+                  // It is passed from here rather than built into OptionCard:
+                  // the address step and the settings list both already show
+                  // "Default" on this line, and two lookalike words at 11px
+                  // meaning chosen-now and saved-for-later would be a worse bug
+                  // than the one being fixed.
+                  //
+                  // And it is in the badge slot, not the `meta` column on the
+                  // right. As a fixed right-hand column it took ~74px off the
+                  // title at the instant of the tap, so "Pay online — card, UPI,
+                  // net banking" broke over two lines and pushed "Fastest" onto
+                  // a third — the card reflowing under the thumb that chose it.
+                  // Here it joins the badge on the title's own wrap row: the
+                  // title keeps the full column and reads on one line at 390px,
+                  // and the badge and the word share the line below it. The
+                  // badge is NOT replaced while selected, because in test mode
+                  // it is the "Test · owner only" warning.
+                  //
+                  // aria-hidden: the button's own aria-checked already says it.
+                  badge={
+                    <>
+                      {method.badge ? <Badge tone="outline">{method.badge}</Badge> : null}
+                      {active && (
+                        <span
+                          aria-hidden
+                          className="text-[10.5px] font-semibold uppercase leading-none tracking-[0.14em] text-brand-700"
+                        >
+                          Selected
+                        </span>
+                      )}
+                    </>
+                  }
+                  subtitle={method.description}
                 >
                   {method.id === "upi" && (
                     <div className="space-y-3.5">
-                      <ul className="flex flex-wrap gap-1.5" aria-label="Works with">
-                        {UPI_APP_NAMES.map((label) => (
-                          <li key={label} className={CHIP}>
-                            {label}
-                          </li>
-                        ))}
-                      </ul>
+                      <MarkRow label="Pay from any UPI app" items={UPI_APPS} />
+                      <p className="text-[12.5px] leading-[1.5] text-ink-600">
+                        BHIM, Amazon Pay and every other UPI app work the same way.
+                      </p>
                       {/* Three ruled rows: what to do, in the order it happens. */}
                       <ol>
                         {[
@@ -191,7 +461,12 @@ export function PaymentStep() {
                             key={line}
                             className="flex gap-3 py-2.5 text-[13px] leading-[1.55] text-ink-600"
                           >
-                            <span className="shrink-0 tabular-nums text-ink-400">{i + 1}</span>
+                            {/* Ocean, not ink-400: these sit on the chosen
+                                card's brand-100 fill, where ink-400 is 2:1 and
+                                a numeral is text, not a glyph stroke. */}
+                            <span className="shrink-0 font-semibold tabular-nums text-brand-700">
+                              {i + 1}
+                            </span>
                             <span className="min-w-0">{line}</span>
                           </li>
                         ))}
@@ -205,13 +480,7 @@ export function PaymentStep() {
 
                   {method.id === "online" && (
                     <div className="space-y-3.5">
-                      <ul className="flex flex-wrap gap-1.5" aria-label="Accepted on the next step">
-                        {GATEWAY_METHODS.map((label) => (
-                          <li key={label} className={CHIP}>
-                            {label}
-                          </li>
-                        ))}
-                      </ul>
+                      <MarkRow label="Accepted on PayU's checkout" items={GATEWAY_ROUTES} />
                       <p className="text-[13px] leading-[1.55] text-ink-600">
                         You pick UPI, card or net banking on PayU&apos;s checkout at the last
                         step. Card numbers, CVV and UPI PINs are entered there — they never reach
@@ -227,10 +496,10 @@ export function PaymentStep() {
                     </p>
                   )}
                 </OptionCard>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
 
         {error && (
           <p role="alert" className="text-[13px] font-medium text-sale-600">
@@ -239,10 +508,15 @@ export function PaymentStep() {
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          {/* A 40px touch target on phones; the negative margin keeps the row. */}
+          {/* A 44px touch target on phones, which is the size the rest of the
+              shop uses and the size the old comment here claimed. It was
+              `py-2.5` on 11px text with no line-height utility — 16.5 + 20 =
+              36.5px — and the comment asserting 40px was what kept anyone from
+              measuring it. `min-h-11` states the target outright instead of
+              deriving it from padding; the negative margin keeps the row. */}
           <Link
             href="/checkout/address"
-            className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
+            className="-my-2.5 inline-flex min-h-11 items-center py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:min-h-0 lg:py-0"
           >
             Back to address
           </Link>

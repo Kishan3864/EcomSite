@@ -307,9 +307,17 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  /* `rounded-full` is Tailwind's own value and now means what it says. The
-     square-corner policy used to clamp it to 2px, which quietly turned every
-     avatar, swatch and status dot in the app into a tiny square. */
+  /* `rounded-full` is NOT exempt, whatever an older note here claimed. It
+     compiles to a normal `border-radius: 3.4e38px` declaration and the
+     `border-radius: 0 !important` reset in this layer beats it — an important
+     declaration in any layer outranks a normal one in any other. Every avatar,
+     swatch and status dot in the app renders square, and so will anything new.
+
+     The practical consequence, for the payment brand marks especially: a round
+     corner has to live INSIDE an inline SVG — a <circle>, a path curve, or the
+     `rx`/`ry` geometry attributes on an SVG <rect>, none of which are the CSS
+     `border-radius` property. That is why PhonePe keeps its rounded tile and
+     its disc while the chip around it stays square. */
 
   ::selection {
     background: var(--color-brand-900);
@@ -471,6 +479,36 @@
 }
 @utility rule-hair-t {
   box-shadow: inset 0 1px 0 0 var(--rule-color, var(--color-hairline));
+}
+/* The left hairline, for cells in a row of columns. There is still no `rule-t`
+   and no `rule-r`: nothing has asked for them, and the two that exist are drawn
+   from the side the eye reads the divider on. */
+@utility rule-hair-l {
+  box-shadow: inset 1px 0 0 0 var(--rule-color, var(--color-hairline));
+}
+
+/**
+ * A rule AND an elevation, in one declaration, because they cannot be two.
+ *
+ * `rule-l` sets `box-shadow` outright while `shadow-md` composes through
+ * `--tw-shadow`. Both are single-class utilities in this same layer and
+ * `rule-l` is emitted after `shadow-md`, so `class="shadow-md rule-l"` silently
+ * renders the rule alone: no lift, and no `0 0 0 1px` hairline that every
+ * elevation carries as its first layer. The selected checkout option card wore
+ * exactly that pair and was therefore flatter and edgeless beside the plain
+ * `shadow-sm` cards it had been chosen over — which is most of why nobody could
+ * tell which payment method was selected.
+ *
+ * Written here rather than as an arbitrary `shadow-[inset_3px…,0_4px_12px…]` at
+ * the call site so the elevation stays token-bound: retune `--shadow-md` and
+ * this follows, instead of drifting away inside a className. 3px rather than
+ * rule-l's 2px because this bar is a state, not a divider.
+ *
+ * The general rule it enforces: never put a `shadow-*` and a `rule-*` utility
+ * on the same element. Compose them, here, once.
+ */
+@utility rule-l-raised {
+  box-shadow: inset 3px 0 0 0 var(--rule-color, var(--color-ink-300)), var(--shadow-md);
 }
 
 /**

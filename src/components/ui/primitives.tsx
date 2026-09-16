@@ -15,14 +15,27 @@ type Tone = "brand" | "gold" | "sale" | "neutral" | "outline" | "success";
  * to carry were there to survive being laid over a photograph, and a flat ink
  * stamp does that better — it is what the reduction in the corner of every
  * product tile already is.
+ *
+ * `outline` carries `shadow-xs` for the 1px ink ring in its first layer, because
+ * a flat stamp still needs an edge when its fill matches its ground: it draws no
+ * outline despite the name — it is plain white, so "Recommended" on a white
+ * payment card was letters floating with no stamp under them at all.
+ *
+ * `success` needed the opposite fix. It was bg-brand-100, which is exactly the
+ * selected option card's fill, so the "Default" badge on a chosen address
+ * vanished into the card holding it — and the ring did not rescue it: composited
+ * over brand-100 that edge is ~#ccd8de against a brand-100 stamp, 1.15:1, no
+ * boundary at all. A ring cannot separate two identical fills. brand-200 can:
+ * 1.26:1 off the selected card, 1.40:1 off the white ones, with brand-900 text
+ * at 9.6:1 on it. No ring, because the fill is now doing the work.
  */
 const TONES: Record<Tone, string> = {
   brand: "bg-brand-900 text-white",
   gold: "bg-gold-400 text-ink-950",
   sale: "bg-sale-500 text-white",
   neutral: "bg-ink-950 text-white",
-  outline: "bg-surface text-ink-950",
-  success: "bg-brand-100 text-brand-800",
+  outline: "bg-surface text-ink-950 shadow-xs",
+  success: "bg-brand-200 text-brand-900",
 };
 
 export function Badge({

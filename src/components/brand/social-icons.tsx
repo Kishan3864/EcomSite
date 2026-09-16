@@ -34,23 +34,15 @@ export function YoutubeIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-/* Payment marks used on the checkout and footer trust rows. */
+/* Payment marks are not here. They live in brand/payment-marks.tsx, which
+   carries the two tiers they need: third-party brand colours sealed inside the
+   SVG for the real marks, house ink strokes for the categories that have no
+   logo. A dead `UpiMark` used to sit at this spot, above a comment claiming it
+   was "used on the checkout and footer trust rows" — nothing had ever imported
+   it, its wordmark was an SVG <text> bound to the app font so it reflowed at
+   every size, and its first path ran to x = -2, outside its own viewBox. It is
+   redrawn there instead.
 
-export function UpiMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 48 20" className={className} aria-label="UPI" role="img">
-      <path d="M2 2h6l-4 16H-2L2 2Z" fill="#2c837c" />
-      <path d="M9 2h6l-4 16H5L9 2Z" fill="#ee9014" />
-      <text
-        x="19"
-        y="15"
-        fontFamily="var(--font-jakarta), sans-serif"
-        fontSize="11"
-        fontWeight="700"
-        fill="currentColor"
-      >
-        UPI
-      </text>
-    </svg>
-  );
-}
+   `XIcon` above is also unused today — footer.tsx imports only Instagram and
+   Youtube — and is being left alone deliberately rather than swept up inside a
+   payment change. */
