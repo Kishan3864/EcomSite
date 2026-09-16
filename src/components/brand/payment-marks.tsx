@@ -38,20 +38,22 @@ import type { ReactElement } from "react";
  *   stays banned is the counterfeit: a house drawing dressed as somebody's
  *   logo, or a brand rendered in a shape that brand does not use.
  *
- * HONESTY ABOUT WHAT THESE ARE. This machine has no network and the repo holds
- * no vendor assets, so nothing here is traced from an official file. UPI's
- * two-bar device and Google's G are reproduced geometry. PhonePe is a
- * simplified house rendering of the brand's own device, a violet tile with a
- * white disc. Paytm has no device to borrow — its mark is a wordmark — so the
- * wordmark is what is drawn: "Pay" in its navy, "tm" in its cyan, nothing
- * around it. It was a navy rounded tile carrying one white "P" until the owner
- * caught it: that tile was ours rather than the brand's, it was the only
- * rounded corner this design added, and at 18px it read as an anonymous
- * coloured chip, which defeats the recognition argument that justifies having
- * brand marks here at all. Each mark sits beside that brand's name in visible
- * text, so it identifies rather than substitutes, and none of them implies that
- * brand endorses WeekendCart. If the owner obtains the official SVGs, swap the
- * path data in place: the call sites take a name, not geometry.
+ * WHAT THESE ARE NOW: the schemes' own artwork, as files, in
+ * public/brand/payments/. Tier 1 went through three rounds of being drawn by
+ * hand here — the two-bar UPI device, a violet tile standing in for PhonePe, a
+ * navy chip with a "P" on it for Paytm, then better versions of each — and the
+ * owner rejected every round for the same reason, which was the right reason:
+ * a trademark you have redrawn is a trademark you have altered. It is less
+ * recognisable, which defeats the only argument for having it, and it is not
+ * ours to alter. Drawing stopped; the files went in.
+ *
+ * Tier 2 stays drawn, because cards, net banking, wallets and cash are
+ * categories with no logo to fetch — a house glyph there is a glyph, not a
+ * counterfeit.
+ *
+ * Each mark sits beside that brand's name in visible text, so it identifies
+ * rather than substitutes, and none of them implies that brand endorses
+ * WeekendCart.
  *
  * Every mark is `aria-hidden` and `focusable="false"`. The word beside it
  * carries the meaning, so a screen reader hears "Google Pay" once rather than
@@ -84,39 +86,45 @@ type MarkProps = { size?: number };
 /* ------------------------------ Tier 1: brands ---------------------------- */
 
 /**
- * UPI — the NPCI device, two slanted bars in the scheme's green and orange.
+ * THE BRAND MARKS ARE THE SCHEMES' OWN PNG FILES, NOT DRAWINGS OF THEM.
  *
- * Replaces the dead `UpiMark` that used to sit in social-icons.tsx. That one
- * set the letters as an SVG <text> bound to `var(--font-jakarta)`, so it
- * reflowed with the font and could not be trusted at any size, and its first
- * path ran to x = -2, outside its own viewBox. It also took its green from
- * marketing.ts's `upiApps` tones, which are not the real scheme colours.
- * The wordmark is deliberately not drawn: the label beside the mark says UPI.
+ * They were hand-drawn SVG for a while, and the drawings were close — but
+ * close is the whole problem with a trademark. A shopper either recognises the
+ * mark or does not, and a redrawn PhonePe with a straightened matra or a Visa
+ * set in whatever face the device resolves is a mark that has been altered,
+ * which is both less recognisable and not ours to alter. The official assets
+ * live in public/brand/payments/ and are served as-is.
+ *
+ * Square canvases, every one, with the schemes' own padding baked in — so they
+ * are rendered `object-contain` into a box and never stretched. `size` is the
+ * box's edge, which keeps the API identical to the house glyphs below.
+ *
+ * Plain <img>, not next/image: these are fixed-size decorative marks a few
+ * kilobytes each, and the optimiser's srcset and lazy-loading machinery buys
+ * nothing at 28px while adding a request per mark.
  */
-export function UpiMark({ size = 16 }: MarkProps) {
+function PngMark({ file, alt, size }: { file: string; alt: string; size: number }) {
   return (
-    <svg {...base} viewBox="0 0 64 24" width={Math.round(size * 2.35)} height={Math.round(size * 0.88)}>
-      {/* The scheme's own lockup: the slanted UPI letters in NPCI grey, then
-          the arrowhead split into the flag's saffron and green. The strapline
-          under it — UNIFIED PAYMENTS INTERFACE — is dropped, as it is set at
-          roughly a fifth of the letter height and would be sub-pixel here. */}
-      <text
-        x="0"
-        y="19"
-        textLength="42"
-        lengthAdjust="spacingAndGlyphs"
-        fontFamily={WORDMARK_STACK}
-        fontSize="21"
-        fontWeight="700"
-        fontStyle="italic"
-        fill="#747474"
-      >
-        UPI
-      </text>
-      <path fill="#f26a21" d="M46 3.5 62 12l-10.4 0L46 3.5Z" />
-      <path fill="#0f8a45" d="M51.6 12 62 12 46 20.5 51.6 12Z" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/brand/payments/${file}.png`}
+      // Empty on purpose, like the `aria-hidden` on every SVG mark here: the
+      // brand's name is already written beside it, and an alt would make a
+      // screen reader say "PhonePe PhonePe". `alt` is still required on an img,
+      // and `title` keeps the name for anyone reading the markup.
+      alt=""
+      title={alt}
+      width={size}
+      height={size}
+      loading="lazy"
+      decoding="async"
+      className="h-full w-full object-contain"
+    />
   );
+}
+
+export function UpiMark({ size = 16 }: MarkProps) {
+  return <PngMark file="upi-payment-icon" alt="UPI" size={size} />;
 }
 
 /**
@@ -137,36 +145,8 @@ export function GoogleMark({ size = 16 }: MarkProps) {
   );
 }
 
-/**
- * Google Pay — the G Pay lockup: Google's four-colour G beside "Pay".
- *
- * This is the mark Google publishes for "pay with Google Pay" placements, and
- * it is the one of the two official forms that survives being 20px tall. The
- * other — the four-ribbon app icon — is a pinwheel of overlapping translucent
- * capsules whose whole character is in the blends; redrawn by hand at this size
- * it would be four coloured smudges, and a trademark approximated badly is
- * worse than the correct lockup shown small.
- */
 export function GooglePayMark({ size = 16 }: MarkProps) {
-  return (
-    <svg {...base} viewBox="0 0 64 24" width={Math.round(size * 2.35)} height={Math.round(size * 0.88)}>
-      <g transform="translate(0 1) scale(0.92)">
-        <GoogleG />
-      </g>
-      <text
-        x="27"
-        y="18"
-        textLength="36"
-        lengthAdjust="spacingAndGlyphs"
-        fontFamily={WORDMARK_STACK}
-        fontSize="19"
-        fontWeight="500"
-        fill="#5f6368"
-      >
-        Pay
-      </text>
-    </svg>
-  );
+  return <PngMark file="google-pay-icon" alt="Google Pay" size={size} />;
 }
 
 /** The G alone, shared by the plain mark and the Pay lockup. */
@@ -193,106 +173,16 @@ function GoogleG() {
   );
 }
 
-/**
- * PhonePe — the violet tile and white disc, with a rupee inside it above 24px.
- *
- * `rx` on an SVG rect is a geometry attribute, not the CSS `border-radius` the
- * base layer zeroes site-wide, so a brand whose device is genuinely rounded
- * keeps its corners. The square-corner rule governs page chrome; it has never
- * governed the inside of a mark — InstagramIcon has shipped `rx="5.5"` and two
- * circles for as long as the footer has existed. This tile is the brand's own
- * shape, which is the whole difference between it and the invented tile Paytm
- * used to wear.
- *
- * The rupee only renders from 24px up. Inside a 14.6-unit disc it can be no
- * more than ~11 units tall, and at the 18px the mark rows use that is a 5px
- * glyph whose three strokes sit ~2px apart — it aliases into a smudge and
- * muddies the two shapes that actually identify PhonePe at that size. Violet
- * tile, white disc, nothing in it.
- */
 export function PhonePeMark({ size = 16 }: MarkProps) {
-  return (
-    <svg {...base} width={size} height={size}>
-      <circle cx="12" cy="12" r="12" fill="#5f259f" />
-      {/* "पे" — the app icon's own glyph, drawn rather than set in a Devanagari
-          face, because whether one is installed is the device's business and a
-          missing face would leave a bare purple disc.
-          Four strokes, which is how the letter is actually written: the
-          shirorekha across the top, the bowl hanging from its left end, the
-          stem dropping from its right, and the e-matra flying above it. Round
-          caps because the logo's own terminals are round — inside a brand mark
-          that is the brand's geometry, not this shop's.
-
-          The matra is a STRAIGHT diagonal, which is the logo and not the
-          letter: set पे in any Devanagari face and the matra comes out as a
-          curled hook. Checked both side by side at 180px before choosing —
-          the hook is typographically correct and is not what PhonePe drew. */}
-      <g
-        fill="none"
-        stroke="#ffffff"
-        strokeWidth="2.05"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M6.3 9.6h10.1" />
-        <path d="M8.2 9.6v3.7a3.05 3.05 0 0 0 3.05 3.05h1.05" />
-        <path d="M13.75 9.6v8.9" />
-        <path d="M10.4 8.5 16.2 4.7" />
-      </g>
-    </svg>
-  );
+  return <PngMark file="phonepe-icon" alt="PhonePe" size={size} />;
 }
 
-/**
- * Visa — the wordmark in its own blue, on nothing.
- *
- * No card outline. The asset it is drawn from sets the wordmark inside a grey
- * rounded rectangle, which is a container the scheme supplies for use on a
- * white page; here every mark already sits in the row's own tile, so keeping
- * Visa's would be a box inside a box, and a rounded one in a square-cornered
- * shop. The wordmark is the trademark; the rectangle is packaging.
- *
- * Set in text, pinned with `textLength`, for the reason given at PaytmMark.
- */
 export function VisaMark({ size = 16 }: MarkProps) {
-  return (
-    <svg {...base} viewBox="0 0 60 24" width={Math.round(size * 1.9)} height={Math.round(size * 0.76)}>
-      <text
-        x="0"
-        y="18"
-        textLength="60"
-        lengthAdjust="spacingAndGlyphs"
-        fontFamily={WORDMARK_STACK}
-        fontSize="20"
-        fontWeight="700"
-        fontStyle="italic"
-        fill="#1434cb"
-      >
-        VISA
-      </text>
-    </svg>
-  );
+  return <PngMark file="visa-icon" alt="Visa" size={size} />;
 }
 
-/**
- * Mastercard — the two interlocking circles.
- *
- * The wordmark under them is dropped on purpose: at the 20px this renders at,
- * "mastercard" would be under two pixels tall and would read as a smudge. The
- * circles alone are the part that identifies the scheme at a glance, and the
- * row's own caption says what it is.
- *
- * The overlap is not a third shape stacked on top — it is the orange circle
- * drawn with `multiply`, so the intersection resolves to the scheme's own
- * #ff5f00 the way its published construction does.
- */
 export function MastercardMark({ size = 16 }: MarkProps) {
-  return (
-    <svg {...base} viewBox="0 0 36 24" width={Math.round(size * 1.5)} height={size}>
-      <circle cx="14" cy="12" r="8.2" fill="#eb001b" />
-      <circle cx="22" cy="12" r="8.2" fill="#f79e1b" style={{ mixBlendMode: "multiply" }} />
-    </svg>
-  );
+  return <PngMark file="master-card-icon" alt="Mastercard" size={size} />;
 }
 
 /**
@@ -315,48 +205,9 @@ export function MastercardMark({ size = 16 }: MarkProps) {
  * can push the row around. Drawing five letters as paths at this size would be
  * a hand-made typeface pretending to be a trademark, which is worse.
  */
-const WORDMARK_STACK = "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
 export function PaytmMark({ size = 16 }: MarkProps) {
-  return (
-    <svg
-      {...base}
-      viewBox="0 0 60 24"
-      // Sized by WIDTH, not height — the one mark here that is a word rather
-      // than a glyph. Matching its height to the square marks would make it
-      // 2.5x their width and burst the fixed slot the row lines its labels up
-      // against. 1.7x the nominal size is the slot's width exactly, so the
-      // wordmark fills it and sits shorter, which is how a word beside a set
-      // of icons is meant to look.
-      width={Math.round(size * 1.7)}
-      height={Math.round(size * 0.68)}
-    >
-      <text
-        x="0"
-        y="18"
-        textLength="35"
-        lengthAdjust="spacingAndGlyphs"
-        fontFamily={WORDMARK_STACK}
-        fontSize="19"
-        fontWeight="700"
-        fill="#002970"
-      >
-        Pay
-      </text>
-      <text
-        x="35"
-        y="18"
-        textLength="25"
-        lengthAdjust="spacingAndGlyphs"
-        fontFamily={WORDMARK_STACK}
-        fontSize="19"
-        fontWeight="700"
-        fill="#00baf2"
-      >
-        tm
-      </text>
-    </svg>
-  );
+  return <PngMark file="paytm-icon" alt="Paytm" size={size} />;
 }
 
 /* ---------------------------- Tier 2: categories -------------------------- */
