@@ -40,30 +40,27 @@ import { formatINR } from "@/lib/utils";
  * processor takes afterwards. Three apps, and the line under them says every
  * other UPI app works the same way.
  */
-const UPI_APPS: readonly { id: PaymentMarkName; label: string | null }[] = [
+const UPI_APPS: readonly { id: PaymentMarkName; label: string }[] = [
   { id: "gpay", label: "Google Pay" },
   { id: "phonepe", label: "PhonePe" },
-  // `null` for the same reason as the gateway row: PaytmMark is the wordmark,
-  // so a caption beside it printed the name twice. See GATEWAY_ROUTES.
-  { id: "paytm", label: null },
+  { id: "paytm", label: "Paytm" },
 ];
 
 /**
- * `label: null` where the mark is already a wordmark.
+ * EVERY CELL CARRIES A CAPTION, Paytm included.
  *
- * Paytm has no icon-only device — its mark IS the word, in two colours — so
- * pairing it with a "PAYTM" caption printed the name twice, and it was the one
- * item in the row that did. Every other mark here is a glyph that needs telling
- * what it is.
+ * Paytm's mark is a wordmark, so its caption repeats it, and for two rounds it
+ * was dropped for that reason. Both times the cell it left behind was the one
+ * hole in an otherwise even grid — the columns are equal width, so a cell with
+ * no text is a gap you can see from across the room. A logo beside its own name
+ * is what every payments row looks like; a row with a hole in it is not. The
+ * repetition is the cheaper of the two faults.
  */
-/** Spoken names for the marks whose caption is dropped because the mark is the word. */
-const MARK_NAMES: Partial<Record<PaymentMarkName, string>> = { paytm: "Paytm" };
-
-const GATEWAY_ROUTES: readonly { id: PaymentMarkName; label: string | null }[] = [
+const GATEWAY_ROUTES: readonly { id: PaymentMarkName; label: string }[] = [
   { id: "upi", label: "UPI" },
   { id: "gpay", label: "Google Pay" },
   { id: "phonepe", label: "PhonePe" },
-  { id: "paytm", label: null },
+  { id: "paytm", label: "Paytm" },
   { id: "cards", label: "Cards" },
   { id: "netbanking", label: "Net banking" },
   { id: "wallets", label: "Wallets" },
@@ -151,7 +148,7 @@ function MarkRow({
   items,
 }: {
   label: string;
-  items: readonly { id: PaymentMarkName; label: string | null }[];
+  items: readonly { id: PaymentMarkName; label: string }[];
 }) {
   return (
     <div className="bg-surface px-2.5 py-2.5 shadow-xs">
@@ -161,7 +158,19 @@ function MarkRow({
       <ul
         role="list"
         aria-label={label}
-        className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] items-center gap-x-3 gap-y-2.5"
+        // TWO NUMBERS, ONE PER BREAKPOINT, both set by the longest caption.
+        //
+        // The column has to hold the 40px tile, an 8px gap and NET BANKING on
+        // ONE line — a caption that wraps makes its row taller than the others
+        // and undoes the whole point of a grid. At 11px/0.1em that caption is
+        // ~95px, so 9rem. But the phone only has ~294px inside this plinth, and
+        // 9rem columns fit exactly one of them: seven stacked rows, ~530px of a
+        // 390px screen spent on a list of logos.
+        //
+        // So the phone drops the caption to 10px/0.06em (~78px) and the column
+        // to 8.25rem, which fits two. Same tile, same alignment, half the
+        // height.
+        className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(8.25rem,1fr))] items-center gap-x-3 gap-y-2 sm:grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] sm:gap-y-2.5"
       >
         {items.map((item) => (
           // ink-500, up from ink-400: these are the house glyphs, and at 2.55:1
@@ -169,17 +178,27 @@ function MarkRow({
           // ink-500 is 5.02:1 on this white plinth, which the row always has —
           // the plinth is why they do not need ink-600 the way the lead marks
           // on the tinted card do.
-          <li key={item.id} className="flex items-center gap-1.5 text-ink-500">
-            <PaymentMark name={item.id} size={18} />
-            {item.label ? (
-              <span className="text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600">
-                {item.label}
-              </span>
-            ) : (
-              // Every mark is aria-hidden, so a wordmark with its caption
-              // dropped would reach a screen reader as an empty list item.
-              <span className="sr-only">{MARK_NAMES[item.id]}</span>
-            )}
+          // EVERY MARK SITS IN THE SAME BOX. The marks are five different
+          // shapes — two slanted bars, a round G, a square tile, a wordmark,
+          // three stroked glyphs — and drawn at a shared `size` they still
+          // looked mismatched, because `size` sets the viewBox edge and each
+          // mark fills a different fraction of it. Worse, a wide mark pushed
+          // its own label right while a narrow one pulled it left, so seven
+          // labels started at seven different x positions and the row read as
+          // scattered rather than as a set.
+          //
+          // The slot fixes both: 34x20, mark centred inside it, label always
+          // beginning at the same offset in every cell. PaymentMark scales
+          // each mark to fill the slot's height (or its width, for the one
+          // wordmark), so they now match optically and not just nominally.
+          <li key={item.id} className="flex items-center gap-2 text-ink-500">
+            <span className="flex h-7 w-10 shrink-0 items-center justify-center bg-ink-50">
+              <PaymentMark name={item.id} size={19} />
+            </span>
+            {/* Also the item's only accessible name — every mark is aria-hidden. */}
+            <span className="min-w-0 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] text-ink-600 sm:text-[11px] sm:tracking-[0.1em]">
+              {item.label}
+            </span>
           </li>
         ))}
       </ul>
@@ -435,9 +454,17 @@ export function PaymentStep() {
                     <>
                       {method.badge ? <Badge tone="outline">{method.badge}</Badge> : null}
                       {active && (
+                        // A SOLID TAG, not tinted words. As brand-700 text on
+                        // the brand-100 fill it was the same colour family as
+                        // everything around it and read as another label; the
+                        // one element on the card whose whole job is to say
+                        // "this one" should be the one element that inverts.
+                        // White on brand-700 is 8.35:1, the same pairing the
+                        // marker already uses, so the tick and the tag are
+                        // plainly one statement made twice.
                         <span
                           aria-hidden
-                          className="text-[10.5px] font-semibold uppercase leading-none tracking-[0.14em] text-brand-700"
+                          className="bg-brand-700 px-1.5 py-1 text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-white"
                         >
                           Selected
                         </span>

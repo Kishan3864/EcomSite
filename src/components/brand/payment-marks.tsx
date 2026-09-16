@@ -207,8 +207,14 @@ export function PaytmMark({ size = 16 }: MarkProps) {
     <svg
       {...base}
       viewBox="0 0 60 24"
-      width={Math.round((size * 60) / 24)}
-      height={size}
+      // Sized by WIDTH, not height — the one mark here that is a word rather
+      // than a glyph. Matching its height to the square marks would make it
+      // 2.5x their width and burst the fixed slot the row lines its labels up
+      // against. 1.7x the nominal size is the slot's width exactly, so the
+      // wordmark fills it and sits shorter, which is how a word beside a set
+      // of icons is meant to look.
+      width={Math.round(size * 1.7)}
+      height={Math.round(size * 0.68)}
     >
       <text
         x="0"

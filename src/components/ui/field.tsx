@@ -284,13 +284,17 @@ export function OptionCard({
       >
         <span
           className={cn(
-            "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center transition-colors duration-200",
-            // A radio button drawn with no border and no radius: an 18px square
+            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center transition-colors duration-200",
+            // A radio button drawn with no border and no radius: a 20px square
             // that fills with ocean and takes a white tick when it is chosen.
+            // 20px rather than 18: at 18 the tick had to drop to 12px to fit,
+            // and a 12px tick is the smallest thing on the card carrying the
+            // largest meaning. The unchosen square is the same size, so the
+            // row never shifts when the choice moves.
             active ? "bg-brand-700 text-white" : "bg-ink-200",
           )}
         >
-          {active && <Check size={12} strokeWidth={3} aria-hidden />}
+          {active && <Check size={14} strokeWidth={3} aria-hidden />}
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-2">
