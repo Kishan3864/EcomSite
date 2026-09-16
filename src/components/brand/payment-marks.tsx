@@ -254,34 +254,36 @@ export function WalletsMark({ size = 16 }: MarkProps) {
 }
 
 /**
- * Cash on delivery.
+ * Cash on delivery — a rupee coin dropping into an open hand.
  *
- * The same banknote-and-rupee the counter band on the home page already draws
- * (illustration/counter-glyphs.tsx, the `note` glyph) so the shop pictures cash
- * one way everywhere. The paths are copied rather than imported because that
- * module is "use client" and wraps every path in `DrawIn`, which would animate
- * the mark on mount inside a payment card. Keep the two in step by hand; if the
- * note glyph is ever redrawn, redraw this with it.
+ * It was a banknote, which pictured CASH but not the DELIVERY: a note on its
+ * own is what the wallet and the counter band already say, so the one method
+ * where money changes hands at the door was drawn as the one thing every other
+ * money glyph in the shop is also drawn as. The hand is the whole distinction,
+ * and it survives 15px because it is one silhouette rather than a rectangle
+ * full of detail — checked against three other candidates at 150px before
+ * choosing.
  *
- * THE RUPEE IS NEW, in both places. The old one was `M14 9 A3 3 0 0 1 11 15 L9
- * 15 L15 15`: an arc whose chord is 6.71 across a diameter of 6, which the SVG
- * spec makes the browser silently scale up, so it drew a flat semicircle rather
- * than the bowl it was written as — and then retraced its own bottom bar from
- * (11,15) to (9,15) to (15,15), leaving the glyph with no stem and no leg. It
- * was not a ₹. This is lucide's IndianRupee at half size, centred in the note:
- * two bars, the bowl as a cubic (no out-of-range radii to rescale), the stub
- * and the diagonal leg.
+ * This no longer matches `note` in illustration/counter-glyphs.tsx, and that is
+ * fine: that glyph illustrates cash in general on the home page, this one names
+ * a payment method. The old comment tying them together is gone with it.
  */
 export function CodMark({ size = 16 }: MarkProps) {
   return (
     <svg {...base} width={size} height={size}>
       <g {...houseStroke}>
-        <path d="M2 6 H22 V18 H2 Z" />
-        <path d="M9.6 7.5 H15.6" />
-        <path d="M9.6 10 H15.6" />
-        <path d="M9.6 12.5 H11.1" />
-        <path d="M11.1 12.5 C14.4 12.5 14.4 7.5 11.1 7.5" />
-        <path d="M9.6 12.5 L13.9 16.5" />
+        {/* The open hand, palm up: cupped fingers, then the arm of it sweeping
+            down to the right. Drawn at four o'clock so the coin has somewhere
+            to sit rather than floating over a flat line. */}
+        <path d="M2.4 15.3c1.4-1.2 3-1.2 4.4 0l1 .8h4.3a1.6 1.6 0 0 1 0 3.2H8.5" />
+        <path d="M6.8 19.3h5.7l6.3-2.9a1.7 1.7 0 0 1 2.1 2.4l-5 3.5H6.8" />
+        {/* The coin, and lucide's IndianRupee inside it at a third scale: two
+            bars, the bowl as a cubic, the stub and the diagonal leg. */}
+        <circle cx="12" cy="7.3" r="4.7" />
+        <path d="M10.2 5.4h3.5" />
+        <path d="M10.2 7.1h3.5" />
+        <path d="M10.2 9.8 12.8 7.1" />
+        <path d="M10.2 7.1h.9c1.7 0 1.7-1.7 0-1.7" />
       </g>
     </svg>
   );

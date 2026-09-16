@@ -263,7 +263,11 @@ export function OptionCard({
           ? "bg-surface shadow-sm opacity-55"
           : active
             ? "bg-brand-100 rule-l-raised [--rule-color:var(--color-brand-700)]"
-            : "bg-surface shadow-sm hover:shadow-md",
+            : // The unchosen card sits back rather than merely not being
+              // chosen: shadow-xs is the hairline ring with almost no lift, so
+              // the chosen one's elevation is the difference between them and
+              // not just its tint. It comes forward under the cursor.
+              "bg-surface shadow-xs hover:shadow-md",
         className,
       )}
     >
@@ -280,21 +284,34 @@ export function OptionCard({
               onKeyDown,
             }
           : { "aria-pressed": active })}
-        className="tap flex w-full items-start gap-2.5 p-3 text-left sm:gap-3 sm:p-4"
+        // p-4 / sm:p-5, up from p-3 / sm:p-4. The cheapest thing that reads as
+        // considered rather than cramped is air, and these two cards are the
+        // page's whole question — they can afford a few more pixels of it.
+        className="tap flex w-full items-start gap-3 p-4 text-left sm:gap-3.5 sm:p-5"
       >
         <span
           className={cn(
-            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center transition-colors duration-200",
-            // A radio button drawn with no border and no radius: a 20px square
+            "mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center transition-[background-color,box-shadow] duration-200",
+            // A radio button drawn with no border and no radius: a 22px square
             // that fills with ocean and takes a white tick when it is chosen.
-            // 20px rather than 18: at 18 the tick had to drop to 12px to fit,
-            // and a 12px tick is the smallest thing on the card carrying the
-            // largest meaning. The unchosen square is the same size, so the
-            // row never shifts when the choice moves.
-            active ? "bg-brand-700 text-white" : "bg-ink-200",
+            //
+            // TWO CHANGES OF STATE, NOT ONE. The chosen square fills AND gains a
+            // 3px brand-200 halo, so it reads as switched on from across the
+            // page; the unchosen one is now a white well with an inset ink-300
+            // ring rather than a solid grey block, which is what an empty
+            // control looks like. Before, both states were flat squares of
+            // different colours and the difference was carrying too little.
+            active
+              ? // brand-300, not brand-200: the halo sits on the chosen card's
+                // own brand-100 fill, and brand-200 against brand-100 is 1.2:1
+                // — a ring nobody can see is not a ring. brand-300 is 1.9:1,
+                // the same step the expanded body's seam uses for the same
+                // reason and on the same ground.
+                "bg-brand-700 text-white shadow-[0_0_0_3px_var(--color-brand-300)]"
+              : "bg-surface shadow-[inset_0_0_0_1.5px_var(--color-ink-300)]",
           )}
         >
-          {active && <Check size={14} strokeWidth={3} aria-hidden />}
+          {active && <Check size={15} strokeWidth={3} aria-hidden />}
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:gap-2">
@@ -313,14 +330,14 @@ export function OptionCard({
           The body used to repeat the button's padding exactly, so it started
           flush at the card's left edge — to the LEFT of the title it belongs
           to — with nothing between the two but two stacked paddings. The left
-          inset is the button's own arithmetic: 12 + 18 + 10 on a phone, 16 + 18
-          + 12 from sm. brand-300 for the hairline rather than `hairline`, since
+          inset is the button's own arithmetic: 16 + 22 + 12 on a phone, 20 + 22
+          + 14 from sm. brand-300 for the hairline rather than `hairline`, since
           this only ever renders on the tinted fill, where #e6e9ec is invisible
           — and brand-200 barely improved on it at 1.23:1 against brand-100.
           brand-300 #94b7c8 is 1.9:1 on the same fill, which is a seam you can
           see without it becoming a border. */}
       {active && children && (
-        <div className="rule-hair-t [--rule-color:var(--color-brand-300)] py-3 pr-3 pl-10 sm:py-4 sm:pr-4 sm:pl-[46px]">
+        <div className="rule-hair-t [--rule-color:var(--color-brand-300)] py-4 pr-4 pl-[50px] sm:py-5 sm:pr-5 sm:pl-14">
           {children}
         </div>
       )}
