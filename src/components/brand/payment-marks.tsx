@@ -221,18 +221,23 @@ export function PhonePeMark({ size = 16 }: MarkProps) {
           shirorekha across the top, the bowl hanging from its left end, the
           stem dropping from its right, and the e-matra flying above it. Round
           caps because the logo's own terminals are round — inside a brand mark
-          that is the brand's geometry, not this shop's. */}
+          that is the brand's geometry, not this shop's.
+
+          The matra is a STRAIGHT diagonal, which is the logo and not the
+          letter: set पे in any Devanagari face and the matra comes out as a
+          curled hook. Checked both side by side at 180px before choosing —
+          the hook is typographically correct and is not what PhonePe drew. */}
       <g
         fill="none"
         stroke="#ffffff"
-        strokeWidth="1.85"
+        strokeWidth="2.05"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M5.7 10.4h11.3" />
-        <path d="M7.5 10.4v3.5a2.9 2.9 0 0 0 2.9 2.9h1.6" />
-        <path d="M14.4 10.4v8" />
-        <path d="m12.8 5.3 4.4 3.1" />
+        <path d="M6.3 9.6h10.1" />
+        <path d="M8.2 9.6v3.7a3.05 3.05 0 0 0 3.05 3.05h1.05" />
+        <path d="M13.75 9.6v8.9" />
+        <path d="M10.4 8.5 16.2 4.7" />
       </g>
     </svg>
   );

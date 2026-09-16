@@ -174,7 +174,12 @@ function MarkRow({
         // So the phone drops the caption to 10px/0.06em (~78px) and the column
         // to 8.25rem, which fits two. Same tile, same alignment, half the
         // height.
-        className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(8.5rem,1fr))] items-center gap-x-3 gap-y-2 sm:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] sm:gap-y-2.5"
+        // A FIXED COUNT, not auto-fill. auto-fill sized the columns off the
+        // container and split eight marks 5 and 3, which leaves a hole at the
+        // end of the first row — the exact raggedness this row keeps being
+        // rebuilt to remove. Two and four divide eight evenly, so the grid is
+        // always complete: four rows of two on a phone, two rows of four above.
+        className="mt-2.5 grid grid-cols-2 items-center gap-x-3 gap-y-1.5 sm:grid-cols-4 sm:gap-y-2"
       >
         {items.map((item) => (
           // ink-500, up from ink-400: these are the house glyphs, and at 2.55:1
@@ -196,15 +201,18 @@ function MarkRow({
           // each mark to fill the slot's height (or its width, for the one
           // wordmark), so they now match optically and not just nominally.
           <li key={item.id} className="flex items-center gap-2 text-ink-500">
-            {/* 48 on a phone, 56 from sm. Four of these marks are wordmarks —
-                UPI, Google Pay, Visa, Paytm are all wider than they are tall —
-                so the tile is sized by the widest of them rather than by the
-                square glyphs, which then simply sit centred with more air. */}
-            <span className="flex h-8 w-12 shrink-0 items-center justify-center bg-ink-50 sm:w-14">
-              <PaymentMark name={item.id} size={18} />
+            {/* Four of these marks are wordmarks — UPI, Google Pay, Visa and
+                Paytm are all wider than they are tall — so the tile is sized by
+                the widest of them, not by the square glyphs, which then sit
+                centred with more air around them.
+                Kept deliberately small: this is a list of what the NEXT screen
+                accepts, so it has to be legible and nothing more. Anything
+                bigger competes with the choice the page is actually asking for. */}
+            <span className="flex h-6 w-10 shrink-0 items-center justify-center bg-ink-50 sm:h-7 sm:w-12">
+              <PaymentMark name={item.id} size={15} />
             </span>
             {/* Also the item's only accessible name — every mark is aria-hidden. */}
-            <span className="min-w-0 text-[10px] font-semibold uppercase leading-none tracking-[0.06em] text-ink-600 sm:text-[11px] sm:tracking-[0.1em]">
+            <span className="min-w-0 text-[9.5px] font-semibold uppercase leading-none tracking-[0.05em] text-ink-600 sm:text-[10px] sm:tracking-[0.07em]">
               {item.label}
             </span>
           </li>
