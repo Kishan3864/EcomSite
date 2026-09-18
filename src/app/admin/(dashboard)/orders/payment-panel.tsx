@@ -104,7 +104,13 @@ function fromPayload(payload: unknown, ...keys: string[]): string {
   return "";
 }
 
-/** PayU's verbatim reply, kept out of the way until somebody wants it. */
+/**
+ * PayU's verbatim reply, kept out of the way until somebody wants it.
+ *
+ * Rendered only behind `canEdit` — the MANAGER gate the refund forms use. The
+ * reply carries the customer's name, email and phone and the masked
+ * instrument, which is more than a staff account needs to pack an order.
+ */
 function RawPayload({ payload, label }: { payload: unknown; label: string }) {
   if (payload === null || payload === undefined) return null;
   return (
@@ -332,7 +338,9 @@ export async function PaymentSection({
                   </p>
                 </div>
 
-                <RawPayload payload={attempt.payload} label="PayU's raw reply to this payment" />
+                {canEdit && (
+                  <RawPayload payload={attempt.payload} label="PayU's raw reply to this payment" />
+                )}
               </div>
             );
           })}
@@ -415,7 +423,9 @@ export async function PaymentSection({
                     />
                   </div>
 
-                  <RawPayload payload={refund.payload} label="PayU's raw reply to this refund" />
+                  {canEdit && (
+                    <RawPayload payload={refund.payload} label="PayU's raw reply to this refund" />
+                  )}
                 </div>
               ))}
             </>
