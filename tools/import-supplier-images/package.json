@@ -1,0 +1,9 @@
+{
+  "name": "import-supplier-images",
+  "private": true,
+  "description": "One-off, local-only: pulls product photographs and facts from a wholesaler's JavaScript-rendered product pages. Never installed by the deploy — it has its own node_modules here, and the root package.json does not know about it.",
+  "type": "module",
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "_comment": "One entry per fetched image, in the page's order. The word becomes the file name's suffix; skip drops the picture. Decided by looking at work/<sku>/contact-sheet.jpg.",
+  "HE-2638": ["main", "detail", "closeup", "use-case", "features", "features", "features", "size", "in-use"],
+  "HE-2879": ["main", "skip", "features", "features", "features", "use-case", "in-use"],
+  "HE-0556": ["main", "skip", "in-use", "closeup", "features", "use-case"],
+  "HE-2471": ["main", "in-use", "skip", "features", "skip", "detail", "closeup", "use-case"],
+  "HE-2170": ["main", "in-use", "features", "closeup", "features", "use-case", "use-case"]
+}
