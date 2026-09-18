@@ -408,6 +408,9 @@ export const products: Product[] = SEEDS.map((seed, index) => {
 
   return {
     id: `p${index + 1}`,
+    // The demo catalogue never had a stock code; the id in capitals is what
+    // its structured data used to emit, so nothing changes for it.
+    sku: `P${index + 1}`,
     slug: slugify(seed.t),
     title: seed.t,
     subtitle: seed.st,

@@ -162,7 +162,10 @@ export function BuyBox({
             below it Fraunces stops being a voice and becomes a small serif —
             so the phone gets 20px rather than the 17px it used to run. */}
         <h1 className="font-display text-[20px] leading-[1.2] tracking-[-0.015em] text-ink-950 sm:text-[32px] sm:leading-[1.12] sm:tracking-[-0.025em]">
-          {product.title}
+          {/* The headline is the one place that says more than the title —
+              a size, the key spec. Everywhere else, cards to invoice, is the
+              title. */}
+          {product.headline ?? product.title}
         </h1>
         <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:mt-2.5 sm:text-[15px] sm:leading-[1.6]">
           {product.subtitle}

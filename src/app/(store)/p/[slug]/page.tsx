@@ -37,12 +37,22 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!product) return { title: "Product not found" };
 
   const brand = await getBrand(product.brandSlug);
-  const title = `${product.title} — ${brand?.name}`;
-  const description = `${product.subtitle} Buy ${product.title} online at ₹${product.price.toLocaleString("en-IN")}. ${product.returnWindowDays}-day returns, ${product.warranty.toLowerCase()}.`;
+  // What was written in the admin wins. The derived sentence is the fallback
+  // for the catalogue that predates the two fields, and it names a price only
+  // when there is one to name.
+  const title = product.metaTitle ?? `${product.title} — ${brand?.name}`;
+  const priced =
+    product.price > 0 ? ` Buy ${product.title} online at ₹${product.price.toLocaleString("en-IN")}.` : "";
+  const description =
+    product.metaDescription ??
+    `${product.subtitle}${priced} ${product.returnWindowDays}-day returns, ${product.warranty.toLowerCase()}.`;
 
   return {
-    title,
+    // A meta title written by hand already ends in the shop's name, so it must
+    // not go through the layout's "%s · WeekendCart" template as well.
+    title: product.metaTitle ? { absolute: product.metaTitle } : title,
     description,
+    ...(product.tags.length > 0 ? { keywords: product.tags } : {}),
     alternates: { canonical: `/p/${product.slug}` },
     openGraph: {
       type: "website",

@@ -123,6 +123,13 @@ export interface Product {
   slug: string;
   title: string;
   subtitle: string;
+  /** The stock code — printed on invoices and emitted as the sku in structured data. */
+  sku: string;
+  /** The product page's H1 when it should say more than the title. Absent means the title. */
+  headline?: string;
+  /** Written in the admin; read only by the page's <title> and meta description. */
+  metaTitle?: string;
+  metaDescription?: string;
   brandSlug: string;
   /** Resolved display name; present whenever the product came from the database. */
   brandName?: string;

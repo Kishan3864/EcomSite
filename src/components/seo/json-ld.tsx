@@ -115,6 +115,15 @@ export function ProductJsonLd({ product }: { product: Product }) {
       ? "https://schema.org/InStock"
       : "https://schema.org/OutOfStock";
 
+  // Photographs served from public/ are site-relative paths, and a crawler
+  // reading JSON-LD does not resolve those against the page. Remote ones are
+  // left as they are; the empty placeholder a product with no photo carries is
+  // dropped rather than emitted as a blank.
+  const images = product.images
+    .map((i) => i.url)
+    .filter((url) => url !== "")
+    .map((url) => (url.startsWith("/") ? `${BRAND.url}${url}` : url));
+
   return (
     <JsonLd
       data={{
@@ -122,36 +131,47 @@ export function ProductJsonLd({ product }: { product: Product }) {
         "@type": "Product",
         name: product.title,
         description: product.subtitle,
-        sku: product.id.toUpperCase(),
-        image: product.images.map((i) => i.url),
+        sku: product.sku,
+        image: images,
         brand: {
           "@type": "Brand",
           name: product.brandName ?? product.brandSlug,
         },
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: product.rating,
-          reviewCount: product.reviewCount,
-          bestRating: 5,
-          worstRating: 1,
-        },
-        offers: {
-          "@type": "Offer",
-          url: `${BRAND.url}/p/${product.slug}`,
-          priceCurrency: "INR",
-          price: product.price,
-          availability,
-          itemCondition: "https://schema.org/NewCondition",
-          seller: { "@type": "Organization", name: BRAND.name },
-          hasMerchantReturnPolicy: {
-            "@type": "MerchantReturnPolicy",
-            applicableCountry: "IN",
-            returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
-            merchantReturnDays: product.returnWindowDays,
-            returnMethod: "https://schema.org/ReturnByMail",
-            returnFees: "https://schema.org/FreeReturn",
-          },
-        },
+        // A rating block with no reviews behind it is invalid structured data,
+        // and an offer with no price is a claim the shop is not making. Each
+        // is emitted only when there is something true to say.
+        ...(product.reviewCount > 0
+          ? {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: product.rating,
+                reviewCount: product.reviewCount,
+                bestRating: 5,
+                worstRating: 1,
+              },
+            }
+          : {}),
+        ...(product.price > 0
+          ? {
+              offers: {
+                "@type": "Offer",
+                url: `${BRAND.url}/p/${product.slug}`,
+                priceCurrency: "INR",
+                price: product.price,
+                availability,
+                itemCondition: "https://schema.org/NewCondition",
+                seller: { "@type": "Organization", name: BRAND.name },
+                hasMerchantReturnPolicy: {
+                  "@type": "MerchantReturnPolicy",
+                  applicableCountry: "IN",
+                  returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+                  merchantReturnDays: product.returnWindowDays,
+                  returnMethod: "https://schema.org/ReturnByMail",
+                  returnFees: "https://schema.org/FreeReturn",
+                },
+              },
+            }
+          : {}),
       }}
     />
   );
