@@ -45,6 +45,7 @@ import {
   ShipmentForm,
   UpiVerifyForm,
 } from "../order-forms";
+import { PaymentSection } from "../payment-panel";
 import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Order" };
@@ -207,6 +208,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               />
             </Card>
           )}
+
+          {/* The gateway's own account of this order: every attempt, what PayU
+              charged, what reached the bank, and any refunds. Renders nothing
+              at all for a cash or hand-confirmed UPI order. */}
+          <PaymentSection orderId={order.id} orderNumber={order.number} canEdit={canEdit} />
 
           <Card title="Shipment">
             <ShipmentForm

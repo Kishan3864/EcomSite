@@ -144,6 +144,9 @@ function addressLines(a: {
 export async function getInvoice(orderId: string): Promise<Invoice | null> {
   const order = await db.order.findFirst({
     where: { OR: [{ id: orderId }, { number: orderId.toUpperCase() }] },
+    // Scalars only. This document is downloaded by the customer, and
+    // OrderLine.product is a route to Product.supplierId — never grow this
+    // into `include: { product: ... }`. See prisma/schema.prisma.
     include: { lines: { orderBy: { id: "asc" } } },
   });
   if (!order) return null;

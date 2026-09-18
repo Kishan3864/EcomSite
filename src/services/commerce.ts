@@ -134,6 +134,12 @@ export async function placeOrder(
   const settings = await getSettings();
 
   // Re-price every line from the catalogue.
+  //
+  // No top-level `select`, so the whole Product row is loaded — `supplierId`
+  // included. Nothing here serialises it: the rows are read field by field
+  // below, and the `...line` in `priced.push` spreads the CLIENT's CartLine,
+  // not the product. Keep it that way — spreading a product row into a
+  // CartLine would put the wholesaler on the checkout payload.
   const products = await db.product.findMany({
     where: { id: { in: input.lines.map((l) => l.productId) }, status: "ACTIVE" },
     include: {

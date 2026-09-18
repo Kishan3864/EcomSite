@@ -37,6 +37,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
         category: { select: { name: true } },
         subcategory: { select: { name: true } },
         brand: { select: { name: true } },
+        // Admin-only, and the "At a glance" card is the only thing that reads
+        // it. Never mirror this onto a storefront query.
+        supplier: { select: { id: true, name: true, isActive: true } },
         stockMoves: { orderBy: { createdAt: "desc" }, take: 5 },
         _count: { select: { orderLines: true, reviews: true } },
       },
@@ -82,6 +85,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     brandId: product.brandId,
     categoryId: product.categoryId,
     subcategoryId: product.subcategoryId,
+    supplierId: product.supplierId ?? "",
     images: product.images.map((i): ImageInput => ({ url: i.url, alt: i.alt })),
     variantGroups: product.variantGroups.map(
       (g): VariantGroupInput => ({
@@ -144,6 +148,20 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
               {
                 label: "Category",
                 value: `${product.category.name} → ${product.subcategory.name}`,
+              },
+              {
+                label: "Wholesaler",
+                value: product.supplier ? (
+                  <Link
+                    href={`/admin/suppliers/${product.supplier.id}`}
+                    className="font-medium text-brand-700 hover:underline"
+                  >
+                    {product.supplier.name}
+                    {product.supplier.isActive ? "" : " (inactive)"}
+                  </Link>
+                ) : (
+                  <span className="text-ink-400">Not recorded</span>
+                ),
               },
               { label: "Price", value: formatINR(product.price) },
               {

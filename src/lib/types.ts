@@ -108,6 +108,16 @@ export type ProductBadge =
   | "exclusive"
   | "handpicked";
 
+/**
+ * The shape the whole storefront consumes, and the last thing between the
+ * database and a shopper's browser: `buy-box.tsx` receives one of these whole,
+ * as an RSC payload, so every field here is public.
+ *
+ * Deliberately has no supplier/wholesaler field. That is admin-only data
+ * (see the doc block on `Product.supplierId` in prisma/schema.prisma) and the
+ * admin reads it from the Prisma row directly. Adding it here would push it
+ * through `toProduct`, `toCardModel` and into the page source.
+ */
 export interface Product {
   id: ID;
   slug: string;

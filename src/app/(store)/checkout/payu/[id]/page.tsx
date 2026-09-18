@@ -5,7 +5,7 @@ import { canViewOrder } from "@/lib/auth/customer";
 import { getAdminSession } from "@/lib/auth/admin";
 import { payuConfig } from "@/lib/payments/payu";
 import { getSettings } from "@/services/settings";
-import { startPayuPayment } from "@/services/payu-core";
+import { SETTLED_PAYMENT_STATUSES, startPayuPayment } from "@/services/payu-core";
 import { PayuRedirect } from "./payu-redirect";
 
 export const metadata: Metadata = {
@@ -29,7 +29,11 @@ export default async function PayuHandoffPage({ params }: { params: Promise<{ id
   });
   if (!order) notFound();
   if (!(await canViewOrder(order))) notFound();
-  if (order.paymentStatus === "PAID") redirect(`/order/${order.id}`);
+  // The same set `startPayuPayment` refuses on, not PAID alone: a refunded or
+  // part-refunded order keeps `status` CONFIRMED, so without this the back
+  // button lands on a page that signs a fresh full-price transaction and
+  // auto-submits it.
+  if (SETTLED_PAYMENT_STATUSES.includes(order.paymentStatus)) redirect(`/order/${order.id}`);
 
   // The same rule the payment step follows, enforced where it actually
   // matters: while the gateway is in test mode nobody but the owner reaches

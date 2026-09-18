@@ -33,6 +33,12 @@ import { discountPercent } from "@/lib/utils";
 
 /* ------------------------------ Mappers ----------------------------- */
 
+// `include`, not `select`, so EVERY Product scalar is loaded — `supplierId`
+// among them. That is safe only because `toProduct` below is an explicit
+// allowlist: it names each output key, and anything it does not name is
+// dropped before the row can reach a shopper. Never replace that mapper with a
+// spread, and never add a supplier relation here "for convenience" — these two
+// objects are shared by every storefront query.
 const productListInclude = {
   brand: { select: { slug: true, name: true } },
   category: { select: { slug: true } },
@@ -63,6 +69,12 @@ function estimateBreakdown(rating: number, count: number): RatingBreakdown {
   return { 5: at(five), 4: at(four), 3: at(three), 2: at(two), 1: at(one) };
 }
 
+/**
+ * The storefront firewall. Every shopper-facing product read ends here, and
+ * this object literal is an allowlist: a Product column that is not written
+ * out by name below cannot reach the browser. `supplierId` is deliberately
+ * absent — the wholesaler is admin-only. Keep it a literal, never a spread.
+ */
 function toProduct(
   row: ProductListRow | ProductFullRow,
   breakdown?: RatingBreakdown,

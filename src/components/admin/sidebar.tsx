@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Star,
   Tag,
+  Truck,
   Users,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -62,6 +63,7 @@ const GROUPS = (c: SidebarCounts): NavGroup[] => [
       { href: "/admin/products", label: "Products", icon: Package },
       { href: "/admin/categories", label: "Categories", icon: Layers },
       { href: "/admin/brands", label: "Brands", icon: Tag },
+      { href: "/admin/suppliers", label: "Wholesalers", icon: Truck },
       { href: "/admin/inventory", label: "Inventory", icon: Boxes, count: c.lowStock, countTone: "sale" },
       { href: "/admin/media", label: "Images", icon: ImageIcon },
     ],

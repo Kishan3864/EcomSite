@@ -20,6 +20,17 @@ import { resolveAvatar } from "@/lib/avatar";
  * type the phase-1 UI already renders.
  */
 
+/**
+ * Scalars only, and `lines: true` must stay that way.
+ *
+ * This include feeds the storefront order page, /track/[id] and
+ * /account/orders — customer-facing, all three. `lines: true` returns
+ * OrderLine columns and never traverses OrderLine.product, which is the only
+ * thing keeping Product.supplierId off a customer's screen by this route.
+ * Growing it into `lines: { include: { product: true } }` to recover a live
+ * HSN code or an image the snapshot lacks would leak the wholesaler. See the
+ * note on Product.supplierId in prisma/schema.prisma.
+ */
 export const orderInclude = {
   lines: true,
   events: { orderBy: { at: "asc" as const } },

@@ -201,6 +201,15 @@ const STATUS_TONES: Record<string, { tone: Tone; label: string }> = {
   FAILED: { tone: "sale", label: "Failed" },
   REFUNDED: { tone: "neutral", label: "Refunded" },
   PARTIALLY_REFUNDED: { tone: "neutral", label: "Part refunded" },
+  // One try at the gateway (PaymentAttempt), which is not the same thing as
+  // the order's payment state: an order can carry several of these and only
+  // the captured one is money. Refund states are deliberately absent — a
+  // return already owns REQUESTED here, where it means the customer asked,
+  // and on a refund the same word means the bank has it. They are labelled
+  // from REFUND_STATE_LABEL instead.
+  CREATED: { tone: "neutral", label: "Started" },
+  AUTHORIZED: { tone: "gold", label: "Authorised" },
+  CAPTURED: { tone: "brand", label: "Captured" },
   // products
   DRAFT: { tone: "neutral", label: "Draft" },
   ACTIVE: { tone: "brand", label: "Active" },

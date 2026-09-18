@@ -243,6 +243,16 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
   if (!subcategory) return { error: "That subcategory no longer exists.", field: "subcategoryId" };
   if (subcategory.categoryId !== categoryId) return { error: "The subcategory does not belong to the chosen category.", field: "subcategoryId" };
 
+  // Which wholesaler this came from. Optional — the catalogue predates the
+  // record-keeping, so "not recorded" is a legitimate answer, not an error.
+  // Admin-only: it is written here and read by the admin pages, and must never
+  // be added to the storefront mappers (see the doc block on Product.supplierId).
+  const supplierId = str(formData, "supplierId") || null;
+  if (supplierId) {
+    const supplier = await db.supplier.findUnique({ where: { id: supplierId }, select: { id: true } });
+    if (!supplier) return { error: "That wholesaler no longer exists.", field: "supplierId" };
+  }
+
   const images = parseImages(parseJson(formData, "images"));
   if ("error" in images) return images;
   if (status === "ACTIVE" && images.length === 0) {
@@ -292,6 +302,7 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
       brandId,
       categoryId,
       subcategoryId,
+      supplierId,
     },
     stock,
     images,
@@ -537,6 +548,9 @@ export async function duplicateProduct(formData: FormData) {
         brandId: source.brandId,
         categoryId: source.categoryId,
         subcategoryId: source.subcategoryId,
+        // Copied by name, not by spread: a copy of a product came from the
+        // same wholesaler, and leaving this out would silently lose that.
+        supplierId: source.supplierId,
         publishedAt: null,
       },
     });

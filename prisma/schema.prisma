@@ -217,6 +217,43 @@ model Subcategory {
   @@index([categoryId, isActive, sortOrder])
 }
 
+/// A wholesaler the shop buys from.
+///
+/// ADMIN ONLY. This is the shop's own buying record — who a product was bought
+/// from, so that months later the owner can find the same wholesaler again. It
+/// is not part of the catalogue a shopper sees and must never be shown, listed,
+/// linked or serialised anywhere on the storefront. See the note on
+/// `Product.supplierId` for the exact files that keep it that way.
+model Supplier {
+  id   String @id @default(cuid())
+  /// URL-safe handle, so the admin product list can filter by `?supplier=…`
+  /// the same way it filters by brand.
+  slug String @unique
+  name String
+
+  /// Who to ask for at that wholesaler. A market supplier is a person before
+  /// it is a firm, and the name is usually the only way back to them.
+  contactName String
+  phone       String
+  email       String?
+  /// Their GSTIN, for matching a purchase invoice to this row later.
+  gstin       String?
+  city        String?
+  /// Terms, minimum order, which market they sit in — whatever the owner wants
+  /// to remember. Free text on purpose.
+  notes       String?
+
+  /// A wholesaler the shop has stopped buying from is deactivated, never
+  /// deleted: the products bought from them keep their history.
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@index([isActive])
+}
+
 model Product {
   id                String         @id @default(cuid())
   slug              String         @unique
@@ -261,6 +298,37 @@ model Product {
   category          Category       @relation(fields: [categoryId], references: [id])
   subcategoryId     String
   subcategory       Subcategory    @relation(fields: [subcategoryId], references: [id])
+
+  /// Which wholesaler this product was bought from.
+  ///
+  /// ADMIN ONLY, and the owner was plain about it: "wahan ye achha nahi
+  /// lagega". Nothing derived from this column may reach a shopper. The
+  /// storefront reads products with `include`, so this value IS loaded on
+  /// every storefront query — what keeps it off the page is that five
+  /// hand-written allowlists never mention it. Do not add a supplier field to
+  /// any of them: `Product` in src/lib/types.ts, `toProduct` in
+  /// src/services/catalog.ts, `toCardModel` in src/lib/card.ts, the `select`
+  /// in src/services/search-docs.ts, or `ProductJsonLd` in
+  /// src/components/seo/json-ld.tsx. The admin reads it from the Prisma row
+  /// directly instead.
+  ///
+  /// Those five cover the product-BROWSING path. There is a second,
+  /// independent route from a customer-facing page to this column:
+  /// OrderLine.product. Two reads walk OrderLine today — `orderInclude` in
+  /// src/services/orders.ts, which feeds the storefront order page,
+  /// /track/[id] and /account/orders, and the `lines` include in
+  /// src/services/invoice.ts, which renders the invoice a customer downloads.
+  /// Both are safe only because they take OrderLine SCALARS and never
+  /// traverse the relation. Neither may grow `include: { product: ... }` —
+  /// adding it to recover a live HSN code, a weight or an image the line
+  /// snapshot lacks would put the wholesaler onto a document the customer
+  /// downloads, without touching any of the five files named above.
+  ///
+  /// Optional because the catalogue came first: a product bought before anyone
+  /// was writing this down simply has no answer, and that is not an error.
+  supplierId        String?
+  supplier          Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
   publishedAt       DateTime?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
@@ -276,6 +344,7 @@ model Product {
 
   @@index([status, categoryId, subcategoryId])
   @@index([brandId])
+  @@index([supplierId])
   @@index([status, createdAt])
   @@index([status, soldCount])
 }
@@ -558,6 +627,8 @@ model Order {
   paymentRef    String?
   /// Every attempt made against this order, successful or not.
   payments      PaymentAttempt[]
+  /// Every refund raised against this order, whatever became of it.
+  refunds       Refund[]
 
   deliverySpeed DeliverySpeed @default(STANDARD)
   deliveryName  String
@@ -744,6 +815,7 @@ model AdminUser {
 
   activity ActivityLog[]
   uploads   MediaAsset[]
+  refunds   Refund[]
 }
 
 model ActivityLog {
@@ -809,13 +881,150 @@ model PaymentAttempt {
   failureDescription String?
 
   /// The gateway's own payload, kept verbatim for reconciliation and disputes.
+  /// This is the *capture* response and nothing else may overwrite it — a
+  /// refund keeps its own payload on its own row.
   payload Json?
+
+  /// ---- What the money did after the sale ----------------------------
+  ///
+  /// Everything below arrives from PayU's get_Transaction_Details, days after
+  /// the payment itself, and is null until it does. It is the difference
+  /// between "the customer paid" and "the money reached the bank", which is
+  /// the question the owner actually asks at the end of a month.
+
+  /// The bank or wallet PayU routed this through, as PayU names it.
+  bankName   String?
+  /// The instrument, already masked by PayU — 512345XXXXXX2346, or the UPI
+  /// handle. Never a full card number: PayU does not send one and we must not
+  /// store one.
+  cardMasked String?
+
+  /// PayU's own commission on this sale, in paise.
+  ///
+  /// PayU reports fees as rupees with two decimals, which paise hold exactly.
+  /// Where a rate works out to a fraction of a paisa PayU has already rounded
+  /// it before sending, and we round again to the nearest paisa on the way in;
+  /// the bank statement is the authority if the two ever disagree.
+  gatewayFee    Int?
+  /// GST on that commission, in paise. Same rounding note as above.
+  gatewayFeeTax Int?
+
+  /// PayU's id for the batch this sale was paid out in.
+  settlementId  String?
+  /// What actually landed in the bank for this sale, in paise — the amount
+  /// less PayU's fee and its tax. Not the same number as `amount`, and that
+  /// difference is the point of storing both.
+  settledAmount Int?
+  /// The bank's UTR for that payout. This is the number to quote when the
+  /// owner cannot find the money in his statement.
+  utrNumber     String?
+  /// The date the bank values the payout at, as PayU reports it. A date, not a
+  /// moment — PayU sends no time of day.
+  valueDate     DateTime?
+
+  /// When we last asked PayU for the settlement picture above, so a sweep can
+  /// skip what it has already seen. Null means never asked.
+  settlementSyncedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refunds Refund[]
+
+  @@index([orderId])
+  @@index([status])
+}
+
+/// Where a refund has got to, in PayU's own words.
+///
+/// These are PayU's check_action_status values, kept verbatim rather than
+/// flattened into our PaymentStatus, because the wait is the answer support
+/// has to give: REQUESTED and OD_HIT mean five to seven working days, QUEUED
+/// means PayU has it but the bank has not. Collapsing them would throw that
+/// away. `describeRefundEta` in src/lib/payments/refund-status.ts is the one
+/// place those sentences are written.
+enum RefundStatus {
+  QUEUED
+  IN_PROGRESS
+  REQUESTED
+  SUCCESS
+  FAILURE
+  OD_HIT
+}
+
+/// One refund we asked PayU to make.
+///
+/// The row is written BEFORE PayU is called, not after. A refund that was sent
+/// and then lost to a timeout is the one failure that costs real money twice,
+/// so the record of having asked has to survive the asking. Everything PayU
+/// says afterwards is written back onto this same row.
+///
+/// Refunds are never deleted and never edited by hand. Together they are the
+/// only honest answer to "how much of this order has actually gone back",
+/// which `Order.paymentStatus` on its own cannot give — three different code
+/// paths write that flag.
+model Refund {
+  id String @id @default(cuid())
+
+  /// The attempt whose money this gives back. A refund belongs to one capture,
+  /// not to an order: a duplicate payment leaves an order with two captured
+  /// attempts and only one of them is being refunded.
+  paymentAttemptId String
+  paymentAttempt   PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Cascade)
+  /// Carried alongside so the admin can list an order's refunds without
+  /// walking through its attempts.
+  orderId          String
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Our own token for this refund — PayU's var2, which it will not take
+  /// longer than 23 characters and will not accept twice.
+  ///
+  /// That refusal is what makes a double click harmless: the same token
+  /// resubmitted finds this row already here and sends nothing, and if it
+  /// somehow did reach PayU a second time PayU would reject it as a duplicate
+  /// rather than pay it out again.
+  token String @unique
+
+  /// PayU's id for the request, returned by cancel_refund_transaction. It is
+  /// the only handle check_action_status answers to. Null until PayU has
+  /// answered — a null here on an older row means we asked and never heard
+  /// back, which is a state for a human to look at, not for code to retry.
+  requestId String? @unique
+
+  /// Paise, matching PaymentAttempt.amount — never rupees. PayU is told rupees
+  /// with two decimals; the conversion happens once, on the way out.
+  amount Int
+
+  status RefundStatus @default(QUEUED)
+
+  /// PayU's replies, verbatim — the acknowledgement and the latest status
+  /// check. Kept for the same reason PaymentAttempt.payload is: when money is
+  /// disputed, what the gateway actually said is the evidence.
+  payload Json?
+
+  /// Why PayU refused, in PayU's words, when it did.
+  failureReason String?
+
+  /// Who pressed the button. The name is denormalised the way ActivityLog
+  /// denormalises it, so the record still says who did this after the admin
+  /// account is gone.
+  initiatedById   String?
+  initiatedBy     AdminUser? @relation(fields: [initiatedById], references: [id], onDelete: SetNull)
+  initiatedByName String
+  /// The moment a person decided, which is also the moment this row was
+  /// written — before PayU knew anything about it.
+  initiatedAt     DateTime   @default(now())
+
+  /// When we last asked PayU what became of this. Null means not since it was
+  /// raised.
+  lastCheckedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([orderId])
   @@index([status])
+  @@index([paymentAttemptId])
 }
 
 /// A profile photo the customer uploaded.

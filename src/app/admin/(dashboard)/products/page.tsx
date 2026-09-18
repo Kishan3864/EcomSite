@@ -32,6 +32,12 @@ export const metadata = { title: "Products" };
 const LIST = "/admin/products";
 const DEFAULT_SORT = "updated_desc";
 
+/**
+ * Sentinel for "?supplier=" meaning products with no wholesaler recorded.
+ * `slugify` strips underscores, so no real supplier slug can ever collide.
+ */
+const NO_SUPPLIER = "__none";
+
 function orderBy(sort: string): Prisma.ProductOrderByWithRelationInput[] {
   const [field, dirRaw] = sort.split("_");
   const dir: Prisma.SortOrder = dirRaw === "asc" ? "asc" : "desc";
@@ -60,11 +66,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const params = parseListParams(raw, {
     perPage: 25,
     defaultSort: DEFAULT_SORT,
-    filterKeys: ["status", "category", "brand", "stock"],
+    filterKeys: ["status", "category", "brand", "supplier", "stock"],
   });
   const statusFilter = params.filters.status?.toUpperCase();
   const validStatus = (PRODUCT_STATUSES as readonly string[]).includes(statusFilter ?? "") ? statusFilter : undefined;
   const stockFilter = params.filters.stock;
+  const supplierFilter = params.filters.supplier;
 
   const where: Prisma.ProductWhereInput = {
     ...(params.q
@@ -74,12 +81,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             { sku: insensitive(params.q) },
             { slug: insensitive(params.q) },
             { brand: { name: insensitive(params.q) } },
+            { supplier: { name: insensitive(params.q) } },
           ],
         }
       : {}),
     ...(validStatus ? { status: validStatus as Prisma.ProductWhereInput["status"] } : {}),
     ...(params.filters.category ? { category: { slug: params.filters.category } } : {}),
     ...(params.filters.brand ? { brand: { slug: params.filters.brand } } : {}),
+    ...(supplierFilter === NO_SUPPLIER
+      ? { supplierId: null }
+      : supplierFilter
+        ? { supplier: { slug: supplierFilter } }
+        : {}),
     ...(stockFilter === "in"
       ? { stock: { gt: db.product.fields.lowStockThreshold } }
       : stockFilter === "low"
@@ -89,7 +102,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           : {}),
   };
 
-  const [rows, total, categories, brands, statusCounts] = await Promise.all([
+  const [rows, total, categories, brands, suppliers, statusCounts] = await Promise.all([
     db.product.findMany({
       where,
       orderBy: orderBy(params.sort),
@@ -107,6 +120,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         brand: { select: { name: true, slug: true } },
         category: { select: { name: true, slug: true } },
         subcategory: { select: { name: true } },
+        // Admin-only. This page is behind requireAdmin and its rows are never
+        // reused by a storefront surface.
+        supplier: { select: { name: true, slug: true } },
         images: { take: 1, orderBy: { sortOrder: "asc" }, select: { url: true, alt: true } },
         _count: { select: { orderLines: true } },
       },
@@ -115,6 +131,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     db.product.count({ where }),
     db.category.findMany({ orderBy: { sortOrder: "asc" }, select: { slug: true, name: true } }),
     db.brand.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
+    db.supplier.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
     db.product.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
 
@@ -125,15 +142,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     status: params.filters.status,
     category: params.filters.category,
     brand: params.filters.brand,
+    supplier: supplierFilter,
     stock: params.filters.stock,
     sort: params.sort === DEFAULT_SORT ? undefined : params.sort,
   };
   const returnTo = withParams(LIST, current, { page: params.page > 1 ? params.page : null });
-  const filtered = Boolean(params.q || validStatus || params.filters.category || params.filters.brand || stockFilter);
+  const filtered = Boolean(
+    params.q || validStatus || params.filters.category || params.filters.brand || supplierFilter || stockFilter,
+  );
   const canManage = hasRole(session, "MANAGER");
   const canDelete = hasRole(session, "OWNER");
   const pageIds = rows.map((r) => r.id);
-  const colSpan = canManage ? 9 : 8;
+  const colSpan = canManage ? 10 : 9;
 
   const iconBtn = "p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
 
@@ -152,7 +172,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <SearchBox placeholder="Search title, SKU, slug or brand…" defaultValue={params.q} className="w-full sm:w-80" />
+        <SearchBox
+          placeholder="Search title, SKU, slug, brand or wholesaler…"
+          defaultValue={params.q}
+          className="w-full sm:w-80"
+        />
         <ParamSelect
           name="status"
           value={params.filters.status}
@@ -174,6 +198,17 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           value={params.filters.brand}
           allLabel="All brands"
           options={brands.map((b) => ({ value: b.slug, label: b.name }))}
+        />
+        <ParamSelect
+          name="supplier"
+          value={supplierFilter}
+          allLabel="All wholesalers"
+          options={[
+            ...suppliers.map((s) => ({ value: s.slug, label: s.name })),
+            // Every product that predates this feature has no wholesaler, so
+            // the useful question is usually "which ones still need one?".
+            { value: NO_SUPPLIER, label: "Not recorded" },
+          ]}
         />
         <ParamSelect name="stock" value={params.filters.stock} allLabel="All stock states" options={[...STOCK_STATES]} />
         <ParamSelect
@@ -199,6 +234,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <Th>Product</Th>
               <Th>Brand</Th>
               <Th>Category</Th>
+              <Th>Wholesaler</Th>
               <Th align="right">Price</Th>
               <Th align="right">Stock</Th>
               <Th>Status</Th>
@@ -262,6 +298,24 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                         {p.category.name}
                       </Link>
                       <span className="block text-[11.5px] text-ink-400">{p.subcategory.name}</span>
+                    </Td>
+                    <Td>
+                      {p.supplier ? (
+                        <Link
+                          href={withParams(LIST, current, { supplier: p.supplier.slug, page: null })}
+                          className="text-ink-700 hover:text-brand-700"
+                        >
+                          {p.supplier.name}
+                        </Link>
+                      ) : (
+                        <Link
+                          href={withParams(LIST, current, { supplier: NO_SUPPLIER, page: null })}
+                          className="text-ink-300 hover:text-brand-700"
+                          title="No wholesaler recorded — show every product like this"
+                        >
+                          —
+                        </Link>
+                      )}
                     </Td>
                     <Td align="right">
                       <Money value={p.price} className="font-medium text-ink-950" />

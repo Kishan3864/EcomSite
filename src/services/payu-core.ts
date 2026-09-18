@@ -17,6 +17,7 @@ import {
   verifyPayuTransaction,
   type PayuResponse,
 } from "@/lib/payments/payu";
+import type { PaymentStatus } from "@/generated/prisma/client";
 
 /**
  * The PayU half of the payment lifecycle, kept server-only.
@@ -45,6 +46,16 @@ const MAX_ATTEMPTS_PER_ORDER = 8;
  * per window, however many times a page is loaded.
  */
 const RECONCILE_AFTER_MINUTES = 3;
+
+/**
+ * The payment states where the money question is already answered.
+ *
+ * PAID because the order is paid; REFUNDED and PARTIALLY_REFUNDED because
+ * something has been given back, which only ever happens on money that was
+ * taken. A late verdict on an order in any of these must not reopen it — it is
+ * a duplicate payment, and it is handled as one.
+ */
+export const SETTLED_PAYMENT_STATUSES: PaymentStatus[] = ["PAID", "REFUNDED", "PARTIALLY_REFUNDED"];
 
 export interface PayuSession {
   endpoint: string;
@@ -78,7 +89,15 @@ export async function startPayuPayment(orderId: string): Promise<PayuStart> {
     },
   });
   if (!order) return { ok: false, error: "We could not find that order." };
-  if (order.paymentStatus === "PAID") return { ok: false, error: "This order is already paid." };
+  // Every settled state, not PAID alone. `recomputeRefundTotals` writes REFUNDED
+  // and PARTIALLY_REFUNDED onto `paymentStatus` and never touches `status`, so a
+  // refunded order stays CONFIRMED and the CANCELLED guard below does not catch
+  // it either. Testing `=== "PAID"` here minted a fresh attempt for the FULL
+  // total on an order whose money question already had an answer — the back
+  // button or a stale /checkout/payu URL was enough to charge it a second time.
+  if (SETTLED_PAYMENT_STATUSES.includes(order.paymentStatus)) {
+    return { ok: false, error: "This order has already been paid for." };
+  }
   if (order.status === "CANCELLED") {
     return { ok: false, error: "This order was cancelled. Please place it again." };
   }
@@ -250,7 +269,8 @@ async function markPaid(attemptId: string, orderId: string, verdict: Verdict): P
     if (!order) return;
 
     /**
-     * A second payment on an order that is already paid.
+     * A second payment on an order whose money has already been settled one
+     * way or the other — paid, refunded, or part-refunded.
      *
      * It happens for real: a UPI collect request times out in the browser, the
      * shopper backs up and pays again, and then both collect requests are
@@ -269,8 +289,18 @@ async function markPaid(attemptId: string, orderId: string, verdict: Verdict): P
      * the attempt that already won finds it CAPTURED, claims nothing, and
      * stays the no-op it should be. The order itself is left exactly as it is
      * — it is paid, and this does not pay it twice.
+     *
+     * REFUNDED and PARTIALLY_REFUNDED belong in this branch too. They are
+     * written from money PayU has confirmed going back, and a late capture
+     * landing on such an order used to take the other road: the attempt was
+     * forced to CAPTURED, the order back to CONFIRMED and PAID, and a "Payment
+     * received" event was written onto an order that had been refunded. No
+     * double payout — committed refunds still count against the ceiling — but
+     * the payment state on the screen this feature exists to make honest was a
+     * lie. A second payment on a refunded order is a duplicate that needs
+     * giving back, which is exactly what this branch says.
      */
-    if (order.paymentStatus === "PAID") {
+    if (SETTLED_PAYMENT_STATUSES.includes(order.paymentStatus)) {
       const claimed = await tx.paymentAttempt.updateMany({
         where: { id: attemptId, status: "CREATED" },
         data: {
@@ -278,12 +308,12 @@ async function markPaid(attemptId: string, orderId: string, verdict: Verdict): P
           gatewayPaymentId: verdict.mihpayid || null,
           method: verdict.mode.toLowerCase() || null,
           payload: verdict.raw,
-          failureDescription: "Duplicate payment on an already-paid order — refund due",
+          failureDescription: "Duplicate payment on an order already settled — refund due",
         },
       });
 
       if (claimed.count > 0) {
-        console.error("[payu] DUPLICATE PAYMENT on an already-paid order — refund due", {
+        console.error("[payu] DUPLICATE PAYMENT on an order already settled — refund due", {
           orderId,
           txnid: verdict.txnid,
           mihpayid: verdict.mihpayid,
@@ -295,7 +325,7 @@ async function markPaid(attemptId: string, orderId: string, verdict: Verdict): P
             title: "Duplicate payment received — refund due",
             description:
               `${describePayu(verdict)} · ${verdict.mihpayid}. A second payment landed on an order ` +
-              `that was already paid. Refund this transaction from the PayU dashboard.`,
+              `whose payment was already settled. Refund this transaction from the PayU dashboard.`,
             location: "Online",
           },
         });
@@ -421,7 +451,16 @@ export async function reconcilePayuOrder(orderId: string): Promise<boolean> {
       },
     },
   });
-  if (!order || order.paymentStatus === "PAID" || order.payments.length === 0) return false;
+  // A refunded or part-refunded order is as settled as a paid one: its money
+  // question has an answer, and a stale CREATED attempt PayU happens to report
+  // as successful must not be allowed to walk it back to PAID.
+  if (
+    !order ||
+    SETTLED_PAYMENT_STATUSES.includes(order.paymentStatus) ||
+    order.payments.length === 0
+  ) {
+    return false;
+  }
 
   let changed = false;
   for (const attempt of order.payments) {

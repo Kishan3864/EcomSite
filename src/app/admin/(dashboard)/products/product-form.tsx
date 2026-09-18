@@ -51,6 +51,8 @@ export interface ProductFormValues {
   brandId: string;
   categoryId: string;
   subcategoryId: string;
+  /** Admin only — empty string means "not recorded". Never rendered to a shopper. */
+  supplierId: string;
   images: ImageInput[];
   variantGroups: VariantGroupInput[];
   relatedIds: string[];
@@ -61,6 +63,7 @@ export interface ProductFormOptions {
   brands: { id: string; name: string; isActive: boolean }[];
   categories: { id: string; name: string }[];
   subcategories: { id: string; name: string; categoryId: string }[];
+  suppliers: { id: string; name: string; isActive: boolean }[];
   catalog: CatalogItem[];
 }
 
@@ -94,6 +97,7 @@ const DEFAULTS: ProductFormValues = {
   brandId: "",
   categoryId: "",
   subcategoryId: "",
+  supplierId: "",
   images: [],
   variantGroups: [],
   relatedIds: [],
@@ -218,7 +222,10 @@ export function ProductForm({
         </FormSection>
 
         {/* --------------------------- Pricing & stock ------------------------ */}
-        <FormSection title="Pricing & stock" description="Whole rupees, GST included. Stock edits here are recorded as a manual movement.">
+        <FormSection
+          title="Pricing & stock"
+          description="Whole rupees, GST included. Stock edits here are recorded as a manual movement. Where you bought it is recorded here too, and stays in the admin."
+        >
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <Label htmlFor="p-price">Selling price (₹)</Label>
@@ -271,6 +278,24 @@ export function ProductForm({
                 ))}
               </select>
               <FieldError>{err("taxRate")}</FieldError>
+            </div>
+            {/* Sourcing, not catalogue copy — which is why it sits here and not
+                under Organisation with brand and category. This value never
+                leaves the admin; see the doc block on Product.supplierId. */}
+            <div>
+              <Label htmlFor="p-supplier" hint="Admin only — shoppers never see this." optional>
+                Wholesaler
+              </Label>
+              <select id="p-supplier" name="supplierId" defaultValue={dv("supplierId", init.supplierId)} className={selectCls} style={selectArrow}>
+                <option value="">Not recorded</option>
+                {options.suppliers.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                    {s.isActive ? "" : " (inactive)"}
+                  </option>
+                ))}
+              </select>
+              <FieldError>{err("supplierId")}</FieldError>
             </div>
           </div>
         </FormSection>
