@@ -57,6 +57,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     slug: product.slug,
     sku: product.sku,
     subtitle: product.subtitle,
+    headline: product.headline ?? "",
     description: product.description,
     status: product.status,
     price: product.price,
@@ -86,6 +87,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
     categoryId: product.categoryId,
     subcategoryId: product.subcategoryId,
     supplierId: product.supplierId ?? "",
+    costPrice: (product.costPrice ?? "") as number | "",
     images: product.images.map((i): ImageInput => ({ url: i.url, alt: i.alt })),
     variantGroups: product.variantGroups.map(
       (g): VariantGroupInput => ({
@@ -162,6 +164,16 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
                 ) : (
                   <span className="text-ink-400">Not recorded</span>
                 ),
+              },
+              {
+                // Admin only, like the wholesaler above — see Product.costPrice.
+                label: "Cost price",
+                value:
+                  product.costPrice === null ? (
+                    <span className="text-ink-400">Not recorded</span>
+                  ) : (
+                    formatINR(product.costPrice)
+                  ),
               },
               { label: "Price", value: formatINR(product.price) },
               {

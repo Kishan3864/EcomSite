@@ -26,10 +26,14 @@ export interface ProductFormValues {
   slug: string;
   sku: string;
   subtitle: string;
+  /** The product page's H1 when it should say more than the title. Blank = title. */
+  headline: string;
   description: string;
   status: ProductStatusValue;
   price: number | "";
   mrp: number | "";
+  /** Admin only — what one unit cost to buy. Blank means "not recorded". Never rendered to a shopper. */
+  costPrice: number | "";
   stock: number;
   lowStockThreshold: number;
   weightGrams: number;
@@ -72,6 +76,7 @@ const DEFAULTS: ProductFormValues = {
   slug: "",
   sku: "",
   subtitle: "",
+  headline: "",
   description: "",
   status: "DRAFT",
   price: "",
@@ -98,6 +103,7 @@ const DEFAULTS: ProductFormValues = {
   categoryId: "",
   subcategoryId: "",
   supplierId: "",
+  costPrice: "",
   images: [],
   variantGroups: [],
   relatedIds: [],
@@ -177,6 +183,13 @@ export function ProductForm({
               <Label htmlFor="p-title">Title</Label>
               <input id="p-title" name="title" defaultValue={dv("title", init.title)} className={inputCls} placeholder="Orbo Zenith 5 Smartwatch" required maxLength={160} />
               <FieldError>{err("title")}</FieldError>
+            </div>
+            <div className="sm:col-span-2">
+              <Label htmlFor="p-headline" hint="The heading on the product page, when it should say more than the title — a size or the key spec. Blank uses the title. Cards, cart and invoices always use the title." optional>
+                Page headline
+              </Label>
+              <input id="p-headline" name="headline" defaultValue={dv("headline", init.headline)} className={inputCls} placeholder="Double Blade Cabbage Chopper Knife – Stainless Steel Vegetable Shredder (29 cm)" maxLength={200} />
+              <FieldError>{err("headline")}</FieldError>
             </div>
             <div>
               <Label htmlFor="p-slug" hint="Used in the product URL (/p/…). Leave blank to derive from the title.">
@@ -296,6 +309,15 @@ export function ProductForm({
                 ))}
               </select>
               <FieldError>{err("supplierId")}</FieldError>
+            </div>
+            {/* Same rule as the wholesaler: sourcing, admin only, never on the
+                storefront — see the doc block on Product.costPrice. */}
+            <div>
+              <Label htmlFor="p-cost" hint="What you paid per unit, whole rupees. Admin only — shoppers never see this." optional>
+                Cost price (₹)
+              </Label>
+              <input id="p-cost" name="costPrice" type="number" min={0} step={1} inputMode="numeric" defaultValue={dv("costPrice", init.costPrice)} className={cn(inputCls, "tabular-nums")} />
+              <FieldError>{err("costPrice")}</FieldError>
             </div>
           </div>
         </FormSection>

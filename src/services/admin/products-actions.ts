@@ -183,6 +183,15 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
   if (mrp === null) return { error: "MRP must be a whole rupee amount.", field: "mrp" };
   if (mrp < price) return { error: "MRP cannot be lower than the selling price.", field: "mrp" };
 
+  // Admin-only, like supplierId: what one unit cost to buy. Blank means "not
+  // recorded", never zero. Written here, read by the admin pages, and never
+  // added to a storefront mapper — see the doc block on Product.costPrice.
+  const costPriceRaw = str(formData, "costPrice");
+  const costPrice = costPriceRaw === "" ? null : intIn(formData, "costPrice", 0, 100_000_000);
+  if (costPriceRaw !== "" && costPrice === null) {
+    return { error: "Cost price must be a whole rupee amount, 0 or more.", field: "costPrice" };
+  }
+
   const stock = intIn(formData, "stock", 0, 10_000_000, 0);
   if (stock === null) return { error: "Stock must be a whole number, 0 or more.", field: "stock" };
   const lowStockThreshold = intIn(formData, "lowStockThreshold", 0, 1_000_000, 10);
@@ -227,6 +236,8 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
   if (metaTitle && metaTitle.length > 120) return { error: "Meta title should stay under 120 characters.", field: "metaTitle" };
   const metaDescription = str(formData, "metaDescription") || null;
   if (metaDescription && metaDescription.length > 320) return { error: "Meta description should stay under 320 characters.", field: "metaDescription" };
+  const headline = str(formData, "headline") || null;
+  if (headline && headline.length > 200) return { error: "Keep the page headline under 200 characters.", field: "headline" };
 
   const brandId = str(formData, "brandId");
   const categoryId = str(formData, "categoryId");
@@ -299,10 +310,12 @@ async function validate(formData: FormData, selfId?: string): Promise<Validated 
       videoPoster,
       metaTitle,
       metaDescription,
+      headline,
       brandId,
       categoryId,
       subcategoryId,
       supplierId,
+      costPrice,
     },
     stock,
     images,
@@ -545,12 +558,14 @@ export async function duplicateProduct(formData: FormData) {
         videoPoster: source.videoPoster,
         metaTitle: source.metaTitle,
         metaDescription: source.metaDescription,
+        headline: source.headline,
         brandId: source.brandId,
         categoryId: source.categoryId,
         subcategoryId: source.subcategoryId,
         // Copied by name, not by spread: a copy of a product came from the
         // same wholesaler, and leaving this out would silently lose that.
         supplierId: source.supplierId,
+        costPrice: source.costPrice,
         publishedAt: null,
       },
     });

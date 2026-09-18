@@ -292,6 +292,10 @@ model Product {
   videoPoster       String?
   metaTitle         String?
   metaDescription   String?
+  /// The product page's H1, when it should say more than the title — a size or
+  /// the key spec. Null falls back to `title`. Cards, the cart, invoices and
+  /// structured data keep using `title`; only the page heading reads this.
+  headline          String?
   brandId           String
   brand             Brand          @relation(fields: [brandId], references: [id])
   categoryId        String
@@ -328,6 +332,15 @@ model Product {
   /// was writing this down simply has no answer, and that is not an error.
   supplierId        String?
   supplier          Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  /// What one unit cost to buy, in whole rupees.
+  ///
+  /// ADMIN ONLY, exactly like `supplierId` above and guarded the same way: the
+  /// five storefront allowlists named there must never mention it, and no
+  /// customer-facing read may traverse OrderLine.product. The admin reads it
+  /// from the Prisma row. Null means "not recorded", which is what every
+  /// product bought before this column existed says.
+  costPrice         Int?
 
   publishedAt       DateTime?
   createdAt         DateTime       @default(now())
