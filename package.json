@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "deploy": "node scripts/deploy.mjs",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=0",
     "postinstall": "prisma generate",
     "db:start": "node scripts/db-local.mjs start",
     "db:stop": "node scripts/db-local.mjs stop",
