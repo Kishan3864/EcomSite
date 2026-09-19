@@ -15,7 +15,9 @@
 #   8. seeds the essentials only: first admin login and store settings.
 #      The demo catalogue is NOT loaded; `npm run db:seed:demo` does that, and
 #      it belongs on a development database only.
-#   9. builds the Next.js app into a directory the running site is NOT reading,
+#   9. builds the Next.js app into a directory (its image cache is a symlink to
+#      shared/next-image-cache, so optimised images survive every deploy) —
+#      a directory the running site is NOT reading,
 #      so visitors see the old site, intact, for the whole of the build. Only a
 #      finished build is swapped in, by two renames.
 #  10. starts or zero-downtime-reloads the PM2 process
@@ -247,6 +249,11 @@ step "Health check"
 # shellcheck source=deploy/health.sh
 source deploy/health.sh
 if app_alive "$APP_PORT"; then
+  # The app is up and serving. Now encode the image variants the pages offer,
+  # so the first shopper after a deploy is not the one who waits for them.
+  # Never fatal: see deploy/warm-images.sh.
+  step "Warming the image cache"
+  bash deploy/warm-images.sh "$APP_PORT" || true
   echo
   echo "  Deployed. If nginx is not configured yet, see deploy/README.md."
 else

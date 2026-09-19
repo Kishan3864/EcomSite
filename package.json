@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node deploy/link-image-cache.mjs",
     "start": "next start",
     "deploy": "node scripts/deploy.mjs",
     "lint": "eslint --max-warnings=0",

@@ -5,6 +5,9 @@ node_modules
 # NEXT_DIST_DIR set by hand for a one-off check is just as much build output —
 # one of those got as far as being committed because it was not on the list.
 .next-*
+
+# Kept across deploys, outside any release: the optimised-image cache.
+/shared/
 out
 build
 .DS_Store
