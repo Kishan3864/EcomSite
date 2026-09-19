@@ -173,9 +173,7 @@ export function CartClient() {
                           </Link>
 
                           <div className="flex min-w-0 flex-1 flex-col">
-                            <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-                              {line.brand}
-                            </p>
+                            {line.brand && <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{line.brand}</p>}
                             <Link
                               href={`/p/${line.slug}`}
                               className="mt-1 line-clamp-2 text-[13.5px] font-medium leading-[1.35] text-ink-900 transition-colors duration-200 hover:text-brand-700 sm:text-[14px]"

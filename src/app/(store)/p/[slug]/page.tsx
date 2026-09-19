@@ -40,7 +40,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   // What was written in the admin wins. The derived sentence is the fallback
   // for the catalogue that predates the two fields, and it names a price only
   // when there is one to name.
-  const title = product.metaTitle ?? `${product.title} — ${brand?.name}`;
+  // getBrand() knows active brands only, so a product under a switched-off
+  // brand has none to name — and must not say "undefined" instead.
+  const title = product.metaTitle ?? (brand ? `${product.title} — ${brand.name}` : product.title);
   const priced =
     product.price > 0 ? ` Buy ${product.title} online at ₹${product.price.toLocaleString("en-IN")}.` : "";
   const description =
@@ -176,7 +178,7 @@ export default async function ProductPage({ params }: { params: Params }) {
           <div>
             <BuyBox
               product={product}
-              brandName={brand?.name ?? product.brandSlug}
+              brandName={brand?.name}
               payments={payments}
             />
             <div id="buy-box-sentinel" aria-hidden className="h-px" />

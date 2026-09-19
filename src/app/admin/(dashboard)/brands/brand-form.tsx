@@ -90,7 +90,7 @@ export function BrandForm({
           <span>
             <span className="block font-medium">Active</span>
             <span className="block text-[12.5px] text-ink-500">
-              Inactive brands are hidden from filters and the brand strip; their products stay visible.
+              Switching this off hides the brand, never its products. The name disappears from product pages, cards, search, brand filters and Google&apos;s product data; every product under it stays on sale. To take products off sale, hide their category or set them to Draft.
             </span>
           </span>
         </label>

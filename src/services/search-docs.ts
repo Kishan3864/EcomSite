@@ -31,7 +31,7 @@ export const getSearchDocs = cache(async (): Promise<SearchDoc[]> => {
         colors: true,
         price: true,
         rating: true,
-        brand: { select: { name: true } },
+        brand: { select: { name: true, isActive: true } },
         subcategory: { select: { slug: true } },
         images: { orderBy: { sortOrder: "asc" }, take: 1, select: { url: true } },
       },
@@ -65,12 +65,13 @@ export const getSearchDocs = cache(async (): Promise<SearchDoc[]> => {
 
   for (const p of products) {
     docs.push({
-      k: `${p.title} ${p.subtitle} ${p.tags.join(" ")} ${p.brand.name} ${p.subcategory.slug} ${p.colors.join(" ")}`.toLowerCase(),
+      k: `${p.title} ${p.subtitle} ${p.tags.join(" ")} ${p.brand.isActive ? p.brand.name : ""} ${p.subcategory.slug} ${p.colors.join(" ")}`.toLowerCase(),
       w: 1 + Math.min(1.4, p.rating / 4),
       hit: {
         type: "product",
         label: p.title,
-        sublabel: p.brand.name,
+        // A switched-off brand is not named; its product is still found.
+        sublabel: p.brand.isActive ? p.brand.name : p.subtitle,
         href: `/p/${p.slug}`,
         image: p.images[0]?.url,
         price: p.price,

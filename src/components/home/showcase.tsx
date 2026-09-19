@@ -8,6 +8,7 @@ import { BUSINESS } from "@/config/business";
 import { DepartmentGlyph } from "@/components/illustration/department-glyph";
 import { PaperMark } from "@/components/illustration/paper-mark";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductBadges } from "@/components/product/badges";
 import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
 import { cn, discountPercent, formatINR } from "@/lib/utils";
 
@@ -303,7 +304,6 @@ export function Spotlight({
   payments?: PublicPayments;
 }) {
   if (!product) return null;
-  const off = discountPercent(product.mrp, product.price);
   const ops = BUSINESS.ops;
 
   // A row whose value we do not actually know is not rendered. An empty or
@@ -345,20 +345,14 @@ export function Spotlight({
               sizes="(min-width:1024px) 50vw, 100vw"
               className="object-cover"
             />
-            {off > 0 && (
-              <span className="absolute left-0 top-0 bg-ink-950 px-3 py-1.5 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-white">
-                {off}% off
-              </span>
-            )}
+            <ProductBadges product={product} size="md" className="absolute left-3 top-3" />
           </div>
         </div>
 
         <div className="min-w-0 lg:col-span-5 lg:col-start-8">
           <span className="eyebrow">{eyebrow}</span>
 
-          <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-            {product.brand}
-          </p>
+          {product.brand && <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{product.brand}</p>}
           <h2 className="mt-1.5 font-display text-[26px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:text-[36px]">
             {product.title}
           </h2>
@@ -461,12 +455,13 @@ export function ProductGrid({
   if (products.length === 0) return null;
   const shown = products.slice(0, columns * 2);
 
-  // The grid narrows to what there is. A five-track row holding two cards
-  // leaves three cells of bare hairline, which reads as a shop that has run
-  // out rather than one that is small on purpose; with two products the row
-  // runs two across and the cards are simply larger.
-  const lgCols = Math.min(columns, Math.max(2, shown.length)) as 2 | 3 | 4 | 5;
-  const smCols = Math.min(3, Math.max(2, shown.length)) as 2 | 3;
+  // The tracks are fixed; only the number of cards changes. The grid used to
+  // narrow to what there was, so a block holding one or two products drew them
+  // as two half-page cards — the same stretched-image fault Recently viewed
+  // had. A card is now the same size whether the block holds one or ten, and a
+  // short block is simply a short row.
+  const lgCols: 4 | 5 = columns;
+  const smCols = 3 as const;
 
   // Tablets run three across; a count that does not divide by three would
   // leave a half-empty last row of bare hairline, so those tiles sit out. The

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { ArrowRight, Check, Heart, Minus, Plus } from "lucide-react";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Price, RatingChip, Stars } from "@/components/ui/primitives";
 import { fromCard, useCommerce, type AddableProduct } from "@/store/commerce";
 import { DeliveryCheck } from "./delivery-check";
+import { BrandMark, ProductBadges } from "./badges";
 import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
 import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
 
@@ -20,7 +20,8 @@ export function BuyBox({
   payments,
 }: {
   product: Product;
-  brandName: string;
+  /** Absent when the brand is switched off: no brand line, no brand link. */
+  brandName?: string | undefined;
   /**
    * The live payment switches, read on the server. Optional only so that this
    * still renders if a future caller forgets to pass them — in which case the
@@ -110,7 +111,7 @@ export function BuyBox({
     id: product.id,
     slug: product.slug,
     title: product.title,
-    brand: brandName,
+    brand: brandName ?? "",
     image: product.images[0].url,
     price,
     mrp,
@@ -142,20 +143,8 @@ export function BuyBox({
     <div className="flex flex-col gap-5 sm:gap-6">
       <div>
         <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-          <Link
-            href={`/products?brands=${product.brandSlug}`}
-            className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-500 transition-colors hover:text-brand-700"
-          >
-            {brandName}
-          </Link>
-          {product.badges.slice(0, 2).map((b) => (
-            <span
-              key={b}
-              className="px-2 py-1 text-[10.5px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600"
-            >
-              {b === "bestseller" ? "Bestseller" : b === "new" ? "New in" : b}
-            </span>
-          ))}
+          {brandName && <BrandMark name={brandName} href={`/products?brands=${product.brandSlug}`} />}
+          <ProductBadges product={{ badges: product.badges, price, mrp, stock: product.stock }} size="md" />
         </div>
 
         {/* 20px is the floor for the display face anywhere on the site —

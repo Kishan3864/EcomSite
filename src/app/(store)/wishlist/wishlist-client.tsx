@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductBadges } from "@/components/product/badges";
 import Image from "@/components/ui/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -117,12 +118,16 @@ export function WishlistClient() {
                   sizes="(min-width:1280px) 20vw, (min-width:1024px) 25vw, (min-width:640px) 33vw, 50vw"
                   className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
                 />
+                {/* A saved item keeps no admin badges, so these are the three the shop works out. */}
+                <ProductBadges
+                  product={{ badges: [], price: item.price, mrp: item.mrp, stock: item.stock }}
+                  max={2}
+                  className="absolute left-2 top-2 flex-col !items-start"
+                />
               </Link>
 
               <div className="flex min-w-0 flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-4">
-                <p className="mb-1 truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-1.5">
-                  {item.brand}
-                </p>
+                {item.brand && <p className="mb-1 truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-1.5">{item.brand}</p>}
                 <h3 className="text-[12.5px] font-medium leading-[1.35] tracking-[-0.005em] text-ink-900 sm:text-[13.5px] sm:leading-[1.4]">
                   <Link href={`/p/${item.slug}`} className="line-clamp-2 hover:text-brand-700">
                     {item.title}

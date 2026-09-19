@@ -237,9 +237,7 @@ export function OrderClient({ order }: { order: Order | null }) {
                     <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                   </Link>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-                      {line.brand}
-                    </p>
+                    {line.brand && <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{line.brand}</p>}
                     <Link
                       href={`/p/${line.slug}`}
                       className="mt-0.5 line-clamp-2 block text-[13px] font-medium leading-[1.4] text-ink-950 hover:text-brand-700 sm:text-[13.5px]"

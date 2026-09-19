@@ -111,7 +111,23 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {hasRole(session, "MANAGER") && (
-                      <ToggleForm action={toggleBrandActive} on={b.isActive} what={b.name} storefront={false}>
+                      <ToggleForm
+                        action={toggleBrandActive}
+                        on={b.isActive}
+                        what={b.name}
+                        storefront={false}
+                        confirm={
+                          b.isActive
+                            ? `Switch the brand "${b.name}" off?
+
+This hides the BRAND, not its products. Its ${b._count.products} product${b._count.products === 1 ? "" : "s"} stay on sale exactly as they are. Shoppers stop seeing the name "${b.name}" on product pages, cards, search, brand filters and in Google's product data.
+
+To take products off sale, hide their category or set them to Draft.`
+                            : `Switch the brand "${b.name}" on?
+
+Its name will show again on its ${b._count.products} product${b._count.products === 1 ? "" : "s"}, in brand filters and in search.`
+                        }
+                      >
                         <input type="hidden" name="id" value={b.id} />
                       </ToggleForm>
                     )}

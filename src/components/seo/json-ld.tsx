@@ -133,10 +133,7 @@ export function ProductJsonLd({ product }: { product: Product }) {
         description: product.subtitle,
         sku: product.sku,
         image: images,
-        brand: {
-          "@type": "Brand",
-          name: product.brandName ?? product.brandSlug,
-        },
+        ...(product.brandName ? { brand: { "@type": "Brand", name: product.brandName } } : {}),
         // A rating block with no reviews behind it is invalid structured data,
         // and an offer with no price is a claim the shop is not making. Each
         // is emitted only when there is something true to say.

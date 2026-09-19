@@ -41,7 +41,7 @@ import { discountPercent } from "@/lib/utils";
 // spread, and never add a supplier relation here "for convenience" — these two
 // objects are shared by every storefront query.
 const productListInclude = {
-  brand: { select: { slug: true, name: true } },
+  brand: { select: { slug: true, name: true, isActive: true } },
   category: { select: { slug: true } },
   subcategory: { select: { slug: true } },
   images: { orderBy: { sortOrder: "asc" as const } },
@@ -60,6 +60,24 @@ type ProductListRow = Prisma.ProductGetPayload<{ include: typeof productListIncl
 type ProductFullRow = Prisma.ProductGetPayload<{ include: typeof productFullInclude }>;
 
 /** Estimates a star histogram when only the aggregate is known (cards, rails). */
+/**
+ * A switched-off brand hides the BRAND — never its products.
+ *
+ * DO NOT "FIX" THIS by adding `brand: { isActive: true }` to the visibility
+ * rule in `visibility.ts`. Brands are out of the product cascade on purpose:
+ * the whole catalogue can sit on one brand, and switching that brand off would
+ * then empty the shop. Categories and subcategories hide products; a brand
+ * only hides its own name.
+ *
+ * So an inactive brand yields no `brandName`, and everything a shopper sees
+ * keys off that one absence: no brand line on a card, a listing, a search
+ * result or the product page, no brand link, no brand filter, no `brand` in
+ * the JSON-LD. The product itself stays visible and buyable.
+ */
+function shownBrand(brand: { name: string; isActive: boolean }): { brandName?: string } {
+  return brand.isActive ? { brandName: brand.name } : {};
+}
+
 function estimateBreakdown(rating: number, count: number): RatingBreakdown {
   const five = Math.max(0.35, Math.min(0.82, (rating - 3.2) / 1.6));
   const four = Math.min(0.4, (1 - five) * 0.58);
@@ -107,7 +125,7 @@ function toProduct(
     metaTitle: row.metaTitle ?? undefined,
     metaDescription: row.metaDescription ?? undefined,
     brandSlug: row.brand.slug,
-    brandName: row.brand.name,
+    ...shownBrand(row.brand),
     categorySlug: row.category.slug,
     subcategorySlug: row.subcategory.slug,
     images: row.images.length
@@ -276,7 +294,7 @@ function textWhere(q: string | undefined): Prisma.ProductWhereInput {
         { subtitle: { contains: t, mode: "insensitive" } },
         { tags: { has: t } },
         { colors: { has: t.charAt(0).toUpperCase() + t.slice(1) } },
-        { brand: { name: { contains: t, mode: "insensitive" } } },
+        { brand: { isActive: true, name: { contains: t, mode: "insensitive" } } },
         { category: { name: { contains: t, mode: "insensitive" } } },
         { subcategory: { name: { contains: t, mode: "insensitive" } } },
         { subcategory: { slug: { contains: t, mode: "insensitive" } } },
@@ -333,8 +351,9 @@ function tally(values: string[]) {
 }
 
 function buildFacets(scope: Product[], rows: ProductListRow[]): ProductFacets {
-  const brandName = new Map(rows.map((r) => [r.brand.slug, r.brand.name]));
-  const brandCounts = tally(scope.map((p) => p.brandSlug));
+  // A switched-off brand is not offered as a filter (see shownBrand).
+  const brandName = new Map(rows.filter((r) => r.brand.isActive).map((r) => [r.brand.slug, r.brand.name]));
+  const brandCounts = tally(scope.map((p) => p.brandSlug).filter((slug) => brandName.has(slug)));
   const colorCounts = tally(scope.flatMap((p) => p.colors));
   const categoryCounts = tally(scope.map((p) => p.categorySlug));
 

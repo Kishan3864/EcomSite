@@ -1,5 +1,4 @@
 import type { Product } from "./types";
-import { brandMap } from "@/data/taxonomy";
 import { COLOR_HEX } from "@/data/products";
 
 /**
@@ -40,7 +39,8 @@ export function toCardModel(product: Product): ProductCardModel {
     slug: product.slug,
     title: product.title,
     subtitle: product.subtitle,
-    brand: product.brandName ?? brandMap.get(product.brandSlug)?.name ?? product.brandSlug,
+    // Empty when the brand is switched off: every reader draws no brand line.
+    brand: product.brandName ?? "",
     brandSlug: product.brandSlug,
     categorySlug: product.categorySlug,
     subcategorySlug: product.subcategorySlug,

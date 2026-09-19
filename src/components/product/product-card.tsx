@@ -12,6 +12,7 @@ import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
 import { RatingChip } from "@/components/ui/primitives";
 import { fromCard, useCommerce } from "@/store/commerce";
 import { QuickView } from "./quick-view";
+import { ProductBadges } from "./badges";
 
 /**
  * Product card.
@@ -46,7 +47,6 @@ export function ProductCard({
 
   const off = discountPercent(product.mrp, product.price);
   const wished = isWishlisted(product.id);
-  const lowStock = product.stock > 0 && product.stock <= 12;
   const outOfStock = product.stock <= 0;
   const hasScore = product.reviewCount > 0 && product.rating > 0;
 
@@ -97,20 +97,16 @@ export function ProductCard({
             />
           )}
 
-          {/* Discount reads as a typographic mark in the corner, not a sticker. */}
-          {off > 0 && !outOfStock && (
-            <span className="absolute left-2 top-2 bg-sale-600 px-1.5 py-1 text-[10.5px] font-bold leading-none text-white shadow-sm sm:left-2.5 sm:top-2.5 sm:px-2">
-              {off}% OFF
-            </span>
-          )}
+          {outOfStock && <div className="absolute inset-0 bg-canvas/60" />}
 
-          {outOfStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-canvas/70">
-              <span className="px-3.5 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-950">
-                Sold out
-              </span>
-            </div>
-          )}
+          {/* The shared badge set — icon, colour and word — stacked in the
+              corner so three of them never reach the wishlist button on a
+              152px rail card. The same component draws the product page's. */}
+          <ProductBadges
+            product={product}
+            max={3}
+            className="absolute left-2 top-2 flex-col !items-start sm:left-2.5 sm:top-2.5"
+          />
 
           {/* Utilities stay square and appear only on intent where a pointer
               can hover; a touch screen has no hover, so there they stay put. */}
@@ -166,9 +162,7 @@ export function ProductCard({
           {/* Ink, not gold. The accent is worth something only while it is
               rare, and a grid of twenty tiles was spending it twenty times on
               the least important line in the card. */}
-          <p className="mb-1 truncate text-[10.5px] font-semibold uppercase tracking-[0.13em] text-ink-400">
-            {product.brand}
-          </p>
+          {product.brand && <p className="mb-1 truncate text-[10.5px] font-semibold uppercase tracking-[0.13em] text-ink-400">{product.brand}</p>}
 
           <h3 className="text-[12.5px] font-medium leading-[1.35] tracking-[-0.005em] text-ink-900 sm:text-[13.5px] sm:leading-[1.4]">
             <Link href={`/p/${product.slug}`} className="line-clamp-2 hover:text-brand-700">
@@ -219,8 +213,6 @@ export function ProductCard({
               </>
             ) : outOfStock ? (
               <span>Back in stock soon</span>
-            ) : lowStock ? (
-              <span className="font-medium text-sale-600">Only {product.stock} left</span>
             ) : (
               <span>Dispatched in {BUSINESS.ops.dispatchDays} working days</span>
             )}

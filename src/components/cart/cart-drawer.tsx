@@ -139,9 +139,7 @@ export function CartDrawer() {
                     </Link>
 
                     <div className="flex min-w-0 flex-1 flex-col">
-                      <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-                        {line.brand}
-                      </p>
+                      {line.brand && <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{line.brand}</p>}
                       <Link
                         href={`/p/${line.slug}`}
                         onClick={closeCartDrawer}

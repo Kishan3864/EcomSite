@@ -1,5 +1,6 @@
 "use client";
 
+import { ProductBadges } from "./badges";
 import { useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
@@ -60,9 +61,8 @@ export function QuickView({
 
         <div className="flex flex-col gap-3.5 p-4 sm:gap-4 sm:p-6">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-              {product.brand}
-            </p>
+            {product.brand && <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{product.brand}</p>}
+            <ProductBadges product={product} size="md" className="mt-2" />
             <h2 className="mt-1.5 font-display text-[20px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:text-[26px]">
               {product.title}
             </h2>
