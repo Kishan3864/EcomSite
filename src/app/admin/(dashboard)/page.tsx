@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { db } from "@/lib/db";
+import { priceWarning } from "@/lib/price-guard";
 import { requireAdmin } from "@/lib/auth/admin";
 import { BarList, TrendChart, type TrendPoint } from "@/components/admin/charts";
 import {
@@ -164,12 +165,22 @@ export default async function AdminDashboardPage({
     .map((s) => ({ status: s, count: statusCounts.find((c) => c.status === s)?._count._all ?? 0 }))
     .filter((r) => r.count > 0);
 
+  // The price guard is one rule in code rather than a query, so the dashboard,
+  // the list and the product form can never disagree about what it flags.
+  const suspiciousPrices = (
+    await db.product.findMany({
+      where: { status: "ACTIVE" },
+      select: { status: true, price: true, mrp: true, costPrice: true },
+    })
+  ).filter((p) => priceWarning(p) !== null).length;
+
   const attention = [
     { icon: ShoppingCart, label: "Orders to pack", count: statusRows.find((r) => r.status === "CONFIRMED")?.count ?? 0, href: "/admin/orders?status=CONFIRMED" },
     { icon: RotateCcw, label: "Return requests", count: pendingReturns, href: "/admin/returns?status=REQUESTED" },
     { icon: Star, label: "Reviews to moderate", count: pendingReviews, href: "/admin/reviews?status=PENDING" },
     { icon: Inbox, label: "Unanswered messages", count: newMessages, href: "/admin/messages?status=NEW" },
     { icon: Boxes, label: "Low-stock products", count: lowStock.length, href: "/admin/inventory" },
+    { icon: AlertTriangle, label: "Products with a suspicious price", count: suspiciousPrices, href: "/admin/products?price=warn" },
   ];
 
   const hour = now.getHours();

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Archive, ArchiveRestore, ExternalLink, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
+import { priceWarning } from "@/lib/price-guard";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { buttonClasses } from "@/components/ui/button";
 import { ConfirmForm } from "@/components/admin/client";
@@ -138,6 +139,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           initial={initial}
           options={options}
           selfId={product.id}
+          priceWarning={priceWarning(product)}
           readOnly={!canEdit}
         />
       </div>

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { priceWarning } from "@/lib/price-guard";
 import { logActivity, requireAdmin, type AdminSession } from "@/lib/auth/admin";
 import type { FormState } from "./form-state";
 import { bool, lines, list, num, revalidateAdmin, revalidateStorefront, slugify, str } from "./shared";
@@ -503,9 +504,17 @@ export async function updateProduct(id: string, _prev: FormState, formData: Form
   });
   revalidateStorefront(storefrontPaths(current.slug, v.data.slug));
   revalidateAdmin("products");
+  const warning = priceWarning({
+    status: v.data.status ?? "DRAFT",
+    price: v.data.price,
+    mrp: v.data.mrp,
+    costPrice: v.data.costPrice ?? null,
+  });
   return {
     ok: true,
     message: delta === 0 ? "Saved." : `Saved. Stock ${delta > 0 ? "increased" : "reduced"} by ${Math.abs(delta)} (movement recorded).`,
+    // Saved regardless. The guard points; it never refuses.
+    ...(warning ? { warning } : {}),
   };
 }
 

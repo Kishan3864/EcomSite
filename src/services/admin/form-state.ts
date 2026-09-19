@@ -8,6 +8,8 @@ export type FormState = {
   error?: string;
   field?: string;
   message?: string;
+  /** Something worth a second look on a save that DID go through. Never blocks. */
+  warning?: string;
 };
 
 export const INITIAL_FORM: FormState = {};

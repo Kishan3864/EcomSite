@@ -4,6 +4,7 @@ import { Archive, ArchiveRestore, Copy, ImageOff, Pencil, Plus, Trash2 } from "l
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { visibleProducts } from "@/services/visibility";
+import { priceWarning } from "@/lib/price-guard";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
@@ -74,11 +75,21 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const params = parseListParams(raw, {
     perPage: 25,
     defaultSort: DEFAULT_SORT,
-    filterKeys: ["status", "category", "brand", "supplier", "stock", "visibility"],
+    filterKeys: ["status", "category", "brand", "supplier", "stock", "visibility", "price"],
   });
   const statusFilter = params.filters.status?.toUpperCase();
   const validStatus = (PRODUCT_STATUSES as readonly string[]).includes(statusFilter ?? "") ? statusFilter : undefined;
   const stockFilter = params.filters.stock;
+  // The price guard is a rule in code, not a query, so that it is ONE rule: the
+  // ACTIVE products are read once, judged by the shared function, and the ids
+  // it points at become the filter and the count.
+  const flagged = (
+    await db.product.findMany({
+      where: { status: "ACTIVE" },
+      select: { id: true, status: true, price: true, mrp: true, costPrice: true },
+    })
+  ).filter((p) => priceWarning(p) !== null);
+  const priceFilter = params.filters.price === "warn" ? "warn" : undefined;
   const visibilityFilter =
     params.filters.visibility === "visible" || params.filters.visibility === "parent" ? params.filters.visibility : undefined;
   const supplierFilter = params.filters.supplier;
@@ -96,6 +107,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         }
       : {}),
     ...(validStatus ? { status: validStatus as Prisma.ProductWhereInput["status"] } : {}),
+    ...(priceFilter ? { id: { in: flagged.map((p) => p.id) } } : {}),
     // On the storefront, or switched on yet hidden by a department or a
     // collection above it — the storefront's own rule, and its exact opposite.
     ...(visibilityFilter === "visible"
@@ -131,6 +143,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         status: true,
         price: true,
         mrp: true,
+        costPrice: true,
         stock: true,
         lowStockThreshold: true,
         updatedAt: true,
@@ -164,6 +177,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     supplier: supplierFilter,
     stock: params.filters.stock,
     visibility: visibilityFilter,
+    price: priceFilter,
     sort: params.sort === DEFAULT_SORT ? undefined : params.sort,
   };
   const returnTo = withParams(LIST, current, { page: params.page > 1 ? params.page : null });
@@ -174,7 +188,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       params.filters.brand ||
       supplierFilter ||
       stockFilter ||
-      visibilityFilter,
+      visibilityFilter ||
+      priceFilter,
   );
   const canManage = hasRole(session, "MANAGER");
   const canDelete = hasRole(session, "OWNER");
@@ -245,6 +260,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           ]}
         />
         <ParamSelect name="stock" value={params.filters.stock} allLabel="All stock states" options={[...STOCK_STATES]} />
+        <ParamSelect
+          name="price"
+          value={priceFilter}
+          allLabel="Any price"
+          options={[{ value: "warn", label: `Price warnings (${flagged.length})` }]}
+        />
         <ParamSelect
           name="visibility"
           value={visibilityFilter}
@@ -368,6 +389,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                     </Td>
                     <Td align="right">
                       <Money value={p.price} className="font-medium text-ink-950" />
+                      {priceWarning(p) && (
+                        <span title={priceWarning(p) ?? undefined} className="mt-0.5 block">
+                          <Pill tone="gold" dot>
+                            Check price
+                          </Pill>
+                        </span>
+                      )}
                       {p.mrp > p.price && (
                         <span className="block text-[11.5px] text-ink-400 line-through">
                           <Money value={p.mrp} />

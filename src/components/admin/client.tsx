@@ -167,7 +167,7 @@ export function Notice({
   children,
   className,
 }: {
-  tone?: "ok" | "error" | "info";
+  tone?: "ok" | "error" | "info" | "warn";
   children: React.ReactNode;
   className?: string;
 }) {
@@ -179,10 +179,15 @@ export function Notice({
         tone === "error" && "bg-sale-50 text-sale-700",
         tone === "ok" && "bg-brand-50 text-brand-900",
         tone === "info" && "bg-ink-50 text-ink-700",
+        tone === "warn" && "bg-gold-50 text-gold-800",
         className,
       )}
     >
-      {tone === "error" ? <AlertTriangle size={14} className="mt-0.5 shrink-0" /> : <Check size={14} className="mt-0.5 shrink-0" />}
+      {tone === "error" || tone === "warn" ? (
+        <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+      ) : (
+        <Check size={14} className="mt-0.5 shrink-0" />
+      )}
       <span>{children}</span>
     </div>
   );

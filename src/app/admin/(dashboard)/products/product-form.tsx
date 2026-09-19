@@ -124,7 +124,10 @@ export function ProductForm({
   selfId,
   readOnly = false,
   submitLabel = "Save product",
+  priceWarning: standingWarning,
 }: {
+  /** What the price guard says about the SAVED row, so reopening the product still shows it. */
+  priceWarning?: string | null;
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   initial?: Partial<ProductFormValues>;
   options: ProductFormOptions;
@@ -173,6 +176,7 @@ export function ProductForm({
         </Notice>
       )}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
+      {state.ok && state.warning && <Notice tone="warn">{state.warning}</Notice>}
       {readOnly && <Notice tone="info">You have read-only access. Ask a manager to make changes.</Notice>}
 
       <fieldset disabled={readOnly} className="contents">
@@ -244,6 +248,11 @@ export function ProductForm({
               <Label htmlFor="p-price">Selling price (₹)</Label>
               <input id="p-price" name="price" type="number" min={1} step={1} inputMode="numeric" defaultValue={dv("price", init.price)} className={cn(inputCls, "tabular-nums")} required />
               <FieldError>{err("price")}</FieldError>
+              {(state.ok ? state.warning : standingWarning) && (
+                <p role="status" className="mt-1.5 bg-gold-50 px-2.5 py-1.5 text-[12px] leading-relaxed text-gold-800">
+                  {state.ok ? state.warning : standingWarning}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="p-mrp" hint="Must be at least the selling price. Blank = same as price.">
