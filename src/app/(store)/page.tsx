@@ -197,7 +197,7 @@ async function RankedHome() {
     <>
       <HeroBanner hasProducts categories={categories} lead={lead} banner={banners.hero[0]} />
       <ShopByCategory categories={categories} />
-      {first && grid(first, true)}
+      {first && grid(first)}
       <ShopByPrice prices={priceLadder} />
       <Spotlight product={spread} eyebrow="In the shop" payments={payments} />
       {rest[0] && grid(rest[0])}

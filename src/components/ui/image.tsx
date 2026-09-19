@@ -25,23 +25,22 @@ export type { ImageProps, ImageLoaderProps, StaticImageData } from "next/image";
 /**
  * Quality, for every photograph on the shop.
  *
- * Next's default is 75, and in Next 16 it is also the only value allowed unless
- * `qualities` in next.config.ts says otherwise — so the whole catalogue was
- * being encoded at 75 and there was nothing a caller could do about it. On a
- * shop, the photograph *is* the product: 75 is where the AVIF encoder starts
- * smoothing fabric, brushed metal and the edge of a printed label, which is
- * precisely the detail somebody is enlarging the picture to judge.
+ * It was 90 for a while, on the reasoning that the photograph is the product.
+ * Measured on the largest photograph in this catalogue (828 px wide): AVIF
+ * 64 KB at 90 against 47 KB at 75 (−27%), WebP 152 KB against 83 KB (−45%),
+ * and the encode 10–25% quicker. Enlarged to 2x side by side, 75 is very
+ * slightly smoother in fine texture and otherwise the same; at the size a
+ * shopper sees it, they cannot be told apart. So the bytes go.
  *
- * 90 costs roughly a third more bytes and buys back that detail. It is set
- * here, once, rather than at three hundred call sites — and a caller that wants
- * fewer bytes for something decorative can still pass quality={75}.
+ * Be clear about what this did NOT fix. The galleries that 504'd after a
+ * deploy did so because the optimiser's cache was emptied by every deploy and
+ * sixteen widths were on offer — see deploy/link-image-cache.mjs and `images`
+ * in next.config.ts. Quality is the smallest of the three changes.
  *
- * Worth being straight about what this cannot do: it does not add pixels. A
- * source photograph that is 900px wide still has 900px of detail, and asking a
- * 1400px slot to show it will still look soft however it is encoded. That is a
- * matter of uploading larger originals, not of settings.
+ * A caller that truly needs more can still pass quality={90}; it is on the
+ * `qualities` list in next.config.ts.
  */
-const DEFAULT_QUALITY = 90;
+const DEFAULT_QUALITY = 75;
 
 export default function Image(props: ImageProps) {
   const src = typeof props.src === "string" ? props.src : "";

@@ -151,17 +151,31 @@ const nextConfig: NextConfig = {
     // browser by src/components/ui/image.tsx, and a remote URL that somehow
     // reaches the optimiser is refused at once rather than hanging.
     formats: ["image/avif", "image/webp"],
-    deviceSizes: [360, 420, 640, 750, 828, 1080, 1200, 1440, 1920],
-    imageSizes: [64, 96, 128, 200, 256, 320, 384],
-    // Uploads are content-addressed by key and never change; a month of caching
-    // saves the optimiser re-encoding the same photograph on every deploy.
-    minimumCacheTTL: 2592000,
-    // Next 16 defaults this to [75] and refuses anything not on the list, so
-    // every photograph on the shop was being served at 75 with no way to ask
-    // for better. A catalogue photograph is the product — at 75 the AVIF
-    // encoder softens exactly the detail somebody is looking at it to judge.
-    // 90 is the site default now (see src/components/ui/image.tsx); 75 stays on
-    // the list for anything decorative that does not need the bytes.
+    // Every width listed here is a variant the optimiser may be asked to encode
+    // for every photograph, and each one is a separate AVIF encode the first
+    // time. Sixteen widths meant a product page could ask for twenty uncached
+    // variants at once. These ten are the widths the layout really renders:
+    //
+    //   64 128        bag, checkout, search and gallery thumbnails (44–80 px, 1–2x)
+    //   256 384       product cards: 152 px rail and ~190 px grid on phones,
+    //                 224–290 px on desktop, at 1x and 2x
+    //   480 640       cards at 3x; the homepage feature on tablets
+    //   828 1080      the gallery on a phone (360–430 px wide at 2–3x)
+    //   1440 1920     the gallery and hero on desktop (up to ~800 px at 2x), lightbox
+    deviceSizes: [480, 640, 828, 1080, 1440, 1920],
+    imageSizes: [64, 128, 256, 384],
+    // A year. An upload is content-addressed and a catalogue file is named for
+    // its product, so neither changes under the same URL; to replace a
+    // photograph, give the new file a new name. With the cache now kept across
+    // deploys (deploy/link-image-cache.mjs) this is what stops a photograph
+    // being re-encoded every month for no reason.
+    minimumCacheTTL: 31536000,
+    // The cache outlives releases now, so it is given a ceiling: least recently
+    // used variants are dropped beyond 1 GB.
+    maximumDiskCacheSize: 1_000_000_000,
+    // 75 is the site default (see src/components/ui/image.tsx for why it went
+    // back from 90). 90 stays on the list so one image can still ask for it;
+    // Next refuses any quality that is not listed here.
     qualities: [75, 90],
     // The optimiser will not process an SVG — one can carry script.
     dangerouslyAllowSVG: false,

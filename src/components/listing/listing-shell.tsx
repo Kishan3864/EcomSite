@@ -134,7 +134,7 @@ export function ListingShell({
             />
           ) : (
             <>
-              <ProductGrid products={products} priorityCount={4} className="xl:grid-cols-4" />
+              <ProductGrid products={products} priorityCount={2} className="xl:grid-cols-4" />
               <Pagination
                 page={page}
                 totalPages={totalPages}
