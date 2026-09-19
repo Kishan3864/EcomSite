@@ -8,7 +8,7 @@ import { priceWarning } from "@/lib/price-guard";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
-import { ConfirmForm, ParamSelect, SearchBox } from "@/components/admin/client";
+import { ConfirmForm, FilterBar, ParamSelect, SearchBox } from "@/components/admin/client";
 import {
   AdminPagination,
   DateCell,
@@ -191,6 +191,25 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       visibilityFilter ||
       priceFilter,
   );
+  // Every filter in use, as a chip that removes itself.
+  const nameOf = (list: { slug: string; name: string }[], slug?: string) => list.find((x) => x.slug === slug)?.name ?? slug;
+  const chips = (
+    [
+      params.q ? { key: "q", label: `Search: ${params.q}` } : null,
+      validStatus ? { key: "status", label: `Status: ${validStatus.toLowerCase()}` } : null,
+      visibilityFilter ? { key: "visibility", label: visibilityFilter === "visible" ? "Visible to shoppers" : "Hidden by parent" } : null,
+      params.filters.category ? { key: "category", label: `Category: ${nameOf(categories, params.filters.category)}` } : null,
+      params.filters.brand ? { key: "brand", label: `Brand: ${nameOf(brands, params.filters.brand)}` } : null,
+      supplierFilter
+        ? { key: "supplier", label: `Wholesaler: ${supplierFilter === NO_SUPPLIER ? "not recorded" : nameOf(suppliers, supplierFilter)}` }
+        : null,
+      stockFilter ? { key: "stock", label: `Stock: ${STOCK_STATES.find((x) => x.value === stockFilter)?.label ?? stockFilter}` } : null,
+      priceFilter ? { key: "price", label: "Price warnings" } : null,
+    ] as ({ key: string; label: string } | null)[]
+  )
+    .filter((c): c is { key: string; label: string } => c !== null)
+    .map((c) => ({ label: c.label, href: withParams(LIST, current, { [c.key]: null, page: null }) }));
+
   const canManage = hasRole(session, "MANAGER");
   const canDelete = hasRole(session, "OWNER");
   const pageIds = rows.map((r) => r.id);
@@ -220,16 +239,25 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         }
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <SearchBox
-          placeholder="Search title, SKU, slug, brand or wholesaler…"
-          defaultValue={params.q}
-          className="w-full sm:w-80"
-        />
+      <FilterBar
+        search={<SearchBox placeholder="Search title, SKU, slug, brand or wholesaler…" defaultValue={params.q} />}
+        sort={
+          <ParamSelect
+            name="sort"
+            label="Sort"
+            value={params.sort === DEFAULT_SORT ? "" : params.sort}
+            allLabel="Recently updated"
+            options={[...SORT_OPTIONS]}
+          />
+        }
+        chips={chips}
+        clearHref={LIST}
+      >
         <ParamSelect
           name="status"
+          label="Status"
           value={params.filters.status}
-          allLabel={`All statuses (${countOf("DRAFT") + countOf("ACTIVE") + countOf("ARCHIVED")})`}
+          allLabel={`All (${countOf("DRAFT") + countOf("ACTIVE") + countOf("ARCHIVED")})`}
           options={[
             { value: "ACTIVE", label: `Active (${countOf("ACTIVE")})` },
             { value: "DRAFT", label: `Draft (${countOf("DRAFT")})` },
@@ -237,21 +265,34 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           ]}
         />
         <ParamSelect
+          name="visibility"
+          label="Visibility"
+          value={visibilityFilter}
+          allLabel="Any"
+          options={[
+            { value: "visible", label: `Visible to shoppers (${visibleCount})` },
+            { value: "parent", label: `Hidden by parent (${parentHiddenCount})` },
+          ]}
+        />
+        <ParamSelect
           name="category"
+          label="Category"
           value={params.filters.category}
-          allLabel="All categories"
+          allLabel="All"
           options={categories.map((c) => ({ value: c.slug, label: c.name }))}
         />
         <ParamSelect
           name="brand"
+          label="Brand"
           value={params.filters.brand}
-          allLabel="All brands"
+          allLabel="All"
           options={brands.map((b) => ({ value: b.slug, label: b.name }))}
         />
         <ParamSelect
           name="supplier"
+          label="Wholesaler"
           value={supplierFilter}
-          allLabel="All wholesalers"
+          allLabel="All"
           options={[
             ...suppliers.map((s) => ({ value: s.slug, label: s.name })),
             // Every product that predates this feature has no wholesaler, so
@@ -259,30 +300,15 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
             { value: NO_SUPPLIER, label: "Not recorded" },
           ]}
         />
-        <ParamSelect name="stock" value={params.filters.stock} allLabel="All stock states" options={[...STOCK_STATES]} />
+        <ParamSelect name="stock" label="Stock" value={params.filters.stock} allLabel="Any" options={[...STOCK_STATES]} />
         <ParamSelect
           name="price"
+          label="Price"
           value={priceFilter}
-          allLabel="Any price"
+          allLabel="Any"
           options={[{ value: "warn", label: `Price warnings (${flagged.length})` }]}
         />
-        <ParamSelect
-          name="visibility"
-          value={visibilityFilter}
-          allLabel="Any visibility"
-          options={[
-            { value: "visible", label: `Visible to shoppers (${visibleCount})` },
-            { value: "parent", label: `Hidden by parent (${parentHiddenCount})` },
-          ]}
-        />
-        <ParamSelect
-          name="sort"
-          value={params.sort === DEFAULT_SORT ? "" : params.sort}
-          allLabel="Recently updated"
-          options={[...SORT_OPTIONS]}
-          className="sm:ml-auto"
-        />
-      </div>
+      </FilterBar>
 
       <BulkProvider key={returnTo}>
         {canManage && <BulkBar action={bulkSetProductStatus} returnTo={returnTo} />}

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { AnimatePresence, motion } from "motion/react";
-import { AlertTriangle, Check, Copy, Loader2, Search, X } from "lucide-react";
+import { AlertTriangle, Check, Copy, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -269,18 +270,21 @@ export function ParamSelect({
   options,
   className,
   allLabel = "All",
+  label,
 }: {
   name: string;
-  value?: string;
+  value?: string | undefined;
   options: { value: string; label: string }[];
   className?: string;
   allLabel?: string;
+  /** A visible caption above the select. With it, the select fills its cell. */
+  label?: string;
 }) {
   const params = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  return (
+  const select = (
     <select
       value={value ?? ""}
       onChange={(e) => {
@@ -292,10 +296,13 @@ export function ParamSelect({
         router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
       }}
       className={cn(
-        "h-10 bg-surface px-3 pr-8 text-[13px] text-ink-800 outline-none",
+        "h-10 bg-surface px-3 pr-8 text-[13px] text-ink-800 outline-none focus-visible:ring-2 focus-visible:ring-brand-600",
+        label && "w-full min-w-0",
+        // A filter that is doing something looks like it.
+        label && value && "font-semibold text-brand-900 ring-1 ring-brand-600",
         className,
       )}
-      aria-label={name}
+      aria-label={label ?? name}
     >
       <option value="">{allLabel}</option>
       {options.map((o) => (
@@ -304,6 +311,95 @@ export function ParamSelect({
         </option>
       ))}
     </select>
+  );
+  if (!label) return select;
+  return (
+    <label className="grid min-w-0 gap-1">
+      <span className="text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">{label}</span>
+      {select}
+    </label>
+  );
+}
+
+/* ---------------------------- Filter bar --------------------------- */
+
+/**
+ * A list's search, sort and filters, arranged so they hold at any width.
+ *
+ * A row of selects that wraps looks broken at every width it was not drawn
+ * for. So: search and sort share the top row and never move; the filters sit
+ * below in a grid whose columns follow the width — two on a phone, up to seven
+ * on a wide screen — each the full width of its cell, with a caption. On a
+ * phone the grid is folded behind one Filters button that says how many are in
+ * use, because seven selects are a screen and a half before the first product.
+ * Below that, every filter in use is a chip that removes itself, so the state
+ * of the list can be read without opening anything.
+ */
+export function FilterBar({
+  search,
+  sort,
+  chips,
+  clearHref,
+  children,
+}: {
+  search: React.ReactNode;
+  sort: React.ReactNode;
+  chips: { label: string; href: string }[];
+  clearHref: string;
+  /** The ParamSelects, each given a `label`. */
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const panel = useId();
+  return (
+    <div className="mb-4 grid gap-3">
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+        <div className="min-w-0 [&>*]:w-full">{search}</div>
+        <div className="grid grid-cols-2 gap-2 sm:block">
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls={panel}
+            className="flex h-10 items-center justify-center gap-2 bg-surface px-3 text-[13px] font-semibold text-ink-800 sm:hidden"
+          >
+            <SlidersHorizontal size={14} />
+            Filters{chips.length > 0 ? ` (${chips.length})` : ""}
+          </button>
+          <div className="min-w-0 sm:w-52">{sort}</div>
+        </div>
+      </div>
+
+      <div
+        id={panel}
+        className={cn(
+          "gap-x-2 gap-y-3 bg-canvas sm:grid sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7",
+          open ? "grid grid-cols-2" : "hidden",
+        )}
+      >
+        {children}
+      </div>
+
+      {chips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {chips.map((chip) => (
+            <Link
+              key={chip.label}
+              href={chip.href}
+              scroll={false}
+              className="inline-flex items-center gap-1.5 bg-brand-50 px-2 py-1 text-[12px] font-medium text-brand-900 transition-colors hover:bg-brand-100"
+            >
+              {chip.label}
+              <X size={12} aria-hidden />
+              <span className="sr-only">Remove filter</span>
+            </Link>
+          ))}
+          <Link href={clearHref} scroll={false} className="px-2 py-1 text-[12px] font-semibold text-ink-500 underline-offset-2 hover:text-ink-950 hover:underline">
+            Clear all
+          </Link>
+        </div>
+      )}
+    </div>
   );
 }
 
