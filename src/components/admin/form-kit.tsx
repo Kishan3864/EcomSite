@@ -117,6 +117,15 @@ function snapshot(form: HTMLFormElement): string {
  *
  * On a page with several forms (Settings, Team) each has its own bar, and a bar
  * only sticks while its form has unsaved changes, so they do not pile up.
+ *
+ * It also carries a CAUTION: `state.warning` from a save that went through, or
+ * `notice` — something true of the saved record — until a save replaces it. The
+ * price guard's sentence used to be printed at the top of the form and inside
+ * the pricing section. A product was then set live at ₹6 with no warning seen,
+ * because a save made from half way down a long form leaves the top 500px
+ * above the window, and the pricing section is shut until somebody opens it.
+ * This bar is the only part of a form that is on screen wherever the admin is,
+ * so this is where a caution has to be.
  */
 export function SaveBar({
   state,
@@ -126,6 +135,7 @@ export function SaveBar({
   disabled,
   variant = "primary",
   children,
+  notice,
 }: {
   /** The form's action state, so the bar can tell a save that worked from one that did not. */
   state?: FormState;
@@ -137,6 +147,8 @@ export function SaveBar({
   variant?: ButtonProps["variant"];
   /** Extra controls beside the button — a Cancel link, say. */
   children?: React.ReactNode;
+  /** A caution about the record AS SAVED, shown until a save answers with its own. */
+  notice?: string | null | undefined;
 }) {
   const { pending } = useFormStatus();
   const bar = useRef<HTMLDivElement>(null);
@@ -215,6 +227,9 @@ export function SaveBar({
   }, [dirty]);
 
   const failed = !pending && !!state?.error;
+  // A save that went through speaks for the record from then on: if it carries
+  // no warning, the standing one is out of date and must not linger.
+  const caution = state?.ok ? state.warning : notice;
   const sticky = alwaysSticky || dirty;
 
   return (
@@ -242,6 +257,12 @@ export function SaveBar({
             <CircleDot size={14} className="shrink-0 text-gold-600" />
             <span className="font-semibold text-gold-800">Unsaved changes</span>
           </>
+        ) : savedAt && caution ? (
+          // Not a green tick: a save the guard points at is not simply "fine".
+          <>
+            <TriangleAlert size={14} className="shrink-0 text-gold-600" />
+            <span className="font-semibold text-gold-800">Saved at {savedAt} — read the note below</span>
+          </>
         ) : savedAt ? (
           <>
             <Check size={14} className="shrink-0 text-[#1c6636]" />
@@ -258,6 +279,12 @@ export function SaveBar({
           {pending ? pendingLabel : label}
         </Button>
       </div>
+      {caution && !pending && (
+        <p role="alert" className="flex w-full items-start gap-2 bg-gold-50 px-3 py-2 text-[12.5px] font-medium leading-relaxed text-gold-800 ring-1 ring-inset ring-gold-500/40">
+          <TriangleAlert size={14} className="mt-[3px] shrink-0" />
+          <span>{caution}</span>
+        </p>
+      )}
     </div>
   );
 }

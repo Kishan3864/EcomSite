@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { Notice } from "@/components/admin/client";
 import { FieldError, Label, inputCls, selectArrow, selectCls, textareaCls } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
+import { priceWarning } from "@/lib/price-guard";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { ImagesEditor, RelationPicker, SpecsEditor, VariantsEditor } from "./product-editors";
@@ -171,11 +172,45 @@ export function ProductForm({
   }, [state, categoryId, subcategoryId]);
   const statusHelp = STATUS_HELP;
 
+  /**
+   * The guard's sentence this admin has already been shown and saved through —
+   * at first, whatever is true of the saved row. A product sold at a loss on
+   * purpose should not ask the same question on every later save; a NEW
+   * sentence (a different price, MRP, cost, or a draft going live) asks again.
+   */
+  const acknowledged = useRef<string | null>(standingWarning ?? null);
+
   return (
     <Form
       action={formAction}
       onSubmit={(e) => {
         const fd = new FormData(e.currentTarget);
+
+        // The warning that matters is the one BEFORE the price is live, not the
+        // one after. Judged here by the same function the server uses, from
+        // what is in the form right now — including a draft being switched to
+        // Active with a price that was typed earlier, which is silent until
+        // that moment by design. OK still saves: it points, it never refuses.
+        const price = Number(fd.get("price"));
+        const mrpTyped = String(fd.get("mrp") ?? "").trim();
+        const costTyped = String(fd.get("costPrice") ?? "").trim();
+        const upcoming = priceWarning({
+          status: String(fd.get("status") ?? ""),
+          price,
+          mrp: mrpTyped === "" ? price : Number(mrpTyped),
+          costPrice: costTyped === "" ? null : Number(costTyped),
+        });
+        if (upcoming && upcoming !== acknowledged.current) {
+          const go = window.confirm(
+            `${upcoming.replace("is live", "will be the LIVE price")}\n\nOK saves it anyway. Cancel goes back to the form and nothing is saved.`,
+          );
+          if (!go) {
+            e.preventDefault();
+            return;
+          }
+        }
+        acknowledged.current = upcoming;
+
         const captured: Record<string, string> = {};
         fd.forEach((v, k) => {
           if (typeof v === "string" && !(k in captured)) captured[k] = v;
@@ -186,7 +221,8 @@ export function ProductForm({
       }}
       className="grid gap-5"
     >
-      {!readOnly && <SaveBar state={state} label={submitLabel} />}
+      {!readOnly && <SaveBar state={state} label={submitLabel} notice={standingWarning} />}
+      {readOnly && standingWarning && <Notice tone="warn">{standingWarning}</Notice>}
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.error && state.field && (
         <Notice tone="error">
@@ -194,7 +230,6 @@ export function ProductForm({
         </Notice>
       )}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
-      {state.ok && state.warning && <Notice tone="warn">{state.warning}</Notice>}
       {readOnly && <Notice tone="info">You have read-only access. Ask a manager to make changes.</Notice>}
 
       <fieldset disabled={readOnly} className="contents">

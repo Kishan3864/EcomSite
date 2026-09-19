@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
-import { priceWarning } from "@/lib/price-guard";
+import { priceCaution, priceWarning } from "@/lib/price-guard";
 import { logActivity, requireAdmin, type AdminSession } from "@/lib/auth/admin";
 import type { FormState } from "./form-state";
 import { bool, lines, list, num, revalidateAdmin, revalidateStorefront, slugify, str } from "./shared";
@@ -33,9 +33,9 @@ const STATUS_LABEL: Record<ProductStatusValue, string> = { DRAFT: "draft", ACTIV
 
 /* ------------------------------ Helpers ----------------------------- */
 
-function withFlash(url: string, message: string, tone: "ok" | "error" = "ok") {
+function withFlash(url: string, message: string, tone: "ok" | "error" | "warn" = "ok") {
   const sep = url.includes("?") ? "&" : "?";
-  return `${url}${sep}flash=${encodeURIComponent(message)}${tone === "error" ? "&tone=error" : ""}`;
+  return `${url}${sep}flash=${encodeURIComponent(message)}${tone === "ok" ? "" : `&tone=${tone}`}`;
 }
 
 /** Only ever bounce back inside the products module. */
@@ -446,7 +446,19 @@ export async function createProduct(_prev: FormState, formData: FormData): Promi
   });
   revalidateStorefront(storefrontPaths(v.data.slug));
   revalidateAdmin("products");
-  redirect(withFlash(LIST, `${v.data.title} created`));
+  // A product can be created ACTIVE. The form asked before this save; the list
+  // it lands on says it again, and keeps saying it until it is dismissed.
+  const createdWarning = priceWarning({
+    status: v.data.status ?? "DRAFT",
+    price: v.data.price,
+    mrp: v.data.mrp,
+    costPrice: v.data.costPrice ?? null,
+  });
+  redirect(
+    createdWarning
+      ? withFlash(LIST, `${v.data.title} created. ${createdWarning}`, "warn")
+      : withFlash(LIST, `${v.data.title} created`),
+  );
 }
 
 /* ------------------------------ Update ------------------------------ */
@@ -638,7 +650,17 @@ export async function setProductStatus(formData: FormData) {
 
   const product = await db.product.findUnique({
     where: { id },
-    select: { id: true, title: true, slug: true, status: true, publishedAt: true, _count: { select: { images: true } } },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      status: true,
+      publishedAt: true,
+      price: true,
+      mrp: true,
+      costPrice: true,
+      _count: { select: { images: true } },
+    },
   });
   if (!product) redirect(withFlash(returnTo, "Product not found", "error"));
 
@@ -660,7 +682,14 @@ export async function setProductStatus(formData: FormData) {
   });
   revalidateStorefront(storefrontPaths(product.slug));
   revalidateAdmin("products");
-  redirect(withFlash(returnTo, `${product.title} is now ${STATUS_LABEL[status]}`));
+  // This route never opens the product, so nothing else would mention a price
+  // typed while it was a draft or left behind by a test before it was archived.
+  const caution = status === "ACTIVE" ? priceCaution([product]) : null;
+  redirect(
+    caution
+      ? withFlash(returnTo, `${product.title} is now live. ${caution}`, "warn")
+      : withFlash(returnTo, `${product.title} is now ${STATUS_LABEL[status]}`),
+  );
 }
 
 export async function bulkSetProductStatus(formData: FormData) {
@@ -674,7 +703,16 @@ export async function bulkSetProductStatus(formData: FormData) {
 
   const rows = await db.product.findMany({
     where: { id: { in: ids } },
-    select: { id: true, slug: true, status: true, _count: { select: { images: true } } },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      status: true,
+      price: true,
+      mrp: true,
+      costPrice: true,
+      _count: { select: { images: true } },
+    },
   });
   let eligible = rows.filter((r) => r.status !== status);
   let skippedNoImage = 0;
@@ -707,7 +745,14 @@ export async function bulkSetProductStatus(formData: FormData) {
     eligible.length > 0
       ? `${eligible.length} ${eligible.length === 1 ? "product" : "products"} set to ${STATUS_LABEL[status]}${notes.length ? ` (${notes.join(", ")})` : ""}`
       : `Nothing changed${notes.length ? ` — ${notes.join(", ")}` : ""}`;
-  redirect(withFlash(returnTo, message, eligible.length > 0 ? "ok" : "error"));
+  // Publishing from the list is the one way to go live without ever seeing a
+  // price, and the guard says nothing about a draft — so it is asked here.
+  const caution = status === "ACTIVE" ? priceCaution(eligible) : null;
+  redirect(
+    caution
+      ? withFlash(returnTo, `${message}. ${caution}`, "warn")
+      : withFlash(returnTo, message, eligible.length > 0 ? "ok" : "error"),
+  );
 }
 
 /* ------------------------------ Delete ------------------------------ */

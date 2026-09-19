@@ -26,6 +26,20 @@ export interface PricedProduct {
 
 const inr = (n: number) => `₹${n.toLocaleString("en-IN")}`;
 
+/**
+ * For the routes that put products on sale WITHOUT opening them — publishing
+ * from the list, un-archiving, switching a hidden category on. Judges each as
+ * if it were already live, because in a moment it will be, and names the ones
+ * the rule points at so the admin is told which to look at, not just how many.
+ */
+export function priceCaution(products: (Omit<PricedProduct, "status"> & { title: string })[]): string | null {
+  const flagged = products.filter((p) => priceWarning({ ...p, status: "ACTIVE" }) !== null);
+  if (flagged.length === 0) return null;
+  const named = flagged.slice(0, 3).map((p) => `“${p.title}” at ${inr(p.price)} against an MRP of ${inr(p.mrp)}`);
+  const more = flagged.length - named.length;
+  return `Check the price: ${named.join("; ")}${more > 0 ? `; and ${more} more` : ""}.`;
+}
+
 export function priceWarning(p: PricedProduct): string | null {
   if (p.status !== "ACTIVE") return null;
   const reasons: string[] = [];

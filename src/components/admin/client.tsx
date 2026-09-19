@@ -98,15 +98,21 @@ export function ToggleForm({
 /* ---------------------------- Flash message -------------------------- */
 
 /**
- * Server actions that redirect append `?flash=<text>&tone=ok|error`; this
+ * Server actions that redirect append `?flash=<text>&tone=ok|error|warn`; this
  * shows it once and cleans the URL.
+ *
+ * `warn` is for a change that went through but needs a second look — a product
+ * just put on sale at a price the guard points at. It is gold, it is announced,
+ * and unlike the other two it does NOT fade after four seconds: a caution that
+ * disappears while somebody is still reading the table below it is not one.
  */
 export function FlashMessage() {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const flash = params.get("flash");
-  const tone = params.get("tone") === "error" ? "error" : "ok";
+  const wanted = params.get("tone");
+  const tone = wanted === "error" || wanted === "warn" ? wanted : "ok";
   // Visibility is derived: a flash is shown until it has been dismissed. Keying
   // the dismissal to the message means a new flash shows even if the last one
   // was closed, without any state being set synchronously in an effect.
@@ -114,7 +120,7 @@ export function FlashMessage() {
   const visible = Boolean(flash) && dismissed !== flash;
 
   useEffect(() => {
-    if (!flash) return;
+    if (!flash || tone === "warn") return;
     const t = setTimeout(() => {
       setDismissed(flash);
       const next = new URLSearchParams(params.toString());
@@ -125,7 +131,7 @@ export function FlashMessage() {
     }, 4200);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [flash]);
+  }, [flash, tone]);
 
   return (
     <AnimatePresence>
@@ -138,11 +144,13 @@ export function FlashMessage() {
             "mb-5 flex items-start gap-2.5 px-4 py-3 text-[13px]",
             tone === "error"
               ? "bg-sale-50 text-sale-700"
-              : "bg-brand-50 text-brand-900",
+              : tone === "warn"
+                ? "bg-gold-50 font-medium text-gold-800 ring-1 ring-inset ring-gold-500/40"
+                : "bg-brand-50 text-brand-900",
           )}
-          role="status"
+          role={tone === "warn" ? "alert" : "status"}
         >
-          {tone === "error" ? (
+          {tone !== "ok" ? (
             <AlertTriangle size={15} className="mt-0.5 shrink-0" />
           ) : (
             <Check size={15} className="mt-0.5 shrink-0" strokeWidth={2.5} />

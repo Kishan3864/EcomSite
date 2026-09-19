@@ -3,6 +3,7 @@ import Image from "@/components/ui/image";
 import { notFound } from "next/navigation";
 import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
+import { priceCaution } from "@/lib/price-guard";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
@@ -50,7 +51,7 @@ export default async function EditCategoryPage({
   const wanted = [(await searchParams).substatus].flat()[0];
   const subFilter = wanted === "active" || wanted === "hidden" ? wanted : undefined;
 
-  const [category, brands, visibleCounts, wouldShowCounts] = await Promise.all([
+  const [category, brands, visibleCounts, wouldShowCounts, wouldShowPriced] = await Promise.all([
     db.category.findUnique({
       where: { id },
       include: {
@@ -71,7 +72,18 @@ export default async function EditCategoryPage({
     }),
     // What switching a hidden collection ON would put in front of shoppers.
     db.product.groupBy({ by: ["subcategoryId"], where: { status: "ACTIVE", categoryId: id }, _count: { _all: true } }),
+    // …and what they are priced at, in the collections that are hidden now.
+    db.product.findMany({
+      where: { status: "ACTIVE", categoryId: id, subcategory: { isActive: false } },
+      select: { subcategoryId: true, title: true, price: true, mrp: true, costPrice: true },
+    }),
   ]);
+  const cautionIn = new Map(
+    [...new Set(wouldShowPriced.map((p) => p.subcategoryId))].map((sid) => [
+      sid,
+      priceCaution(wouldShowPriced.filter((p) => p.subcategoryId === sid)),
+    ]),
+  );
   const wouldShowIn = new Map(wouldShowCounts.map((v) => [v.subcategoryId, v._count._all]));
   if (!category) notFound();
   const visibleIn = new Map(visibleCounts.map((v) => [v.subcategoryId, v._count._all]));
@@ -326,7 +338,7 @@ export default async function EditCategoryPage({
                         what={s.name}
                         confirm={
                           category.isActive
-                            ? blastRadius(s.name, s.isActive, visibleIn.get(s.id) ?? 0, wouldShowIn.get(s.id) ?? 0)
+                            ? blastRadius(s.name, s.isActive, visibleIn.get(s.id) ?? 0, wouldShowIn.get(s.id) ?? 0, cautionIn.get(s.id))
                             : null
                         }
                       >

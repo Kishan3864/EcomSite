@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "@/components/ui/image";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
+import { priceCaution } from "@/lib/price-guard";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export default async function CategoriesPage({
   const wanted = [(await searchParams).status].flat()[0];
   const statusFilter = wanted === "active" || wanted === "hidden" ? wanted : undefined;
 
-  const [all, visibleCounts, wouldShowCounts] = await Promise.all([
+  const [all, visibleCounts, wouldShowCounts, wouldShowPriced] = await Promise.all([
     db.category.findMany({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       include: { _count: { select: { products: true, subcategories: true } } },
@@ -55,7 +56,19 @@ export default async function CategoriesPage({
       where: { status: "ACTIVE", subcategory: { isActive: true } },
       _count: { _all: true },
     }),
+    // …and what they are priced at, in the departments that are hidden now: a
+    // price typed on a product nobody could see goes live with this one switch.
+    db.product.findMany({
+      where: { status: "ACTIVE", subcategory: { isActive: true }, category: { isActive: false } },
+      select: { categoryId: true, title: true, price: true, mrp: true, costPrice: true },
+    }),
   ]);
+  const cautionIn = new Map(
+    [...new Set(wouldShowPriced.map((p) => p.categoryId))].map((cid) => [
+      cid,
+      priceCaution(wouldShowPriced.filter((p) => p.categoryId === cid)),
+    ]),
+  );
   const wouldShowIn = new Map(wouldShowCounts.map((v) => [v.categoryId, v._count._all]));
   const visibleIn = new Map(visibleCounts.map((v) => [v.categoryId, v._count._all]));
   // The order column is the menu order, so it is numbered from the whole list
@@ -218,7 +231,7 @@ export default async function CategoriesPage({
                         action={toggleCategoryActive}
                         on={c.isActive}
                         what={c.name}
-                        confirm={blastRadius(c.name, c.isActive, visibleIn.get(c.id) ?? 0, wouldShowIn.get(c.id) ?? 0)}
+                        confirm={blastRadius(c.name, c.isActive, visibleIn.get(c.id) ?? 0, wouldShowIn.get(c.id) ?? 0, cautionIn.get(c.id))}
                       >
                         <input type="hidden" name="id" value={c.id} />
                       </ToggleForm>

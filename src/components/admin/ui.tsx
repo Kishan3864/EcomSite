@@ -342,14 +342,23 @@ export function VisibilityToggle({ on, what, storefront = true }: { on: boolean;
  * nobody does not nag. Plain function, no hooks: the server page works out the
  * sentence and hands it to the client form.
  */
-export function blastRadius(name: string, isOn: boolean, visibleNow: number, wouldShow: number): string | null {
+export function blastRadius(
+  name: string,
+  isOn: boolean,
+  visibleNow: number,
+  wouldShow: number,
+  /** From priceCaution(): the products this switch would put on sale at a price the guard points at. */
+  caution?: string | null,
+): string | null {
   const products = (n: number) => `${n} product${n === 1 ? "" : "s"}`;
   if (isOn) {
     return visibleNow > 0
       ? `Hide ${name}? ${products(visibleNow)} will disappear from the storefront — menu, listings, search, sitemap and their own pages. Nothing is deleted.`
       : null;
   }
-  return wouldShow > 0 ? `Show ${name}? ${products(wouldShow)} will appear on the storefront straight away.` : null;
+  return wouldShow > 0
+    ? `Show ${name}? ${products(wouldShow)} will appear on the storefront straight away.${caution ? `\n\nBEFORE YOU DO — ${caution}` : ""}`
+    : null;
 }
 
 /** "12 categories · 1 active · 11 hidden", the two numbers toned like their pills. */
