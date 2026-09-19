@@ -76,7 +76,7 @@ export function HeaderClient({
   const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
   const [searchOpenAt, setSearchOpenAt] = useState<string | null>(null);
   const pathname = usePathname();
-  const { cart, wishlist, hydrated, openCartDrawer } = useStore();
+  const { cart, wishlist, unavailable, hydrated, openCartDrawer } = useStore();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -87,7 +87,7 @@ export function HeaderClient({
 
   const menuOpen = menuOpenAt === pathname;
   const searchOpen = searchOpenAt === pathname;
-  const count = hydrated ? cartCount(cart) : 0;
+  const count = hydrated ? cartCount(cart.filter((l) => !unavailable.includes(l.productId))) : 0;
   const wishCount = hydrated ? wishlist.length : 0;
 
   return (

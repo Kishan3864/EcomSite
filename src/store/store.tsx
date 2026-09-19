@@ -13,6 +13,7 @@ import {
 import { usePathname } from "next/navigation";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
 import { saveAddress, type PlaceOrderInput } from "@/services/commerce";
+import { sweepStoredProducts } from "@/services/cart-availability";
 import type { StorefrontConfig } from "@/services/storefront-config";
 
 /* ------------------------------------------------------------------ *
@@ -98,6 +99,8 @@ export interface StoreState {
   pendingCheckout: PendingCheckout | null;
   checkout: CheckoutDraft;
   recentSearches: string[];
+  /** Product ids the last sweep found hidden or gone. Never persisted. */
+  unavailable: string[];
   hydrated: boolean;
   /** True once `/api/me` has answered, so the header knows what to greet with. */
   sessionChecked: boolean;
@@ -123,6 +126,7 @@ const INITIAL: StoreState = {
     buyerGstin: null,
   },
   recentSearches: [],
+  unavailable: [],
   hydrated: false,
   sessionChecked: false,
 };
@@ -139,6 +143,7 @@ type Action =
   | { type: "wishlist/toggle"; item: WishlistItem }
   | { type: "wishlist/remove"; productId: string }
   | { type: "recent/view"; item: RecentItem }
+  | { type: "catalog/sweep"; gone: string[]; brandless: string[] }
   | { type: "address/add"; address: Address }
   | { type: "address/update"; address: Address }
   | { type: "address/remove"; id: string }
@@ -262,6 +267,25 @@ function reducer(state: StoreState, action: Action): StoreState {
         ...state,
         wishlist: state.wishlist.filter((w) => w.productId !== action.productId),
       };
+
+    case "catalog/sweep": {
+      // What the shop no longer sells leaves every remembered list — and, since
+      // these lists are what gets persisted, the browser's storage with them.
+      // The bag is the exception: a line there is flagged on the bag page with
+      // a Remove button instead, so nothing a shopper chose vanishes unexplained.
+      const gone = new Set(action.gone);
+      const brandless = new Set(action.brandless);
+      const unbrand = <T extends { productId: string; brand: string }>(l: T): T =>
+        brandless.has(l.productId) && l.brand ? { ...l, brand: "" } : l;
+      return {
+        ...state,
+        unavailable: action.gone,
+        cart: state.cart.map(unbrand),
+        saved: state.saved.filter((l) => !gone.has(l.productId)).map(unbrand),
+        wishlist: state.wishlist.filter((w) => !gone.has(w.productId)).map(unbrand),
+        recent: state.recent.filter((r) => !gone.has(r.productId)),
+      };
+    }
 
     case "recent/view":
       return {
@@ -562,6 +586,31 @@ export function StoreProvider({
       /* quota or private mode — the session still works, it just will not persist */
     }
   }, [state]);
+
+  /**
+   * Everything remembered here is a copy, and the shop moves on without it: a
+   * category is hidden, a product archived, a brand switched off. So the copies
+   * are checked against the server's visibility rule — once when the browser's
+   * state has loaded, and again on a navigation if five minutes have passed —
+   * and the reducer drops what is gone from the lists and from storage.
+   * A failed check changes nothing; the next one tries again.
+   */
+  const stored = useRef<string[]>([]);
+  useEffect(() => {
+    stored.current = [...state.cart, ...state.saved, ...state.wishlist, ...state.recent].map((l) => l.productId);
+  }, [state.cart, state.saved, state.wishlist, state.recent]);
+  const sweptAt = useRef(0);
+
+  useEffect(() => {
+    if (!state.hydrated || Date.now() - sweptAt.current < 5 * 60_000) return;
+    if (stored.current.length === 0) return;
+    sweptAt.current = Date.now();
+    sweepStoredProducts(stored.current)
+      .then(({ gone, brandless }) => dispatch({ type: "catalog/sweep", gone, brandless }))
+      .catch(() => {
+        sweptAt.current = 0;
+      });
+  }, [state.hydrated, pathname]);
 
   const openCartDrawer = useCallback(() => setCartDrawerOpen(true), []);
   const closeCartDrawer = useCallback(() => setCartDrawerOpen(false), []);

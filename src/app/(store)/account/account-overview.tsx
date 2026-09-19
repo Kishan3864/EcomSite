@@ -30,7 +30,7 @@ export function AccountOverview({
   returns: ReturnRequest[];
   addresses: Address[];
 }) {
-  const { wishlist, cart, hydrated } = useStore();
+  const { wishlist, cart, unavailable, hydrated } = useStore();
 
   const active = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
   const latest = active[0] ?? orders[0];
@@ -39,7 +39,7 @@ export function AccountOverview({
     { label: "Orders placed", value: orders.length, href: "/account/orders" },
     { label: "In transit", value: active.length, href: "/account/orders" },
     { label: "Wishlist", value: hydrated ? wishlist.length : 0, href: "/wishlist" },
-    { label: "In your bag", value: hydrated ? cartCount(cart) : 0, href: "/cart" },
+    { label: "In your bag", value: hydrated ? cartCount(cart.filter((l) => !unavailable.includes(l.productId))) : 0, href: "/cart" },
   ];
 
   return (

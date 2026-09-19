@@ -1,50 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
-import Image from "@/components/ui/image";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useStore } from "@/store/store";
-import { Price, SectionHeader } from "@/components/ui/primitives";
-import { cn } from "@/lib/utils";
+import type { ProductCardModel } from "@/lib/card";
+import { recentlyViewedCards } from "@/services/cart-availability";
+import { SectionHeader } from "@/components/ui/primitives";
+import { RailScroller } from "@/components/ui/rail-scroller";
+import { ProductCard } from "./product-card";
 
 /**
  * The products this visitor has already looked at.
  *
- * It used to be a scroll rail of 128px thumbnails. With the three or four
- * products somebody has actually opened, the rail never overflowed, so its
- * arrows stayed hidden, the thumbnails huddled against the left edge and two
- * thirds of the band was bare canvas — a section that looked like it had
- * failed rather than one that was simply short.
+ * The browser remembers only WHICH products; what is drawn comes from the
+ * server, through the same visibility rule as every other read. It used to be
+ * drawn from the browser's own snapshot, so a product from a category hidden
+ * since the visit kept appearing here — at its old price, linking to a 404.
  *
- * It is a grid now, and the grid's column count follows the number of items,
- * so the row is full at any count. On a 390px phone each cell is about 182px
- * against the old 128px; at the full container width six cells are about
- * 223px against 160px. Nothing scrolls, nothing is hidden behind a swipe.
+ * It is the site's ordinary rail of the site's ordinary product card, at the
+ * card's fixed rail width. It was once a grid whose column count followed the
+ * number of items, which made a single viewed product one image the width of
+ * the page. A fixed card cannot do that: one item is one card, ten items are
+ * ten cards that scroll sideways on a phone, and because it is the shared
+ * card, this band cannot drift from the rest of the shop again.
  */
-
-/* Tailwind only compiles class names it can read literally, so the column
-   counts are written out rather than computed. Six is the cap because it
-   divides by two, three and six — every breakpoint lands on a full row. */
-const SM_COLS = {
-  1: "sm:grid-cols-1",
-  2: "sm:grid-cols-2",
-  3: "sm:grid-cols-3",
-  4: "sm:grid-cols-3",
-  5: "sm:grid-cols-3",
-  6: "sm:grid-cols-3",
-} as const;
-
-const LG_COLS = {
-  1: "lg:grid-cols-1",
-  2: "lg:grid-cols-2",
-  3: "lg:grid-cols-3",
-  4: "lg:grid-cols-4",
-  5: "lg:grid-cols-5",
-  6: "lg:grid-cols-6",
-} as const;
-
-const MAX_SHOWN = 6;
-
 export function RecentlyViewed({
   title = "Recently viewed",
   excludeId,
@@ -53,57 +31,41 @@ export function RecentlyViewed({
   excludeId?: string;
 }) {
   const { recent, hydrated } = useStore();
-  const items = recent.filter((r) => r.productId !== excludeId);
+  const idKey = recent
+    .map((r) => r.productId)
+    .filter((id) => id !== excludeId)
+    .join(",");
+  const [loaded, setLoaded] = useState<{ key: string; cards: ProductCardModel[] } | null>(null);
 
-  if (!hydrated || items.length === 0) return null;
+  useEffect(() => {
+    if (!hydrated || !idKey) return;
+    let live = true;
+    recentlyViewedCards(idKey.split(","))
+      .then((cards) => live && setLoaded({ key: idKey, cards }))
+      .catch(() => {
+        /* no band is better than a band of guesses */
+      });
+    return () => {
+      live = false;
+    };
+  }, [hydrated, idKey]);
 
-  // The store keeps twelve; showing more than six of them turns a memory aid
-  // into a second catalogue.
-  const shown = items.slice(0, MAX_SHOWN);
-  const n = shown.length as 1 | 2 | 3 | 4 | 5 | 6;
+  // Nothing until the server has answered: never the browser's own copy.
+  const cards = loaded && loaded.key === idKey ? loaded.cards : [];
+  if (cards.length === 0) return null;
 
   return (
     <section className="container-page py-10 sm:py-16">
-      {/* The heavier rule, so the tail of a product page reads as three
-          deliberate bands rather than one long scroll. */}
-      <div className="pt-8 sm:pt-12">
-        {/* No link in this header: there is no page of "things you looked at",
-            and inventing one would put two calls to action in one band again. */}
-        <SectionHeader
-          eyebrow="Pick up where you left off"
-          title={title}
-          className="mb-4 sm:mb-6"
-        />
-
-        <div className={cn("grid gap-2.5 sm:gap-4", n === 1 ? "grid-cols-1" : "grid-cols-2", SM_COLS[n], LG_COLS[n])}>
-          {shown.map((item) => (
-            <Link
-              key={item.productId}
-              href={`/p/${item.slug}`}
-              className="tap group flex flex-col overflow-hidden bg-surface shadow-xs transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
-            >
-              {/* The same 3:4 crop as the product tile and its loading
-                  skeleton, so a product does not change shape between the
-                  grid it came from and this band. */}
-              <div className="relative aspect-[4/5] overflow-hidden bg-ink-50">
-                <Image
-                  src={item.image}
-                  alt=""
-                  fill
-                  sizes="(min-width:1024px) 224px, (min-width:640px) 33vw, 50vw"
-                  className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
-                />
-              </div>
-              {/* Two lines reserved whether or not the title needs them, so
-                  every price in the row sits on one baseline. */}
-              <p className="mt-2 line-clamp-2 min-h-[2.7em] px-2.5 text-[13px] font-medium leading-[1.35] text-ink-900 group-hover:text-brand-700 sm:px-3">
-                {item.title}
-              </p>
-              <Price price={item.price} mrp={item.mrp} size="sm" className="mt-1 px-2.5 pb-3 sm:px-3" />
-            </Link>
-          ))}
-        </div>
-      </div>
+      <RailScroller
+        label="recently viewed products"
+        headerClassName="mb-4 sm:mb-6"
+        railClassName="-mx-3 px-3 pb-2 sm:-mx-6 sm:px-6 sm:pb-3 lg:-mx-8 lg:px-8"
+        header={<SectionHeader eyebrow="Pick up where you left off" title={title} />}
+      >
+        {cards.map((product) => (
+          <ProductCard key={product.id} product={product} layout="rail" sizes="(min-width:640px) 236px, 152px" />
+        ))}
+      </RailScroller>
     </section>
   );
 }

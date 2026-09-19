@@ -36,12 +36,12 @@ export function isFunnelRoute(pathname: string) {
  */
 export function BottomNav() {
   const pathname = usePathname();
-  const { cart, wishlist, hydrated } = useStore();
+  const { cart, wishlist, unavailable, hydrated } = useStore();
 
   if (isFunnelRoute(pathname)) return null;
 
   const counts: Record<string, number> = hydrated
-    ? { "/cart": cartCount(cart), "/wishlist": wishlist.length }
+    ? { "/cart": cartCount(cart.filter((l) => !unavailable.includes(l.productId))), "/wishlist": wishlist.length }
     : {};
 
   return (
