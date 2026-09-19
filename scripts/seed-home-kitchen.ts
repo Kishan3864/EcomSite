@@ -589,9 +589,37 @@ async function seed() {
     }),
     db.product.findMany({
       where: { sku: { in: SKUS } },
-      include: { images: { orderBy: { sortOrder: "asc" }, select: { url: true, alt: true, sortOrder: true } } },
+      include: {
+        images: { orderBy: { sortOrder: "asc" }, select: { url: true, alt: true, sortOrder: true } },
+        category: { select: { slug: true } },
+        subcategory: { select: { slug: true } },
+      },
     }),
   ]);
+
+  // A listing somebody made by hand before this file existed — same slug or the
+  // same title under a different SKU. Upserting by SKU would not find it: it
+  // would either collide on the slug or quietly create a twin beside it, which
+  // is how one trivet ended up ACTIVE in a demo department with a DRAFT copy
+  // in the right one. Neither is this file's row to touch, so it stops and says
+  // what it found.
+  const twins = await db.product.findMany({
+    where: {
+      sku: { notIn: SKUS },
+      OR: [{ slug: { in: LISTINGS.map((l) => l.slug) } }, { title: { in: LISTINGS.map((l) => l.title), mode: "insensitive" } }],
+    },
+    select: { sku: true, slug: true, title: true, status: true, category: { select: { slug: true } }, subcategory: { select: { slug: true } } },
+  });
+  if (twins.length > 0) {
+    console.log("\n  STOPPED — a product that looks like one of these listings already exists under a different SKU:");
+    for (const t of twins) {
+      console.log(`    · sku ${t.sku} | slug ${t.slug} | ${t.status} | ${t.category.slug}/${t.subcategory.slug} | “${t.title}”`);
+    }
+    console.log("  This file only ever writes rows with its own SKUs, so it will not move or merge that one.");
+    console.log("  In /admin/products either give that row the listing's SKU (then re-run and it is adopted and");
+    console.log("  moved into Home & Kitchen), or archive it. Nothing was written.\n");
+    process.exit(1);
+  }
 
   console.log("");
   log(brand ? `brand ${BRAND.slug}: exists, left alone` : `brand ${BRAND.slug}: CREATE`);
@@ -634,7 +662,12 @@ async function seed() {
       log(`product ${l.sku}: CREATE “${l.title}” — DRAFT, stock 0, ₹${l.price}, cost ₹${l.cost}, HSN ${l.hsn}, ${l.images.length} images`);
       continue;
     }
-    const wantedCopy = copyFields(l, existing.categoryId, existing.subcategoryId);
+    // Placement is part of the copy, so it is compared against where the
+    // listing BELONGS — not against where the row already is, which is what
+    // made an earlier dry run report "unchanged" for a row the real run moved.
+    const wantedSubId = category?.subcategories.find((x) => x.slug === l.sub)?.id;
+    const moves = existing.category.slug !== CATEGORY.slug || existing.subcategory.slug !== l.sub;
+    const wantedCopy = copyFields(l, category?.id ?? existing.categoryId, wantedSubId ?? existing.subcategoryId);
     const changes = diff(existing as unknown as Record<string, unknown>, {
       ...wantedCopy,
       specifications: l.specs as unknown as string,
@@ -645,6 +678,12 @@ async function seed() {
       `product ${l.sku}: exists as “${existing.title}” (${existing.status}, stock ${existing.stock}, ₹${existing.price} — all left alone)` +
         `${changes.length || imagesChanged ? ", UPDATE copy:" : ", copy unchanged"}`,
     );
+    if (moves) {
+      console.log(`      MOVE: ${existing.category.slug}/${existing.subcategory.slug} → ${CATEGORY.slug}/${l.sub}`);
+    }
+    if (existing.status !== "DRAFT") {
+      console.log(`      note: it is ${existing.status}, not the DRAFT this listing starts as. Status is yours — change it in /admin if that is not what you want.`);
+    }
     for (const c of changes) console.log(c);
     if (imagesChanged) console.log(`      images: ${existing.images.length} row(s) → ${wantedImages.length} row(s), rewritten in order`);
     if (existing.slug !== l.slug) console.log(`      (slug stays ${existing.slug}; the listing's ${l.slug} is used only on creation)`);

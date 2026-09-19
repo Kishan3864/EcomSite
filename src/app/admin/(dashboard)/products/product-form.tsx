@@ -188,7 +188,7 @@ export function ProductForm({
               <Label htmlFor="p-headline" hint="The heading on the product page, when it should say more than the title — a size or the key spec. Blank uses the title. Cards, cart and invoices always use the title." optional>
                 Page headline
               </Label>
-              <input id="p-headline" name="headline" defaultValue={dv("headline", init.headline)} className={inputCls} placeholder="Double Blade Cabbage Chopper Knife – Stainless Steel Vegetable Shredder (29 cm)" maxLength={200} />
+              <input id="p-headline" name="headline" defaultValue={dv("headline", init.headline)} className={inputCls} placeholder="Blank uses the title. Add a size or key spec only if the page heading should say more." maxLength={200} />
               <FieldError>{err("headline")}</FieldError>
             </div>
             <div>
