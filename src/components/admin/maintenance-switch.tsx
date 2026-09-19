@@ -15,6 +15,9 @@ export interface MaintenanceView {
   message: string;
   /** Already formatted for a datetime-local input, in IST, or "". */
   backByInput: string;
+  /** The earliest time the picker accepts, and the one it suggests for a new pause. */
+  minInput: string;
+  suggestInput: string;
   canEdit: boolean;
 }
 
@@ -57,10 +60,17 @@ export function MaintenanceForm({ view, idPrefix = "mnt" }: { view: MaintenanceV
         <FieldError>{state.field === "message" ? state.error : undefined}</FieldError>
       </div>
       <div>
-        <Label htmlFor={`${idPrefix}-back`} hint="Optional, India time. Shown to shoppers and sent as Retry-After." optional>
+        <Label htmlFor={`${idPrefix}-back`} hint="India time. When it passes the shop reopens BY ITSELF. Clear it to stay down until you switch it off." optional>
           Back by
         </Label>
-        <input id={`${idPrefix}-back`} name="backBy" type="datetime-local" defaultValue={view.backByInput} className={inputCls} />
+        <input
+          id={`${idPrefix}-back`}
+          name="backBy"
+          type="datetime-local"
+          min={view.minInput}
+          defaultValue={view.backByInput || (view.on ? "" : view.suggestInput)}
+          className={inputCls}
+        />
         <FieldError>{state.field === "backBy" ? state.error : undefined}</FieldError>
       </div>
       <div className="flex flex-wrap justify-end gap-2">

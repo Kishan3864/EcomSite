@@ -6,7 +6,7 @@ import {
   customerToken,
 } from "@/lib/auth/session";
 import { BUSINESS } from "@/config/business";
-import { getMaintenance, maintenanceHtml, retryAfterSeconds } from "@/lib/maintenance";
+import { getMaintenance, maintenanceHtml, retryAfterSeconds, staysOpen } from "@/lib/maintenance";
 
 /**
  * Edge route guard.
@@ -83,11 +83,13 @@ export async function proxy(request: NextRequest) {
    * not a database query per request.
    */
   const maintenance = await getMaintenance();
-  if (maintenance.on) {
+  // Order tracking and the policy pages stay open through a pause — see
+  // OPEN_DURING_MAINTENANCE for which and why.
+  if (maintenance.on && !staysOpen(pathname)) {
     const admin = await adminToken.verify(request.cookies.get(ADMIN_COOKIE)?.value);
     if (!admin) {
       return new NextResponse(
-        maintenanceHtml(maintenance, { name: BUSINESS.brandName, email: BUSINESS.supportEmail }),
+        maintenanceHtml(maintenance, { name: BUSINESS.brandName, email: BUSINESS.supportEmail, phone: BUSINESS.supportPhone }),
         {
           status: 503,
           headers: {

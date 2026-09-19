@@ -1,6 +1,5 @@
-import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
-import { MAINTENANCE_KEY, normaliseMaintenance } from "@/lib/maintenance";
+import { getMaintenance, pickerBounds, toIstInput } from "@/lib/maintenance";
 import { FormSection, VisibilityPill } from "@/components/admin/ui";
 import { MaintenanceForm } from "@/components/admin/maintenance-switch";
 
@@ -15,10 +14,8 @@ export const metadata = { title: "Maintenance mode" };
  */
 export default async function MaintenanceSettingsPage() {
   const session = await requireAdmin();
-  const state = normaliseMaintenance(
-    (await db.storeSetting.findUnique({ where: { key: MAINTENANCE_KEY }, select: { value: true } }))?.value,
-  );
-  const backByInput = state.backBy ? new Date(Date.parse(state.backBy) + 5.5 * 3_600_000).toISOString().slice(0, 16) : "";
+  const state = await getMaintenance();
+  const backByInput = state.backBy ? toIstInput(new Date(state.backBy)) : "";
 
   return (
     <div className="max-w-3xl">
@@ -32,7 +29,7 @@ export default async function MaintenanceSettingsPage() {
         </p>
         <MaintenanceForm
           idPrefix="mnt-page"
-          view={{ on: state.on, message: state.message, backByInput, canEdit: hasRole(session, "MANAGER") }}
+          view={{ on: state.on, message: state.message, backByInput, ...pickerBounds(), canEdit: hasRole(session, "MANAGER") }}
         />
       </FormSection>
     </div>
