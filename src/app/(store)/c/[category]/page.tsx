@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { ListingShell } from "@/components/listing/listing-shell";
 import { toCardModels } from "@/lib/card";
 import { parseQuery, type RawSearchParams } from "@/lib/query";
-import { getBrands, getCategories, getCategory, searchProducts } from "@/services/catalog";
+import { getBrands, getCategory, searchProducts } from "@/services/catalog";
 
 type Params = Promise<{ category: string }>;
 

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ListingShell } from "@/components/listing/listing-shell";
 import { toCardModels } from "@/lib/card";
 import { parseQuery, type RawSearchParams } from "@/lib/query";
-import { getAllCategoryPaths, getBrands, getSubcategory, searchProducts } from "@/services/catalog";
+import { getBrands, getSubcategory, searchProducts } from "@/services/catalog";
 import { cn } from "@/lib/utils";
 
 type Params = Promise<{ category: string; subcategory: string }>;
