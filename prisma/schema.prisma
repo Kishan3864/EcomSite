@@ -349,6 +349,7 @@ model Product {
   images        ProductImage[]
   variantGroups VariantGroup[]
   reviews       Review[]
+  viewDays      ProductViewDaily[]
   questions     Question[]
   orderLines    OrderLine[]
   relationsFrom ProductRelation[] @relation("relationFrom")
@@ -848,6 +849,18 @@ model ActivityLog {
 }
 
 /// Key/value store for things the owner edits from Settings.
+/// Product page views per day — a bare counter for the homepage ranking.
+/// Deliberately holds nothing about the visitor: no id, IP, cookie or agent.
+model ProductViewDaily {
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  day       DateTime @db.Date
+  views     Int      @default(0)
+
+  @@id([productId, day])
+  @@index([day])
+}
+
 model StoreSetting {
   key       String   @id
   value     Json

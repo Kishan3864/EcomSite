@@ -95,5 +95,25 @@ export function TrackView({
     });
   }, [hydrated, dispatch, id, slug, title, image, price, mrp]);
 
+  /**
+   * One view, counted for the homepage ranking — after the page is up, and
+   * without anybody waiting for it. `sendBeacon` queues the request and returns
+   * at once; its answer is never read. The session note means a refresh or a
+   * second visit in the same sitting is not sent at all. Every line of this is
+   * allowed to fail: a blocked storage, a missing API, a dead network — none of
+   * it can reach the page.
+   */
+  useEffect(() => {
+    try {
+      const key = "weekendcart.viewed";
+      const seen: string[] = JSON.parse(window.sessionStorage.getItem(key) ?? "[]");
+      if (seen.includes(id)) return;
+      window.sessionStorage.setItem(key, JSON.stringify([...seen, id].slice(-200)));
+      navigator.sendBeacon("/api/view", new Blob([JSON.stringify({ id })], { type: "application/json" }));
+    } catch {
+      /* not counted; nothing else changes */
+    }
+  }, [id]);
+
   return null;
 }
