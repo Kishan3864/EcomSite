@@ -1,13 +1,29 @@
 import Link from "next/link";
 import Image from "@/components/ui/image";
 import { notFound } from "next/navigation";
-import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Power, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { ConfirmForm } from "@/components/admin/client";
-import { Card, DateCell, EmptyRow, KeyValue, PageHeader, Pill, Table, Td, Th, Tr } from "@/components/admin/ui";
+import {
+  Card,
+  DateCell,
+  EmptyRow,
+  KeyValue,
+  MUTED_ROW,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+  Tr,
+  VisibilityPill,
+  VisibilitySummary,
+  VisibilityToggle,
+} from "@/components/admin/ui";
+import { ParamSelect } from "@/components/admin/client";
+import { visibleProducts } from "@/services/visibility";
 import {
   deleteCategory,
   deleteSubcategory,
@@ -22,11 +38,19 @@ import { Form } from "@/components/ui/form";
 const iconBtn = "p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900";
 const iconBtnDisabled = "p-1.5 text-ink-200";
 
-export default async function EditCategoryPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditCategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ substatus?: string | string[] }>;
+}) {
   const session = await requireAdmin("MANAGER");
   const { id } = await params;
+  const wanted = [(await searchParams).substatus].flat()[0];
+  const subFilter = wanted === "active" || wanted === "hidden" ? wanted : undefined;
 
-  const [category, brands] = await Promise.all([
+  const [category, brands, visibleCounts] = await Promise.all([
     db.category.findUnique({
       where: { id },
       include: {
@@ -38,8 +62,19 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
       },
     }),
     db.brand.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true, isActive: true } }),
+    // What a shopper can actually see in each collection, by the storefront's
+    // own rule. All zero while the department itself is hidden.
+    db.product.groupBy({
+      by: ["subcategoryId"],
+      where: visibleProducts({ categoryId: id }),
+      _count: { _all: true },
+    }),
   ]);
   if (!category) notFound();
+  const visibleIn = new Map(visibleCounts.map((v) => [v.subcategoryId, v._count._all]));
+  const visibleTotal = [...visibleIn.values()].reduce((n, v) => n + v, 0);
+  // A collection that is switched on is still hidden while its department is.
+  const hiddenBy = category.isActive ? null : category.name;
 
   const action = updateCategory.bind(null, category.id);
   const subs = category.subcategories;
@@ -55,9 +90,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
             back={{ href: "/admin/categories", label: "Categories" }}
             meta={
               <>
-                <Pill tone={category.isActive ? "brand" : "neutral"} dot>
-                  {category.isActive ? "Active" : "Hidden"}
-                </Pill>
+                <VisibilityPill own={category.isActive ? "active" : "hidden"} />
                 <span
                   className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold"
                   style={{ backgroundColor: `${category.accent}22`, color: category.accent }}
@@ -157,7 +190,27 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
             <p className="mt-0.5 text-[12.5px] text-ink-500">
               The columns inside this department&apos;s menu panel. Every product sits in exactly one subcategory.
             </p>
+            {subs.length > 0 && (
+              <p className="mt-1.5">
+                <VisibilitySummary
+                  noun="subcategory"
+                  plural="subcategories"
+                  total={subs.length}
+                  active={subs.filter((s) => s.isActive && category.isActive).length}
+                  extra={`${subProducts} products, ${visibleTotal} visible to shoppers${hiddenBy ? ` — all hidden because ${hiddenBy} is hidden` : ""}`}
+                />
+              </p>
+            )}
           </div>
+          <ParamSelect
+            name="substatus"
+            value={subFilter}
+            allLabel={`All subcategories (${subs.length})`}
+            options={[
+              { value: "active", label: `Switched on (${subs.filter((s) => s.isActive).length})` },
+              { value: "hidden", label: `Switched off (${subs.filter((s) => !s.isActive).length})` },
+            ]}
+          />
           <Link href={`/admin/categories/${category.id}/subcategories/new`} className={buttonClasses("primary", "sm")}>
             <Plus size={15} /> Add subcategory
           </Link>
@@ -182,8 +235,11 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                 body="Products cannot be added to this category until it has at least one subcategory."
               />
             ) : (
-              subs.map((s, i) => (
-                <Tr key={s.id}>
+              subs
+                .map((s, i) => ({ s, i }))
+                .filter(({ s }) => (subFilter === "active" ? s.isActive : subFilter === "hidden" ? !s.isActive : true))
+                .map(({ s, i }) => (
+                <Tr key={s.id} className={s.isActive && category.isActive ? undefined : MUTED_ROW}>
                   <Td>
                     <div className="flex items-center gap-1">
                       <span className="w-5 text-[12px] tabular-nums text-ink-400">{i + 1}</span>
@@ -243,13 +299,14 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                   <Td className="max-w-[320px] truncate text-ink-600">{s.description}</Td>
                   <Td align="right">
                     <Link href={`/admin/products?subcategory=${s.slug}`} className="tabular-nums hover:text-brand-700">
-                      {s._count.products}
+                      {s._count.products} ·{" "}
+                      <span className={(visibleIn.get(s.id) ?? 0) > 0 ? "font-semibold text-[#1c6636]" : undefined}>
+                        {visibleIn.get(s.id) ?? 0} visible
+                      </span>
                     </Link>
                   </Td>
                   <Td>
-                    <Pill tone={s.isActive ? "brand" : "neutral"} dot>
-                      {s.isActive ? "Active" : "Hidden"}
-                    </Pill>
+                    <VisibilityPill own={s.isActive ? "active" : "hidden"} hiddenBy={hiddenBy} />
                   </Td>
                   <Td align="right">
                     <div className="flex items-center justify-end gap-1">
@@ -262,9 +319,7 @@ export default async function EditCategoryPage({ params }: { params: Promise<{ i
                       </Link>
                       <Form action={toggleSubcategoryActive}>
                         <input type="hidden" name="id" value={s.id} />
-                        <button type="submit" title={s.isActive ? "Hide from menu" : "Show in menu"} className={iconBtn}>
-                          <Power size={14} />
-                        </button>
+                        <VisibilityToggle on={s.isActive} what={s.name} />
                       </Form>
                       {canDelete &&
                         (s._count.products > 0 ? (

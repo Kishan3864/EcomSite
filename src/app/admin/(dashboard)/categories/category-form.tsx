@@ -524,7 +524,7 @@ export function CategoryForm({
           <span>
             <span className="block font-medium">Active</span>
             <span className="block text-[12.5px] text-ink-500">
-              Hidden categories leave the header menu, footer and home page; their products stay reachable by direct link and search.
+              A hidden category disappears from the storefront completely, with every subcategory and product inside it: menu, listings, search, sitemap and the product pages themselves. Nothing is deleted, and it all stays editable here.
             </span>
           </span>
         </label>

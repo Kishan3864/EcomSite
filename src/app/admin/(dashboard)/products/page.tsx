@@ -3,6 +3,7 @@ import Image from "@/components/ui/image";
 import { Archive, ArchiveRestore, Copy, ImageOff, Pencil, Plus, Trash2 } from "lucide-react";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { visibleProducts } from "@/services/visibility";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import {
   Money,
   PageHeader,
   Pill,
-  StatusPill,
+  MUTED_ROW,
+  VisibilityPill,
   Table,
   Td,
   Th,
@@ -37,6 +39,12 @@ const DEFAULT_SORT = "updated_desc";
  * `slugify` strips underscores, so no real supplier slug can ever collide.
  */
 const NO_SUPPLIER = "__none";
+
+/** Switched on, yet not on the storefront: a hidden department or collection above it. */
+const HIDDEN_BY_PARENT = {
+  status: "ACTIVE",
+  OR: [{ category: { isActive: false } }, { subcategory: { isActive: false } }],
+} satisfies Prisma.ProductWhereInput;
 
 function orderBy(sort: string): Prisma.ProductOrderByWithRelationInput[] {
   const [field, dirRaw] = sort.split("_");
@@ -66,11 +74,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   const params = parseListParams(raw, {
     perPage: 25,
     defaultSort: DEFAULT_SORT,
-    filterKeys: ["status", "category", "brand", "supplier", "stock"],
+    filterKeys: ["status", "category", "brand", "supplier", "stock", "visibility"],
   });
   const statusFilter = params.filters.status?.toUpperCase();
   const validStatus = (PRODUCT_STATUSES as readonly string[]).includes(statusFilter ?? "") ? statusFilter : undefined;
   const stockFilter = params.filters.stock;
+  const visibilityFilter =
+    params.filters.visibility === "visible" || params.filters.visibility === "parent" ? params.filters.visibility : undefined;
   const supplierFilter = params.filters.supplier;
 
   const where: Prisma.ProductWhereInput = {
@@ -86,6 +96,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         }
       : {}),
     ...(validStatus ? { status: validStatus as Prisma.ProductWhereInput["status"] } : {}),
+    // On the storefront, or switched on yet hidden by a department or a
+    // collection above it — the storefront's own rule, and its exact opposite.
+    ...(visibilityFilter === "visible"
+      ? { AND: [visibleProducts()] }
+      : visibilityFilter === "parent"
+        ? { AND: [HIDDEN_BY_PARENT] }
+        : {}),
     ...(params.filters.category ? { category: { slug: params.filters.category } } : {}),
     ...(params.filters.brand ? { brand: { slug: params.filters.brand } } : {}),
     ...(supplierFilter === NO_SUPPLIER
@@ -102,7 +119,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
           : {}),
   };
 
-  const [rows, total, categories, brands, suppliers, statusCounts] = await Promise.all([
+  const [rows, total, categories, brands, suppliers, statusCounts, visibleCount, parentHiddenCount] = await Promise.all([
     db.product.findMany({
       where,
       orderBy: orderBy(params.sort),
@@ -118,8 +135,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         lowStockThreshold: true,
         updatedAt: true,
         brand: { select: { name: true, slug: true } },
-        category: { select: { name: true, slug: true } },
-        subcategory: { select: { name: true } },
+        category: { select: { name: true, slug: true, isActive: true } },
+        subcategory: { select: { name: true, isActive: true } },
         // Admin-only. This page is behind requireAdmin and its rows are never
         // reused by a storefront surface.
         supplier: { select: { name: true, slug: true } },
@@ -133,6 +150,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     db.brand.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
     db.supplier.findMany({ orderBy: { name: "asc" }, select: { slug: true, name: true } }),
     db.product.groupBy({ by: ["status"], _count: { _all: true } }),
+    db.product.count({ where: visibleProducts() }),
+    db.product.count({ where: HIDDEN_BY_PARENT }),
   ]);
 
   const countOf = (status: string) => statusCounts.find((s) => s.status === status)?._count._all ?? 0;
@@ -144,11 +163,18 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     brand: params.filters.brand,
     supplier: supplierFilter,
     stock: params.filters.stock,
+    visibility: visibilityFilter,
     sort: params.sort === DEFAULT_SORT ? undefined : params.sort,
   };
   const returnTo = withParams(LIST, current, { page: params.page > 1 ? params.page : null });
   const filtered = Boolean(
-    params.q || validStatus || params.filters.category || params.filters.brand || supplierFilter || stockFilter,
+    params.q ||
+      validStatus ||
+      params.filters.category ||
+      params.filters.brand ||
+      supplierFilter ||
+      stockFilter ||
+      visibilityFilter,
   );
   const canManage = hasRole(session, "MANAGER");
   const canDelete = hasRole(session, "OWNER");
@@ -162,6 +188,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
       <PageHeader
         title="Products"
         description="Everything in the catalogue — drafts, live listings and archived items. Stock and price shown here are what shoppers see."
+        meta={
+          <span className="text-[12.5px] text-ink-500">
+            {countOf("DRAFT") + countOf("ACTIVE") + countOf("ARCHIVED")} products ·{" "}
+            <span className="font-semibold text-[#1c6636]">{visibleCount} visible to shoppers</span> ·{" "}
+            <span className="font-semibold text-sale-700">{parentHiddenCount} hidden by parent</span> · {countOf("DRAFT")} draft ·{" "}
+            {countOf("ARCHIVED")} archived
+          </span>
+        }
         actions={
           canManage && (
             <Link href={`${LIST}/new`} className={buttonClasses("primary", "sm")}>
@@ -212,6 +246,15 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         />
         <ParamSelect name="stock" value={params.filters.stock} allLabel="All stock states" options={[...STOCK_STATES]} />
         <ParamSelect
+          name="visibility"
+          value={visibilityFilter}
+          allLabel="Any visibility"
+          options={[
+            { value: "visible", label: `Visible to shoppers (${visibleCount})` },
+            { value: "parent", label: `Hidden by parent (${parentHiddenCount})` },
+          ]}
+        />
+        <ParamSelect
           name="sort"
           value={params.sort === DEFAULT_SORT ? "" : params.sort}
           allLabel="Recently updated"
@@ -254,8 +297,14 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 const thumb = p.images[0];
                 const low = p.stock <= p.lowStockThreshold;
                 const out = p.stock <= 0;
+                // Switched on, yet not on the storefront: name what is hiding it.
+                const hiddenBy = !p.category.isActive
+                  ? p.category.name
+                  : !p.subcategory.isActive
+                    ? p.subcategory.name
+                    : null;
                 return (
-                  <Tr key={p.id}>
+                  <Tr key={p.id} className={p.status === "ACTIVE" && !hiddenBy ? undefined : MUTED_ROW}>
                     {canManage && (
                       <Td>
                         <RowCheckbox id={p.id} label={p.title} />
@@ -338,7 +387,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                       ) : null}
                     </Td>
                     <Td>
-                      <StatusPill status={p.status} />
+                      <VisibilityPill
+                        own={p.status === "ACTIVE" ? "active" : p.status === "DRAFT" ? "draft" : "archived"}
+                        hiddenBy={hiddenBy}
+                      />
                     </Td>
                     <Td>
                       <DateCell value={p.updatedAt} />

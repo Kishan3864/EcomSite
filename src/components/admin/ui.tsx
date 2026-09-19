@@ -139,7 +139,7 @@ export function StatCard({
 
 /* ------------------------------ Status ------------------------------ */
 
-type Tone = "neutral" | "brand" | "gold" | "sale" | "ink" | "sky";
+type Tone = "neutral" | "brand" | "gold" | "sale" | "ink" | "sky" | "success";
 
 const TONE_CLASS: Record<Tone, string> = {
   neutral: "bg-ink-100 text-ink-700",
@@ -155,6 +155,12 @@ const TONE_CLASS: Record<Tone, string> = {
   // than reaching for a warm swatch to stand apart. Literal, because this is
   // the one tone with no home in the scale; 7.1:1 for the text on its ground.
   sky: "bg-[#e8e4f7] text-[#4b3f8a]",
+  // "On the storefront." The scale has no green — brand is ocean, and an ocean
+  // pill beside a red one does not read as on/off at a glance, which is the one
+  // thing a visibility column has to do. Literal for the same reason sky is;
+  // 6.9:1 for the text on its ground. Admin only, and never the only signal:
+  // every pill that uses it carries its word as well.
+  success: "bg-[#def3e4] text-[#1c6636]",
 };
 
 export function Pill({
@@ -211,8 +217,8 @@ const STATUS_TONES: Record<string, { tone: Tone; label: string }> = {
   AUTHORIZED: { tone: "gold", label: "Authorised" },
   CAPTURED: { tone: "brand", label: "Captured" },
   // products
-  DRAFT: { tone: "neutral", label: "Draft" },
-  ACTIVE: { tone: "brand", label: "Active" },
+  DRAFT: { tone: "gold", label: "Draft" },
+  ACTIVE: { tone: "success", label: "Active" },
   ARCHIVED: { tone: "ink", label: "Archived" },
   // returns
   REQUESTED: { tone: "gold", label: "Requested" },
@@ -237,6 +243,98 @@ export function StatusPill({ status, className }: { status: string; className?: 
     <Pill tone={meta.tone} className={className} dot>
       {meta.label}
     </Pill>
+  );
+}
+
+/* ---------------------------- Visibility ---------------------------- */
+
+/**
+ * Whether a shopper can see this row, said the same way on every list.
+ *
+ * A category, a collection and a product each have a switch of their own, and
+ * each is also hidden when something above it is — the storefront rule in
+ * src/services/visibility.ts. A row that is switched on under a hidden parent
+ * is NOT on the storefront, and showing it a green "Active" is how a department
+ * gets left half-hidden. So the pill reports the effective state and names the
+ * parent that is doing the hiding.
+ *
+ * Green, amber and red, and always the word as well: colour is never the only
+ * signal.
+ */
+export type OwnVisibility = "active" | "hidden" | "draft" | "archived";
+
+export function VisibilityPill({ own, hiddenBy }: { own: OwnVisibility; hiddenBy?: string | null }) {
+  if (own === "active" && hiddenBy) {
+    return (
+      <span title={`Switched on, but ${hiddenBy} is hidden — so shoppers cannot see this either.`}>
+        <Pill tone="sale" dot>
+          Hidden by parent
+        </Pill>
+        <span className="mt-0.5 block text-[11px] text-ink-500">{hiddenBy} is hidden</span>
+      </span>
+    );
+  }
+  const meta = {
+    active: { tone: "success" as Tone, label: "Active" },
+    hidden: { tone: "sale" as Tone, label: "Hidden" },
+    draft: { tone: "gold" as Tone, label: "Draft" },
+    archived: { tone: "ink" as Tone, label: "Archived" },
+  }[own];
+  return (
+    <Pill tone={meta.tone} dot>
+      {meta.label}
+    </Pill>
+  );
+}
+
+/** The class a list row takes when shoppers cannot see it: muted words, a dimmed thumbnail. */
+export const MUTED_ROW = "[&_td]:text-ink-400 [&_a]:!text-ink-500 [&_img]:opacity-40 [&_img]:grayscale";
+
+/**
+ * The on/off switch for a row, as the submit button of the row's own form.
+ *
+ * Green and "On", red and "Off" — the word is part of the control, and
+ * aria-pressed says the same thing to a screen reader.
+ */
+export function VisibilityToggle({ on, what }: { on: boolean; what: string }) {
+  return (
+    <button
+      type="submit"
+      aria-pressed={on}
+      title={on ? `Hide ${what} from the storefront` : `Show ${what} on the storefront`}
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold transition-colors",
+        on ? "bg-[#def3e4] text-[#1c6636] hover:bg-[#c9ebd3]" : "bg-sale-100 text-sale-700 hover:bg-sale-50",
+      )}
+    >
+      <span aria-hidden className={cn("relative inline-block h-3 w-6", on ? "bg-[#1c6636]" : "bg-sale-600")}>
+        <span className={cn("absolute top-0.5 h-2 w-2 bg-white", on ? "right-0.5" : "left-0.5")} />
+      </span>
+      {on ? "On" : "Off"}
+    </button>
+  );
+}
+
+/** "12 categories · 1 active · 11 hidden", the two numbers toned like their pills. */
+export function VisibilitySummary({
+  noun,
+  plural,
+  total,
+  active,
+  extra,
+}: {
+  noun: string;
+  plural: string;
+  total: number;
+  active: number;
+  extra?: string;
+}) {
+  return (
+    <span className="text-[12.5px] text-ink-500">
+      {total} {total === 1 ? noun : plural} · <span className="font-semibold text-[#1c6636]">{active} active</span> ·{" "}
+      <span className="font-semibold text-sale-700">{total - active} hidden</span>
+      {extra ? ` · ${extra}` : ""}
+    </span>
   );
 }
 

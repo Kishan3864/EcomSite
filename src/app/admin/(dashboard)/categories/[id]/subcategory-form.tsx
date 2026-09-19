@@ -193,7 +193,7 @@ export function SubcategoryForm({
           <span>
             <span className="block font-medium">Active</span>
             <span className="block text-[12.5px] text-ink-500">
-              Hidden subcategories leave the menu and category page; their products stay reachable by direct link and search.
+              A hidden subcategory disappears from the storefront completely, with every product inside it: menu, listings, search, sitemap and the product pages themselves. Nothing is deleted, and it all stays editable here.
             </span>
           </span>
         </label>

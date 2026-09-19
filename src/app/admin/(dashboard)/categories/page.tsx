@@ -1,12 +1,25 @@
 import Link from "next/link";
 import Image from "@/components/ui/image";
-import { ArrowDown, ArrowUp, Plus, Power, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { ConfirmForm } from "@/components/admin/client";
-import { EmptyRow, PageHeader, Pill, Table, Td, Th, Tr } from "@/components/admin/ui";
+import {
+  EmptyRow,
+  MUTED_ROW,
+  PageHeader,
+  Table,
+  Td,
+  Th,
+  Tr,
+  VisibilityPill,
+  VisibilitySummary,
+  VisibilityToggle,
+} from "@/components/admin/ui";
+import { ParamSelect } from "@/components/admin/client";
+import { visibleProducts } from "@/services/visibility";
 import { deleteCategory, moveCategory, toggleCategoryActive } from "@/services/admin/categories-actions";
 import { CategoryIcon } from "./category-icon";
 import { Form } from "@/components/ui/form";
@@ -19,17 +32,37 @@ const iconBtnDisabled = "p-1.5 text-ink-200";
  * the mega-menu order, so this page lists them all, sorted, with reordering
  * instead of search and pagination.
  */
-export default async function CategoriesPage() {
+export default async function CategoriesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string | string[] }>;
+}) {
   const session = await requireAdmin();
+  const wanted = [(await searchParams).status].flat()[0];
+  const statusFilter = wanted === "active" || wanted === "hidden" ? wanted : undefined;
 
-  const rows = await db.category.findMany({
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    include: { _count: { select: { products: true, subcategories: true } } },
-  });
+  const [all, visibleCounts] = await Promise.all([
+    db.category.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      include: { _count: { select: { products: true, subcategories: true } } },
+    }),
+    // What a shopper can actually see in each department, by the storefront's
+    // own rule — the number to look at before deciding what to hide.
+    db.product.groupBy({ by: ["categoryId"], where: visibleProducts(), _count: { _all: true } }),
+  ]);
+  const visibleIn = new Map(visibleCounts.map((v) => [v.categoryId, v._count._all]));
+  // The order column is the menu order, so it is numbered from the whole list
+  // even when the table below is filtered.
+  const position = new Map(all.map((c, index) => [c.id, index]));
+  const rows = all.filter((c) =>
+    statusFilter === "active" ? c.isActive : statusFilter === "hidden" ? !c.isActive : true,
+  );
 
   const canEdit = hasRole(session, "MANAGER");
   const canDelete = hasRole(session, "OWNER");
-  const active = rows.filter((r) => r.isActive).length;
+  const active = all.filter((r) => r.isActive).length;
+  const totalProducts = all.reduce((n, c) => n + c._count.products, 0);
+  const totalVisible = [...visibleIn.values()].reduce((n, v) => n + v, 0);
 
   return (
     <>
@@ -37,10 +70,14 @@ export default async function CategoriesPage() {
         title="Categories"
         description="The departments shoppers browse by. The order here is the order of the header mega menu and the footer."
         meta={
-          rows.length > 0 && (
-            <span className="text-[12.5px] text-ink-500">
-              {rows.length} categor{rows.length === 1 ? "y" : "ies"} · {active} live in the menu
-            </span>
+          all.length > 0 && (
+            <VisibilitySummary
+              noun="category"
+              plural="categories"
+              total={all.length}
+              active={active}
+              extra={`${totalProducts} products, ${totalVisible} visible to shoppers`}
+            />
           )
         }
         actions={
@@ -51,6 +88,18 @@ export default async function CategoriesPage() {
           )
         }
       />
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <ParamSelect
+          name="status"
+          value={statusFilter}
+          allLabel={`All categories (${all.length})`}
+          options={[
+            { value: "active", label: `Active (${active})` },
+            { value: "hidden", label: `Hidden (${all.length - active})` },
+          ]}
+        />
+      </div>
 
       <Table>
         <thead>
@@ -65,15 +114,17 @@ export default async function CategoriesPage() {
           </tr>
         </thead>
         <tbody>
-          {rows.length === 0 ? (
+          {all.length > 0 && rows.length === 0 ? (
+            <EmptyRow colSpan={7} title="Nothing matches that filter" body="Choose All categories to see every department." />
+          ) : rows.length === 0 ? (
             <EmptyRow
               colSpan={7}
               title="No categories yet"
               body="Add your first department — it appears in the header menu as soon as it is active."
             />
           ) : (
-            rows.map((c, i) => (
-              <Tr key={c.id}>
+            rows.map((c) => ({ c, i: position.get(c.id) ?? 0 })).map(({ c, i }) => (
+              <Tr key={c.id} className={c.isActive ? undefined : MUTED_ROW}>
                 <Td>
                   <div className="flex items-center gap-1">
                     <span className="w-5 text-[12px] tabular-nums text-ink-400">{i + 1}</span>
@@ -99,8 +150,8 @@ export default async function CategoriesPage() {
                             type="submit"
                             title="Move down"
                             aria-label={`Move ${c.name} down`}
-                            disabled={i === rows.length - 1}
-                            className={cn(i === rows.length - 1 ? iconBtnDisabled : iconBtn, "p-0.5")}
+                            disabled={i === all.length - 1}
+                            className={cn(i === all.length - 1 ? iconBtnDisabled : iconBtn, "p-0.5")}
                           >
                             <ArrowDown size={13} />
                           </button>
@@ -144,22 +195,21 @@ export default async function CategoriesPage() {
                 </Td>
                 <Td align="right">
                   <Link href={`/admin/products?category=${c.slug}`} className="tabular-nums hover:text-brand-700">
-                    {c._count.products}
+                    {c._count.products} ·{" "}
+                    <span className={(visibleIn.get(c.id) ?? 0) > 0 ? "font-semibold text-[#1c6636]" : undefined}>
+                      {visibleIn.get(c.id) ?? 0} visible
+                    </span>
                   </Link>
                 </Td>
                 <Td>
-                  <Pill tone={c.isActive ? "brand" : "neutral"} dot>
-                    {c.isActive ? "Active" : "Hidden"}
-                  </Pill>
+                  <VisibilityPill own={c.isActive ? "active" : "hidden"} />
                 </Td>
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {canEdit && (
                       <Form action={toggleCategoryActive}>
                         <input type="hidden" name="id" value={c.id} />
-                        <button type="submit" title={c.isActive ? "Hide from menu" : "Show in menu"} className={iconBtn}>
-                          <Power size={14} />
-                        </button>
+                        <VisibilityToggle on={c.isActive} what={c.name} />
                       </Form>
                     )}
                     {canDelete && (
