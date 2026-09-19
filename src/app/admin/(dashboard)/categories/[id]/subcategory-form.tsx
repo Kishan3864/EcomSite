@@ -4,12 +4,13 @@ import { useActionState, useRef, useState } from "react";
 import Image from "@/components/ui/image";
 import { ImageOff } from "lucide-react";
 import { cn, slugify } from "@/lib/utils";
-import { Notice, SubmitButton } from "@/components/admin/client";
+import { Notice } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls, textareaCls } from "@/components/admin/ui";
 import { ImageField } from "@/components/admin/image-field";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { Form } from "@/components/ui/form";
+import { SaveBar } from "@/components/admin/form-kit";
 
 export interface SubcategoryFormValues {
   name: string;
@@ -50,6 +51,7 @@ export function SubcategoryForm({
 
   return (
     <Form action={formAction} className="grid gap-5">
+      <SaveBar state={state} label={submitLabel} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       {state.error && state.field && (
@@ -199,9 +201,6 @@ export function SubcategoryForm({
         </label>
       </FormSection>
 
-      <div className="flex items-center justify-end gap-2">
-        <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
-      </div>
     </Form>
   );
 }

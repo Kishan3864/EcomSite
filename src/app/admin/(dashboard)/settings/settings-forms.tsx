@@ -1,8 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Save } from "lucide-react";
-import { Notice, SubmitButton } from "@/components/admin/client";
+import { Notice } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls, textareaCls } from "@/components/admin/ui";
 import { INITIAL_FORM, type FormState } from "@/services/admin/form-state";
 import {
@@ -14,6 +13,7 @@ import {
 } from "@/services/admin/settings-actions";
 import type { StoreSettings } from "@/services/settings";
 import { Form } from "@/components/ui/form";
+import { SaveBar } from "@/components/admin/form-kit";
 
 /* ---------------------------- Shared pieces ---------------------------- */
 
@@ -34,14 +34,10 @@ function SettingsForm({
 
   return (
     <Form action={formAction} className="grid max-w-3xl gap-4">
+      <SaveBar state={state} label={saveLabel} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       {children(err)}
-      <div className="flex justify-end">
-        <SubmitButton pendingText="Saving…">
-          <Save size={15} /> {saveLabel}
-        </SubmitButton>
-      </div>
     </Form>
   );
 }

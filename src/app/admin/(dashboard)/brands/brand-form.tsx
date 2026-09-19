@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
-import { Notice, SubmitButton } from "@/components/admin/client";
+import { Notice } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls, textareaCls } from "@/components/admin/ui";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { Form } from "@/components/ui/form";
+import { SaveBar } from "@/components/admin/form-kit";
 
 export interface BrandFormValues {
   name: string;
@@ -35,6 +36,7 @@ export function BrandForm({
 
   return (
     <Form action={formAction} className="grid gap-5">
+      <SaveBar state={state} label={submitLabel} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -94,9 +96,6 @@ export function BrandForm({
         </label>
       </FormSection>
 
-      <div className="flex items-center justify-end gap-2">
-        <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
-      </div>
     </Form>
   );
 }

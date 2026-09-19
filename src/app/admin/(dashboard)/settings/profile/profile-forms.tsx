@@ -1,12 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
-import { KeyRound, Save } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls } from "@/components/admin/ui";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { changeOwnPassword, updateOwnProfile } from "@/services/admin/team-actions";
 import { Form } from "@/components/ui/form";
+import { SaveBar } from "@/components/admin/form-kit";
 
 export function ProfileForm({ name, email }: { name: string; email: string }) {
   const [state, action] = useActionState(updateOwnProfile, INITIAL_FORM);
@@ -14,6 +15,7 @@ export function ProfileForm({ name, email }: { name: string; email: string }) {
 
   return (
     <Form action={action} className="grid gap-4">
+      <SaveBar state={state} label="Save details" alwaysSticky={false} />
       <FormSection title="Your details" description="Shown on the activity log beside everything you change.">
         {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
         {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
@@ -40,11 +42,6 @@ export function ProfileForm({ name, email }: { name: string; email: string }) {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <SubmitButton size="sm" variant="outline" pendingText="Saving…">
-            <Save size={14} /> Save details
-          </SubmitButton>
-        </div>
       </FormSection>
     </Form>
   );

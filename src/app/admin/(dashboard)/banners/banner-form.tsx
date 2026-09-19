@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { ImageOff } from "lucide-react";
 import type { BannerPlacement } from "@/generated/prisma/client";
-import { Notice, SubmitButton } from "@/components/admin/client";
+import { Notice } from "@/components/admin/client";
 import {
   FieldError,
   FormSection,
@@ -19,6 +19,7 @@ import { INITIAL_FORM } from "@/services/admin/form-state";
 import { cn } from "@/lib/utils";
 import { PLACEMENTS, PLACEMENT_META } from "./lib";
 import { Form } from "@/components/ui/form";
+import { SaveBar } from "@/components/admin/form-kit";
 
 export interface BannerFormValues {
   placement: BannerPlacement;
@@ -85,6 +86,7 @@ export function BannerForm({
 
   return (
     <Form action={formAction} className="grid gap-5">
+      {!readOnly && <SaveBar state={state} label={submitLabel} />}
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -405,11 +407,6 @@ export function BannerForm({
         </label>
       </FormSection>
 
-      {!readOnly && (
-        <div className="flex items-center justify-end gap-2">
-          <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
-        </div>
-      )}
     </Form>
   );
 }

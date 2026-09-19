@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import {
   KeyRound,
   Plus,
-  Save,
   Trash2,
   UserPlus,
 } from "lucide-react";
@@ -27,6 +26,7 @@ import {
   updateTeamMember,
 } from "@/services/admin/team-actions";
 import { Form } from "@/components/ui/form";
+import { SaveBar } from "@/components/admin/form-kit";
 
 export interface TeamMember {
   id: string;
@@ -179,6 +179,7 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
 
       <Form action={action} className="grid gap-4">
         <input type="hidden" name="id" value={member.id} />
+        <SaveBar state={state} label="Save" alwaysSticky={false} variant="outline" />
         {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
         {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
 
@@ -219,12 +220,6 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
             </span>
           </span>
         </label>
-
-        <div className="flex justify-end">
-          <SubmitButton size="sm" variant="outline" pendingText="Saving…">
-            <Save size={14} /> Save
-          </SubmitButton>
-        </div>
       </Form>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-4">

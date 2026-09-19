@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { Notice, SubmitButton } from "@/components/admin/client";
-import { FieldError, FormSection, Label, inputCls, selectArrow, selectCls, textareaCls } from "@/components/admin/ui";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { Notice } from "@/components/admin/client";
+import { FieldError, Label, inputCls, selectArrow, selectCls, textareaCls } from "@/components/admin/ui";
 import { cn } from "@/lib/utils";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
@@ -20,6 +20,7 @@ import {
   type VariantGroupInput,
 } from "./product-schema";
 import { Form } from "@/components/ui/form";
+import { CollapsibleSection, SaveBar } from "@/components/admin/form-kit";
 
 export interface ProductFormValues {
   title: string;
@@ -152,6 +153,22 @@ export function ProductForm({
   const [bundle, setBundle] = useState<string[]>(init.bundleIds);
 
   const subcategories = options.subcategories.filter((s) => s.categoryId === categoryId);
+
+  /**
+   * Category and subcategory are controlled selects, and React resets a form
+   * after its action finishes. The reset puts each <select> back on its first
+   * option — "Choose a category…" — while the state still holds the real id, so
+   * React sees nothing to redraw. Both are required, so from then on the browser
+   * refused every further save of the page without a word: the first save of a
+   * visit worked and the second did nothing. Re-asserting the state onto the
+   * elements whenever an action settles keeps the two in step.
+   */
+  const categoryRef = useRef<HTMLSelectElement>(null);
+  const subcategoryRef = useRef<HTMLSelectElement>(null);
+  useEffect(() => {
+    if (categoryRef.current) categoryRef.current.value = categoryId;
+    if (subcategoryRef.current) subcategoryRef.current.value = subcategoryId;
+  }, [state, categoryId, subcategoryId]);
   const statusHelp = STATUS_HELP;
 
   return (
@@ -169,6 +186,7 @@ export function ProductForm({
       }}
       className="grid gap-5"
     >
+      {!readOnly && <SaveBar state={state} label={submitLabel} />}
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.error && state.field && (
         <Notice tone="error">
@@ -181,7 +199,7 @@ export function ProductForm({
 
       <fieldset disabled={readOnly} className="contents">
         {/* ------------------------------ Basics ------------------------------ */}
-        <FormSection title="Basics" description="Title, identifiers and the copy shoppers read first.">
+        <CollapsibleSection formId="product" errorField={state.field} defaultOpen title="Basics" description="Title, identifiers and the copy shoppers read first.">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <Label htmlFor="p-title">Title</Label>
@@ -236,10 +254,10 @@ export function ProductForm({
               <FieldError>{err("status")}</FieldError>
             </div>
           </div>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* --------------------------- Pricing & stock ------------------------ */}
-        <FormSection
+        <CollapsibleSection formId="product" errorField={state.field}
           title="Pricing & stock"
           description="Whole rupees, GST included. Stock edits here are recorded as a manual movement. Where you bought it is recorded here too, and stays in the admin."
         >
@@ -329,10 +347,10 @@ export function ProductForm({
               <FieldError>{err("costPrice")}</FieldError>
             </div>
           </div>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* ---------------------------- Organisation -------------------------- */}
-        <FormSection title="Organisation" description="Where the product lives in the catalogue and how it is labelled.">
+        <CollapsibleSection formId="product" errorField={state.field} title="Organisation" description="Where the product lives in the catalogue and how it is labelled.">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <Label htmlFor="p-brand">Brand</Label>
@@ -351,6 +369,7 @@ export function ProductForm({
               <Label htmlFor="p-category">Category</Label>
               <select
                 id="p-category"
+                ref={categoryRef}
                 name="categoryId"
                 value={categoryId}
                 onChange={(e) => {
@@ -374,6 +393,7 @@ export function ProductForm({
               <Label htmlFor="p-subcategory">Subcategory</Label>
               <select
                 id="p-subcategory"
+                ref={subcategoryRef}
                 name="subcategoryId"
                 value={subcategoryId}
                 onChange={(e) => setSubcategoryId(e.target.value)}
@@ -426,17 +446,17 @@ export function ProductForm({
               <input id="p-colors" name="colors" defaultValue={dv("colors", init.colors.join(", "))} className={inputCls} placeholder="Midnight Blue, Sand" />
             </div>
           </div>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* ------------------------------ Images ------------------------------ */}
-        <FormSection title="Images" description="The first image is the cover. An active product needs at least one.">
+        <CollapsibleSection formId="product" errorField={state.field} title="Images" description="The first image is the cover. An active product needs at least one.">
           <input type="hidden" name="images" value={JSON.stringify(images)} readOnly />
           <ImagesEditor value={images} onChange={setImages} />
           <FieldError>{err("images")}</FieldError>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* ----------------------------- Content ------------------------------ */}
-        <FormSection title="Highlights & specifications" description="Bullet points near the price, and the detailed spec table lower on the page.">
+        <CollapsibleSection formId="product" errorField={state.field} title="Highlights & specifications" description="Bullet points near the price, and the detailed spec table lower on the page.">
           <div>
             <Label htmlFor="p-highlights" hint="One per line, up to 12." optional>
               Highlights
@@ -450,17 +470,17 @@ export function ProductForm({
             <SpecsEditor value={specs} onChange={setSpecs} />
             <FieldError>{err("specifications")}</FieldError>
           </div>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* ----------------------------- Variants ----------------------------- */}
-        <FormSection title="Variants" description="Options shoppers choose before adding to cart. Price differences are added to the selling price.">
+        <CollapsibleSection formId="product" errorField={state.field} title="Variants" description="Options shoppers choose before adding to cart. Price differences are added to the selling price.">
           <input type="hidden" name="variantGroups" value={JSON.stringify(variants)} readOnly />
           <VariantsEditor value={variants} onChange={setVariants} />
           <FieldError>{err("variantGroups")}</FieldError>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* ---------------------------- Fulfilment ---------------------------- */}
-        <FormSection title="Delivery & returns" description="What the product page promises about shipping, payment and after-sales.">
+        <CollapsibleSection formId="product" errorField={state.field} title="Delivery & returns" description="What the product page promises about shipping, payment and after-sales.">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <Label htmlFor="p-delivery" hint="1–60 days.">
@@ -498,10 +518,10 @@ export function ProductForm({
               </span>
             </label>
           </div>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* ---------------------------- Media & SEO --------------------------- */}
-        <FormSection title="Media & SEO" description="Optional extras for the product page and search engines.">
+        <CollapsibleSection formId="product" errorField={state.field} title="Media & SEO" description="Optional extras for the product page and search engines.">
           <div>
             <Label htmlFor="p-video" hint="Image URL shown as the poster for the product video slot." optional>
               Video poster
@@ -525,10 +545,10 @@ export function ProductForm({
               <FieldError>{err("metaDescription")}</FieldError>
             </div>
           </div>
-        </FormSection>
+        </CollapsibleSection>
 
         {/* ---------------------------- Relations ----------------------------- */}
-        <FormSection title="Related & bundle products" description="Only active products can be linked. Related items appear as “You may also like”; bundle items are offered together.">
+        <CollapsibleSection formId="product" errorField={state.field} title="Related & bundle products" description="Only active products can be linked. Related items appear as “You may also like”; bundle items are offered together.">
           <div className="grid gap-5 lg:grid-cols-2">
             <div>
               <Label hint="Up to 24." optional>
@@ -545,13 +565,8 @@ export function ProductForm({
               <FieldError>{err("bundle")}</FieldError>
             </div>
           </div>
-        </FormSection>
+        </CollapsibleSection>
 
-        {!readOnly && (
-          <div className="flex items-center justify-end gap-2">
-            <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
-          </div>
-        )}
       </fieldset>
     </Form>
   );

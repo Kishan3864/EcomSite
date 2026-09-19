@@ -32,13 +32,14 @@ import {
   type LucideProps,
 } from "lucide-react";
 import { cn, slugify } from "@/lib/utils";
-import { Notice, SubmitButton } from "@/components/admin/client";
+import { Notice } from "@/components/admin/client";
 import { FieldError, FormSection, Label, inputCls, selectArrow, selectCls, textareaCls } from "@/components/admin/ui";
 import { ImageField } from "@/components/admin/image-field";
 import type { FormState } from "@/services/admin/form-state";
 import { INITIAL_FORM } from "@/services/admin/form-state";
 import { GST_RATES } from "../products/product-schema";
 import { Form } from "@/components/ui/form";
+import { SaveBar } from "@/components/admin/form-kit";
 
 export interface CategoryFormValues {
   name: string;
@@ -143,6 +144,7 @@ export function CategoryForm({
 
   return (
     <Form action={formAction} className="grid gap-5">
+      <SaveBar state={state} label={submitLabel} />
       {state.error && !state.field && <Notice tone="error">{state.error}</Notice>}
       {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
       {state.error && state.field && (
@@ -530,9 +532,6 @@ export function CategoryForm({
         </label>
       </FormSection>
 
-      <div className="flex items-center justify-end gap-2">
-        <SubmitButton pendingText="Saving…">{submitLabel}</SubmitButton>
-      </div>
     </Form>
   );
 }
