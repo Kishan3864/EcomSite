@@ -12,6 +12,18 @@ import { db } from "@/lib/db";
  * flips the switch overwrites that copy in the same process, which is what
  * makes it take effect at once rather than after the cache runs out.
  *
+ * THIS ASSUMES ONE PROCESS. deploy/ecosystem.config.cjs runs the app under PM2
+ * in fork mode with one instance, so the memory copy the admin action
+ * overwrites is the same one the proxy reads, and the switch is instant. If
+ * that file is ever changed to exec_mode "cluster" or instances > 1, each
+ * worker keeps its own copy: the worker that handled the click flips at once,
+ * and every other worker goes on serving the OLD state until its own copy
+ * expires, up to TTL_MS later. Nothing breaks — the database row is still the
+ * truth and every worker reaches it within five seconds — but "takes effect
+ * immediately" becomes "within five seconds", and for those seconds some
+ * shoppers see the shop and some see the holding page. If that matters then,
+ * lower TTL_MS or move the flag to something shared between workers.
+ *
  * It fails OPEN. If the database cannot be asked, the last known answer stands,
  * and with no answer at all the shop stays up: a database hiccup must never be
  * what takes the storefront down.
