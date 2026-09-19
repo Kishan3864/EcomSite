@@ -78,9 +78,10 @@ fi
 pm2 save >/dev/null
 
 step "Health check"
-sleep 3
-curl -fsS -o /dev/null -w "  HTTP %{http_code} from http://127.0.0.1:$APP_PORT/\n" "http://127.0.0.1:$APP_PORT/" \
-  || { echo "  Still not answering. pm2 logs $APP_NAME --lines 50"; exit 1; }
+# Asks /api/health, which maintenance mode never touches — see deploy/health.sh.
+# shellcheck source=deploy/health.sh
+source deploy/health.sh
+app_alive "$APP_PORT" || { echo "  Still not answering. pm2 logs $APP_NAME --lines 50"; exit 1; }
 
 echo
 echo "  Back on $(git log -1 --format='%h — %s')."

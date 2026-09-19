@@ -243,8 +243,10 @@ fi
 pm2 save >/dev/null
 
 step "Health check"
-sleep 3
-if curl -fsS -o /dev/null -w "  HTTP %{http_code} from http://127.0.0.1:$APP_PORT/\n" "http://127.0.0.1:$APP_PORT/"; then
+# Asks /api/health, which maintenance mode never touches — see deploy/health.sh.
+# shellcheck source=deploy/health.sh
+source deploy/health.sh
+if app_alive "$APP_PORT"; then
   echo
   echo "  Deployed. If nginx is not configured yet, see deploy/README.md."
 else
@@ -256,9 +258,7 @@ else
   if [ -d .next-prev ]; then
     mv .next-prev .next
     pm2 reload deploy/ecosystem.config.cjs --update-env
-    sleep 3
-    curl -fsS -o /dev/null -w "  HTTP %{http_code} from http://127.0.0.1:$APP_PORT/ (previous build)\n" \
-      "http://127.0.0.1:$APP_PORT/" || warn "The previous build is not answering either."
+    app_alive "$APP_PORT" "previous build" || warn "The previous build is not answering either."
   else
     warn "There was no previous build to fall back to."
   fi
