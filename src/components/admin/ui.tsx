@@ -226,7 +226,7 @@ const STATUS_TONES: Record<string, { tone: Tone; label: string }> = {
   PICKED_UP: { tone: "sky", label: "Picked up" },
   REJECTED: { tone: "sale", label: "Rejected" },
   // reviews / questions / messages
-  HIDDEN: { tone: "neutral", label: "Hidden" },
+  HIDDEN: { tone: "sale", label: "Hidden" },
   ANSWERED: { tone: "brand", label: "Answered" },
   NEW: { tone: "gold", label: "New" },
   REPLIED: { tone: "brand", label: "Replied" },
@@ -263,7 +263,19 @@ export function StatusPill({ status, className }: { status: string; className?: 
  */
 export type OwnVisibility = "active" | "hidden" | "draft" | "archived";
 
-export function VisibilityPill({ own, hiddenBy }: { own: OwnVisibility; hiddenBy?: string | null }) {
+export function VisibilityPill({
+  own,
+  hiddenBy,
+  offWord = "Hidden",
+  label,
+}: {
+  own: OwnVisibility;
+  hiddenBy?: string | null;
+  /** "Hidden" for things a shopper sees; "Inactive" for a brand, a wholesaler, an account. */
+  offWord?: string;
+  /** A more exact word for the same colour — "Live", "Scheduled", "Ended". */
+  label?: string;
+}) {
   if (own === "active" && hiddenBy) {
     return (
       <span title={`Switched on, but ${hiddenBy} is hidden — so shoppers cannot see this either.`}>
@@ -276,13 +288,13 @@ export function VisibilityPill({ own, hiddenBy }: { own: OwnVisibility; hiddenBy
   }
   const meta = {
     active: { tone: "success" as Tone, label: "Active" },
-    hidden: { tone: "sale" as Tone, label: "Hidden" },
+    hidden: { tone: "sale" as Tone, label: offWord },
     draft: { tone: "gold" as Tone, label: "Draft" },
     archived: { tone: "ink" as Tone, label: "Archived" },
   }[own];
   return (
     <Pill tone={meta.tone} dot>
-      {meta.label}
+      {label ?? meta.label}
     </Pill>
   );
 }
@@ -296,12 +308,20 @@ export const MUTED_ROW = "[&_td]:text-ink-400 [&_a]:!text-ink-500 [&_img]:opacit
  * Green and "On", red and "Off" — the word is part of the control, and
  * aria-pressed says the same thing to a screen reader.
  */
-export function VisibilityToggle({ on, what }: { on: boolean; what: string }) {
+export function VisibilityToggle({ on, what, storefront = true }: { on: boolean; what: string; storefront?: boolean }) {
   return (
     <button
       type="submit"
       aria-pressed={on}
-      title={on ? `Hide ${what} from the storefront` : `Show ${what} on the storefront`}
+      title={
+        storefront
+          ? on
+            ? `Hide ${what} from the storefront`
+            : `Show ${what} on the storefront`
+          : on
+            ? `Deactivate ${what}`
+            : `Activate ${what}`
+      }
       className={cn(
         "inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold transition-colors",
         on ? "bg-[#def3e4] text-[#1c6636] hover:bg-[#c9ebd3]" : "bg-sale-100 text-sale-700 hover:bg-sale-50",
@@ -313,6 +333,23 @@ export function VisibilityToggle({ on, what }: { on: boolean; what: string }) {
       {on ? "On" : "Off"}
     </button>
   );
+}
+
+/**
+ * The sentence a switch with a blast radius asks first, with the real number.
+ *
+ * Null when nothing a shopper can see would change, so a switch that affects
+ * nobody does not nag. Plain function, no hooks: the server page works out the
+ * sentence and hands it to the client form.
+ */
+export function blastRadius(name: string, isOn: boolean, visibleNow: number, wouldShow: number): string | null {
+  const products = (n: number) => `${n} product${n === 1 ? "" : "s"}`;
+  if (isOn) {
+    return visibleNow > 0
+      ? `Hide ${name}? ${products(visibleNow)} will disappear from the storefront — menu, listings, search, sitemap and their own pages. Nothing is deleted.`
+      : null;
+  }
+  return wouldShow > 0 ? `Show ${name}? ${products(wouldShow)} will appear on the storefront straight away.` : null;
 }
 
 /** "12 categories · 1 active · 11 hidden", the two numbers toned like their pills. */

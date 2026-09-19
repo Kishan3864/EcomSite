@@ -1,6 +1,13 @@
 import Link from "next/link";
 import Image from "@/components/ui/image";
-import { AlertTriangle, Boxes, Download, History, Layers, PackageX } from "lucide-react";
+import {
+  AlertTriangle,
+  Boxes,
+  Download,
+  History,
+  Layers,
+  PackageX,
+} from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn } from "@/lib/utils";
@@ -18,6 +25,7 @@ import {
   Th,
   Tr,
   withParams,
+  VisibilityPill,
 } from "@/components/admin/ui";
 import { adjustStock } from "@/services/admin/inventory-actions";
 import { pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
@@ -57,7 +65,8 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
         stock: true,
         lowStockThreshold: true,
         soldCount: true,
-        category: { select: { name: true, slug: true } },
+        category: { select: { name: true, slug: true, isActive: true } },
+        subcategory: { select: { name: true, isActive: true } },
         images: { take: 1, orderBy: { sortOrder: "asc" }, select: { url: true, alt: true } },
       },
       ...skipTake(params),
@@ -184,7 +193,14 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
                           >
                             {p.title}
                           </Link>
-                          {p.status === "DRAFT" && <Pill tone="neutral">Draft</Pill>}
+                          {p.status === "DRAFT" ? (
+                            <VisibilityPill own="draft" />
+                          ) : !p.category.isActive || !p.subcategory.isActive ? (
+                            <VisibilityPill
+                              own="active"
+                              hiddenBy={!p.category.isActive ? p.category.name : p.subcategory.name}
+                            />
+                          ) : null}
                         </div>
                         <span className="block font-mono text-[11.5px] text-ink-400">{p.sku}</span>
                       </div>

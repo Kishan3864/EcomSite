@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { buttonClasses } from "@/components/ui/button";
 import { ConfirmForm } from "@/components/admin/client";
-import { Card, DateCell, KeyValue, Label, PageHeader, Pill, selectArrow, selectCls } from "@/components/admin/ui";
+import { Card, DateCell, KeyValue, Label, PageHeader, VisibilityPill, selectArrow, selectCls } from "@/components/admin/ui";
 import { deleteSubcategory, updateSubcategory } from "@/services/admin/categories-actions";
 import { SubcategoryForm } from "../../subcategory-form";
 
@@ -21,6 +21,7 @@ export default async function EditSubcategoryPage({ params }: { params: Promise<
           id: true,
           name: true,
           slug: true,
+          isActive: true,
           subcategories: { where: { NOT: { id: subId } }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true } },
         },
       },
@@ -43,9 +44,7 @@ export default async function EditSubcategoryPage({ params }: { params: Promise<
           back={{ href: back, label: sub.category.name }}
           meta={
             <>
-              <Pill tone={sub.isActive ? "brand" : "neutral"} dot>
-                {sub.isActive ? "Active" : "Hidden"}
-              </Pill>
+              <VisibilityPill own={sub.isActive ? "active" : "hidden"} hiddenBy={sub.category.isActive ? null : sub.category.name} />
               <span className="text-[12px] text-ink-400">
                 /c/{sub.category.slug}/{sub.slug}
               </span>

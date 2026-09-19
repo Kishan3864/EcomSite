@@ -1,9 +1,23 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { KeyRound, Plus, Save, Trash2, UserPlus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  KeyRound,
+  Plus,
+  Save,
+  Trash2,
+  UserPlus,
+} from "lucide-react";
 import { ConfirmForm, Notice, SubmitButton } from "@/components/admin/client";
-import { FieldError, Label, inputCls, selectArrow, selectCls } from "@/components/admin/ui";
+import {
+  FieldError,
+  Label,
+  inputCls,
+  selectArrow,
+  selectCls,
+  VisibilityPill,
+} from "@/components/admin/ui";
 import { Button } from "@/components/ui/button";
 import { INITIAL_FORM, type FormState } from "@/services/admin/form-state";
 import {
@@ -148,10 +162,11 @@ export function MemberCard({ member, isSelf }: { member: TeamMember; isSelf: boo
   const err = (field: string) => (state.field === field ? state.error : undefined);
 
   return (
-    <div className="bg-surface shadow-sm p-5">
+    <div className={cn("bg-surface shadow-sm p-5", !member.isActive && "[&_p]:text-ink-400")}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate text-[14px] font-semibold text-ink-950">
+          <p className="flex flex-wrap items-center gap-2 truncate text-[14px] font-semibold text-ink-950">
+            <VisibilityPill own={member.isActive ? "active" : "hidden"} offWord="Inactive" />
             {member.name}
             {isSelf && <span className="ml-2 text-[11.5px] font-normal text-ink-500">(you)</span>}
           </p>

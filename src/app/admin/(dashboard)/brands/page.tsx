@@ -1,23 +1,23 @@
 import Link from "next/link";
-import { Plus, Power, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireAdmin, hasRole } from "@/lib/auth/admin";
 import { buttonClasses } from "@/components/ui/button";
-import { ConfirmForm, ParamSelect, SearchBox } from "@/components/admin/client";
+import { ConfirmForm, ParamSelect, SearchBox, ToggleForm } from "@/components/admin/client";
 import {
   AdminPagination,
   EmptyRow,
   PageHeader,
-  Pill,
   Table,
   Td,
   Th,
   Tr,
   withParams,
+  VisibilityPill,
+  MUTED_ROW,
 } from "@/components/admin/ui";
 import { deleteBrand, toggleBrandActive } from "@/services/admin/brands-actions";
 import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
-import { Form } from "@/components/ui/form";
 
 /**
  * Reference admin list page. URL search params drive everything (search,
@@ -91,7 +91,7 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
             <EmptyRow colSpan={6} title="No brands match" body="Try a different search, or add a new brand." />
           ) : (
             rows.map((b) => (
-              <Tr key={b.id}>
+              <Tr key={b.id} className={b.isActive ? undefined : MUTED_ROW}>
                 <Td>
                   <Link href={`/admin/brands/${b.id}`} className="font-medium text-ink-950 hover:text-brand-700">
                     {b.name}
@@ -106,23 +106,14 @@ export default async function BrandsPage({ searchParams }: { searchParams: Promi
                   </Link>
                 </Td>
                 <Td>
-                  <Pill tone={b.isActive ? "brand" : "neutral"} dot>
-                    {b.isActive ? "Active" : "Inactive"}
-                  </Pill>
+                  <VisibilityPill own={b.isActive ? "active" : "hidden"} offWord="Inactive" />
                 </Td>
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {hasRole(session, "MANAGER") && (
-                      <Form action={toggleBrandActive}>
+                      <ToggleForm action={toggleBrandActive} on={b.isActive} what={b.name} storefront={false}>
                         <input type="hidden" name="id" value={b.id} />
-                        <button
-                          type="submit"
-                          title={b.isActive ? "Deactivate" : "Activate"}
-                          className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
-                        >
-                          <Power size={14} />
-                        </button>
-                      </Form>
+                      </ToggleForm>
                     )}
                     {hasRole(session, "OWNER") && (
                       <ConfirmForm action={deleteBrand} message={`Delete ${b.name}? This cannot be undone.`}>

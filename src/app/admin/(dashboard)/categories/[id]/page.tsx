@@ -20,9 +20,9 @@ import {
   Tr,
   VisibilityPill,
   VisibilitySummary,
-  VisibilityToggle,
+  blastRadius,
 } from "@/components/admin/ui";
-import { ParamSelect } from "@/components/admin/client";
+import { ParamSelect, ToggleForm } from "@/components/admin/client";
 import { visibleProducts } from "@/services/visibility";
 import {
   deleteCategory,
@@ -50,7 +50,7 @@ export default async function EditCategoryPage({
   const wanted = [(await searchParams).substatus].flat()[0];
   const subFilter = wanted === "active" || wanted === "hidden" ? wanted : undefined;
 
-  const [category, brands, visibleCounts] = await Promise.all([
+  const [category, brands, visibleCounts, wouldShowCounts] = await Promise.all([
     db.category.findUnique({
       where: { id },
       include: {
@@ -69,7 +69,10 @@ export default async function EditCategoryPage({
       where: visibleProducts({ categoryId: id }),
       _count: { _all: true },
     }),
+    // What switching a hidden collection ON would put in front of shoppers.
+    db.product.groupBy({ by: ["subcategoryId"], where: { status: "ACTIVE", categoryId: id }, _count: { _all: true } }),
   ]);
+  const wouldShowIn = new Map(wouldShowCounts.map((v) => [v.subcategoryId, v._count._all]));
   if (!category) notFound();
   const visibleIn = new Map(visibleCounts.map((v) => [v.subcategoryId, v._count._all]));
   const visibleTotal = [...visibleIn.values()].reduce((n, v) => n + v, 0);
@@ -317,10 +320,18 @@ export default async function EditCategoryPage({
                       >
                         <Pencil size={14} />
                       </Link>
-                      <Form action={toggleSubcategoryActive}>
+                      <ToggleForm
+                        action={toggleSubcategoryActive}
+                        on={s.isActive}
+                        what={s.name}
+                        confirm={
+                          category.isActive
+                            ? blastRadius(s.name, s.isActive, visibleIn.get(s.id) ?? 0, wouldShowIn.get(s.id) ?? 0)
+                            : null
+                        }
+                      >
                         <input type="hidden" name="id" value={s.id} />
-                        <VisibilityToggle on={s.isActive} what={s.name} />
-                      </Form>
+                      </ToggleForm>
                       {canDelete &&
                         (s._count.products > 0 ? (
                           <Link

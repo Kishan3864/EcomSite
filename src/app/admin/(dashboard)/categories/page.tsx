@@ -16,9 +16,9 @@ import {
   Tr,
   VisibilityPill,
   VisibilitySummary,
-  VisibilityToggle,
+  blastRadius,
 } from "@/components/admin/ui";
-import { ParamSelect } from "@/components/admin/client";
+import { ParamSelect, ToggleForm } from "@/components/admin/client";
 import { visibleProducts } from "@/services/visibility";
 import { deleteCategory, moveCategory, toggleCategoryActive } from "@/services/admin/categories-actions";
 import { CategoryIcon } from "./category-icon";
@@ -41,7 +41,7 @@ export default async function CategoriesPage({
   const wanted = [(await searchParams).status].flat()[0];
   const statusFilter = wanted === "active" || wanted === "hidden" ? wanted : undefined;
 
-  const [all, visibleCounts] = await Promise.all([
+  const [all, visibleCounts, wouldShowCounts] = await Promise.all([
     db.category.findMany({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       include: { _count: { select: { products: true, subcategories: true } } },
@@ -49,7 +49,14 @@ export default async function CategoriesPage({
     // What a shopper can actually see in each department, by the storefront's
     // own rule — the number to look at before deciding what to hide.
     db.product.groupBy({ by: ["categoryId"], where: visibleProducts(), _count: { _all: true } }),
+    // What switching a hidden department ON would put in front of shoppers.
+    db.product.groupBy({
+      by: ["categoryId"],
+      where: { status: "ACTIVE", subcategory: { isActive: true } },
+      _count: { _all: true },
+    }),
   ]);
+  const wouldShowIn = new Map(wouldShowCounts.map((v) => [v.categoryId, v._count._all]));
   const visibleIn = new Map(visibleCounts.map((v) => [v.categoryId, v._count._all]));
   // The order column is the menu order, so it is numbered from the whole list
   // even when the table below is filtered.
@@ -207,10 +214,14 @@ export default async function CategoriesPage({
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {canEdit && (
-                      <Form action={toggleCategoryActive}>
+                      <ToggleForm
+                        action={toggleCategoryActive}
+                        on={c.isActive}
+                        what={c.name}
+                        confirm={blastRadius(c.name, c.isActive, visibleIn.get(c.id) ?? 0, wouldShowIn.get(c.id) ?? 0)}
+                      >
                         <input type="hidden" name="id" value={c.id} />
-                        <VisibilityToggle on={c.isActive} what={c.name} />
-                      </Form>
+                      </ToggleForm>
                     )}
                     {canDelete && (
                       <ConfirmForm

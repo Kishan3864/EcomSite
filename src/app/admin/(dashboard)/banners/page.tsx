@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUp, ExternalLink, ImageOff, Plus, Power, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ExternalLink,
+  ImageOff,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { buttonClasses } from "@/components/ui/button";
-import { ConfirmForm } from "@/components/admin/client";
+import { ConfirmForm, ToggleForm } from "@/components/admin/client";
 import { Card, DateCell, PageHeader, Pill } from "@/components/admin/ui";
 import { deleteBanner, moveBanner, toggleBannerActive } from "@/services/admin/banners-actions";
 import { cn } from "@/lib/utils";
@@ -160,16 +167,9 @@ export default async function BannersPage() {
                                   <ArrowDown size={14} />
                                 </button>
                               </Form>
-                              <Form action={toggleBannerActive}>
+                              <ToggleForm action={toggleBannerActive} on={b.isActive} what={b.title}>
                                 <input type="hidden" name="id" value={b.id} />
-                                <button
-                                  type="submit"
-                                  title={b.isActive ? "Deactivate" : "Activate"}
-                                  className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
-                                >
-                                  <Power size={14} />
-                                </button>
-                              </Form>
+                              </ToggleForm>
                             </>
                           )}
                           <Link

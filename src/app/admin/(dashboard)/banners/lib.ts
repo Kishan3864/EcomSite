@@ -3,13 +3,15 @@ import type { BannerPlacement } from "@/generated/prisma/client";
 /** Pure helpers shared by the banners list, form and detail pages. */
 
 export type BannerStatus = "live" | "scheduled" | "ended" | "inactive";
-type Tone = "neutral" | "brand" | "gold" | "sale" | "ink" | "sky";
+type Tone = "neutral" | "brand" | "gold" | "sale" | "ink" | "sky" | "success";
 
 export const BANNER_STATUS: Record<BannerStatus, { label: string; tone: Tone }> = {
-  live: { label: "Live", tone: "brand" },
-  scheduled: { label: "Scheduled", tone: "sky" },
-  ended: { label: "Ended", tone: "neutral" },
-  inactive: { label: "Inactive", tone: "neutral" },
+  // The same three colours every list uses: green is in front of shoppers,
+  // amber is waiting, red is not showing.
+  live: { label: "Live", tone: "success" },
+  scheduled: { label: "Scheduled", tone: "gold" },
+  ended: { label: "Ended", tone: "sale" },
+  inactive: { label: "Hidden", tone: "sale" },
 };
 
 export function bannerStatus(

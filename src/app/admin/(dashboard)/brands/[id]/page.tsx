@@ -4,7 +4,13 @@ import { ExternalLink } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth/admin";
 import { buttonClasses } from "@/components/ui/button";
-import { Card, DateCell, KeyValue, PageHeader, Pill } from "@/components/admin/ui";
+import {
+  Card,
+  DateCell,
+  KeyValue,
+  PageHeader,
+  VisibilityPill,
+} from "@/components/admin/ui";
 import { updateBrand } from "@/services/admin/brands-actions";
 import { BrandForm } from "../brand-form";
 
@@ -29,9 +35,7 @@ export default async function EditBrandPage({ params }: { params: Promise<{ id: 
           back={{ href: "/admin/brands", label: "Brands" }}
           meta={
             <>
-              <Pill tone={brand.isActive ? "brand" : "neutral"} dot>
-                {brand.isActive ? "Active" : "Inactive"}
-              </Pill>
+              <VisibilityPill own={brand.isActive ? "active" : "hidden"} offWord="Inactive" />
               <span className="text-[12px] text-ink-400">/{brand.slug}</span>
             </>
           }

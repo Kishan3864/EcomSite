@@ -8,6 +8,7 @@ import { AlertTriangle, Check, Copy, Loader2, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { VisibilityToggle } from "./ui";
 
 /**
  * Interactive admin primitives. Everything here is deliberately small — forms
@@ -51,6 +52,44 @@ export function ConfirmForm({
       }}
     >
       {children}
+    </Form>
+  );
+}
+
+/**
+ * The on/off switch of a list row, as a form of its own.
+ *
+ * One component for every list, so no page draws its own switch. When the
+ * switch has a blast radius — a department holding products a shopper can see —
+ * the caller passes `confirm` with the real number in it, and the submit asks
+ * first. Without it the switch just switches.
+ */
+export function ToggleForm({
+  action,
+  on,
+  what,
+  confirm,
+  storefront = true,
+  children,
+}: {
+  action: (formData: FormData) => void | Promise<void>;
+  on: boolean;
+  what: string;
+  confirm?: string | null;
+  storefront?: boolean;
+  /** The hidden inputs the action reads. */
+  children: React.ReactNode;
+}) {
+  return (
+    <Form
+      action={action}
+      className="inline"
+      onSubmit={(e) => {
+        if (confirm && !window.confirm(confirm)) e.preventDefault();
+      }}
+    >
+      {children}
+      <VisibilityToggle on={on} what={what} storefront={storefront} />
     </Form>
   );
 }

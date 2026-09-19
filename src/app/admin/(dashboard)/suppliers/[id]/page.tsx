@@ -9,7 +9,7 @@ import {
   KeyValue,
   Money,
   PageHeader,
-  Pill,
+  VisibilityPill,
   StatusPill,
   Table,
   Td,
@@ -65,9 +65,7 @@ export default async function EditSupplierPage({ params }: { params: Promise<{ i
             back={{ href: "/admin/suppliers", label: "Wholesalers" }}
             meta={
               <>
-                <Pill tone={supplier.isActive ? "brand" : "neutral"} dot>
-                  {supplier.isActive ? "Active" : "Inactive"}
-                </Pill>
+                <VisibilityPill own={supplier.isActive ? "active" : "hidden"} offWord="Inactive" />
                 <span className="text-[12px] text-ink-400">/{supplier.slug}</span>
               </>
             }

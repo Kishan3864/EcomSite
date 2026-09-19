@@ -1,23 +1,23 @@
 import Link from "next/link";
-import { Plus, Power, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireAdmin, hasRole } from "@/lib/auth/admin";
 import { buttonClasses } from "@/components/ui/button";
-import { ConfirmForm, ParamSelect, SearchBox } from "@/components/admin/client";
+import { ConfirmForm, ParamSelect, SearchBox, ToggleForm } from "@/components/admin/client";
 import {
   AdminPagination,
   EmptyRow,
   PageHeader,
-  Pill,
   Table,
   Td,
   Th,
   Tr,
   withParams,
+  VisibilityPill,
+  MUTED_ROW,
 } from "@/components/admin/ui";
 import { deleteSupplier, toggleSupplierActive } from "@/services/admin/suppliers-actions";
 import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
-import { Form } from "@/components/ui/form";
 
 export const metadata = { title: "Wholesalers" };
 
@@ -111,7 +111,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
             />
           ) : (
             rows.map((s) => (
-              <Tr key={s.id}>
+              <Tr key={s.id} className={s.isActive ? undefined : MUTED_ROW}>
                 <Td>
                   <Link href={`${LIST}/${s.id}`} className="font-medium text-ink-950 hover:text-brand-700">
                     {s.name}
@@ -129,23 +129,14 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Pr
                   </Link>
                 </Td>
                 <Td>
-                  <Pill tone={s.isActive ? "brand" : "neutral"} dot>
-                    {s.isActive ? "Active" : "Inactive"}
-                  </Pill>
+                  <VisibilityPill own={s.isActive ? "active" : "hidden"} offWord="Inactive" />
                 </Td>
                 <Td align="right">
                   <div className="flex items-center justify-end gap-1">
                     {hasRole(session, "MANAGER") && (
-                      <Form action={toggleSupplierActive}>
+                      <ToggleForm action={toggleSupplierActive} on={s.isActive} what={s.name} storefront={false}>
                         <input type="hidden" name="id" value={s.id} />
-                        <button
-                          type="submit"
-                          title={s.isActive ? "Deactivate" : "Activate"}
-                          className="p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-900"
-                        >
-                          <Power size={14} />
-                        </button>
-                      </Form>
+                      </ToggleForm>
                     )}
                     {hasRole(session, "OWNER") && (
                       <ConfirmForm

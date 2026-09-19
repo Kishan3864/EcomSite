@@ -7,7 +7,20 @@ import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { cn, formatINR } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { ConfirmForm, CopyButton, Notice } from "@/components/admin/client";
-import { Card, DateCell, KeyValue, Money, PageHeader, Pill, StatCard, StatusPill, Td, Th, Tr } from "@/components/admin/ui";
+import {
+  Card,
+  DateCell,
+  KeyValue,
+  Money,
+  PageHeader,
+  Pill,
+  StatCard,
+  StatusPill,
+  Td,
+  Th,
+  Tr,
+  VisibilityPill,
+} from "@/components/admin/ui";
 import { anonymiseCustomer, setCustomerActive, updateCustomer } from "@/services/admin/customers-actions";
 import { CustomerForm } from "../customer-form";
 import { TierPill, isAnonymised, tierLabel } from "../customer-meta";
@@ -84,9 +97,7 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
         meta={
           <>
             <TierPill tier={customer.tier} />
-            <Pill tone={customer.isActive ? "brand" : "neutral"} dot>
-              {customer.isActive ? "Active" : "Inactive"}
-            </Pill>
+            <VisibilityPill own={customer.isActive ? "active" : "hidden"} offWord="Inactive" />
             {anon ? (
               <Pill tone="ink">Anonymised</Pill>
             ) : (

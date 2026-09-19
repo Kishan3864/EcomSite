@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUp, ArrowUpDown, Crown, Power, UserCheck, UserRound, Users, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Crown,
+  UserCheck,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
 import type { Customer, Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
@@ -18,6 +27,8 @@ import {
   Th,
   Tr,
   withParams,
+  VisibilityPill,
+  VisibilityToggle,
 } from "@/components/admin/ui";
 import { setCustomerActive } from "@/services/admin/customers-actions";
 import { insensitive, pageMeta, parseListParams, skipTake, type RawParams } from "@/services/admin/shared";
@@ -278,9 +289,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                     <DateCell value={c.createdAt} />
                   </Td>
                   <Td>
-                    <Pill tone={c.isActive ? "brand" : "neutral"} dot>
-                      {c.isActive ? "Active" : "Inactive"}
-                    </Pill>
+                    <VisibilityPill own={c.isActive ? "active" : "hidden"} offWord="Inactive" />
                   </Td>
                   {hasRole(session, "MANAGER") && (
                     <Td align="right">
@@ -296,17 +305,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
                           <input type="hidden" name="id" value={c.id} />
                           <input type="hidden" name="active" value={c.isActive ? "false" : "true"} />
                           <input type="hidden" name="returnTo" value={listHref} />
-                          <button
-                            type="submit"
-                            title={c.isActive ? "Deactivate" : "Reactivate"}
-                            aria-label={c.isActive ? `Deactivate ${c.name}` : `Reactivate ${c.name}`}
-                            className={cn(
-                              "p-1.5 transition-colors hover:bg-ink-100",
-                              c.isActive ? "text-ink-400 hover:text-ink-900" : "text-brand-600 hover:text-brand-800",
-                            )}
-                          >
-                            <Power size={14} />
-                          </button>
+                          <VisibilityToggle on={c.isActive} what={c.name} storefront={false} />
                         </ConfirmForm>
                       )}
                     </Td>
