@@ -27,3 +27,6 @@ src/generated
 # Google signing keys, cached so a sign-in never waits on the network
 .cache
 logs
+
+# written and removed by scripts/check-visibility.ts --all-off within one run
+.check-visibility-recovery.json

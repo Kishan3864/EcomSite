@@ -13,10 +13,18 @@ import { getBrands, getCategories, getCategory, searchProducts } from "@/service
 
 type Params = Promise<{ category: string }>;
 
-export async function generateStaticParams() {
-  const categories = await getCategories();
-  return categories.map((c) => ({ category: c.slug }));
-}
+/**
+ * Rendered on demand, and said so outright.
+ *
+ * This page reads the filter query string, so every normal build already
+ * marks it dynamic. It used to leave that to be inferred, alongside a
+ * generateStaticParams listing the active categories — and on a build made
+ * while EVERY category was hidden that list was empty, Next took the route for
+ * a static one rendered at request time, and the query-string read threw
+ * DYNAMIC_SERVER_USAGE: a 500 where a hidden category should be a plain 404.
+ * A dynamic page gains nothing from static params, so they are gone.
+ */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { category: slug } = await params;

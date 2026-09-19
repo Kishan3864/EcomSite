@@ -11,6 +11,13 @@
  * allowed to query products at all. The ESLint rule says the same thing at
  * edit time; this says it with the file and line, and can gate a deploy.
  *
+ * --all-off, LOCAL ONLY: the extreme case. Every category is switched off and
+ * the storefront must then hold nothing at all — no department, no product by
+ * any route, an empty sitemap and search index, and a checkout that refuses
+ * every product in the catalogue. The original flags are written to a recovery
+ * file BEFORE anything changes and restored in a finally block in this same
+ * run; an interrupt restores them too. Nothing is left for a person to undo.
+ *
  * --db, LOCAL ONLY: hides one category, then separately one collection whose
  * category stays active, and asks the storefront's own read functions whether
  * anything inside is still reachable — the product by slug, /products, search,
@@ -20,7 +27,7 @@
  * refuses to run against anything but a local database.
  */
 import "dotenv/config";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
 const ok = (s: string) => console.log(`\x1b[32m✓\x1b[0m ${s}`);
@@ -182,9 +189,101 @@ async function dbCheck() {
   await db.$disconnect();
 }
 
+/* ------------------------------- all off ------------------------------ */
+
+const RECOVERY = join(ROOT, ".check-visibility-recovery.json");
+
+async function allOffCheck() {
+  const url = process.env.DATABASE_URL ?? "";
+  if (!/@(localhost|127\.0\.0\.1)[:/]/.test(url)) {
+    console.log("\nRefusing --all-off: DATABASE_URL is not a local database.");
+    process.exit(1);
+  }
+  const { db } = await import("@/lib/db");
+  const catalog = await import("@/services/catalog");
+  const { getSearchDocs } = await import("@/services/search-docs");
+  const { unavailableProductIds } = await import("@/services/cart-availability");
+  const { visibleProducts } = await import("@/services/visibility");
+
+  // A previous run that was killed outright leaves its recovery file behind.
+  // Put that state back first, so this run never records a half-hidden shop as
+  // "the original".
+  if (existsSync(RECOVERY)) {
+    const stale = JSON.parse(readFileSync(RECOVERY, "utf8")) as string[];
+    await db.category.updateMany({ where: { id: { in: stale } }, data: { isActive: true } });
+    unlinkSync(RECOVERY);
+    console.log(`\nRecovered ${stale.length} categories left switched off by an interrupted run.`);
+  }
+
+  const wasActive = (await db.category.findMany({ where: { isActive: true }, select: { id: true } })).map((c) => c.id);
+  const everyProduct = (await db.product.findMany({ select: { id: true } })).map((p) => p.id);
+  const before = await catalog.getCatalogueSize();
+  console.log(
+    `\nAll off: ${wasActive.length} active categories, ${before.products} products visible to shoppers, ${everyProduct.length} products in the database`,
+  );
+  expect(before.products > 0, "baseline: the storefront has products to lose");
+
+  const restore = async () => {
+    await db.category.updateMany({ where: { id: { in: wasActive } }, data: { isActive: true } });
+    if (existsSync(RECOVERY)) unlinkSync(RECOVERY);
+  };
+  process.once("SIGINT", () => void restore().finally(() => process.exit(130)));
+
+  writeFileSync(RECOVERY, JSON.stringify(wasActive));
+  try {
+    await db.category.updateMany({ where: { id: { in: wasActive } }, data: { isActive: false } });
+    console.log("\nEvery category switched OFF");
+
+    const size = await catalog.getCatalogueSize();
+    expect(size.products === 0 && size.categories === 0, `catalogue size: ${size.products} products, ${size.categories} categories`);
+    expect((await catalog.getCategories()).length === 0, "menu, footer and home departments: no categories");
+    expect((await catalog.getAllCategoryPaths()).length === 0, "sitemap: no category or collection URLs");
+    expect((await catalog.getAllProductSlugs()).length === 0, "sitemap: no product URLs");
+
+    const listing = await catalog.searchProducts({ page: 1, perPage: 500 } as never);
+    expect(listing.total === 0, `/products: ${listing.total} results`);
+    const search = await catalog.searchProducts({ q: "a", page: 1, perPage: 500 } as never);
+    expect(search.total === 0, `/search: ${search.total} results`);
+
+    const blocks: [string, { id: string }[]][] = [
+      ["trending", await catalog.getTrending(500)],
+      ["bestsellers", await catalog.getBestsellers(500)],
+      ["new arrivals", await catalog.getNewArrivals(500)],
+      ["flash deals", await catalog.getFlashDeals(500)],
+      ["limited stock", await catalog.getLimitedStock(500)],
+      ["handpicked", await catalog.getHandpicked(500)],
+      ["recommended", await catalog.getRecommended(500)],
+    ];
+    for (const [name, rows] of blocks) expect(rows.length === 0, `home block ${name}: ${rows.length} products`);
+
+    expect((await catalog.getPriceLadder()).length === 0, "price filter ladder: empty");
+    const byIds = await catalog.getProductsByIds(everyProduct);
+    expect(byIds.length === 0, `related, bundle and recently viewed, asked for all ${everyProduct.length} ids: ${byIds.length} returned`);
+
+    const docs = await getSearchDocs();
+    const productDocs = JSON.stringify(docs).match(/\/p\//g)?.length ?? 0;
+    expect(productDocs === 0, `instant-search index: ${productDocs} product entries, ${docs.length} entries in all`);
+
+    const gone = await unavailableProductIds(everyProduct.slice(0, 100));
+    expect(gone.length === Math.min(100, everyProduct.length), `cart check: ${gone.length} of ${Math.min(100, everyProduct.length)} asked about are unavailable`);
+    const buyable = await db.product.count({ where: visibleProducts({ id: { in: everyProduct } }) });
+    expect(buyable === 0, `checkout re-pricing query over every product: ${buyable} buyable`);
+  } finally {
+    await restore();
+  }
+
+  const after = await catalog.getCatalogueSize();
+  const nowActive = await db.category.count({ where: { isActive: true } });
+  expect(nowActive === wasActive.length, `restored in this run: ${nowActive} of ${wasActive.length} categories active again`);
+  expect(after.products === before.products, `restored: ${after.products} products visible, as before`);
+  expect(!existsSync(RECOVERY), "recovery file removed");
+  await db.$disconnect();
+}
+
 async function main() {
   staticCheck();
   if (process.argv.includes("--db")) await dbCheck();
+  if (process.argv.includes("--all-off")) await allOffCheck();
   console.log(failures === 0 ? "\nAll visibility checks passed.\n" : `\n${failures} visibility check(s) FAILED.\n`);
   process.exit(failures === 0 ? 0 : 1);
 }
