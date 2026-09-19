@@ -26,6 +26,10 @@ const TIERS: Record<TierName, { key: string; from: string; to: string; edge: str
   "WeekendCart Club": { key: "club", from: "#3b6579", to: "#15232b", edge: "#c9992a", ink: "#fbeab0", line: "Club member" },
 };
 
+export function isTierName(value: string): value is TierName {
+  return value in TIERS;
+}
+
 /** The crest alone. `size` is its height in px. */
 export function TierCrest({ tier, size = 40, className }: { tier: TierName; size?: number; className?: string | undefined }) {
   const t = TIERS[tier];

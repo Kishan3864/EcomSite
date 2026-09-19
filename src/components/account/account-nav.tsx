@@ -1,5 +1,6 @@
 "use client";
 
+import { TierBlock, isTierName } from "./tier";
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -101,27 +102,14 @@ export function AccountNav({
           </div>
         </div>
 
-        {/* Two figures on one rule, rather than a frosted panel inside a
-            panel. The numerals are tabular so the points column does not
-            shift as it grows. */}
-        <dl className="mt-4 grid grid-cols-2 gap-4 pt-3.5">
-          <div className="min-w-0">
-            <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
-              Membership
-            </dt>
-            <dd className="mt-1 truncate text-[13.5px] font-semibold text-white">
-              {profile?.tier}
-            </dd>
-          </div>
-          <div className="min-w-0 text-right">
-            <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
-              Points
-            </dt>
-            <dd className="mt-1 text-[13.5px] font-semibold tabular-nums text-white">
-              {(profile?.loyaltyPoints ?? 0).toLocaleString("en-IN")}
-            </dd>
-          </div>
-        </dl>
+        {/* The tier as a crest with its name and the points — the shared
+            component, so the account panel cannot drift from anywhere else a
+            tier is ever shown. An unknown tier name falls back to plain text. */}
+        {profile && isTierName(profile.tier) ? (
+          <TierBlock tier={profile.tier} points={profile.loyaltyPoints} onDark className="mt-4 pt-3.5" />
+        ) : (
+          <p className="mt-4 pt-3.5 text-[13.5px] font-semibold text-white">{profile?.tier}</p>
+        )}
 
         <p className="mt-3 text-[13px] text-white/40">
           Member since {profile ? formatDate(profile.memberSince, "short") : "—"}
