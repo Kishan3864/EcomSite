@@ -145,7 +145,7 @@ export interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
 type SubmitEvt = Parameters<NonNullable<FormProps["onSubmit"]>>[0];
 
 export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form(
-  { children, onSubmit, className, summary = true, ...props },
+  { children, onSubmit, onReset, className, summary = true, ...props },
   forwardedRef,
 ) {
   const innerRef = React.useRef<HTMLFormElement>(null);
@@ -153,6 +153,26 @@ export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form(
   const [errors, setErrors] = React.useState<FieldError[]>([]);
 
   React.useImperativeHandle(forwardedRef, () => innerRef.current as HTMLFormElement);
+
+  /**
+   * What every dropdown held at the last submit.
+   *
+   * React resets a form once its action has finished, by calling the browser's
+   * own `form.reset()`. For a text box that lands on the current `defaultValue`,
+   * which React keeps up to date. For a <select> it does not: the browser
+   * resets a select to the option that was selected WHEN THE PAGE OPENED, and
+   * React never moves that mark afterwards. So after a save, every dropdown on
+   * the page quietly snapped back to its opening value — while the database
+   * held the new one — and the NEXT save, of anything at all, wrote the old
+   * value back. Publish a product, fix a typo, save: it was a draft again.
+   * Hide one, save twice: it was live again.
+   *
+   * The reset event fires before the reset is applied, so the values are put
+   * back a tick later. What was submitted is what the form goes on showing,
+   * whether the save worked (it is what the database holds) or failed (it is
+   * what the person chose, and they should not have to choose it again).
+   */
+  const submittedSelects = React.useRef(new Map<HTMLSelectElement, string[]>());
 
   const collect = React.useCallback((form: HTMLFormElement) => {
     const found: FieldError[] = [];
@@ -190,7 +210,22 @@ export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form(
     }
 
     setErrors([]);
+    submittedSelects.current = new Map(
+      Array.from(form.querySelectorAll("select")).map((el) => [el, Array.from(el.selectedOptions, (o) => o.value)]),
+    );
     onSubmit?.(event);
+  }
+
+  function handleReset(event: React.FormEvent<HTMLFormElement>) {
+    onReset?.(event);
+    const held = submittedSelects.current;
+    if (event.defaultPrevented || held.size === 0) return;
+    window.setTimeout(() => {
+      for (const [el, values] of held) {
+        if (!el.isConnected) continue;
+        for (const option of Array.from(el.options)) option.selected = values.includes(option.value);
+      }
+    }, 0);
   }
 
   /**
@@ -215,6 +250,7 @@ export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form(
       // Switches off the browser's own bubble. The constraints still apply.
       noValidate
       onSubmit={handleSubmit}
+      onReset={handleReset}
       onInput={handleInput}
       className={className}
       {...props}
