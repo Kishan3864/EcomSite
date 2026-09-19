@@ -10,6 +10,9 @@ import { FlashMessage } from "./client";
 import { logoutAdminAction } from "@/services/admin/auth-actions";
 import { StatusPill } from "./ui";
 import { MaintenanceSwitch, type MaintenanceView } from "./maintenance-switch";
+import { AdminUserProvider } from "./admin-user";
+import { useStored } from "./use-stored";
+import { cn } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
 export interface AdminShellUser {
@@ -54,14 +57,26 @@ export function AdminShell({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  // The desktop menu as a rail of icons. Remembered in this browser, and read
+  // through useStored so the server render and the first client render agree.
+  const [rail, setRail] = useStored("weekendcart:admin:rail", "0");
+  const collapsed = rail === "1";
+  const toggleCollapsed = () => setRail(collapsed ? "0" : "1");
   const pathname = usePathname();
   const title = TITLES.find(([re]) => re.test(pathname))?.[1] ?? "Admin";
 
   return (
-    <div className="min-h-dvh bg-canvas lg:grid lg:grid-cols-[248px_minmax(0,1fr)] print:block print:min-h-0">
-      {/* Desktop sidebar */}
-      <aside className="hidden bg-surface lg:sticky lg:top-0 lg:block lg:h-dvh print:hidden">
-        <AdminSidebar counts={counts} />
+    <AdminUserProvider value={user.email}>
+    <div
+      className={cn(
+        "min-h-dvh bg-canvas transition-[grid-template-columns] duration-200 ease-out lg:grid print:block print:min-h-0",
+        collapsed ? "lg:grid-cols-[64px_minmax(0,1fr)]" : "lg:grid-cols-[248px_minmax(0,1fr)]",
+      )}
+    >
+      {/* Desktop sidebar. Above the page and the sticky header, so the rail's
+          flyouts are never drawn underneath either. */}
+      <aside className="z-50 hidden bg-surface lg:sticky lg:top-0 lg:block lg:h-dvh print:hidden">
+        <AdminSidebar counts={counts} collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
       </aside>
 
       {/* Mobile drawer */}
@@ -150,5 +165,6 @@ export function AdminShell({
         </main>
       </div>
     </div>
+    </AdminUserProvider>
   );
 }
