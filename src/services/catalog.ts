@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { visibleProducts } from "./visibility";
 import type {
   Banner,
   Brand,
@@ -171,7 +172,8 @@ function toCategory(row: CategoryRow): Category {
   };
 }
 
-const ACTIVE = { status: "ACTIVE" as const };
+// The one rule for what a shopper may see lives in ./visibility — status, and
+// the active flag of the category and the collection above the product.
 
 /* ---------------------------- Taxonomy ---------------------------- */
 
@@ -223,7 +225,7 @@ export async function getBrand(slug: string): Promise<Brand | null> {
 
 export const getProduct = cache(async (slug: string): Promise<Product | null> => {
   const row = await db.product.findFirst({
-    where: { slug, ...ACTIVE },
+    where: visibleProducts({ slug }),
     include: productFullInclude,
   });
   if (!row) return null;
@@ -246,7 +248,7 @@ export const getProduct = cache(async (slug: string): Promise<Product | null> =>
 export async function getProductsByIds(ids: string[]): Promise<Product[]> {
   if (ids.length === 0) return [];
   const rows = await db.product.findMany({
-    where: { id: { in: ids }, ...ACTIVE },
+    where: visibleProducts({ id: { in: ids } }),
     include: productListInclude,
   });
   const byId = new Map(rows.map((r) => [r.id, toProduct(r)]));
@@ -307,12 +309,11 @@ export async function searchProducts(
   // counts are computed against the scope, not the refined result, so a brand
   // you have not ticked still shows how many products it would add.
   const rows = await db.product.findMany({
-    where: {
-      ...ACTIVE,
+    where: visibleProducts({
       ...(query.category ? { category: { slug: query.category } } : {}),
       ...(query.subcategory ? { subcategory: { slug: query.subcategory } } : {}),
       ...textWhere(query.q),
-    },
+    }),
     include: productListInclude,
   });
   const scoped = rows.map((r) => toProduct(r));
@@ -380,7 +381,7 @@ function buildFacets(scope: Product[], rows: ProductListRow[]): ProductFacets {
 async function listActive(args: Prisma.ProductFindManyArgs): Promise<Product[]> {
   const rows = await db.product.findMany({
     ...args,
-    where: { ...ACTIVE, ...(args.where ?? {}) },
+    where: visibleProducts(args.where),
     include: productListInclude,
   });
   return rows.map((r) => toProduct(r));
@@ -504,7 +505,7 @@ export async function getQuestions(productId: string): Promise<QuestionAnswer[]>
 export const getCatalogueSize = cache(
   async (): Promise<{ products: number; categories: number }> => {
     const [products, categories] = await Promise.all([
-      db.product.count({ where: ACTIVE }),
+      db.product.count({ where: visibleProducts() }),
       db.category.count({ where: { isActive: true } }),
     ]);
     return { products, categories };
@@ -524,7 +525,7 @@ export const getCatalogueSize = cache(
  */
 export const getPriceLadder = cache(async (): Promise<number[]> => {
   const rows = await db.product.findMany({
-    where: ACTIVE,
+    where: visibleProducts(),
     select: { price: true },
     orderBy: { price: "asc" },
   });
@@ -577,7 +578,7 @@ export const getBanners = cache(
 /* --------------------------- Static params -------------------------- */
 
 export async function getAllProductSlugs() {
-  const rows = await db.product.findMany({ where: ACTIVE, select: { slug: true } });
+  const rows = await db.product.findMany({ where: visibleProducts(), select: { slug: true } });
   return rows.map((r) => r.slug);
 }
 

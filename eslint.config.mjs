@@ -25,6 +25,36 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // What a shopper may see is decided in ONE place: visibleProducts() in
+    // src/services/visibility.ts — status, plus the active flag of the category
+    // and the collection above the product. A storefront file that reads
+    // products on its own would forget that rule and show a hidden department's
+    // goods, so outside the admin only the files below may query products at
+    // all, and scripts/check-visibility.ts proves each of their reads carries
+    // the filter. The admin is exempt on purpose: hidden things stay editable.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/app/admin/**",
+      "src/services/admin/**",
+      "src/generated/**",
+      "src/services/catalog.ts",
+      "src/services/search-docs.ts",
+      "src/services/commerce.ts",
+      "src/services/cart-availability.ts",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "CallExpression[callee.object.property.name='product'][callee.property.name=/^(find|count|aggregate|groupBy)/]",
+          message:
+            "Storefront code must not query products directly. Go through src/services/catalog.ts, which applies visibleProducts() (see src/services/visibility.ts).",
+        },
+      ],
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

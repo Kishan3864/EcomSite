@@ -26,6 +26,7 @@ import {
 import { safeNextPath } from "@/lib/auth/oauth";
 import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
+import { visibleProducts } from "./visibility";
 import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
 import { upiConfigured } from "@/lib/payments/upi";
 import { expireStalePendingOrders, trimUnpaidOrders } from "./order-expiry";
@@ -141,7 +142,9 @@ export async function placeOrder(
   // not the product. Keep it that way — spreading a product row into a
   // CartLine would put the wholesaler on the checkout payload.
   const products = await db.product.findMany({
-    where: { id: { in: input.lines.map((l) => l.productId) }, status: "ACTIVE" },
+    // The storefront rule, not status alone: a product in a hidden category or
+    // collection cannot be bought either, however it got into the bag.
+    where: visibleProducts({ id: { in: input.lines.map((l) => l.productId) } }),
     include: {
       variantGroups: { include: { options: true } },
       category: { select: { defaultHsnCode: true, defaultTaxRate: true } },

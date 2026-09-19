@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import type { SearchDoc } from "@/lib/search-index";
 import { db } from "@/lib/db";
+import { visibleProducts } from "./visibility";
 
 /**
  * Builds the header autocomplete index from the database.
@@ -21,7 +22,7 @@ export const getSearchDocs = cache(async (): Promise<SearchDoc[]> => {
     }),
     db.brand.findMany({ where: { isActive: true } }),
     db.product.findMany({
-      where: { status: "ACTIVE" },
+      where: visibleProducts(),
       select: {
         title: true,
         subtitle: true,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -10,6 +11,7 @@ import { OrderSummary } from "@/components/cart/order-summary";
 import { useStore } from "@/store/store";
 import { useCommerce } from "@/store/commerce";
 import { computeTotals } from "@/lib/pricing";
+import { unavailableProductIds } from "@/services/cart-availability";
 
 import { cn, formatINR } from "@/lib/utils";
 
@@ -30,6 +32,25 @@ const LINE_ACTION =
 export function CartClient() {
   const { cart, saved, config, dispatch, hydrated } = useStore();
   const { toggleWishlist, isWishlisted } = useCommerce();
+
+  // The bag is the browser's own copy, so a product hidden or withdrawn since
+  // it was added still sits here. Ask the server which lines can no longer be
+  // bought — before checkout, not at its last step. A failed check changes
+  // nothing: `placeOrder` still refuses such a line, as it always has.
+  const productKey = useMemo(() => [...new Set(cart.map((l) => l.productId))].sort().join(","), [cart]);
+  const [unavailable, setUnavailable] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!hydrated || productKey === "") return;
+    let live = true;
+    unavailableProductIds(productKey.split(","))
+      .then((ids) => live && setUnavailable(new Set(ids)))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [hydrated, productKey]);
+  const goneLines = cart.filter((l) => unavailable.has(l.productId));
+  const blocked = goneLines.length > 0;
 
   if (!hydrated) {
     return (
@@ -82,6 +103,29 @@ export function CartClient() {
                 </button>
               </header>
 
+              {blocked && (
+                <div role="alert" className="mb-3 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 sm:px-4">
+                  <p className="text-[13.5px] font-semibold text-ink-950">
+                    {goneLines.length === 1 ? "One item is" : `${goneLines.length} items are`} no longer available
+                  </p>
+                  <p className="mt-0.5 text-[13px] leading-[1.5] text-ink-600">
+                    Remove {goneLines.length === 1 ? "it" : "them"} to continue to checkout. The rest of your bag is fine.
+                  </p>
+                  <ul className="mt-2 space-y-1.5">
+                    {goneLines.map((line) => (
+                      <li key={line.id} className="flex items-center justify-between gap-3 text-[13px] text-ink-800">
+                        <span className="min-w-0 truncate">{line.title}</span>
+                        <button
+                          onClick={() => dispatch({ type: "cart/remove", id: line.id })}
+                          className={cn(LINE_ACTION, "shrink-0 text-sale-600 hover:text-sale-700")}
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <ul>
                 <AnimatePresence initial={false}>
                   {cart.map((line) => {
@@ -326,7 +370,7 @@ export function CartClient() {
               totals={totals}
               lines={cart}
               delivery={config.deliveryOptions[0]}
-              cta="Proceed to checkout"
+              cta={blocked ? undefined : "Proceed to checkout"}
               ctaHref="/checkout/address"
             />
             <p className="text-[13px] leading-[1.5] text-ink-500">
@@ -341,7 +385,7 @@ export function CartClient() {
           plus the home-indicator inset; keep in step with it). Sticky rather
           than fixed: it parks at the end of the bag instead of covering the
           footer. */}
-      {cart.length > 0 && (
+      {cart.length > 0 && !blocked && (
         <div className="sticky bottom-[calc(61px_+_env(safe-area-inset-bottom))] z-30 -mx-3 mt-4 flex items-center justify-between gap-3 bg-surface px-3 py-2.5 sm:-mx-6 sm:px-6 lg:hidden">
           <p className="min-w-0">
             <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
