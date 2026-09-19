@@ -1,3 +1,4 @@
+import { expireHomeRanking } from "@/services/home-ranking";
 import "server-only";
 
 import { revalidatePath } from "next/cache";
@@ -123,6 +124,11 @@ export const insensitive = (value: string): Prisma.StringFilter => ({
 export function revalidateStorefront(paths: string[] = []) {
   revalidatePath("/", "layout");
   for (const p of paths) revalidatePath(p);
+  // An admin change can reshape the homepage blocks (a category hidden, a
+  // product published), so the cached ranking is marked stale and the next
+  // homepage render recomputes it. Not awaited, and it may fail quietly: the
+  // ranking expires by itself within fifteen minutes anyway.
+  void expireHomeRanking();
 }
 
 export function revalidateAdmin(section?: string) {

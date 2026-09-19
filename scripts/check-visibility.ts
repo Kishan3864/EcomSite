@@ -50,6 +50,7 @@ const ALLOWED = new Set(
     "src/services/search-docs.ts",
     "src/services/commerce.ts",
     "src/services/cart-availability.ts",
+      "src/services/home-ranking.ts",
   ].map((p) => p.split("/").join(sep)),
 );
 const EXEMPT = ["src/app/admin", "src/services/admin", "src/generated"].map((p) => p.split("/").join(sep));

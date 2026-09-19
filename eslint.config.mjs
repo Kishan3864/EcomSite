@@ -42,6 +42,7 @@ const eslintConfig = defineConfig([
       "src/services/search-docs.ts",
       "src/services/commerce.ts",
       "src/services/cart-availability.ts",
+      "src/services/home-ranking.ts",
     ],
     rules: {
       "no-restricted-syntax": [
