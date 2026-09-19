@@ -5,6 +5,8 @@ import {
   adminToken,
   customerToken,
 } from "@/lib/auth/session";
+import { BUSINESS } from "@/config/business";
+import { getMaintenance, maintenanceHtml, retryAfterSeconds } from "@/lib/maintenance";
 
 /**
  * Edge route guard.
@@ -62,6 +64,45 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
+  }
+
+  /**
+   * Maintenance mode, for everything that is not the admin.
+   *
+   * Placed after the /admin block on purpose: the admin and its login stay
+   * reachable whatever the switch says, or nobody could switch it back off. API
+   * routes never reach this function at all (see the matcher), so PayU's
+   * callbacks and webhooks keep landing while the shop is shut.
+   *
+   * 503 with Retry-After is the status that tells a search engine "come back,
+   * nothing has moved" — a 200 holding page gets indexed in place of the shop,
+   * and a 404 gets pages dropped. A signed-in admin is let through, so the
+   * owner can look at the shop while shoppers cannot.
+   *
+   * `getMaintenance` answers from memory for a few seconds at a time, so this is
+   * not a database query per request.
+   */
+  const maintenance = await getMaintenance();
+  if (maintenance.on) {
+    const admin = await adminToken.verify(request.cookies.get(ADMIN_COOKIE)?.value);
+    if (!admin) {
+      return new NextResponse(
+        maintenanceHtml(maintenance, { name: BUSINESS.brandName, email: BUSINESS.supportEmail }),
+        {
+          status: 503,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Retry-After": String(retryAfterSeconds(maintenance)),
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex",
+          },
+        },
+      );
+    }
+    const preview = NextResponse.next();
+    preview.headers.set("X-Maintenance-Preview", "1");
+    preview.headers.set("Cache-Control", "no-store");
+    return preview;
   }
 
   if (pathname.startsWith("/account")) {

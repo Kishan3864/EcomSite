@@ -9,6 +9,7 @@ import { AdminSidebar, type SidebarCounts } from "./sidebar";
 import { FlashMessage } from "./client";
 import { logoutAdminAction } from "@/services/admin/auth-actions";
 import { StatusPill } from "./ui";
+import { MaintenanceSwitch, type MaintenanceView } from "./maintenance-switch";
 import { Form } from "@/components/ui/form";
 
 export interface AdminShellUser {
@@ -44,10 +45,12 @@ const TITLES: [RegExp, string][] = [
 export function AdminShell({
   user,
   counts,
+  maintenance,
   children,
 }: {
   user: AdminShellUser;
   counts: SidebarCounts;
+  maintenance: MaintenanceView;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -111,6 +114,8 @@ export function AdminShell({
             >
               <Search size={14} /> Find an order…
             </Link>
+
+            <MaintenanceSwitch view={maintenance} />
 
             <div className="flex items-center gap-2.5 bg-canvas py-1 pl-1 pr-2.5">
               <span className="flex h-7 w-7 items-center justify-center bg-brand-900 text-[11px] font-bold text-white">

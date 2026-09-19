@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/shell";
-import { requireAdmin } from "@/lib/auth/admin";
+import { hasRole, requireAdmin } from "@/lib/auth/admin";
+import { MAINTENANCE_KEY, normaliseMaintenance } from "@/lib/maintenance";
 import { db } from "@/lib/db";
 
 export const metadata: Metadata = {
@@ -26,8 +27,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }),
   ]);
 
+  // Asked of the database directly, not of the few-second cache the proxy
+  // uses: this is the header that says whether the shop is up, and it must not
+  // be a moment behind the switch somebody has just pressed.
+  const maintenance = normaliseMaintenance(
+    (await db.storeSetting.findUnique({ where: { key: MAINTENANCE_KEY }, select: { value: true } }))?.value,
+  );
+  // datetime-local wants local wall-clock time with no zone; the admin is run in IST.
+  const backByInput = maintenance.backBy
+    ? new Date(Date.parse(maintenance.backBy) + 5.5 * 3_600_000).toISOString().slice(0, 16)
+    : "";
+
   return (
     <AdminShell
+      maintenance={{
+        on: maintenance.on,
+        message: maintenance.message,
+        backByInput,
+        canEdit: hasRole(session, "MANAGER"),
+      }}
       user={{ name: session.name, email: session.email, role: session.role }}
       counts={{ orders, returns, reviews: reviews + questions, messages, lowStock }}
     >
