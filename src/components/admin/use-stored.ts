@@ -24,6 +24,22 @@ function subscribe(onChange: () => void) {
   };
 }
 
+/**
+ * Whether a CSS media query matches, as React state. False on the server and on
+ * the first client render, so the two agree.
+ */
+export function useMediaQuery(query: string): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const list = window.matchMedia(query);
+      list.addEventListener("change", onChange);
+      return () => list.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
+}
+
 export function useStored(key: string, fallback: string): [string, (value: string) => void] {
   const value = useSyncExternalStore(
     subscribe,

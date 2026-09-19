@@ -11,6 +11,7 @@ const TABS = [
   { href: "/admin/settings/tax", label: "Tax", owner: true },
   { href: "/admin/settings/inventory", label: "Inventory", owner: true },
   { href: "/admin/settings/team", label: "Team", owner: true },
+  { href: "/admin/settings/maintenance", label: "Maintenance", owner: false },
   { href: "/admin/settings/profile", label: "Your account", owner: false },
 ];
 

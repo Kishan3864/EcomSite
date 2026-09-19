@@ -4,14 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { LogOut, Menu, Search, X } from "lucide-react";
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
 import { AdminSidebar, type SidebarCounts } from "./sidebar";
 import { FlashMessage } from "./client";
 import { logoutAdminAction } from "@/services/admin/auth-actions";
 import { StatusPill } from "./ui";
 import { MaintenanceSwitch, type MaintenanceView } from "./maintenance-switch";
 import { AdminUserProvider } from "./admin-user";
-import { useStored } from "./use-stored";
+import { useMediaQuery, useStored } from "./use-stored";
 import { cn } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
@@ -60,8 +60,14 @@ export function AdminShell({
   // The desktop menu as a rail of icons. Remembered in this browser, and read
   // through useStored so the server render and the first client render agree.
   const [rail, setRail] = useStored("weekendcart:admin:rail", "0");
-  const collapsed = rail === "1";
-  const toggleCollapsed = () => setRail(collapsed ? "0" : "1");
+  // The rail cannot scroll — its overflow is visible so the flyouts can escape
+  // it — so on a window too short to show every icon the lowest ones would be
+  // out of reach. There the menu stays full width, where it scrolls, and the
+  // button says why. The preference is kept and applies again on a taller window.
+  const tallEnough = useMediaQuery("(min-height: 780px)");
+  const wantsRail = rail === "1";
+  const collapsed = wantsRail && tallEnough;
+  const toggleCollapsed = () => setRail(wantsRail ? "0" : "1");
   const pathname = usePathname();
   const title = TITLES.find(([re]) => re.test(pathname))?.[1] ?? "Admin";
 
@@ -76,7 +82,7 @@ export function AdminShell({
       {/* Desktop sidebar. Above the page and the sticky header, so the rail's
           flyouts are never drawn underneath either. */}
       <aside className="z-50 hidden bg-surface lg:sticky lg:top-0 lg:block lg:h-dvh print:hidden">
-        <AdminSidebar counts={counts} collapsed={collapsed} onToggleCollapsed={toggleCollapsed} />
+        <AdminSidebar counts={counts} collapsed={collapsed} />
       </aside>
 
       {/* Mobile drawer */}
@@ -118,6 +124,30 @@ export function AdminShell({
             className="-ml-1 p-2 text-ink-700 hover:bg-ink-100 lg:hidden"
           >
             <Menu size={20} />
+          </button>
+
+          {/* The menu's fold control. In the HEADER, first thing on the left,
+              in the same place whether the menu is full or a rail — it used to
+              live at the foot of the menu itself, where on a shorter window it
+              fell below the screen, and the rail cannot scroll (its overflow is
+              visible so the flyouts can escape). The owner collapsed the menu
+              and had no way back. A control that changes a layout must never
+              be inside the thing it hides. */}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-pressed={collapsed}
+            aria-label={collapsed ? "Expand the menu" : "Collapse the menu"}
+            title={
+              collapsed
+                ? "Expand the menu"
+                : wantsRail && !tallEnough
+                  ? "This window is too short for the icon rail — it comes back on a taller window. Click to switch the rail off."
+                  : "Collapse the menu to icons"
+            }
+            className="-ml-1 hidden h-9 w-9 shrink-0 items-center justify-center bg-canvas text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-950 focus-visible:outline-2 focus-visible:outline-brand-700 lg:flex"
+          >
+            {collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
           </button>
 
           <h1 className="min-w-0 truncate font-display text-[17px] tracking-[-0.01em] text-ink-950">{title}</h1>

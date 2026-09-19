@@ -1,14 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
   Boxes,
   ChevronDown,
-  ChevronsLeft,
-  ChevronsRight,
   ExternalLink,
   Image as ImageIcon,
   Inbox,
@@ -134,6 +132,7 @@ const GROUPS = (c: SidebarCounts): NavGroup[] => [
           { href: "/admin/settings/tax", label: "Tax" },
           { href: "/admin/settings/inventory", label: "Inventory" },
           { href: "/admin/settings/team", label: "Team" },
+          { href: "/admin/settings/maintenance", label: "Maintenance" },
           { href: "/admin/settings/profile", label: "Your account" },
         ],
       },
@@ -187,15 +186,21 @@ export function AdminSidebar({
   counts,
   onNavigate,
   collapsed = false,
-  onToggleCollapsed,
 }: {
   counts: SidebarCounts;
   onNavigate?: () => void;
+  /** The rail. The control that flips it lives in the header, not in here. */
   collapsed?: boolean;
-  /** Absent in the phone drawer, which is always full width. */
-  onToggleCollapsed?: () => void;
 }) {
   const pathname = usePathname();
+
+  // A rail flyout opens on focus as well as on hover, and a click leaves focus
+  // on the icon — so after navigating, that flyout stayed open over the page
+  // until something else was clicked. Arriving somewhere new lets go of it.
+  useEffect(() => {
+    const active = document.activeElement;
+    if (active instanceof HTMLElement && active.closest("[data-admin-nav]")) active.blur();
+  }, [pathname]);
   const [stored, setStored] = useStored(STORE_KEY, "{}");
   const memory = useMemo(() => parseMemory(stored), [stored]);
   const remember = (next: Remembered) => setStored(JSON.stringify(next));
@@ -219,6 +224,7 @@ export function AdminSidebar({
       <nav
         className={cn("flex-1 py-4", collapsed ? "overflow-visible px-2" : "overflow-y-auto px-3")}
         aria-label="Admin navigation"
+        data-admin-nav
       >
         {GROUPS(counts).map((group) => {
           const holdsCurrent = group.items.some((item) => isActive(pathname, item.href, item.exact));
@@ -418,22 +424,6 @@ export function AdminSidebar({
         >
           <ExternalLink size={14} /> {!collapsed && "View storefront"}
         </Link>
-        {onToggleCollapsed && (
-          <button
-            type="button"
-            onClick={onToggleCollapsed}
-            aria-pressed={collapsed}
-            aria-label={collapsed ? "Expand the menu" : "Collapse the menu"}
-            title={collapsed ? "Expand the menu" : "Collapse the menu"}
-            className={cn(
-              "flex w-full items-center gap-2 py-2 text-[12.5px] font-medium text-ink-500 transition-colors hover:bg-ink-100 hover:text-ink-950",
-              collapsed ? "justify-center" : "px-2.5",
-            )}
-          >
-            {collapsed ? <ChevronsRight size={15} /> : <ChevronsLeft size={15} />}
-            {!collapsed && "Collapse menu"}
-          </button>
-        )}
       </div>
     </div>
   );
