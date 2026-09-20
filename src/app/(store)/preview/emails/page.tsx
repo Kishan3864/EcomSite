@@ -6,7 +6,7 @@ import { renderOrderConfirmation } from "@/services/order-email";
 import { buildOrderUpdate, type OrderEmailKind } from "@/lib/emails/order-updates";
 import { buildContactAdminEmail } from "@/lib/emails/contact-admin";
 import { buildContactAck } from "@/lib/emails/contact-ack";
-import { buildPasswordResetEmail } from "@/lib/emails/password-reset";
+import { buildPasswordResetEmail, buildPasswordSetNotice } from "@/lib/emails/password-reset";
 
 /**
  * Every email the shop sends, rendered from the real templates with sample
@@ -234,13 +234,31 @@ const SAMPLES = [
   },
   {
     key: "password-reset",
-    title: "Password reset",
+    title: "Password reset — account that has a password",
     note: "Says plainly that it expires, works once, and what to do if the reader did not ask for it.",
     mail: buildPasswordResetEmail({
       name: "Ananya Iyer",
       resetUrl: "https://weekendcart.com/reset-password?token=preview-token-not-valid",
       expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      mode: "reset",
     }),
+  },
+  {
+    key: "password-set",
+    title: "Password set — Google-only account",
+    note: "The same link, different words. Nobody is told to reset a password they never made, and it says outright that Google keeps working.",
+    mail: buildPasswordResetEmail({
+      name: "Ananya Iyer",
+      resetUrl: "https://weekendcart.com/reset-password?token=preview-token-not-valid",
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      mode: "set",
+    }),
+  },
+  {
+    key: "password-set-notice",
+    title: "Security notice — a password was added",
+    note: "Sent only when a password appears on an account that never had one. Carries no link on purpose: a security notice whose remedy is a link teaches people to click links in security notices.",
+    mail: buildPasswordSetNotice({ name: "Ananya Iyer" }),
   },
 ];
 

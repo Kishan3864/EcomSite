@@ -61,7 +61,18 @@ export async function issueResetToken(customerId: string, requestIp: string | nu
 }
 
 export type ResetLookup =
-  | { ok: true; tokenId: string; customerId: string }
+  | {
+      ok: true;
+      tokenId: string;
+      customerId: string;
+      /**
+       * False when the account has only ever signed in with Google. The page
+       * and the email both say "set a password" rather than "reset" in that
+       * case — telling somebody to reset a password they never had reads like
+       * a phishing attempt for a credential they know does not exist.
+       */
+      hasPassword: boolean;
+    }
   | { ok: false; reason: "unknown" | "used" | "expired" };
 
 /**
@@ -76,13 +87,24 @@ export async function findResetToken(token: string): Promise<ResetLookup> {
 
   const row = await db.passwordResetToken.findUnique({
     where: { tokenHash: hash(token) },
-    select: { id: true, customerId: true, usedAt: true, expiresAt: true },
+    select: {
+      id: true,
+      customerId: true,
+      usedAt: true,
+      expiresAt: true,
+      customer: { select: { passwordHash: true } },
+    },
   });
   if (!row) return { ok: false, reason: "unknown" };
   if (row.usedAt) return { ok: false, reason: "used" };
   if (row.expiresAt.getTime() <= Date.now()) return { ok: false, reason: "expired" };
 
-  return { ok: true, tokenId: row.id, customerId: row.customerId };
+  return {
+    ok: true,
+    tokenId: row.id,
+    customerId: row.customerId,
+    hasPassword: row.customer.passwordHash !== null,
+  };
 }
 
 /**

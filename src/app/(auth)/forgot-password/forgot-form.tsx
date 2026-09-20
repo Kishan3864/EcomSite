@@ -47,8 +47,8 @@ export function ForgotForm() {
           Check your inbox
         </h2>
         <p className="mt-2.5 text-[14px] leading-[1.55] text-ink-600">
-          If there is an account for that address, a link to set a new password is on its way. It
-          works once and expires in an hour. Look in spam if it has not arrived in a few minutes.
+          If there is an account for that address, a link is on its way. It works once and expires
+          in an hour. Look in spam if it has not arrived in a few minutes.
         </p>
         <p className="mt-3 text-[13px] leading-[1.5] text-ink-500">
           In a hurry? Call{" "}
@@ -93,8 +93,8 @@ export function ForgotForm() {
       {/* A rule rather than a tinted tray: the sentence is an aside, not an
           alarm, and the shop draws asides with a line down the side. */}
       <p className="pl-3.5 text-[13px] leading-[1.55] text-ink-600">
-        The link expires in an hour and can only be used once. Signed in with Google? You have no
-        password to reset — use the Google button on the sign-in page.
+        The link expires in an hour and can only be used once. If you normally sign in with Google,
+        this is how you add a password as well — Google carries on working either way.
       </p>
 
       <SendButton />

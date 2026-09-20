@@ -14,7 +14,7 @@ import {
 } from "@/lib/auth/customer";
 import { hashPassword, passwordProblem } from "@/lib/auth/password";
 import { findResetToken, issueResetToken, redeemResetToken } from "@/lib/auth/password-reset";
-import { buildPasswordResetEmail, resetUrl } from "@/lib/emails/password-reset";
+import { buildPasswordResetEmail, buildPasswordSetNotice, resetUrl } from "@/lib/emails/password-reset";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
 import { computeTotals } from "@/lib/pricing";
 import {
@@ -990,10 +990,12 @@ export async function requestPasswordHelp(
       select: { id: true, name: true, isActive: true, passwordHash: true },
     });
 
-    // A deactivated account gets no link. An account that only ever signed in
-    // with Google has no password to reset, and sending it a reset link would
-    // quietly convert it to a password account behind the owner's back.
-    if (customer && customer.isActive && customer.passwordHash !== null && mailConfigured()) {
+    // A deactivated account gets no link. An account that has only ever signed
+    // in with Google does get one — it has no password to reset, so the link
+    // sets a first one, and the email says "set" rather than "reset" so nobody
+    // is told they have a password they never made. Google keeps working
+    // either way; nothing here touches authProvider or providerId.
+    if (customer && customer.isActive && mailConfigured()) {
       const issued = await issueResetToken(customer.id, ip);
       after(async () => {
         try {
@@ -1001,6 +1003,7 @@ export async function requestPasswordHelp(
             name: customer.name,
             resetUrl: resetUrl(issued.token),
             expiresAt: issued.expiresAt,
+            mode: customer.passwordHash === null ? "set" : "reset",
           });
           await sendMail({ to: email, subject: mail.subject, html: mail.html, text: mail.text });
         } catch (error) {
@@ -1015,10 +1018,62 @@ export async function requestPasswordHelp(
   return { ok: true };
 }
 
+/**
+ * Sends a set-a-password link to a signed-in customer's own address.
+ *
+ * Used by the account settings card, so somebody who signs in with Google does
+ * not have to pretend they have forgotten a password they never had. The link
+ * goes to the address on the account and nowhere else — it is never taken from
+ * the form — so this cannot be pointed at another mailbox.
+ */
+export async function requestOwnPasswordLink(
+  _prev: { ok?: boolean; error?: string },
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  // The form carries nothing: the address comes from the session, never from
+  // the request, so this action cannot be pointed at somebody else's mailbox.
+  void formData;
+
+  const session = await getCustomerSession();
+  if (!session) return { error: "Sign in again and try once more." };
+
+  const ip = await clientIp();
+  if (!rateLimit("password-reset:email", session.email, 3, 60 * 60_000) ||
+      !rateLimit("password-reset:ip", ip, 10, 60 * 60_000)) {
+    return { error: "We have sent a few of these already. Try again in an hour." };
+  }
+
+  const customer = await db.customer.findUnique({
+    where: { id: session.id },
+    select: { id: true, name: true, passwordHash: true, isActive: true },
+  });
+  if (!customer?.isActive) return { error: "Sign in again and try once more." };
+  if (!mailConfigured()) return { error: "We cannot send email right now. Please try later." };
+
+  const issued = await issueResetToken(customer.id, ip);
+  after(async () => {
+    try {
+      const mail = buildPasswordResetEmail({
+        name: customer.name,
+        resetUrl: resetUrl(issued.token),
+        expiresAt: issued.expiresAt,
+        mode: customer.passwordHash === null ? "set" : "reset",
+      });
+      await sendMail({ to: session.email, subject: mail.subject, html: mail.html, text: mail.text });
+    } catch (error) {
+      console.error("[password-set] link failed", (error as { message?: string }).message ?? "");
+    }
+  });
+
+  return { ok: true };
+}
+
 export interface ResetPasswordState {
   error?: string;
   field?: string;
   ok?: boolean;
+  /** True when this link set a first password rather than replacing one. */
+  wasFirstPassword?: boolean;
 }
 
 /**
@@ -1052,10 +1107,34 @@ export async function resetPassword(
     };
   }
 
+  // Read before redeeming: afterwards the column is set either way, and
+  // whether this was a first password decides both the wording and whether a
+  // security notice goes out.
+  const before = await db.customer.findUnique({
+    where: { id: found.customerId },
+    select: { email: true, name: true, passwordHash: true },
+  });
+  const firstPassword = before?.passwordHash === null;
+
   const done = await redeemResetToken(found.tokenId, found.customerId, await hashPassword(password));
   if (!done) return { error: "That link has already been used. Ask for a new one if you still need it." };
 
-  return { ok: true };
+  // The safety net. A password appearing on an account that never had one is
+  // exactly what it looks like when somebody has got into the mailbox, so the
+  // address is told — plainly, with a way to reach a person. Sent after the
+  // response and never allowed to fail the reset, which has already happened.
+  if (firstPassword && before && mailConfigured()) {
+    after(async () => {
+      try {
+        const notice = buildPasswordSetNotice({ name: before.name });
+        await sendMail({ to: before.email, subject: notice.subject, html: notice.html, text: notice.text });
+      } catch (error) {
+        console.error("[password-set] notice failed", (error as { message?: string }).message ?? "");
+      }
+    });
+  }
+
+  return { ok: true, wasFirstPassword: firstPassword };
 }
 
 /* -------------------------------- Auth ------------------------------ */

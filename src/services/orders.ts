@@ -298,6 +298,7 @@ export async function getCustomerProfile() {
       createdAt: true,
       avatarUrl: true,
       avatar: { select: { key: true } },
+      passwordHash: true,
       _count: { select: { orders: true } },
     },
   });
@@ -313,6 +314,13 @@ export async function getCustomerProfile() {
     loyaltyPoints: c.loyaltyPoints,
     memberSince: c.createdAt.toISOString(),
     orderCount: c._count.orders,
+    /**
+     * Whether this account can sign in with a password at all. False for one
+     * that has only ever used Google — the settings page offers to add one,
+     * so the owner is not sent round the forgot-password loop for something
+     * they have never had. The hash itself never leaves this function.
+     */
+    hasPassword: c.passwordHash !== null,
     avatarUrl: resolveAvatar(c),
     avatarInitials: c.name
       .split(" ")

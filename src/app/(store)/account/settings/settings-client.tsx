@@ -33,6 +33,7 @@ import { useStore } from "@/store/store";
 import { Form } from "@/components/ui/form";
 import { Avatar } from "@/components/account/avatar";
 import { removeAvatar, uploadAvatar, type AvatarState } from "@/services/avatar-actions";
+import { PasswordCard } from "./password-card";
 import { PhoneLinkCard } from "@/components/auth/phone-otp";
 
 const ICONS: Record<PaymentMethodId, typeof Wallet> = {
@@ -48,6 +49,8 @@ export interface SettingsProfile {
   name: string;
   email: string;
   phone: string;
+  /** False for an account that has only ever signed in with Google. */
+  hasPassword: boolean;
 }
 
 export function SettingsClient({
@@ -74,6 +77,15 @@ export function SettingsClient({
 
       <PhotoSection />
       <DetailsSection profile={profile} />
+      {!profile.hasPassword && (
+        <Section
+          id="password"
+          title="Add a password"
+          description="A second way in, alongside Google. Neither replaces the other."
+        >
+          <PasswordCard email={profile.email} />
+        </Section>
+      )}
       {signInPhone !== undefined && (
         <Section
           id="mobile"

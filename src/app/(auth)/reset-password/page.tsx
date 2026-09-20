@@ -62,16 +62,23 @@ export default async function ResetPasswordPage({
     );
   }
 
+  // An account that has only ever used Google is setting a first password, not
+  // replacing one. Saying "reset" to that person asks them to recall something
+  // they never chose.
+  const setting = !found.hasPassword;
+
   return (
     <div className="mx-auto w-full max-w-[420px] px-4 py-12">
       <h1 className="font-display text-[26px] leading-tight tracking-[-0.02em] text-ink-950">
-        Set a new password
+        {setting ? "Set a password for your account" : "Set a new password"}
       </h1>
       <p className="mt-3 text-[14px] leading-[1.65] text-ink-600">
-        Choose something you have not used elsewhere. This link works once.
+        {setting
+          ? "You sign in with Google at the moment. Add a password and you can use either — the Google button keeps working exactly as it does now."
+          : "Choose something you have not used elsewhere. This link works once."}
       </p>
       <div className="mt-6">
-        <ResetForm token={token} />
+        <ResetForm token={token} setting={setting} />
       </div>
     </div>
   );

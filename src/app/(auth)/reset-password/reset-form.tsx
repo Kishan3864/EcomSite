@@ -10,16 +10,16 @@ import { Field, Input } from "@/components/ui/field";
 import { resetPassword } from "@/services/commerce";
 import { Form } from "@/components/ui/form";
 
-function SaveButton() {
+function SaveButton({ setting }: { setting: boolean }) {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="lg" className="h-10 w-full" loading={pending}>
-      <KeyRound size={16} /> {pending ? "Saving…" : "Save new password"}
+      <KeyRound size={16} /> {pending ? "Saving…" : setting ? "Set password" : "Save new password"}
     </Button>
   );
 }
 
-export function ResetForm({ token }: { token: string }) {
+export function ResetForm({ token, setting }: { token: string; setting: boolean }) {
   const [state, action] = useActionState(resetPassword, {});
 
   if (state.ok) {
@@ -32,11 +32,12 @@ export function ResetForm({ token }: { token: string }) {
       >
         <span className="eyebrow">Done</span>
         <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950">
-          Your password is changed
+          {state.wasFirstPassword ? "Your password is set" : "Your password is changed"}
         </h2>
         <p className="mt-2.5 text-[14px] leading-[1.55] text-ink-600">
-          Sign in with the new one. The link you just used will not work again, and any other reset
-          link we sent you has stopped working too.
+          {state.wasFirstPassword
+            ? "You can now sign in with your email and this password, or carry on with Google — both work. We have emailed you to confirm it, in case it was not you."
+            : "Sign in with the new one. The link you just used will not work again, and any other reset link we sent you has stopped working too."}
         </p>
         <Link href="/login" className={`${buttonClasses("primary", "md")} mt-5`}>
           Go to sign in
@@ -74,7 +75,7 @@ export function ResetForm({ token }: { token: string }) {
       ) : null}
 
       <div className="mt-5">
-        <SaveButton />
+        <SaveButton setting={setting} />
       </div>
     </Form>
   );
