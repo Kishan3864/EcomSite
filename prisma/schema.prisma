@@ -97,6 +97,10 @@ enum OrderStatus {
 
 enum PaymentStatus {
   PENDING
+  /// Money is owed back and has NOT moved yet. The state between deciding to
+  /// refund and the gateway confirming it, which previously did not exist —
+  /// so a cancellation wrote REFUNDED over a payment nobody had returned.
+  REFUND_DUE
   /// UPI only: the customer says they have paid and gave a UTR, and the owner
   /// has not yet checked the bank. Never treat this as money received.
   VERIFYING
@@ -704,10 +708,11 @@ model Order {
   placedAt          DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  lines    OrderLine[]
-  events   OrderEvent[]
-  returns  ReturnRequest[]
-  messages ContactMessage[]
+  lines         OrderLine[]
+  events        OrderEvent[]
+  returns       ReturnRequest[]
+  messages      ContactMessage[]
+  manualRefunds ManualRefund[]
 
   @@index([status, placedAt])
   @@index([customerId, placedAt])
@@ -759,6 +764,11 @@ model OrderEvent {
 
 model ReturnRequest {
   id           String       @id @default(cuid())
+  /// The gateway refund that actually gave this money back, once one exists.
+  /// This is what ties a return to real money: without it the two paths cannot
+  /// see each other and the same line can be refunded from both.
+  refundId     String?      @unique
+  refund       Refund?      @relation(fields: [refundId], references: [id], onDelete: SetNull)
   orderId      String
   order        Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
   orderLineId  String
@@ -911,6 +921,35 @@ model PasswordResetToken {
   @@index([expiresAt])
 }
 
+/**
+ * A refund the shop made by hand, outside any gateway.
+ * Cash on delivery and hand-verified UPI have no capture to reverse, so there
+ * is nothing for PayU to refund and somebody has to send the money themselves.
+ * That fact is recorded here rather than as a Refund row, deliberately: a
+ * hand-typed reference is a person's word that they made a transfer, and it
+ * must never be mistaken for a gateway's confirmation that money moved. The
+ * admin shows the two differently for the same reason.
+ */
+model ManualRefund {
+  id           String     @id @default(cuid())
+  orderId      String
+  order        Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// Whole rupees, matching Order.total — NOT paise. Gateway refunds are paise
+  /// because PayU counts in paise; this one is typed in by a person reading a
+  /// bank app, and they read rupees.
+  amount       Int
+  /// The UTR, the cheque number, whatever proves it at the bank. Required.
+  reference    String
+  /// How it was sent, in the owner's words: "UPI from HDFC", "cash at counter".
+  method       String
+  note         String?
+  recordedById String?
+  recordedBy   AdminUser? @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+  recordedAt   DateTime   @default(now())
+
+  @@index([orderId, recordedAt])
+}
+
 model NewsletterSubscriber {
   id         String    @id @default(cuid())
   email      String    @unique
@@ -943,9 +982,10 @@ model AdminUser {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  activity ActivityLog[]
-  uploads  MediaAsset[]
-  refunds  Refund[]
+  activity      ActivityLog[]
+  uploads       MediaAsset[]
+  refunds       Refund[]
+  manualRefunds ManualRefund[]
 }
 
 model ActivityLog {
@@ -1161,8 +1201,9 @@ model Refund {
   /// raised.
   lastCheckedAt DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  returnRequest ReturnRequest?
 
   @@index([orderId])
   @@index([status])
