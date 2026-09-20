@@ -110,6 +110,56 @@ The paths must know about each other: the same money can never be refunded twice
 - Password reset is real now: `PasswordResetToken`, hash-only storage, 60-minute expiry, single use. The forgot-password page no longer files a contact message.
 - Preview every mail at `/preview/emails` (admin only); `?order=<id or number>` renders a real order through the real code path.
 
+## 4c. The SMTP outage of 2026-09-20 — three diagnostics that lied
+
+Mail failed with `EAUTH 535 Invalid login` for hours while every check said the
+credentials were fine. It is written up because none of the three things that
+wasted the time were the bug, and each of them is a trap that will be laid
+again.
+
+**The actual cause.** The mailbox password contained a `#`, and the line in
+`.env` was not quoted. dotenv's rule for an unquoted value is `[^#\r\n]+` — it
+stops at the first `#` and discards the rest. A 16-character password reached
+the SMTP server as 8 characters. Nothing warns, nothing logs, and the file
+plainly shows the full value.
+
+    SMTP_PASS=Abc12345#efgh678      → the app receives "Abc12345"
+    SMTP_PASS="Abc12345#efgh678"    → the app receives all 16
+
+Next also runs dotenv-expand, so an unquoted `$NAME` is substituted. **Quote
+every secret.** After editing one, run `node scripts/check-env.mjs`: it reports
+every value mangled on its way to the app, as lengths and short hashes, never
+values. It would have found this in one run.
+
+**Lie 1 — the diagnostic on the wrong stream.** A `[mail] using …` line was
+added to print what the app was authenticating with. It never appeared, across
+every restart, which read as conclusive proof that the code path was dead. It
+was `console.log`; the failure beside it was `console.error`; and PM2 writes
+the two to *different files* (`logs/<app>-out.log` and `logs/<app>-err.log`).
+It had been printing all along, into the file nobody was reading.
+**A diagnostic goes on the same stream as the failure it explains.**
+
+**Lie 2 — the checker's hand-rolled parser.** `scripts/check-smtp.mjs` parsed
+`.env` itself and took everything after the `=`, so it read the *full*
+password, authenticated successfully, and reported that all was well — while
+the app was using the truncated one. A script that confidently verifies a value
+the app never uses is worse than no script. It now parses with the real dotenv.
+**Never re-implement a config format when the library production uses is
+installed beside you.**
+
+**Lie 3 — a plausible fix that was not the fix.** `SMTP_PASS` was being run
+through `.replace(/\s+/g, "")`, a rule that is right for Gmail App Passwords
+(Google prints them in four groups of four) and destructive for an ordinary
+password. It looked like it explained everything and was fixed first. It was a
+real bug, and it was not this bug. **A theory that fits the symptoms is not a
+diagnosis; make the program state what it is actually doing.**
+
+The one thing that settled it was an unconditional line on stderr printing the
+length and a short hash of what was being handed to nodemailer, next to the
+same figures taken from `.env`: 8 and `53faae44` against 16 and `a6a01a7f`.
+That diagnostic has since been removed; `scripts/check-env.mjs` and
+`scripts/check-smtp.mjs` are the permanent version of it.
+
 ## 5. House rules
 
 - Before EVERY commit: `npm run lint` (warnings fail), `npx tsc --noEmit`, `npm run build`. Storefront product-query changes: also `npx tsx --conditions=react-server scripts/check-visibility.ts`.

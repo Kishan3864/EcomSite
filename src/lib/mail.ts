@@ -1,7 +1,5 @@
 import "server-only";
 
-import { createHash } from "node:crypto";
-
 import { createTransport, type Transporter } from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import { BUSINESS } from "@/config/business";
@@ -74,53 +72,6 @@ function credentials(): Credentials | null {
   return null;
 }
 
-/**
- * What this process is about to authenticate with. One line, every attempt.
- *
- * Written to **stderr**, deliberately. PM2 keeps stdout and stderr in two
- * different files (`logs/<app>-out.log` and `logs/<app>-err.log`), and an
- * earlier version of this used console.log — which went to the file nobody was
- * reading, while the failure beside it went to the other one. A diagnostic that
- * lands somewhere other than the error it explains is not a diagnostic.
- *
- * It prints unconditionally, on success as well as failure, because "no line at
- * all" then means something specific: sendMail was never reached.
- *
- * It never prints a password. The length and the first eight characters of a
- * SHA-256 are enough to compare against the same figures from .env — see
- * scripts/check-smtp.mjs, which prints them the same way — and are worth
- * nothing to anybody reading the log.
- */
-function describeAttempt(auth: Credentials | null) {
-  const rawSmtp = process.env.SMTP_PASS;
-  const rawGmail = process.env.GMAIL_APP_PASSWORD;
-
-  console.error(
-    "[mail] attempt " +
-      JSON.stringify({
-        branch: auth ? auth.source : "NONE — no usable credentials, nothing will be sent",
-        user: auth?.user ?? null,
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
-        port: Number(process.env.SMTP_PORT) || 465,
-        secure: (Number(process.env.SMTP_PORT) || 465) === 465,
-        smtpUserDefined: process.env.SMTP_USER !== undefined,
-        smtpPassDefined: rawSmtp !== undefined,
-        smtpPassLength: rawSmtp?.length ?? null,
-        smtpPassHash: rawSmtp ? createHash("sha256").update(rawSmtp).digest("hex").slice(0, 8) : null,
-        smtpPassHasWhitespace: rawSmtp ? /\s/.test(rawSmtp) : null,
-        gmailFallbackDefined: rawGmail !== undefined,
-        // What is actually handed to nodemailer, which is the only figure that
-        // matters: if this differs from smtpPassHash, something transformed it.
-        sendingLength: auth?.pass.length ?? null,
-        sendingHash: auth ? createHash("sha256").update(auth.pass).digest("hex").slice(0, 8) : null,
-        // The checker reads .env from ITS working directory. If the app's
-        // differs, the two are reading different files and every hash above
-        // belongs to a file you have not looked at.
-        cwd: process.cwd(),
-      }),
-  );
-}
-
 let transport: Transport | null = null;
 /**
  * What the cached transport was built with. A process that is handed different
@@ -180,12 +131,6 @@ export interface OutgoingMail {
 /** Sends one message. True once the SMTP server has accepted it for delivery. */
 export async function sendMail(message: OutgoingMail): Promise<boolean> {
   const auth = credentials();
-
-  // Before the guard, so a missing-credentials return is visible too. Without
-  // this, "nothing was sent and nothing was logged" and "sendMail was never
-  // called" look identical from the outside.
-  describeAttempt(auth);
-
   if (!auth) return false;
 
   try {
@@ -200,15 +145,19 @@ export async function sendMail(message: OutgoingMail): Promise<boolean> {
       headers: message.headers,
       replyTo: message.replyTo,
     });
-    const ok = info.accepted.length > 0 && info.rejected.length === 0;
-    // On stderr with the rest, so a success and a failure sit in one file.
-    console.error(
-      `[mail] result ${ok ? "accepted" : "not accepted"} to=${message.to} accepted=${info.accepted.length} rejected=${info.rejected.length}`,
-    );
-    return ok;
+    return info.accepted.length > 0 && info.rejected.length === 0;
   } catch (error) {
-    // The error's message and code are enough to act on. The error object
-    // itself is not logged: it carries the SMTP transcript.
+    /**
+     * The only thing this module logs, and it goes to stderr.
+     *
+     * PM2 keeps the two streams in different files — logs/<app>-out.log and
+     * logs/<app>-err.log — so a diagnostic written with console.log lands
+     * somewhere other than the failure it explains, and reads as code that
+     * never ran. Anything added here stays on this stream.
+     *
+     * The error's message and code are enough to act on. The error object
+     * itself is never logged: it carries the SMTP transcript.
+     */
     const detail = error as { code?: string; responseCode?: number; message?: string };
     console.error("[mail] send failed", detail.code ?? "", detail.responseCode ?? "", detail.message ?? "");
     return false;
