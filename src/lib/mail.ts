@@ -75,39 +75,49 @@ function credentials(): Credentials | null {
 }
 
 /**
- * One line, once per process, the first time mail is sent.
+ * What this process is about to authenticate with. One line, every attempt.
  *
- * A wrong password is invisible from the outside: the server answers 535
- * whatever you sent it. This says which variables were used, how long the
- * password was, and a short hash of it — never the value — so it can be
- * compared with the same hash taken from .env without either of us printing a
- * password. It also reports whether the raw value contained whitespace, since
- * that is precisely what the old code destroyed.
+ * Written to **stderr**, deliberately. PM2 keeps stdout and stderr in two
+ * different files (`logs/<app>-out.log` and `logs/<app>-err.log`), and an
+ * earlier version of this used console.log — which went to the file nobody was
+ * reading, while the failure beside it went to the other one. A diagnostic that
+ * lands somewhere other than the error it explains is not a diagnostic.
+ *
+ * It prints unconditionally, on success as well as failure, because "no line at
+ * all" then means something specific: sendMail was never reached.
+ *
+ * It never prints a password. The length and the first eight characters of a
+ * SHA-256 are enough to compare against the same figures from .env — see
+ * scripts/check-smtp.mjs, which prints them the same way — and are worth
+ * nothing to anybody reading the log.
  */
-let described = false;
-function describeCredentialsOnce(auth: Credentials) {
-  if (described) return;
-  described = true;
+function describeAttempt(auth: Credentials | null) {
+  const rawSmtp = process.env.SMTP_PASS;
+  const rawGmail = process.env.GMAIL_APP_PASSWORD;
 
-  const raw =
-    auth.source === "SMTP" ? (process.env.SMTP_PASS ?? "") : (process.env.GMAIL_APP_PASSWORD ?? "");
-  console.log(
-    "[mail] using",
-    auth.source === "SMTP" ? "SMTP_USER/SMTP_PASS" : "GMAIL_USER/GMAIL_APP_PASSWORD",
-    "| user:",
-    auth.user,
-    "| host:",
-    process.env.SMTP_HOST || "smtp.gmail.com",
-    "| port:",
-    Number(process.env.SMTP_PORT) || 465,
-    "| pass length:",
-    auth.pass.length,
-    "| raw length:",
-    raw.length,
-    "| whitespace in raw:",
-    /\s/.test(raw),
-    "| sha256(pass)[0..8]:",
-    createHash("sha256").update(auth.pass).digest("hex").slice(0, 8),
+  console.error(
+    "[mail] attempt " +
+      JSON.stringify({
+        branch: auth ? auth.source : "NONE — no usable credentials, nothing will be sent",
+        user: auth?.user ?? null,
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: (Number(process.env.SMTP_PORT) || 465) === 465,
+        smtpUserDefined: process.env.SMTP_USER !== undefined,
+        smtpPassDefined: rawSmtp !== undefined,
+        smtpPassLength: rawSmtp?.length ?? null,
+        smtpPassHash: rawSmtp ? createHash("sha256").update(rawSmtp).digest("hex").slice(0, 8) : null,
+        smtpPassHasWhitespace: rawSmtp ? /\s/.test(rawSmtp) : null,
+        gmailFallbackDefined: rawGmail !== undefined,
+        // What is actually handed to nodemailer, which is the only figure that
+        // matters: if this differs from smtpPassHash, something transformed it.
+        sendingLength: auth?.pass.length ?? null,
+        sendingHash: auth ? createHash("sha256").update(auth.pass).digest("hex").slice(0, 8) : null,
+        // The checker reads .env from ITS working directory. If the app's
+        // differs, the two are reading different files and every hash above
+        // belongs to a file you have not looked at.
+        cwd: process.cwd(),
+      }),
   );
 }
 
@@ -170,8 +180,13 @@ export interface OutgoingMail {
 /** Sends one message. True once the SMTP server has accepted it for delivery. */
 export async function sendMail(message: OutgoingMail): Promise<boolean> {
   const auth = credentials();
+
+  // Before the guard, so a missing-credentials return is visible too. Without
+  // this, "nothing was sent and nothing was logged" and "sendMail was never
+  // called" look identical from the outside.
+  describeAttempt(auth);
+
   if (!auth) return false;
-  describeCredentialsOnce(auth);
 
   try {
     const info = await getTransport(auth).sendMail({
@@ -185,7 +200,12 @@ export async function sendMail(message: OutgoingMail): Promise<boolean> {
       headers: message.headers,
       replyTo: message.replyTo,
     });
-    return info.accepted.length > 0 && info.rejected.length === 0;
+    const ok = info.accepted.length > 0 && info.rejected.length === 0;
+    // On stderr with the rest, so a success and a failure sit in one file.
+    console.error(
+      `[mail] result ${ok ? "accepted" : "not accepted"} to=${message.to} accepted=${info.accepted.length} rejected=${info.rejected.length}`,
+    );
+    return ok;
   } catch (error) {
     // The error's message and code are enough to act on. The error object
     // itself is not logged: it carries the SMTP transcript.
