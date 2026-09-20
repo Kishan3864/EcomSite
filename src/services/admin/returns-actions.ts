@@ -202,8 +202,9 @@ export async function markReturnPickedUp(formData: FormData) {
     summary: `Marked return picked up for ${describe(row)}`,
     metadata: { orderId: row.orderId },
   });
+  // One email, not two. "Collected" and "back with us" were being sent from
+  // the same click, and the second was not yet true at the moment of pickup.
   sendOrderMail(row.orderId, "return-picked-up");
-  sendOrderMail(row.orderId, "return-received");
 
   revalidateReturn(row.orderId);
   redirect(withFlash(next, `${row.orderLine.title} marked as picked up.`));

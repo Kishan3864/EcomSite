@@ -27,6 +27,21 @@ import { buildPasswordResetEmail, buildPasswordSetNotice } from "@/lib/emails/pa
 export const metadata: Metadata = { title: "Email preview", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
+/**
+ * The first real sentence of an email, taken from its plain-text part.
+ *
+ * The text alternative starts with the headline, a blank line, then the
+ * opening paragraph — which is the sentence that decides whether the rest gets
+ * read, and the one worth comparing across every template side by side.
+ */
+function firstParagraph(text: string): string {
+  const blocks = text
+    .split(/\n\s*\n/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  return blocks[1] ?? blocks[0] ?? "";
+}
+
 const IN_3_DAYS = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
 const PLACED = new Date(Date.now() - 20 * 60 * 1000);
 
@@ -76,6 +91,12 @@ const LIFECYCLE: {
   extra: Record<string, unknown>;
 }[] = [
   {
+    kind: "packed",
+    title: "Packed",
+    note: "The gap a customer feels most: they pay, then hear nothing until a courier scans it. This says the order is real and moving, without claiming it has shipped.",
+    extra: {},
+  },
+  {
     kind: "payment-received",
     title: "Payment received",
     note: "Sent only when paymentStatus is PAID.",
@@ -110,10 +131,22 @@ const LIFECYCLE: {
     extra: { deliveredAt: new Date() },
   },
   {
-    kind: "cancelled",
-    title: "Cancelled",
-    note: "States the cancellation only. It does not promise a refund — that is a separate email with its own proof.",
-    extra: { cancelledAt: new Date(), cancelReason: "you asked us to cancel it" },
+    kind: "cancelled-by-shop",
+    title: "Cancelled by the shop",
+    note: "Apologises and gives the reason, because this one is the shop's doing. It does not promise a refund — that is a separate email with its own proof.",
+    extra: { cancelledAt: new Date(), cancelReason: "the last one in stock turned out to be damaged" },
+  },
+  {
+    kind: "cancelled-by-you",
+    title: "Cancelled by the customer",
+    note: "No apology: they asked. Confirms it is done and that the items are back on the shelf.",
+    extra: { cancelledAt: new Date() },
+  },
+  {
+    kind: "refund-failed",
+    title: "Refund needs another attempt",
+    note: "Never says 'failed' as a bare word. The money never left, so the mail says so plainly before anything else — a customer reading 'your refund failed' assumes their money is gone.",
+    extra: { refundAmount: 3794 },
   },
   {
     kind: "refund-raised",
@@ -300,6 +333,31 @@ export default async function EmailPreviewPage({
           No order matched <strong>{wanted}</strong>, or it has no email address on it. Showing the samples instead.
         </p>
       ) : null}
+
+      {/* Every email at a glance: the subject line and the first sentence, which
+          is all most people read. Reading them in one column is how you catch a
+          cancellation that sounds like a delivery. */}
+      <section className="mb-10 border-t border-ink-200 pt-6">
+        <h2 className="font-display text-[22px] tracking-[-0.02em] text-ink-950">
+          Every email, first words
+        </h2>
+        <p className="mt-1 max-w-[75ch] text-[13.5px] leading-relaxed text-ink-500">
+          Subject and opening paragraph for each. The full render of each one is below.
+        </p>
+        <div className="mt-5 grid gap-4">
+          {samples.map((sample) => (
+            <div key={`summary-${sample.key}`} className="border-l-2 border-ink-200 pl-4">
+              <p className="text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500">
+                {sample.title}
+              </p>
+              <p className="mt-1 text-[14px] font-semibold text-ink-950">{sample.mail.subject}</p>
+              <p className="mt-1 max-w-[80ch] text-[13.5px] leading-[1.6] text-ink-600">
+                {firstParagraph(sample.mail.text)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {samples.map((sample) => (
         <section key={sample.key} className="border-t border-ink-200 py-8">

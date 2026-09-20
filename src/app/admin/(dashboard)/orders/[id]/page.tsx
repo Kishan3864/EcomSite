@@ -44,6 +44,7 @@ import {
   AdminNoteForm,
   CancelOrderForm,
   ShipmentForm,
+  TestEmailForm,
   UpiVerifyForm,
 } from "../order-forms";
 import { PaymentSection } from "../payment-panel";
@@ -439,6 +440,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {canEdit && canCancel(order.status) && (
             <Card title="Danger zone">
               <CancelOrderForm orderId={order.id} courier={order.courier} awb={order.awb} />
+            </Card>
+          )}
+
+          {canEdit && (
+            <Card title="Check an email" description="Sends you a copy; the customer gets nothing">
+              <TestEmailForm orderId={order.id} />
             </Card>
           )}
 

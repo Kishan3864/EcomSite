@@ -1298,6 +1298,16 @@ export async function syncRefundStatus(refundId: string): Promise<RefundSyncResu
     sendOrderMail(refund.orderId, "refund-completed");
   }
 
+  /**
+   * The gateway refused it, or hit an overdraft. The customer was told nothing
+   * at all before this: a refund they had been promised simply stopped, and the
+   * first they heard was whenever somebody noticed. The mail is careful never
+   * to say their money is gone, because it is not — it never left.
+   */
+  if (reported === "FAILURE" || reported === "OD_HIT") {
+    sendOrderMail(refund.orderId, "refund-failed");
+  }
+
   return { refund: updated, changed: true, state: reported };
 }
 

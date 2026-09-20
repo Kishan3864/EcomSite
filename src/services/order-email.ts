@@ -89,9 +89,30 @@ export async function renderOrderConfirmation(orderId: string) {
  */
 export async function sendOrderConfirmation(orderId: string): Promise<void> {
   try {
+    /**
+     * Once per order, whoever asks.
+     *
+     * Three paths call this — checkout for cash on delivery, the PayU callback,
+     * and the owner approving a UPI credit — and an order can pass through more
+     * than one of them. A customer who paid by UPI and had it approved could
+     * receive two identical confirmations. The same emailsSent list the
+     * lifecycle mails use now covers this one too.
+     */
+    const existing = await db.order.findUnique({
+      where: { id: orderId },
+      select: { emailsSent: true },
+    });
+    if (!existing || existing.emailsSent.includes("placed")) return;
+
     const mail = await renderOrderConfirmation(orderId);
     if (!mail) return;
-    await sendMail(mail);
+
+    const sent = await sendMail(mail);
+    if (!sent) return;
+
+    // Recorded only once the server accepted it, so a failed send is retried
+    // by the next caller rather than silently swallowed.
+    await db.order.update({ where: { id: orderId }, data: { emailsSent: { push: "placed" } } });
   } catch (error) {
     console.error("[order-email]", orderId, error instanceof Error ? error.message : error);
   }

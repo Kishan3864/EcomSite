@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { logActivity, requireAdmin } from "@/lib/auth/admin";
-import { sendOrderMail } from "@/services/order-mail";
+import { renderOrderMailForPreview, sendOrderMail } from "@/services/order-mail";
+import type { OrderEmailKind } from "@/lib/emails/order-updates";
+import { mailConfigured, sendMail } from "@/lib/mail";
 import { raiseGatewayRefund, refundToken } from "@/services/refunds";
 import { DelhiveryError, cancelShipment, delhiveryConfig } from "@/lib/shipping/delhivery";
 import type { OrderStatus } from "@/generated/prisma/client";
@@ -96,8 +98,16 @@ export async function advanceOrderStatus(formData: FormData) {
     entityId: id,
     summary: `Moved order ${order.number} to ${target.replace(/_/g, " ").toLowerCase()}`,
   });
-  // The customer hears about the steps that mean something to them. PACKED
-  // and CONFIRMED are internal, so they get no mail.
+  /**
+   * The customer hears about every step that means something to them.
+   *
+   * PACKED used to be treated as internal and sent nothing, which left the
+   * longest silence in the whole journey exactly where a customer is most
+   * anxious: they have paid, and the next word they get is a tracking number a
+   * day or two later. CONFIRMED still sends nothing — the confirmation email
+   * has already covered it.
+   */
+  if (target === "PACKED") sendOrderMail(id, "packed");
   if (target === "SHIPPED") sendOrderMail(id, "shipped");
   if (target === "OUT_FOR_DELIVERY") sendOrderMail(id, "out-for-delivery");
   if (target === "DELIVERED") sendOrderMail(id, "delivered");
@@ -233,7 +243,7 @@ export async function cancelOrder(_prev: FormState, formData: FormData): Promise
     if (raised.ok) sendOrderMail(id, "refund-raised");
   }
 
-  sendOrderMail(id, "cancelled");
+  sendOrderMail(id, "cancelled-by-shop");
 
   revalidateOrder(id);
   redirect(flash(id, `${order.number} cancelled and stock returned${courierNote}`, courierFailed ? "error" : undefined));
@@ -350,3 +360,51 @@ export async function markCodPaid(formData: FormData) {
 }
 
 export type { OrderStatus };
+
+/**
+ * Sends one order email to the signed-in admin, for checking.
+ *
+ * Every template can be read at /preview/emails, but a preview is rendered from
+ * sample data in a browser frame. This sends the real thing, built from a real
+ * order, through the real mail server, to the person asking — so it can be
+ * opened in Gmail and in Outlook, on a phone, with images blocked, which is
+ * where templates actually break.
+ *
+ * Three things keep it safe. It goes ONLY to the admin's own address, never to
+ * the customer — the recipient is taken from the session and cannot be passed
+ * in. It does not touch `emailsSent`, so checking a template never consumes the
+ * customer's real send. And it bypasses the truthfulness guard deliberately,
+ * because the whole point is to see what a "delivered" mail looks like on an
+ * order that has not been delivered — which is safe precisely because nothing
+ * reaches the customer.
+ */
+export async function sendTestOrderEmail(_prev: FormState, formData: FormData): Promise<FormState> {
+  const session = await requireAdmin("MANAGER");
+  const orderId = str(formData, "orderId");
+  const kind = str(formData, "kind") as OrderEmailKind;
+
+  if (!session.email) return { error: "Your admin account has no email address on it." };
+  if (!mailConfigured()) return { error: "No mail server is configured on this server." };
+
+  const built = await renderOrderMailForPreview(orderId, kind);
+  if (!built) return { error: `Could not build the ${kind} email for this order.` };
+
+  const sent = await sendMail({
+    to: session.email,
+    subject: `[TEST] ${built.subject}`,
+    html: built.html,
+    text: `THIS IS A TEST COPY sent to you from the admin. The customer has not received it.\n\n${built.text}`,
+  });
+
+  if (!sent) return { error: "The mail server would not accept it. Check the logs." };
+
+  await logActivity(session, {
+    action: "order.email.test",
+    entity: "Order",
+    entityId: orderId,
+    summary: `Sent themselves a test copy of the ${kind} email`,
+    metadata: { kind },
+  });
+
+  return { ok: true, message: `The ${kind} email is on its way to ${session.email}.` };
+}

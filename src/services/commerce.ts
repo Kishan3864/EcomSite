@@ -1333,7 +1333,7 @@ export async function cancelOwnOrder(
     if (raised.ok) sendOrderMail(orderId, "refund-raised");
   }
 
-  sendOrderMail(orderId, "cancelled");
+  sendOrderMail(orderId, "cancelled-by-you");
 
   revalidatePath(`/order/${orderId}`);
   revalidatePath("/account/orders");

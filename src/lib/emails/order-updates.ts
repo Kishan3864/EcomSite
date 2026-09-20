@@ -35,17 +35,27 @@ import type { OrderEmail } from "./order";
  */
 
 export type OrderEmailKind =
+  /**
+   * The order confirmation, which is built by ./order.ts rather than here. It
+   * appears in this union so that it takes a slot in Order.emailsSent and
+   * cannot be sent twice — a UPI approval and a PayU callback for the same
+   * order used to produce two.
+   */
+  | "placed"
+  | "packed"
   | "return-requested"
-  | "return-received"
   | "return-rejected"
   | "payment-received"
   | "payment-failed"
   | "shipped"
   | "out-for-delivery"
   | "delivered"
-  | "cancelled"
+  /** Split in two: being cancelled and asking to cancel read nothing alike. */
+  | "cancelled-by-shop"
+  | "cancelled-by-you"
   | "refund-raised"
   | "refund-completed"
+  | "refund-failed"
   | "return-approved"
   | "return-picked-up";
 
@@ -111,6 +121,75 @@ function copyFor(o: OrderUpdateInput, track: string): Copy {
   const first = o.contactName.trim().split(/\s+/)[0] || "there";
 
   switch (o.kind) {
+    case "placed":
+      // The confirmation is built by ./order.ts, which has the lines, the
+      // totals and the address. "placed" lives in the union only so that it
+      // occupies a slot in Order.emailsSent and cannot be sent twice.
+      throw new Error("The order confirmation is built by buildOrderConfirmation, not here.");
+
+    case "packed":
+      return {
+        kicker: "Packed",
+        subject: `Order ${o.number} is packed and ready to go`,
+        eyebrow: "Packed",
+        headline: "Your order is packed",
+        // The quiet gap customers feel most: they pay, then hear nothing until
+        // a courier scans it, which can be a day or two later. This says the
+        // order is real and moving without claiming it has shipped.
+        opening: `${first}, order ${o.number} is packed and waiting for the courier to collect it. Nothing more is needed from you — we will send the tracking number the moment it is on its way.`,
+        preheader: `Order ${o.number} is packed and waiting for collection`,
+        next: [
+          "The courier collects from us, usually the next working day.",
+          "You get an email with the tracking number as soon as they do.",
+        ],
+      };
+
+    case "refund-failed":
+      return {
+        kicker: "Refund needs a second try",
+        subject: `We are sorting out your refund — order ${o.number}`,
+        eyebrow: "Refund needs a second try",
+        headline: "Your refund needs another attempt",
+        /**
+         * Never the bare word "failed" to a customer.
+         *
+         * A refund the gateway refused is almost always a detail at the bank's
+         * end — a closed card, an account that has moved — and the money is not
+         * lost. Saying "your refund failed" reads as "your money is gone" and
+         * produces a frightened phone call about something the shop is already
+         * fixing.
+         */
+        opening: `${first}, the refund of ${money(o.refundAmount ?? o.total)} for order ${o.number} did not go through at the bank's end. Your money is not lost — it never left our side, so there is nothing missing from your account. We are arranging it again.`,
+        preheader: `Your refund needs another attempt — nothing is lost`,
+        caution:
+          "You do not need to do anything. If the card or account you paid from has since been closed, reply to this email and tell us where to send it instead.",
+      };
+
+    case "cancelled-by-shop":
+      return {
+        kicker: "Cancelled",
+        subject: `We have had to cancel order ${o.number}`,
+        eyebrow: "Cancelled by us",
+        headline: "We have had to cancel your order",
+        // An apology, because this one is the shop's doing.
+        opening: `${first}, we are sorry — we have had to cancel order ${o.number}${o.cancelReason ? `: ${o.cancelReason.replace(/[.\s]+$/, "")}.` : "."} This was our doing, not anything you did.`,
+        preheader: `Order ${o.number} cancelled by us`,
+        caution: o.refundAmount
+          ? undefined
+          : "Nothing was charged for this order, so there is nothing to refund.",
+      };
+
+    case "cancelled-by-you":
+      return {
+        kicker: "Cancelled",
+        subject: `Order ${o.number} is cancelled, as you asked`,
+        eyebrow: "Cancelled",
+        headline: "Your order is cancelled",
+        // No apology: they asked. Just confirm it is done and what follows.
+        opening: `${first}, order ${o.number} is cancelled as you asked${o.cancelledAt ? ` on ${formatDate(o.cancelledAt)}` : ""}. The items have gone back on the shelf and nothing further will be sent.`,
+        preheader: `Order ${o.number} cancelled at your request`,
+      };
+
     case "return-requested":
       return {
         kicker: "Return requested",
@@ -127,30 +206,13 @@ function copyFor(o: OrderUpdateInput, track: string): Copy {
         caution: "Please keep the item and its packing as they are until you hear from us.",
       };
 
-    case "return-received":
-      return {
-        kicker: "Return received",
-        subject: `Your return is back with us — order ${o.number}`,
-        eyebrow: "Return received",
-        headline: "Your return is back with us",
-        opening: `${first}, the item from order ${o.number} has reached us and we are checking it now.`,
-        preheader: `Return received on order ${o.number}`,
-        next: [
-          "We check the item against what was sent out.",
-          "Once it passes we raise your refund and email you again.",
-        ],
-        // Deliberate: arriving is not being refunded, and this is exactly the
-        // point in the journey where a customer starts expecting money.
-        caution: "No refund has been raised yet. That happens once the check is done.",
-      };
-
     case "return-rejected":
       return {
         kicker: "Return not approved",
         subject: `About your return request — order ${o.number}`,
         eyebrow: "Return not approved",
         headline: "We could not approve this return",
-        opening: `${first}, we have looked at the return request on order ${o.number} and we are not able to approve it${o.rejectReason ? `: ${o.rejectReason}` : "."} If that does not seem right, reply to this email — a person reads every reply and we would rather sort it out than leave it.`,
+        opening: `${first}, we have looked at the return request on order ${o.number} and we are not able to approve it${o.rejectReason ? `: ${o.rejectReason.replace(/[.\s]+$/, "")}.` : "."} If that does not seem right, reply to this email — a person reads every reply and we would rather sort it out than leave it.`,
         preheader: `Return not approved on order ${o.number}`,
         caution:
           "If you think this is a mistake, tell us. We will look again, and nothing about your order changes in the meantime.",
@@ -180,7 +242,7 @@ function copyFor(o: OrderUpdateInput, track: string): Copy {
         // Deliberately not "your payment failed": most of the time the money
         // never left, and telling someone their payment failed sends them
         // looking for a debit that is not there.
-        opening: `${first}, the payment for order ${o.number} was not completed${o.failureReason ? `: ${o.failureReason}` : "."} Nothing has been charged. Your order is held and the items are still reserved — you can pay again from the order page.`,
+        opening: `${first}, the payment for order ${o.number} was not completed${o.failureReason ? `: ${o.failureReason.replace(/[.\s]+$/, "")}.` : "."} Nothing has been charged. Your order is held and the items are still reserved — you can pay again from the order page.`,
         preheader: `Nothing was charged · order ${o.number} is still held`,
         cta: { label: "Complete the payment", href: track },
         caution:
@@ -232,17 +294,6 @@ function copyFor(o: OrderUpdateInput, track: string): Copy {
           `Something not right? Tell us within ${BUSINESS.ops.returnWindowDays} days and we will sort it out.`,
           "If it is all good, we would love to hear what you think.",
         ],
-      };
-
-    case "cancelled":
-      return {
-        kicker: "Cancelled",
-        subject: `Order ${o.number} has been cancelled`,
-        eyebrow: "Cancelled",
-        headline: "Your order has been cancelled",
-        opening: `${first}, order ${o.number} was cancelled${o.cancelledAt ? ` on ${formatDate(o.cancelledAt)}` : ""}${o.cancelReason ? `: ${o.cancelReason}` : "."}`,
-        preheader: `Order ${o.number} cancelled`,
-        cta: { label: "View your order", href: track },
       };
 
     case "refund-raised":
@@ -311,8 +362,10 @@ function facts(o: OrderUpdateInput): [string, string][] {
     if (o.estimatedDelivery) list.push(["Expected by", formatDate(o.estimatedDelivery)]);
   }
   if (o.kind === "delivered" && o.deliveredAt) list.push(["Delivered", formatDateTime(o.deliveredAt)]);
-  if (o.kind === "cancelled" && o.cancelledAt) list.push(["Cancelled", formatDateTime(o.cancelledAt)]);
-  if (o.kind === "refund-raised" || o.kind === "refund-completed") {
+  if ((o.kind === "cancelled-by-shop" || o.kind === "cancelled-by-you") && o.cancelledAt) {
+    list.push(["Cancelled", formatDateTime(o.cancelledAt)]);
+  }
+  if (o.kind === "refund-raised" || o.kind === "refund-completed" || o.kind === "refund-failed") {
     list.push(["Refund amount", money(o.refundAmount ?? o.total)]);
     if (o.refundDestination) list.push(["Back to", o.refundDestination]);
     if (o.refundRef) list.push(["Reference", o.refundRef]);
@@ -326,6 +379,15 @@ function facts(o: OrderUpdateInput): [string, string][] {
 export function buildOrderUpdate(o: OrderUpdateInput): OrderEmail {
   const auth = `?t=${encodeURIComponent(o.viewToken)}`;
   const track = `${SITE}/track/${o.orderId}${auth}`;
+  /**
+   * The invoice, on every order email.
+   *
+   * Carries the same signed token as the tracking link, so it opens for
+   * somebody reading their mail on a phone they have never signed in on. It
+   * used to appear only on the confirmation, which is the one email people do
+   * not go looking for when they need the invoice months later.
+   */
+  const invoiceUrl = `${SITE}/order/${o.orderId}/invoice${auth}`;
   const copy = copyFor(o, track);
   const cta = copy.cta ?? { label: "Track this order", href: track };
 
@@ -360,6 +422,7 @@ ${copy.caution ? `<div style="margin-top:20px;">${panel(`<p style="margin:0;font
   <tr>
     <td>${button(cta.href, cta.label)}</td>
     ${cta.href !== track ? `<td style="padding-left:16px;">${link(track, "Your order page")}</td>` : ""}
+    <td style="padding-left:16px;">${link(invoiceUrl, "Invoice")}</td>
   </tr>
 </table>
 
@@ -392,6 +455,7 @@ ${
     ``,
     `${cta.label}: ${cta.href}`,
     ...(cta.href !== track ? [`Your order page: ${track}`] : []),
+    `Your invoice:     ${invoiceUrl}`,
     ...(copy.next && copy.next.length
       ? ["", "WHAT HAPPENS NEXT", ...copy.next.map((step, i) => `  ${i + 1}. ${step}`)]
       : []),

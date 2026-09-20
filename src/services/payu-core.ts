@@ -199,8 +199,18 @@ async function applyVerdict(verdict: Verdict): Promise<PayuOutcome> {
     // Only on the transition, so a redelivered webhook does not send a second
     // receipt for the same payment.
     if (newlyPaid) {
+      /**
+       * The confirmation, and NOT "payment received" as well.
+       *
+       * Both used to fire here, one instant apart, telling the customer the
+       * same thing twice. The confirmation is the richer of the two — it
+       * carries the lines, the totals and the address — so it wins on the path
+       * where payment and order arrive together. "payment-received" is kept for
+       * the case it was written for: money that lands AFTER the order was
+       * confirmed, which is UPI approved by hand and cash collected on
+       * delivery.
+       */
       void sendOrderConfirmation(attempt.orderId);
-      sendOrderMail(attempt.orderId, "payment-received");
     }
     return { kind: "paid", orderId: attempt.orderId };
   }

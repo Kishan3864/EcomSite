@@ -6,6 +6,7 @@ import {
   Ban,
   CalendarClock,
   Check,
+  Mail,
   ExternalLink,
   PackageCheck,
   Plus,
@@ -21,6 +22,7 @@ import { INITIAL_FORM } from "@/services/admin/form-state";
 import {
   addOrderEvent,
   cancelOrder,
+  sendTestOrderEmail,
   setAdminNote,
   setShipment,
 } from "@/services/admin/orders-actions";
@@ -524,6 +526,68 @@ export function CancelOrderForm({
           Cancel and restock
         </SubmitButton>
       </div>
+    </Form>
+  );
+}
+
+/**
+ * Sends yourself a copy of any order email, to check how it looks.
+ *
+ * The preview page renders every template from sample data, which catches
+ * layout but not the things that only go wrong in a real client: an image
+ * blocked by Outlook, a link a phone will not open, a subject truncated in a
+ * list. This sends the real template built from this real order, to your own
+ * admin address and nowhere else.
+ *
+ * The customer is never a possible recipient — the action takes the address
+ * from the session — and it does not mark the email as sent, so checking one
+ * never consumes the customer's real send.
+ */
+const TEST_EMAIL_KINDS: { value: string; label: string }[] = [
+  { value: "placed", label: "Order confirmation" },
+  { value: "packed", label: "Packed" },
+  { value: "payment-received", label: "Payment received" },
+  { value: "payment-failed", label: "Payment not completed" },
+  { value: "shipped", label: "Shipped" },
+  { value: "out-for-delivery", label: "Out for delivery" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled-by-shop", label: "Cancelled by the shop" },
+  { value: "cancelled-by-you", label: "Cancelled by the customer" },
+  { value: "return-requested", label: "Return requested" },
+  { value: "return-approved", label: "Return approved" },
+  { value: "return-rejected", label: "Return rejected" },
+  { value: "return-picked-up", label: "Return collected" },
+  { value: "refund-raised", label: "Refund raised" },
+  { value: "refund-completed", label: "Refund completed" },
+  { value: "refund-failed", label: "Refund needs another attempt" },
+];
+
+export function TestEmailForm({ orderId }: { orderId: string }) {
+  const [state, action] = useActionState(sendTestOrderEmail, INITIAL_FORM);
+
+  return (
+    <Form action={action} className="grid gap-2">
+      <input type="hidden" name="orderId" value={orderId} />
+      <p className="text-[12px] leading-[1.55] text-ink-500">
+        Sends the real template for this order to your own address. The customer gets nothing, and
+        it does not count as their copy.
+      </p>
+      <select
+        name="kind"
+        defaultValue="placed"
+        className="border border-ink-200 bg-surface px-3 py-2 text-[13px] text-ink-900"
+      >
+        {TEST_EMAIL_KINDS.map((k) => (
+          <option key={k.value} value={k.value}>
+            {k.label}
+          </option>
+        ))}
+      </select>
+      {state.error && <Notice tone="error">{state.error}</Notice>}
+      {state.ok && state.message && <Notice tone="ok">{state.message}</Notice>}
+      <SubmitButton size="sm" variant="outline" pendingText="Sending…">
+        <Mail size={14} /> Send me this email
+      </SubmitButton>
     </Form>
   );
 }
