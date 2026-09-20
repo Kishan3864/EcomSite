@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { logActivity, requireAdmin } from "@/lib/auth/admin";
+import { sendOrderMail } from "@/services/order-mail";
 import { DelhiveryError, cancelShipment, delhiveryConfig } from "@/lib/shipping/delhivery";
 import type { OrderStatus } from "@/generated/prisma/client";
 import {
@@ -94,6 +95,12 @@ export async function advanceOrderStatus(formData: FormData) {
     entityId: id,
     summary: `Moved order ${order.number} to ${target.replace(/_/g, " ").toLowerCase()}`,
   });
+  // The customer hears about the steps that mean something to them. PACKED
+  // and CONFIRMED are internal, so they get no mail.
+  if (target === "SHIPPED") sendOrderMail(id, "shipped");
+  if (target === "OUT_FOR_DELIVERY") sendOrderMail(id, "out-for-delivery");
+  if (target === "DELIVERED") sendOrderMail(id, "delivered");
+
   revalidateOrder(id);
   redirect(flash(id, `${order.number} is now ${target.replace(/_/g, " ").toLowerCase()}`));
 }
@@ -198,6 +205,8 @@ export async function cancelOrder(_prev: FormState, formData: FormData): Promise
     summary: `Cancelled order ${order.number}`,
     metadata: { reason, restocked: order.lines.length, awb: order.awb, courierCancelled: !!order.awb && !courierFailed },
   });
+  sendOrderMail(id, "cancelled");
+
   revalidateOrder(id);
   redirect(flash(id, `${order.number} cancelled and stock returned${courierNote}`, courierFailed ? "error" : undefined));
 }

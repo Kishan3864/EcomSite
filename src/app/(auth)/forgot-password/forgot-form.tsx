@@ -16,14 +16,17 @@ function SendButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="lg" className="h-10 w-full" loading={pending}>
-      <Send size={16} /> {pending ? "Sending…" : "Ask support to reset it"}
+      <Send size={16} /> {pending ? "Sending…" : "Email me a reset link"}
     </Button>
   );
 }
 
 /**
- * No automated reset email exists yet, so this raises a support request rather
- * than claiming to have sent a link nobody would receive.
+ * Asks for a reset link.
+ *
+ * The confirmation below is deliberately non-committal about whether an account
+ * exists — it says "if there is an account" and nothing more — because a form
+ * that confirms an address is a way of finding out who shops here.
  */
 export function ForgotForm() {
   const [state, action] = useActionState(requestPasswordHelp, {});
@@ -39,13 +42,13 @@ export function ForgotForm() {
         transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
         className="bg-surface p-4 sm:p-5"
       >
-        <span className="eyebrow">Request received</span>
+        <span className="eyebrow">Check your email</span>
         <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950">
-          Our team will get back to you
+          Check your inbox
         </h2>
         <p className="mt-2.5 text-[14px] leading-[1.55] text-ink-600">
-          If there is an account for that address, your request is with support now. They will
-          verify who you are and set a new password with you, usually within a few working hours.
+          If there is an account for that address, a link to set a new password is on its way. It
+          works once and expires in an hour. Look in spam if it has not arrived in a few minutes.
         </p>
         <p className="mt-3 text-[13px] leading-[1.5] text-ink-500">
           In a hurry? Call{" "}
@@ -90,8 +93,8 @@ export function ForgotForm() {
       {/* A rule rather than a tinted tray: the sentence is an aside, not an
           alarm, and the shop draws asides with a line down the side. */}
       <p className="pl-3.5 text-[13px] leading-[1.55] text-ink-600">
-        Automatic reset emails are not switched on yet, so a person handles this rather than a
-        link landing in your inbox.
+        The link expires in an hour and can only be used once. Signed in with Google? You have no
+        password to reset — use the Google button on the sign-in page.
       </p>
 
       <SendButton />

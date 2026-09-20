@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { logActivity, requireAdmin } from "@/lib/auth/admin";
+import { sendOrderMail } from "@/services/order-mail";
 import { BUSINESS, formatAddress } from "@/config/business";
 import { DelhiveryError, createShipment, delhiveryConfig, requestPickup } from "@/lib/shipping/delhivery";
 import { syncTracking } from "@/lib/shipping/tracking";
@@ -164,6 +165,9 @@ export async function bookShipment(_prev: FormState, formData: FormData): Promis
     summary: `Booked ${order.number} with Delhivery (${config.env}) — waybill ${waybill}`,
     metadata: { waybill, env: config.env, weightGrams },
   });
+  // The waybill exists now, so "shipped" is true rather than intended.
+  sendOrderMail(id, "shipped");
+
   revalidateOrder(id);
   return { ok: true, message: `Booked with Delhivery — waybill ${waybill}.` };
 }

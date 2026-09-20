@@ -27,8 +27,9 @@ import { BUSINESS } from "@/config/business";
  *
  * Until a user and a password are set, from either pair, nothing is sent:
  * sendMail() returns false and every caller carries on without the email.
- * Messages go out as automated no-reply mail, so no Reply-To is set; each
- * email says how to reach support instead.
+ * Customer-facing mail sets no Reply-To, so a reply reaches the support mailbox
+ * it was sent from; the admin notifications set one deliberately, so that a
+ * reply reaches the customer instead.
  *
  * No variable's value, nor the SMTP conversation, is ever logged.
  */
@@ -82,6 +83,13 @@ export interface OutgoingMail {
   html: string;
   text: string;
   headers?: Record<string, string>;
+  /**
+   * Where a reply should go when that is not the sending mailbox. Used by the
+   * admin notifications: the owner reads a contact message in their inbox and
+   * hits reply, and it reaches the customer rather than the shop itself.
+   * Customer-facing mail leaves this unset, so replies land in support.
+   */
+  replyTo?: string;
 }
 
 /** Sends one message. True once the SMTP server has accepted it for delivery. */
@@ -99,6 +107,7 @@ export async function sendMail(message: OutgoingMail): Promise<boolean> {
       html: message.html,
       text: message.text,
       headers: message.headers,
+      replyTo: message.replyTo,
     });
     return info.accepted.length > 0 && info.rejected.length === 0;
   } catch (error) {

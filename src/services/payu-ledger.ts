@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/db";
+import { sendOrderMail } from "./order-mail";
 import {
   checkPayuActionStatus,
   fetchPayuTransactionDetails,
@@ -1290,7 +1291,12 @@ export async function syncRefundStatus(refundId: string): Promise<RefundSyncResu
     return { refund: updated, changed: false, state: updated.status };
   }
 
-  if (reported === "SUCCESS") await recomputeRefundTotals(refund.paymentAttemptId, refund.orderId);
+  if (reported === "SUCCESS") {
+    await recomputeRefundTotals(refund.paymentAttemptId, refund.orderId);
+    // The gateway has confirmed the money moved. This is the only email that
+    // asserts that, and this is the only place that knows it.
+    sendOrderMail(refund.orderId, "refund-completed");
+  }
 
   return { refund: updated, changed: true, state: reported };
 }

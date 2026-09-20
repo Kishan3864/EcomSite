@@ -3,8 +3,8 @@ import {
   C,
   SANS,
   SITE,
-  absolute,
   button,
+  emailImage,
   esc,
   escLines,
   eyebrow,
@@ -84,7 +84,7 @@ export interface OrderEmailInput {
 /** A 64px thumbnail cell, or a tinted placeholder when the product has no image. */
 function thumbnail(line: OrderEmailLine): string {
   if (line.image) {
-    return `<img src="${esc(absolute(line.image))}" width="64" height="64" alt="${esc(line.title)}" style="display:block;width:64px;height:64px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;object-fit:cover;background-color:${C.canvas};">`;
+    return `<img src="${esc(emailImage(line.image))}" width="64" height="64" alt="${esc(line.title)}" style="display:block;width:64px;height:64px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;object-fit:cover;background-color:${C.canvas};">`;
   }
   // No image is not a broken image: an empty tinted square reads as deliberate,
   // and the title beside it carries the meaning anyway.

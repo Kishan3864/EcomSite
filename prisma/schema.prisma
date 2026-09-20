@@ -550,11 +550,12 @@ model Customer {
   avatar        CustomerAvatar?
   emailVerified Boolean         @default(false)
 
-  addresses Address[]
-  orders    Order[]
-  reviews   Review[]
-  returns   ReturnRequest[]
-  messages  ContactMessage[]
+  addresses   Address[]
+  orders      Order[]
+  reviews     Review[]
+  returns     ReturnRequest[]
+  messages    ContactMessage[]
+  resetTokens PasswordResetToken[]
 
   @@unique([authProvider, providerId])
   @@index([createdAt])
@@ -694,6 +695,12 @@ model Order {
   cancelReason      String?
   customerNote      String?
   adminNote         String?
+  /// Which lifecycle emails have already gone out for this order, as kind
+  /// slugs ("shipped", "delivered"). A retried webhook or a second click in
+  /// admin therefore cannot send the same mail twice. Additive: an order that
+  /// predates this column has an empty list and is simply treated as never
+  /// having been emailed.
+  emailsSent        String[]  @default([])
   placedAt          DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -876,6 +883,32 @@ model ContactBlock {
   createdAt DateTime         @default(now())
 
   @@unique([kind, value])
+}
+
+/**
+ * A single-use, expiring password-reset ticket.
+ * Only a SHA-256 hash of the token is stored: the value that goes in the email
+ * exists nowhere on the server, so a database leak hands over nothing that can
+ * be redeemed. usedAt is what makes it genuinely single-use — a stateless
+ * signed token cannot be retired once issued, and a reset link that still works
+ * after the password has been changed is a way back in for whoever read the
+ * mailbox first.
+ */
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  customerId String
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  /// SHA-256 of the token, hex. Never the token itself.
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  /// Set the moment it is redeemed; a used ticket is never accepted again.
+  usedAt     DateTime?
+  /// Kept only to show "requested from" if a customer disputes a reset.
+  requestIp  String?
+  createdAt  DateTime  @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([expiresAt])
 }
 
 model NewsletterSubscriber {

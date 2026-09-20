@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin";
 import { buildOrderConfirmation } from "@/lib/emails/order";
 import { renderOrderConfirmation } from "@/services/order-email";
+import { buildOrderUpdate, type OrderEmailKind } from "@/lib/emails/order-updates";
+import { buildContactAdminEmail } from "@/lib/emails/contact-admin";
+import { buildContactAck } from "@/lib/emails/contact-ack";
+import { buildPasswordResetEmail } from "@/lib/emails/password-reset";
 
 /**
  * Every email the shop sends, rendered from the real templates with sample
@@ -59,6 +63,88 @@ const BASE = {
   viewToken: "preview-token-not-valid",
 };
 
+/**
+ * The ten lifecycle mails, each with the facts its kind actually carries.
+ * Deliberately includes the ones whose wording is load-bearing — refund raised
+ * against refund completed, payment failed — because those are the ones where a
+ * careless sentence would claim something untrue.
+ */
+const LIFECYCLE: {
+  kind: OrderEmailKind;
+  title: string;
+  note: string;
+  extra: Record<string, unknown>;
+}[] = [
+  {
+    kind: "payment-received",
+    title: "Payment received",
+    note: "Sent only when paymentStatus is PAID.",
+    extra: {},
+  },
+  {
+    kind: "payment-failed",
+    title: "Payment not completed",
+    note: "Says nothing was charged, because nothing was. Warns against paying twice if their bank shows a debit.",
+    extra: { failureReason: "the bank did not authorise it" },
+  },
+  {
+    kind: "shipped",
+    title: "Shipped",
+    note: "Sent only when an AWB exists — an AWB is the proof a courier really has it.",
+    extra: {
+      courier: "Delhivery",
+      awb: "28461739005412",
+      trackingUrl: "https://www.delhivery.com/track-v2/package/28461739005412",
+    },
+  },
+  {
+    kind: "out-for-delivery",
+    title: "Out for delivery",
+    note: "Sent on the courier's own status, not on a guess.",
+    extra: { courier: "Delhivery", awb: "28461739005412" },
+  },
+  {
+    kind: "delivered",
+    title: "Delivered",
+    note: "Sent when deliveredAt is set. Mentions the return window rather than asking for a review first.",
+    extra: { deliveredAt: new Date() },
+  },
+  {
+    kind: "cancelled",
+    title: "Cancelled",
+    note: "States the cancellation only. It does not promise a refund — that is a separate email with its own proof.",
+    extra: { cancelledAt: new Date(), cancelReason: "you asked us to cancel it" },
+  },
+  {
+    kind: "refund-raised",
+    title: "Refund raised",
+    note: "RULE ONE: raised, not issued. The money has not moved and the mail says so in the panel.",
+    extra: { refundAmount: 3794, refundDestination: "the UPI account you paid from" },
+  },
+  {
+    kind: "refund-completed",
+    title: "Refund completed",
+    note: "The only mail that asserts money moved. Sent solely when the gateway has confirmed SUCCESS.",
+    extra: {
+      refundAmount: 3794,
+      refundDestination: "the UPI account you paid from",
+      refundRef: "PAYU-RFND-88213",
+    },
+  },
+  {
+    kind: "return-approved",
+    title: "Return approved",
+    note: "Approved and a pickup is coming. No refund is promised yet.",
+    extra: { returnItems: ["Cotton kitchen towels × 2"] },
+  },
+  {
+    kind: "return-picked-up",
+    title: "Return collected",
+    note: "Says outright that no refund has been raised yet — that waits for the item to be checked in.",
+    extra: { returnItems: ["Cotton kitchen towels × 2"] },
+  },
+];
+
 const SAMPLES = [
   {
     key: "order-paid",
@@ -98,6 +184,62 @@ const SAMPLES = [
       paymentRef: "428913756201",
       paid: false,
       cod: false,
+    }),
+  },
+  ...LIFECYCLE.map(({ kind, title, note, extra }) => ({
+    key: kind,
+    title,
+    note,
+    mail: buildOrderUpdate({
+      kind,
+      number: BASE.number,
+      orderId: BASE.orderId,
+      contactName: BASE.contactName,
+      total: 3794,
+      viewToken: BASE.viewToken,
+      estimatedDelivery: IN_3_DAYS,
+      ...extra,
+    }),
+  })),
+  {
+    key: "contact-admin",
+    title: "Contact form — the copy that reaches support@",
+    note: "Reply-To is the customer, so hitting reply in the shop's inbox writes to them. Never sent for a refused submission.",
+    mail: buildContactAdminEmail({
+      id: "preview-message-id",
+      name: "Ananya Iyer",
+      email: "ananya@example.in",
+      topic: "Where is my order?",
+      orderNumber: BASE.number,
+      message:
+        "I ordered on Tuesday and the tracking has not moved since Thursday. Could you check where it has got to? I need it before the weekend.",
+      createdAt: PLACED,
+      ip: "49.36.120.14",
+      customerId: "preview-customer",
+      orderId: "preview-order-id",
+    }),
+  },
+  {
+    key: "contact-ack",
+    title: "Contact form — the customer's acknowledgement",
+    note: "Sent only once the message is stored. Quotes back what they wrote so they can see it arrived intact.",
+    mail: buildContactAck({
+      name: "Ananya Iyer",
+      topic: "Where is my order?",
+      message:
+        "I ordered on Tuesday and the tracking has not moved since Thursday. Could you check where it has got to?",
+      orderNumber: BASE.number,
+      reference: "A1B2C3D4",
+    }),
+  },
+  {
+    key: "password-reset",
+    title: "Password reset",
+    note: "Says plainly that it expires, works once, and what to do if the reader did not ask for it.",
+    mail: buildPasswordResetEmail({
+      name: "Ananya Iyer",
+      resetUrl: "https://weekendcart.com/reset-password?token=preview-token-not-valid",
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
     }),
   },
 ];

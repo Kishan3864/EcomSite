@@ -10,6 +10,7 @@ import {
   syncRefundStatus,
   syncSettlementForOrder,
 } from "@/services/payu-ledger";
+import { sendOrderMail } from "@/services/order-mail";
 import { formatINR } from "@/lib/utils";
 import type { FormState } from "./form-state";
 import { revalidateAdmin, str } from "./shared";
@@ -94,6 +95,10 @@ export async function refundPayment(_prev: FormState, formData: FormData): Promi
     actor: { id: session.id, name: session.name },
     token,
   });
+
+  // Raised, not completed: a Refund row now exists and the email says only
+  // that. "refund-completed" is sent elsewhere, when PayU confirms it.
+  if (outcome.ok) sendOrderMail(attempt.orderId, "refund-raised");
 
   revalidateOrder(attempt.orderId);
 

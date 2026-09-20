@@ -3,6 +3,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { toPaise } from "@/lib/gst";
 import { sendOrderConfirmation } from "./order-email";
+import { sendOrderMail } from "./order-mail";
 import {
   describePayu,
   newTxnId,
@@ -197,7 +198,10 @@ async function applyVerdict(verdict: Verdict): Promise<PayuOutcome> {
     const newlyPaid = await markPaid(attempt.id, attempt.orderId, verdict);
     // Only on the transition, so a redelivered webhook does not send a second
     // receipt for the same payment.
-    if (newlyPaid) void sendOrderConfirmation(attempt.orderId);
+    if (newlyPaid) {
+      void sendOrderConfirmation(attempt.orderId);
+      sendOrderMail(attempt.orderId, "payment-received");
+    }
     return { kind: "paid", orderId: attempt.orderId };
   }
 
@@ -240,6 +244,10 @@ async function applyVerdict(verdict: Verdict): Promise<PayuOutcome> {
         });
       }
     });
+
+    // Sent after the row says FAILED, and the copy is careful: nothing was
+    // charged, so the mail must not send anyone hunting for a debit.
+    sendOrderMail(attempt.orderId, "payment-failed");
 
     return { kind: "failed", orderId: attempt.orderId, message: why };
   }

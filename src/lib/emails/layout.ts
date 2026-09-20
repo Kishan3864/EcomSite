@@ -1,3 +1,6 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
 import { BUSINESS, formatAddress, isFilled } from "@/config/business";
 
 /**
@@ -92,6 +95,32 @@ export function formatDateTime(at: Date): string {
 export function absolute(url: string): string {
   if (/^https?:\/\//i.test(url)) return url;
   return `${SITE}/${String(url).replace(/^\/+/, "")}`;
+}
+
+/**
+ * The URL an email should use for a product image.
+ *
+ * Outlook on Windows cannot decode WebP, and most of the catalogue is WebP, so
+ * a plain <img> pointing at the site's own image shows alt text there. A JPEG
+ * twin is written beside each source by scripts/email-image-twins.mjs; this
+ * prefers that twin when it exists on disk and falls back to the original when
+ * it does not, so a product added since the script last ran still shows an
+ * image in every client that can read WebP rather than showing nothing.
+ *
+ * The site itself is untouched: pages keep serving WebP through the image
+ * optimiser. This rewrite happens only while building an email.
+ */
+export function emailImage(url: string): string {
+  // Anything already absolute is somebody else's host; leave it alone.
+  if (/^https?:\/\//i.test(url)) return absolute(url);
+
+  const path = String(url).replace(/^\/+/, "");
+  if (!path.startsWith("products/")) return absolute(url);
+
+  const twin = path.replace(/\.(webp|png|jpe?g)$/i, ".email.jpg");
+  if (twin === path) return absolute(url);
+
+  return existsSync(join(process.cwd(), "public", twin)) ? absolute(twin) : absolute(url);
 }
 
 /* --------------------------------------------------------------- pieces */

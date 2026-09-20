@@ -12,7 +12,9 @@ import {
   signInCustomer,
   signOutCustomer,
 } from "@/lib/auth/customer";
-import { passwordProblem } from "@/lib/auth/password";
+import { hashPassword, passwordProblem } from "@/lib/auth/password";
+import { findResetToken, issueResetToken, redeemResetToken } from "@/lib/auth/password-reset";
+import { buildPasswordResetEmail, resetUrl } from "@/lib/emails/password-reset";
 import type { Address, CartLine, DeliverySpeed, PaymentMethodId } from "@/lib/types";
 import { computeTotals } from "@/lib/pricing";
 import {
@@ -41,6 +43,7 @@ import {
   verifyFormToken,
 } from "@/lib/contact-guard";
 import { buildContactAck } from "@/lib/emails/contact-ack";
+import { CONTACT_NOTIFY_TO, buildContactAdminEmail } from "@/lib/emails/contact-admin";
 import { upiConfigured } from "@/lib/payments/upi";
 import { expireStalePendingOrders, trimUnpaidOrders } from "./order-expiry";
 import { reviewEligibilityFor, type ReviewEligibility } from "./reviews";
@@ -725,10 +728,37 @@ export async function submitContact(input: {
 
   revalidatePath("/admin/messages");
 
-  // The acknowledgement, only now that the row exists. After the response, so
-  // a slow SMTP server never holds up the form's answer.
+  // The acknowledgement to the customer and the notification to the shop, both
+  // only now that the row exists, and both after the response so a slow SMTP
+  // server never holds up the form's answer. A refused submission returned
+  // long before this line and so can never trigger either.
   if (mailConfigured()) {
     after(async () => {
+      try {
+        const notice = buildContactAdminEmail({
+          id: created.id,
+          name,
+          email,
+          topic,
+          orderNumber: orderNumber || null,
+          message,
+          createdAt: new Date(),
+          ip: sender.ip,
+          customerId: session?.id ?? matchedOrder?.customerId ?? null,
+          orderId: matchedOrder?.id ?? null,
+        });
+        await sendMail({
+          to: CONTACT_NOTIFY_TO,
+          subject: notice.subject,
+          html: notice.html,
+          text: notice.text,
+          // So that hitting reply in the shop's inbox writes to the customer.
+          replyTo: notice.replyTo,
+        });
+      } catch (error) {
+        console.error("[contact] admin notice failed", (error as { message?: string }).message ?? "");
+      }
+
       try {
         const ack = buildContactAck({
           name,
@@ -929,33 +959,101 @@ export interface PasswordHelpState {
 }
 
 /**
- * There is no email provider wired up, so this cannot send a reset link and
- * does not pretend to. It raises a support request that lands in the admin
- * inbox, and the answer to the customer says exactly that. The reply is the
- * same whether or not the account exists, so nobody can probe for addresses.
+ * Sends a password reset link, or appears to.
+ *
+ * The answer is identical whether or not the address has an account: a form
+ * that says "no such account" is a tool for finding out which addresses are
+ * customers. Nothing in the returned state, its timing or its wording differs.
+ *
+ * Rate limited twice over, reusing the contact form's limiter: by address, so
+ * one mailbox cannot be flooded with reset mail by somebody who knows it; and
+ * by IP, so one attacker cannot walk a list of addresses. Both refusals return
+ * the same success shape for the same reason.
  */
 export async function requestPasswordHelp(
   _prev: PasswordHelpState,
   formData: FormData,
 ): Promise<PasswordHelpState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  if (!rateLimit("password-help:ip", await clientIp(), 5, 60 * 60_000))
-    return { error: TOO_MANY, values: { email } };
-  if (!EMAIL.test(email))
-    return { error: "Enter the email address on your account.", values: { email } };
+  if (!EMAIL.test(email)) return { error: "Enter the email address on your account.", values: { email } };
 
-  const customer = await db.customer.findUnique({ where: { email }, select: { id: true, name: true } });
-  if (customer) {
-    await db.contactMessage.create({
-      data: {
-        name: customer.name,
-        email,
-        topic: "Password reset",
-        message: "Asked for help signing in from the forgot-password page.",
-      },
+  const ip = await clientIp();
+  // Three an hour per address, ten an hour per network. A person who has lost
+  // their password needs one or two; anything past that is not them.
+  const withinLimits =
+    rateLimit("password-reset:email", email, 3, 60 * 60_000) &&
+    rateLimit("password-reset:ip", ip, 10, 60 * 60_000);
+
+  if (withinLimits) {
+    const customer = await db.customer.findUnique({
+      where: { email },
+      select: { id: true, name: true, isActive: true, passwordHash: true },
     });
-    revalidatePath("/admin/messages");
+
+    // A deactivated account gets no link. An account that only ever signed in
+    // with Google has no password to reset, and sending it a reset link would
+    // quietly convert it to a password account behind the owner's back.
+    if (customer && customer.isActive && customer.passwordHash !== null && mailConfigured()) {
+      const issued = await issueResetToken(customer.id, ip);
+      after(async () => {
+        try {
+          const mail = buildPasswordResetEmail({
+            name: customer.name,
+            resetUrl: resetUrl(issued.token),
+            expiresAt: issued.expiresAt,
+          });
+          await sendMail({ to: email, subject: mail.subject, html: mail.html, text: mail.text });
+        } catch (error) {
+          // The ticket is already issued; a failed send simply means they must
+          // ask again. Never surfaced, because the answer must not vary.
+          console.error("[password-reset] send failed", (error as { message?: string }).message ?? "");
+        }
+      });
+    }
   }
+
+  return { ok: true };
+}
+
+export interface ResetPasswordState {
+  error?: string;
+  field?: string;
+  ok?: boolean;
+}
+
+/**
+ * Sets a new password against a reset token.
+ *
+ * The token is spent inside the same transaction that writes the password, so
+ * two submissions racing with one link cannot both win.
+ */
+export async function resetPassword(
+  _prev: ResetPasswordState,
+  formData: FormData,
+): Promise<ResetPasswordState> {
+  const token = String(formData.get("token") ?? "");
+  const password = String(formData.get("password") ?? "");
+
+  if (!rateLimit("password-reset:submit", await clientIp(), 10, 60 * 60_000))
+    return { error: TOO_MANY };
+
+  const problem = passwordProblem(password);
+  if (problem) return { error: problem, field: "password" };
+
+  const found = await findResetToken(token);
+  if (!found.ok) {
+    return {
+      error:
+        found.reason === "expired"
+          ? "That link has expired. Ask for a new one and it will arrive in a moment."
+          : found.reason === "used"
+            ? "That link has already been used. Ask for a new one if you still need it."
+            : "That link is not valid. Ask for a new one and use the newest email.",
+    };
+  }
+
+  const done = await redeemResetToken(found.tokenId, found.customerId, await hashPassword(password));
+  if (!done) return { error: "That link has already been used. Ask for a new one if you still need it." };
 
   return { ok: true };
 }

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { logActivity, requireAdmin, type AdminSession } from "@/lib/auth/admin";
 import { formatINR } from "@/lib/utils";
+import { sendOrderMail } from "@/services/order-mail";
 import { statusLabelOf } from "@/components/admin/ui";
 import type { ReturnStatus } from "@/generated/prisma/client";
 import {
@@ -174,6 +175,8 @@ export async function approveReturn(formData: FormData) {
     summary: `Approved return for ${describe(row)}`,
     metadata: { orderId: row.orderId },
   });
+  sendOrderMail(row.orderId, "return-approved");
+
   revalidateReturn(row.orderId);
   redirect(withFlash(next, `Return for ${row.orderLine.title} approved.`));
 }
@@ -196,6 +199,8 @@ export async function markReturnPickedUp(formData: FormData) {
     summary: `Marked return picked up for ${describe(row)}`,
     metadata: { orderId: row.orderId },
   });
+  sendOrderMail(row.orderId, "return-picked-up");
+
   revalidateReturn(row.orderId);
   redirect(withFlash(next, `${row.orderLine.title} marked as picked up.`));
 }

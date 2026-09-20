@@ -101,6 +101,15 @@ The paths must know about each other: the same money can never be refunded twice
 - **`scripts/reset-catalogue.ts`** — cancelled. He manages the catalogue by hiding. Nothing gets deleted from the DB.
 - Also noted, not requested: `npm audit --omit=dev` shows 5 high findings (nodemailer; prisma's mysql2 and deepmerge-ts), all major bumps.
 
+## 4b. Email system (built 2026-09-20)
+
+- Every mail is built on the shared shell in `src/lib/emails/layout.ts` — header, signature block, button, rows, legal footer. A new template supplies the middle and nothing else. Never copy the table scaffolding into a new file.
+- Order lifecycle mail goes through **one** dispatcher, `sendOrderMail(orderId, kind)` in `src/services/order-mail.ts`. It is sent-once (`Order.emailsSent`), runs in `after()`, never throws, and refuses to send a mail whose claim the row does not support (the `truthful()` guard — that is Rule One in code). Never call `sendMail` directly for an order.
+- Product images in email use a JPEG twin (`*.email.jpg`) because Outlook cannot render WebP. **Run `node scripts/email-image-twins.mjs` on the server after adding product images.** It is idempotent and costs ~0.16 MB for the whole catalogue.
+- Order emails link with a signed token (`src/lib/order-token.ts`) because a mail reader has no session cookie. Read-only, one order, no expiry.
+- Password reset is real now: `PasswordResetToken`, hash-only storage, 60-minute expiry, single use. The forgot-password page no longer files a contact message.
+- Preview every mail at `/preview/emails` (admin only); `?order=<id or number>` renders a real order through the real code path.
+
 ## 5. House rules
 
 - Before EVERY commit: `npm run lint` (warnings fail), `npx tsc --noEmit`, `npm run build`. Storefront product-query changes: also `npx tsx --conditions=react-server scripts/check-visibility.ts`.
