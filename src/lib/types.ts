@@ -280,8 +280,24 @@ export interface Order {
     | "paid"
     | "cod_pending"
     | "failed"
+    | "refund_due"
     | "refunded"
     | "partially_refunded";
+  /**
+   * What may honestly be said about money going back, derived from the refund
+   * ledger rather than from paymentStatus. Null when no refund is in play.
+   *
+   * The status above has claimed "refunded" on orders where nothing moved, so
+   * the customer's page reads this instead.
+   */
+  refund: {
+    stage: "none" | "due" | "raised" | "partial" | "complete" | "attention";
+    label: string;
+    owed: number;
+    returned: number;
+    /** The published window, e.g. "5 to 7 business days". */
+    window: string;
+  } | null;
   totals: OrderTotals;
   estimatedDelivery: string;
   tracking: OrderTrackingEvent[];

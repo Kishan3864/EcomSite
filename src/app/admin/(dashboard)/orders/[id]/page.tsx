@@ -11,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 import { db } from "@/lib/db";
+import { refundState } from "@/services/refunds";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { delhiveryConfig } from "@/lib/shipping/delhivery";
 import { LiveRefresh } from "@/components/ui/live-refresh";
@@ -60,10 +61,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       lines: true,
       events: { orderBy: { at: "desc" } },
       returns: { include: { orderLine: { select: { title: true } } } },
+      refunds: { select: { id: true, amount: true, status: true, requestId: true, createdAt: true } },
+      manualRefunds: { select: { id: true, amount: true, reference: true, recordedAt: true } },
       customer: { select: { id: true, name: true, tier: true, _count: { select: { orders: true } } } },
     },
   });
   if (!order) notFound();
+
+  // What the ledger can actually prove about this order's money. The stored
+  // paymentStatus is an intention and has been wrong on live orders; this is
+  // derived from Refund and ManualRefund rows only.
+  const money = refundState(order);
 
   const canEdit = hasRole(session, "MANAGER");
   const courier = delhiveryConfig();
@@ -378,6 +386,37 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               rows={[
                 { label: "Method", value: PAYMENT_METHOD_LABEL[order.paymentMethod] },
                 { label: "State", value: <StatusPill status={order.paymentStatus} /> },
+                {
+                  label: "Refund",
+                  value: (
+                    <span
+                      className={
+                        money.overstated
+                          ? "font-semibold text-red-700"
+                          : money.stage === "complete"
+                            ? "font-medium text-brand-700"
+                            : "text-ink-700"
+                      }
+                    >
+                      {money.adminLabel}
+                    </span>
+                  ),
+                },
+                ...(money.owed > 0 || money.returned > 0
+                  ? [
+                      {
+                        label: "Owed vs returned",
+                        value: (
+                          <span className="tabular-nums">
+                            {formatINR(money.owed)} owed · {formatINR(money.returned)} returned
+                            {money.inFlight > 0
+                              ? ` · ${formatINR(money.inFlight)} with the gateway`
+                              : ""}
+                          </span>
+                        ),
+                      },
+                    ]
+                  : []),
                 ...(order.paymentDetail ? [{ label: "Detail", value: order.paymentDetail }] : []),
                 ...(order.paymentRef
                   ? [{ label: "Reference", value: <span className="font-mono text-[12px]">{order.paymentRef}</span> }]

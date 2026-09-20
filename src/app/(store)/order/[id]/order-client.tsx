@@ -13,6 +13,8 @@ import { DrawIn, Reveal } from "@/components/ui/motion";
 
 import { LiveRefresh } from "@/components/ui/live-refresh";
 import { cn, formatDate, formatINR } from "@/lib/utils";
+import { customerMayCancel } from "@/lib/order-rules";
+import { CancelForm } from "./cancel-form";
 
 /**
  * The stamp on a finished order.
@@ -142,6 +144,41 @@ export function OrderClient({ order }: { order: Order | null }) {
         </header>
 
         <Reveal delay={0.08} className="mt-7 space-y-3 sm:mt-10 sm:space-y-4">
+          {/* Where the customer's money actually is.
+              Derived from the refund ledger, never from paymentStatus — that
+              column has said "refunded" on orders where nothing moved, and this
+              is the line a waiting customer reads first. */}
+          {order.refund && (
+            <div
+              className={cn(
+                NOTICE,
+                order.refund.stage === "complete"
+                  ? "[--rule-color:var(--color-brand-600)] bg-brand-50"
+                  : "[--rule-color:var(--color-ink-950)] bg-surface",
+              )}
+            >
+              <div className="min-w-0">
+                <p className={cn(NOTICE_LABEL, "text-ink-500")}>Refund</p>
+                <p className="mt-1.5 max-w-[52ch] text-[13.5px] leading-[1.55] text-ink-800">
+                  {order.refund.label}.
+                  {order.refund.stage === "raised" || order.refund.stage === "partial" ? (
+                    <>
+                      {" "}
+                      We raised {formatINR(order.refund.owed)} — once your bank releases it the
+                      money is back with you. Banks take {order.refund.window}.
+                    </>
+                  ) : null}
+                  {order.refund.stage === "due" ? (
+                    <> {formatINR(order.refund.owed)} is owed back to you.</>
+                  ) : null}
+                  {order.refund.stage === "complete" ? (
+                    <> {formatINR(order.refund.returned)} has gone back.</>
+                  ) : null}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* An unpaid order: the one thing this page must offer is a way back
               to paying. Above the delivery promise, because a promise means
               nothing until the order is paid for. */}
@@ -365,6 +402,21 @@ export function OrderClient({ order }: { order: Order | null }) {
             >
               <FileText size={16} /> Invoice
             </Link>
+          </div>
+
+          {/* Cancelling is only offered while it is still true. After packing
+              the parcel exists and is often already with a courier, so the
+              honest route is a return — said in words rather than by hiding
+              the control, because a customer who cannot see why will call. */}
+          <div className="text-center">
+            {customerMayCancel(order.status.toUpperCase()) ? (
+              <CancelForm orderId={order.id} paid={order.paymentStatus === "paid"} />
+            ) : order.status !== "cancelled" && order.status !== "returned" ? (
+              <p className="text-[13px] leading-[1.6] text-ink-500">
+                This order is already packed, so it cannot be cancelled here. Once it arrives you
+                can return it from your account and we will refund you.
+              </p>
+            ) : null}
           </div>
 
           <p className="text-center text-[13px] leading-[1.6] text-ink-500">

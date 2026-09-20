@@ -70,6 +70,8 @@ function order(
       maxDays: 5,
     },
     paymentStatus: "paid",
+    // Sample data: no refund in play.
+    refund: null,
     paymentMethod: {
       id: "upi",
       name: "UPI",

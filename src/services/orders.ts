@@ -6,6 +6,7 @@ import { orderTokenValid } from "@/lib/order-token";
 import { syncTracking, trackingIsFresh } from "@/lib/shipping/tracking";
 import { reconcilePayuOrder } from "@/services/payu-core";
 import { canViewOrder, getCustomerSession } from "@/lib/auth/customer";
+import { refundState, refundWindowText } from "./refunds";
 import type {
   Address,
   Order,
@@ -36,6 +37,10 @@ export const orderInclude = {
   lines: true,
   events: { orderBy: { at: "asc" as const } },
   returns: true,
+  // The refund ledger, so the customer's page can say what is true about their
+  // money instead of trusting paymentStatus.
+  refunds: { select: { id: true, amount: true, status: true, requestId: true, createdAt: true } },
+  manualRefunds: { select: { id: true, amount: true, reference: true, recordedAt: true } },
 } satisfies Prisma.OrderInclude;
 
 export type OrderRow = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
@@ -144,6 +149,17 @@ export function toOrder(row: OrderRow): Order {
       maxDays: deliveryId === "express" ? 2 : 5,
     },
     paymentStatus: row.paymentStatus.toLowerCase() as Order["paymentStatus"],
+    refund: (() => {
+      const state = refundState(row);
+      if (state.stage === "none") return null;
+      return {
+        stage: state.stage,
+        label: state.customerLabel,
+        owed: state.owed,
+        returned: state.returned,
+        window: refundWindowText(),
+      };
+    })(),
     paymentMethod: {
       id: row.paymentMethod.toLowerCase() as Order["paymentMethod"]["id"],
       name:
