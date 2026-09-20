@@ -50,7 +50,7 @@ export function ForgotForm() {
         <p className="mt-3 text-[13px] leading-[1.5] text-ink-500">
           In a hurry? Call{" "}
           <a
-            href={`tel:${BRAND.supportPhone}`}
+            href={`tel:${BRAND.supportPhoneTel}`}
             className="font-medium tabular-nums text-brand-700 hover:underline"
           >
             {BRAND.supportPhone}

@@ -23,6 +23,7 @@ export const BRAND = {
   url: SITE_URL,
   supportEmail: BUSINESS.supportEmail,
   supportPhone: BUSINESS.supportPhone,
+  supportPhoneTel: BUSINESS.supportPhoneTel,
   social: {
     instagram: BUSINESS.social.instagram,
     facebook: BUSINESS.social.facebook,

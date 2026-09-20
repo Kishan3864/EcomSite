@@ -41,7 +41,7 @@ export function Counter({ payments }: { payments: PublicPayments }) {
       label: "We answer this",
       value: (
         <>
-          <a href={`tel:+${BUSINESS.supportPhoneDigits}`} className="hover:text-brand-700">
+          <a href={`tel:${BUSINESS.supportPhoneTel}`} className="hover:text-brand-700">
             {BUSINESS.supportPhone}
           </a>
           {/* The real hours, not a shortened version of them: a shop that

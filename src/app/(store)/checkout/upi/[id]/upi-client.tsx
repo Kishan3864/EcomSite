@@ -258,7 +258,7 @@ export function UpiClient({
       <p className="mt-4 text-center text-[13px] text-ink-500">
         Trouble paying? Call or WhatsApp{" "}
         <a
-          href={`tel:${BUSINESS.supportPhone}`}
+          href={`tel:${BUSINESS.supportPhoneTel}`}
           className="font-medium tabular-nums text-brand-700 underline-offset-4 hover:underline"
         >
           {BUSINESS.supportPhone}

@@ -165,7 +165,7 @@ ${formatAddress()}`;
 
       <p style="margin:22px 0 0;font-size:13px;color:${C.muted};line-height:1.6;">
         Anything at all — reply to this email, call
-        <a href="tel:+${BUSINESS.supportPhoneDigits}" style="color:${C.brandDeep};">${esc(BUSINESS.supportPhone)}</a>,
+        <a href="tel:${BUSINESS.supportPhoneTel}" style="color:${C.brandDeep};">${esc(BUSINESS.supportPhone)}</a>,
         or <a href="https://wa.me/${BUSINESS.supportPhoneDigits}" style="color:${C.brandDeep};">WhatsApp us</a>.
         ${esc(BUSINESS.supportHours)}.
       </p>

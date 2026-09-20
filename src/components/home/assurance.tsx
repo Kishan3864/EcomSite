@@ -71,7 +71,7 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
       body: (
         <>
           <a
-            href={`tel:+${BUSINESS.supportPhoneDigits}`}
+            href={`tel:${BUSINESS.supportPhoneTel}`}
             className="font-medium text-ink-900 underline underline-offset-2 hover:text-brand-700"
           >
             {BUSINESS.supportPhone}

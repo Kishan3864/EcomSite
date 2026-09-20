@@ -33,7 +33,7 @@ const LINKS = {
   terms: `${SITE}/legal/terms`,
   contact: `${SITE}/contact`,
   whatsapp: `https://wa.me/${BUSINESS.supportPhoneDigits}`,
-  phone: `tel:+${BUSINESS.supportPhoneDigits}`,
+  phone: `tel:${BUSINESS.supportPhoneTel}`,
   logo: `${SITE}/brand/png/weekendcart-logo-email.png`,
   mark: `${SITE}/brand/png/weekendcart-icon-192.png`,
 };

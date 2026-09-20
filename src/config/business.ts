@@ -41,6 +41,17 @@
  */
 const SUPPORT_EMAIL = "support@weekendcart.com";
 
+/**
+ * The support number, written once in the format it is displayed in. Every
+ * other form used on the site is derived from it below, so a new number only
+ * ever has to be typed here — a tel: link can no longer keep ringing the old
+ * one because a second copy was missed.
+ */
+const SUPPORT_PHONE = "+91 70169 84341";
+
+/** Digits only, country code included: what wa.me expects, and no more. */
+const SUPPORT_PHONE_DIGITS = SUPPORT_PHONE.replace(/\D/g, "");
+
 export const BUSINESS = {
   // ── Identity ────────────────────────────────────────────────────────────────
   /** Customer-facing brand name. Appears in the logo, page titles and copy. */
@@ -100,10 +111,18 @@ export const BUSINESS = {
   grievanceEmail: SUPPORT_EMAIL,
 
   /** Display format, e.g. "+91 98765 43210". A human must answer this. */
-  supportPhone: "+91 76009 08865",
+  supportPhone: SUPPORT_PHONE,
 
-  /** Same number, digits only with country code, for tel: and wa.me links. */
-  supportPhoneDigits: "917600908865",
+  /** Same number, digits only with country code. For wa.me links. */
+  supportPhoneDigits: SUPPORT_PHONE_DIGITS,
+
+  /**
+   * The same number as a tel: href value, in the E.164 form dialers expect.
+   * Use this for every tel: link: the display format has spaces in it, which
+   * do not belong in a tel: URI, and the bare digits lack the leading "+" that
+   * marks the number as international.
+   */
+  supportPhoneTel: `+${SUPPORT_PHONE_DIGITS}`,
 
   /** Set to false if you do not actually offer WhatsApp support. */
   whatsappEnabled: true,

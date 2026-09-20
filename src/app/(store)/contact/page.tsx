@@ -42,7 +42,7 @@ const CHANNELS = [
     title: "Phone",
     body: `${BUSINESS.supportHours}. A person picks up, not a menu.`,
     action: BUSINESS.supportPhone,
-    href: `tel:${BUSINESS.supportPhoneDigits}`,
+    href: `tel:${BUSINESS.supportPhoneTel}`,
   },
   {
     icon: Mail,
@@ -166,7 +166,7 @@ export default function ContactPage() {
               </a>
               <br />
               <a
-                href={`tel:${BUSINESS.supportPhoneDigits}`}
+                href={`tel:${BUSINESS.supportPhoneTel}`}
                 className="font-medium tabular-nums text-brand-700 hover:underline"
               >
                 {BUSINESS.supportPhone}

@@ -70,7 +70,7 @@ export default function FaqPage() {
                 <MessageCircle size={15} /> Message us
               </Link>
               <a
-                href={`tel:${BUSINESS.supportPhoneDigits}`}
+                href={`tel:${BUSINESS.supportPhoneTel}`}
                 className={buttonClasses("outline", "md", "w-full tabular-nums")}
               >
                 <Phone size={15} /> {BUSINESS.supportPhone}

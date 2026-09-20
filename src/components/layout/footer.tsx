@@ -140,7 +140,7 @@ export async function Footer() {
             <li className="flex items-center gap-2.5">
               <Phone size={14} strokeWidth={1.5} aria-hidden className="shrink-0 text-ink-400" />
               <a
-                href={`tel:${BRAND.supportPhone}`}
+                href={`tel:${BRAND.supportPhoneTel}`}
                 className="tap tabular-nums transition-colors duration-200 hover:text-brand-700"
               >
                 {BRAND.supportPhone}
