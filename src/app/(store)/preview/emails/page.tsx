@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/admin";
 import { buildOrderConfirmation } from "@/lib/emails/order";
+import { renderOrderConfirmation } from "@/services/order-email";
 
 /**
  * Every email the shop sends, rendered from the real templates with sample
@@ -32,7 +33,7 @@ const SAMPLE_LINES = [
     variantLabel: "5 pieces · Mirror finish",
     quantity: 1,
     price: 2499,
-    image: "/products/placeholder.jpg",
+    image: "/products/electric-kettle-1.jpg",
   },
   { title: "Cotton kitchen towels", variantLabel: "Pack of 4 · Sage", quantity: 2, price: 349, image: null },
   { title: "Airtight glass storage jar, 1L", variantLabel: null, quantity: 3, price: 299, image: null },
@@ -55,6 +56,7 @@ const BASE = {
   shipPincode: "400050",
   estimatedDelivery: IN_3_DAYS,
   orderId: "preview-order-id",
+  viewToken: "preview-token-not-valid",
 };
 
 const SAMPLES = [
@@ -100,9 +102,24 @@ const SAMPLES = [
   },
 ];
 
-export default async function EmailPreviewPage() {
+export default async function EmailPreviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ order?: string }>;
+}) {
   const session = await getAdminSession();
   if (!session) notFound();
+
+  /**
+   * ?order=<id or number> renders the mail a real order would actually send —
+   * real product images, real links, real token. Sample data can make a
+   * template look fine while the thing customers receive is broken.
+   */
+  const wanted = (await searchParams).order?.trim();
+  const real = wanted ? await renderOrderConfirmation(wanted) : null;
+  const samples = real
+    ? [{ key: "real", title: `Real order — ${wanted}`, note: `Rendered from the database through the same code path that sends it. Recipient: ${real.to}`, mail: real }, ...SAMPLES]
+    : SAMPLES;
 
   return (
     <div className="container-page py-8">
@@ -118,7 +135,13 @@ export default async function EmailPreviewPage() {
         </p>
       </header>
 
-      {SAMPLES.map((sample) => (
+      {wanted && !real ? (
+        <p className="mb-6 bg-gold-50 px-4 py-3 text-[13px] text-ink-800">
+          No order matched <strong>{wanted}</strong>, or it has no email address on it. Showing the samples instead.
+        </p>
+      ) : null}
+
+      {samples.map((sample) => (
         <section key={sample.key} className="border-t border-ink-200 py-8">
           <h2 className="font-display text-[22px] tracking-[-0.02em] text-ink-950">{sample.title}</h2>
           <p className="mt-1 max-w-[75ch] text-[13.5px] leading-relaxed text-ink-500">{sample.note}</p>

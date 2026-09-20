@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { formatPaise } from "@/lib/gst";
 import { cn, formatDate } from "@/lib/utils";
 import { getInvoiceForViewer } from "@/services/invoice";
+import { tokenFromParams } from "@/lib/order-token";
 import { PrintToolbar } from "./print-toolbar";
 
 // generateMetadata and the page both need the invoice; one request, one read.
@@ -12,13 +13,17 @@ const invoiceForViewer = cache(getInvoiceForViewer);
 /** A rate as an invoice prints it: 9, not 9.00; 2.5, not 2.50. */
 const percent = (rate: number) => `${Number(rate.toFixed(2))}%`;
 
+type Search = Promise<Record<string, string | string[] | undefined>>;
+
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Search;
 }): Promise<Metadata> {
   const { id } = await params;
-  const invoice = await invoiceForViewer(id);
+  const invoice = await invoiceForViewer(id, tokenFromParams(await searchParams));
   return {
     title: invoice
       ? `${invoice.isBillOfSupply ? "Bill of supply" : "Tax invoice"} ${invoice.invoiceNumber}`
@@ -32,9 +37,16 @@ export async function generateMetadata({
  * yields the document and not the shop around it. Every figure comes from the
  * invoice builder: nothing is recomputed here and nothing is rounded again.
  */
-export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function InvoicePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Search;
+}) {
   const { id } = await params;
-  const invoice = await invoiceForViewer(id);
+  // The signed token from the order email, for a reader with no session.
+  const invoice = await invoiceForViewer(id, tokenFromParams(await searchParams));
   if (!invoice) notFound();
 
   const { seller, billTo, shipTo, totals, lines } = invoice;

@@ -3,6 +3,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { buildOrderConfirmation } from "@/lib/emails/order";
 import { sendMail } from "@/lib/mail";
+import { orderToken } from "@/lib/order-token";
 
 /**
  * Tells the customer their order is confirmed.
@@ -26,8 +27,13 @@ const LABEL: Record<string, string> = {
   COD: "Cash on delivery",
 };
 
-export async function sendOrderConfirmation(orderId: string): Promise<void> {
-  try {
+/**
+ * Builds the confirmation for a real order, or null if there is nothing to send
+ * to. Separated from the sending so the exact mail a customer would get can be
+ * rendered and inspected without a mail server — see /preview/emails.
+ */
+export async function renderOrderConfirmation(orderId: string) {
+  {
     const order = await db.order.findUnique({
       where: { id: orderId },
       select: {
@@ -56,13 +62,15 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
         lines: { select: { title: true, quantity: true, price: true, image: true, variantLabel: true } },
       },
     });
-    if (!order?.contactEmail) return;
+    if (!order?.contactEmail) return null;
 
     const mail = buildOrderConfirmation({
       ...order,
       orderId: order.id,
       // What the money has actually done. COD is never "paid" here: the
       // courier has not collected it yet, and the email says so.
+      // Signed, so the links work for a reader with no session cookie.
+      viewToken: orderToken(order.id),
       cod: order.paymentMethod === "COD",
       paid: order.paymentStatus === "PAID",
       // The detail is the gateway's own words ("UPI · HDFC"); the method is
@@ -71,7 +79,19 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
       paymentLabel: order.paymentDetail?.trim() || LABEL[order.paymentMethod] || "Online payment",
     });
 
-    await sendMail({ to: order.contactEmail, ...mail });
+    return { to: order.contactEmail, ...mail };
+  }
+}
+
+/**
+ * Tells the customer their order is confirmed. Never awaited by a caller's
+ * transaction and never allowed to throw.
+ */
+export async function sendOrderConfirmation(orderId: string): Promise<void> {
+  try {
+    const mail = await renderOrderConfirmation(orderId);
+    if (!mail) return;
+    await sendMail(mail);
   } catch (error) {
     console.error("[order-email]", orderId, error instanceof Error ? error.message : error);
   }

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/lib/db";
+import { orderTokenValid } from "@/lib/order-token";
 import { canViewOrder } from "@/lib/auth/customer";
 import {
   amountInWords,
@@ -311,11 +312,14 @@ export async function getInvoice(orderId: string): Promise<Invoice | null> {
 }
 
 /** The invoice, but only for someone entitled to see this order. */
-export async function getInvoiceForViewer(orderId: string): Promise<Invoice | null> {
+export async function getInvoiceForViewer(orderId: string, token?: string | null): Promise<Invoice | null> {
   const order = await db.order.findFirst({
     where: { OR: [{ id: orderId }, { number: orderId.toUpperCase() }] },
     select: { id: true, customerId: true },
   });
-  if (!order || !(await canViewOrder(order))) return null;
+  if (!order) return null;
+  // The signed token from an order email counts as permission for this one
+  // order: the customer reading their receipt has no cookie for us.
+  if (!orderTokenValid(order.id, token) && !(await canViewOrder(order))) return null;
   return getInvoice(order.id);
 }

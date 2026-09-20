@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
+import { orderTokenValid } from "@/lib/order-token";
 import { syncTracking, trackingIsFresh } from "@/lib/shipping/tracking";
 import { reconcilePayuOrder } from "@/services/payu-core";
 import { canViewOrder, getCustomerSession } from "@/lib/auth/customer";
@@ -175,14 +176,19 @@ export function toOrder(row: OrderRow): Order {
   };
 }
 
-/** Order by id or number, only if the current visitor is allowed to see it. */
-export async function getOrderForViewer(idOrNumber: string): Promise<Order | null> {
+/**
+ * Order by id or number, only if the current visitor is allowed to see it.
+ *
+ * `token` is the signed value from an order email. It stands in for the cookie
+ * a mail client does not carry, and grants sight of this one order only.
+ */
+export async function getOrderForViewer(idOrNumber: string, token?: string | null): Promise<Order | null> {
   let row = await db.order.findFirst({
     where: { OR: [{ id: idOrNumber }, { number: idOrNumber.toUpperCase() }] },
     include: orderInclude,
   });
   if (!row) return null;
-  if (!(await canViewOrder(row))) return null;
+  if (!orderTokenValid(row.id, token) && !(await canViewOrder(row))) return null;
 
   // An order that thinks it is unpaid may simply never have been told. Ask
   // PayU before drawing the page — throttled inside reconcilePayuOrder, and

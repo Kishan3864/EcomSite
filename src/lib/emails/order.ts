@@ -72,6 +72,11 @@ export interface OrderEmailInput {
   shipPincode: string;
   estimatedDelivery: Date;
   orderId: string;
+  /**
+   * The signed order-view token. Without it both links below are dead for a
+   * reader with no session cookie, which is nearly every reader of an email.
+   */
+  viewToken: string;
   /** Printed when the invoice has been raised; omitted rather than invented. */
   invoiceNumber?: string | null;
 }
@@ -102,8 +107,9 @@ function lineRow(line: OrderEmailLine): string {
 
 export function buildOrderConfirmation(order: OrderEmailInput): OrderEmail {
   const firstName = order.contactName.trim().split(/\s+/)[0] || "there";
-  const track = `${SITE}/track/${order.orderId}`;
-  const invoiceUrl = `${SITE}/order/${order.orderId}/invoice`;
+  const auth = `?t=${encodeURIComponent(order.viewToken)}`;
+  const track = `${SITE}/track/${order.orderId}${auth}`;
+  const invoiceUrl = `${SITE}/order/${order.orderId}/invoice${auth}`;
 
   const address = [
     order.shipName,
