@@ -287,7 +287,7 @@ export function buildWelcomeEmail(email: string): WelcomeEmail {
   const address = email.trim().toLowerCase();
   const unsubscribe = unsubscribeUrl(address);
   const oneClick = oneClickUnsubscribeUrl(address);
-  const mailbox = process.env.GMAIL_USER?.trim() || BUSINESS.supportEmail;
+  const mailbox = (process.env.SMTP_USER || process.env.GMAIL_USER)?.trim() || BUSINESS.supportEmail;
   const year = currentYear();
   const brand = BUSINESS.brandName;
   const points = reasons();
