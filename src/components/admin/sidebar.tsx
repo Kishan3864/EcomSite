@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BadgeIndianRupee,
   Activity,
   Boxes,
   ChevronDown,
@@ -65,6 +66,7 @@ const GROUPS = (c: SidebarCounts): NavGroup[] => [
     items: [
       { href: "/admin/orders", label: "Orders", icon: ShoppingCart, count: c.orders },
       { href: "/admin/returns", label: "Returns", icon: RotateCcw, count: c.returns },
+      { href: "/admin/orders/refunds", label: "Refund check", icon: BadgeIndianRupee },
       { href: "/admin/customers", label: "Customers", icon: Users },
     ],
   },
