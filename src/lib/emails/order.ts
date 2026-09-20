@@ -1,18 +1,35 @@
-import { BUSINESS, formatAddress, isFilled } from "@/config/business";
-import { formatDateTime } from "@/lib/utils";
+import { BUSINESS } from "@/config/business";
+import {
+  C,
+  SANS,
+  SITE,
+  absolute,
+  button,
+  esc,
+  escLines,
+  eyebrow,
+  formatDate,
+  formatDateTime,
+  link,
+  panel,
+  row,
+  rupees,
+  shell,
+  signatureText,
+} from "./layout";
 
 /**
  * The email a customer gets when their order is confirmed.
  *
- * Sent at the moment the money is real — the gateway's verified answer, or a
- * bank credit the owner has seen — never at checkout. An email that says
- * "confirmed" before the payment has landed is the one thing a customer will
- * quote back when it later fails.
+ * Sent at the moment the money is real — the gateway's verified answer, a bank
+ * credit the owner has seen, or a cash-on-delivery order at checkout — never at
+ * checkout for an online payment. An email that says "confirmed" before the
+ * payment has landed is the one a customer will quote back when it later fails,
+ * which is why the wording changes with the payment state rather than assuming
+ * the happy one.
  *
- * Written for email clients rather than browsers: a table, inline styles, and
- * no image that has to load for the message to make sense. A customer reading
- * it on a train with images blocked still has their order number, what they
- * paid, where it is going and how to reach a person.
+ * Built on the shared shell in ./layout, so it carries the same header, the
+ * same signature and the same legal footer as every other mail the shop sends.
  */
 
 export interface OrderEmail {
@@ -21,16 +38,32 @@ export interface OrderEmail {
   text: string;
 }
 
+export interface OrderEmailLine {
+  title: string;
+  variantLabel?: string | null;
+  quantity: number;
+  /** Unit price, whole rupees. */
+  price: number;
+  /** Product image path or URL; made absolute before it is used. */
+  image?: string | null;
+}
+
 export interface OrderEmailInput {
   number: string;
   placedAt: Date;
   contactName: string;
-  lines: { title: string; quantity: number; price: number }[];
+  lines: OrderEmailLine[];
   itemsTotal: number;
+  productDiscount: number;
   shipping: number;
+  tax: number;
   total: number;
   paymentLabel: string;
   paymentRef: string | null;
+  /** True once money has actually arrived. COD is false — nothing has been paid yet. */
+  paid: boolean;
+  /** Set for a cash-on-delivery order, which changes what the customer is told. */
+  cod: boolean;
   shipName: string;
   shipLine1: string;
   shipLine2: string | null;
@@ -39,33 +72,39 @@ export interface OrderEmailInput {
   shipPincode: string;
   estimatedDelivery: Date;
   orderId: string;
+  /** Printed when the invoice has been raised; omitted rather than invented. */
+  invoiceNumber?: string | null;
 }
 
-const SITE = (isFilled(BUSINESS.url) ? BUSINESS.url : "http://localhost:3000").replace(/\/+$/, "");
-/**
- * The brand palette from globals.css, repeated as literals because no email
- * client resolves CSS custom properties. The keys say what each colour is for
- * rather than what it looks like, so a change of theme does not leave a name
- * describing a colour the file no longer uses.
- */
-const C = {
-  canvas: "#f4f3f0",
-  surface: "#ffffff",
-  brandDeep: "#1c333f",
-  brandTint: "#bcd3de",
-  ink: "#1f262b",
-  body: "#414c54",
-  muted: "#627079",
-  hairline: "#d4dae1",
-};
+/** A 64px thumbnail cell, or a tinted placeholder when the product has no image. */
+function thumbnail(line: OrderEmailLine): string {
+  if (line.image) {
+    return `<img src="${esc(absolute(line.image))}" width="64" height="64" alt="${esc(line.title)}" style="display:block;width:64px;height:64px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;object-fit:cover;background-color:${C.canvas};">`;
+  }
+  // No image is not a broken image: an empty tinted square reads as deliberate,
+  // and the title beside it carries the meaning anyway.
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="64" height="64" bgcolor="${C.canvas}" style="width:64px;height:64px;background-color:${C.canvas};">&nbsp;</td></tr></table>`;
+}
 
-const rupees = (n: number) => `₹${n.toLocaleString("en-IN")}`;
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function lineRow(line: OrderEmailLine): string {
+  const lineTotal = line.price * line.quantity;
+  return `
+  <tr>
+    <td width="64" valign="top" style="padding:14px 14px 14px 0;">${thumbnail(line)}</td>
+    <td valign="top" style="padding:14px 0;font-family:${SANS};">
+      <p style="margin:0;font-size:14px;line-height:20px;font-weight:600;color:${C.ink};">${esc(line.title)}</p>
+      ${line.variantLabel ? `<p style="margin:3px 0 0;font-size:12.5px;line-height:18px;color:${C.muted};">${esc(line.variantLabel)}</p>` : ""}
+      <p style="margin:4px 0 0;font-size:12.5px;line-height:18px;color:${C.muted};">Qty ${line.quantity} · ${esc(rupees(line.price))} each</p>
+    </td>
+    <td valign="top" align="right" style="padding:14px 0 14px 10px;font-family:${SANS};font-size:14px;font-weight:600;color:${C.ink};white-space:nowrap;">${esc(rupees(lineTotal))}</td>
+  </tr>`;
+}
 
 export function buildOrderConfirmation(order: OrderEmailInput): OrderEmail {
+  const firstName = order.contactName.trim().split(/\s+/)[0] || "there";
   const track = `${SITE}/track/${order.orderId}`;
-  const invoice = `${SITE}/order/${order.orderId}/invoice`;
+  const invoiceUrl = `${SITE}/order/${order.orderId}/invoice`;
+
   const address = [
     order.shipName,
     order.shipLine1,
@@ -82,101 +121,150 @@ export function buildOrderConfirmation(order: OrderEmailInput): OrderEmail {
     timeZone: "Asia/Kolkata",
   }).format(order.estimatedDelivery);
 
-  const text = `Hello ${order.contactName},
+  /**
+   * What the money has actually done, said plainly. A COD order has been paid
+   * for by nobody yet, and calling that "paid" in the receipt is the kind of
+   * small lie that costs an hour on the phone later.
+   */
+  const paymentState = order.cod
+    ? `To pay on delivery · ${rupees(order.total)}`
+    : order.paid
+      ? "Paid"
+      : "Payment pending";
 
-Your payment has gone through and order ${order.number} is confirmed. We are getting it packed.
+  const opening = order.cod
+    ? `Thank you ${esc(firstName)} — order <strong style="color:${C.ink};">${esc(order.number)}</strong> is confirmed and we are getting it packed. You pay the courier when it reaches you.`
+    : order.paid
+      ? `Thank you ${esc(firstName)} — we have your payment and order <strong style="color:${C.ink};">${esc(order.number)}</strong> is confirmed. We are getting it packed.`
+      : `Thank you ${esc(firstName)} — order <strong style="color:${C.ink};">${esc(order.number)}</strong> is placed. We will confirm it the moment the payment clears.`;
 
-WHAT YOU ORDERED
-${order.lines.map((l) => `  ${l.title} × ${l.quantity} — ${rupees(l.price * l.quantity)}`).join("\n")}
+  const totals = [
+    row("Items", rupees(order.itemsTotal)),
+    order.productDiscount > 0 ? row("Discount", `− ${rupees(order.productDiscount)}`) : "",
+    row("Delivery", order.shipping === 0 ? "Free" : rupees(order.shipping)),
+    order.tax > 0 ? row("Taxes (included)", rupees(order.tax)) : "",
+    row(order.cod ? "To pay on delivery" : "Total", rupees(order.total), { strong: true, rule: true }),
+  ].join("");
 
-  Items      ${rupees(order.itemsTotal)}
-  Delivery   ${order.shipping === 0 ? "Free" : rupees(order.shipping)}
-  Total paid ${rupees(order.total)}
-  Paid by    ${order.paymentLabel}${order.paymentRef ? ` (ref ${order.paymentRef})` : ""}
-  Placed     ${formatDateTime(order.placedAt)}
+  const body = `
+${eyebrow(order.cod ? "Order confirmed" : order.paid ? "Order confirmed" : "Order placed")}
+<h1 style="margin:0;font-family:${SANS};font-size:23px;line-height:30px;font-weight:700;color:${C.ink};">Thank you for your order</h1>
+<p style="margin:12px 0 0;font-family:${SANS};font-size:15px;line-height:23px;color:${C.body};">${opening}</p>
 
-DELIVERING TO
-${address}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;border-collapse:collapse;">
+  <tr>
+    <td style="font-family:${SANS};font-size:13px;line-height:20px;color:${C.muted};">
+      Order <strong style="color:${C.ink};">${esc(order.number)}</strong><br>
+      Placed ${esc(formatDateTime(order.placedAt))}
+      ${order.invoiceNumber ? `<br>Invoice ${esc(order.invoiceNumber)}` : ""}
+    </td>
+    <td align="right" style="font-family:${SANS};font-size:13px;line-height:20px;color:${C.muted};">
+      ${esc(order.paymentLabel)}<br>
+      <span style="color:${order.paid ? C.positive : C.caution};font-weight:700;">${esc(paymentState)}</span>
+      ${order.paymentRef ? `<br><span style="font-size:12px;">Ref ${esc(order.paymentRef)}</span>` : ""}
+    </td>
+  </tr>
+</table>
 
-Expected by ${eta}. We will email you the tracking number as soon as the courier collects it.
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;border-top:1px solid ${C.hairline};border-collapse:collapse;">
+  ${order.lines.map(lineRow).join("")}
+</table>
 
-Track your order: ${track}
-Your invoice:     ${invoice}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;border-collapse:collapse;">
+  ${totals}
+</table>
 
-Anything at all — reply to this email, call ${BUSINESS.supportPhone}, or WhatsApp us.
-${BUSINESS.supportHours}.
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-collapse:collapse;">
+  <tr>
+    <td width="50%" valign="top" style="padding-right:8px;">
+      ${panel(
+        `${eyebrow("Delivering to")}<p style="margin:0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.ink};">${escLines(address)}</p>`,
+      )}
+    </td>
+    <td width="50%" valign="top" style="padding-left:8px;">
+      ${panel(
+        `${eyebrow("Expected by")}<p style="margin:0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.ink};font-weight:600;">${esc(eta)}</p><p style="margin:6px 0 0;font-family:${SANS};font-size:12.5px;line-height:19px;color:${C.muted};">We will email the tracking number the moment the courier collects it.</p>`,
+      )}
+    </td>
+  </tr>
+</table>
 
-${BUSINESS.legalName}
-${formatAddress()}`;
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-collapse:collapse;">
+  <tr>
+    <td>${button(track, "Track this order")}</td>
+    <td style="padding-left:16px;">${link(invoiceUrl, "View invoice")}</td>
+  </tr>
+</table>
 
-  const row = (label: string, value: string, strong = false) => `
-    <tr>
-      <td style="padding:6px 0;color:${C.muted};font-size:14px;">${esc(label)}</td>
-      <td style="padding:6px 0;text-align:right;font-size:14px;color:${C.ink};${strong ? "font-weight:700;" : ""}">${esc(value)}</td>
-    </tr>`;
-
-  const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:${C.canvas};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.canvas};padding:24px 12px;">
-<tr><td align="center">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${C.surface};overflow:hidden;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-
-    <tr><td style="background:${C.brandDeep};padding:22px 24px;">
-      <div style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.2px;">${esc(BUSINESS.brandName)}</div>
-      <div style="color:${C.brandTint};font-size:13px;margin-top:2px;">Order confirmed</div>
-    </td></tr>
-
-    <tr><td style="padding:24px;">
-      <p style="margin:0 0 14px;font-size:15px;color:${C.body};line-height:1.6;">
-        Hello ${esc(order.contactName)}, your payment has gone through and order
-        <strong style="color:${C.ink};">${esc(order.number)}</strong> is confirmed. We are getting it packed.
-      </p>
-
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.canvas};margin-top:6px;">
-        ${order.lines
-          .map(
-            (l) => `<tr>
-          <td style="padding:10px 0;font-size:14px;color:${C.ink};line-height:1.5;">${esc(l.title)}<br><span style="color:${C.muted};font-size:13px;">Qty ${l.quantity}</span></td>
-          <td style="padding:10px 0;text-align:right;font-size:14px;color:${C.ink};white-space:nowrap;">${rupees(l.price * l.quantity)}</td>
-        </tr>`,
-          )
-          .join("")}
-      </table>
-
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.canvas};margin-top:8px;padding-top:8px;">
-        ${row("Items", rupees(order.itemsTotal))}
-        ${row("Delivery", order.shipping === 0 ? "Free" : rupees(order.shipping))}
-        ${row("Total paid", rupees(order.total), true)}
-        ${row("Paid by", order.paymentLabel + (order.paymentRef ? ` · ${order.paymentRef}` : ""))}
-        ${row("Placed", formatDateTime(order.placedAt))}
-      </table>
-
-      <div style="margin-top:20px;padding:14px 16px;background:${C.canvas};">
-        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:${C.muted};">Delivering to</div>
-        <div style="margin-top:6px;font-size:14px;color:${C.ink};line-height:1.6;">${esc(address).replace(/\n/g, "<br>")}</div>
-        <div style="margin-top:10px;font-size:13.5px;color:${C.body};">Expected by <strong>${esc(eta)}</strong>. We will email the tracking number as soon as the courier collects it.</div>
-      </div>
-
-      <div style="margin-top:22px;">
-        <a href="${track}" style="display:inline-block;background:${C.brandDeep};color:#ffffff;text-decoration:none;padding:11px 20px;font-size:14px;font-weight:600;">Track your order</a>
-        <a href="${invoice}" style="display:inline-block;margin-left:8px;color:${C.brandDeep};text-decoration:none;padding:11px 6px;font-size:14px;font-weight:600;">View invoice</a>
-      </div>
-
-      <p style="margin:22px 0 0;font-size:13px;color:${C.muted};line-height:1.6;">
-        Anything at all — reply to this email, call
-        <a href="tel:${BUSINESS.supportPhoneTel}" style="color:${C.brandDeep};">${esc(BUSINESS.supportPhone)}</a>,
-        or <a href="https://wa.me/${BUSINESS.supportPhoneDigits}" style="color:${C.brandDeep};">WhatsApp us</a>.
-        ${esc(BUSINESS.supportHours)}.
-      </p>
-    </td></tr>
-
-    <tr><td style="padding:16px 24px;background:${C.canvas};font-size:12px;color:${C.muted};line-height:1.6;">
-      ${esc(BUSINESS.legalName)}<br>${esc(formatAddress())}
-    </td></tr>
+<div style="margin-top:26px;">
+  ${eyebrow("What happens next")}
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+    <tr><td style="padding:3px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">1. We pack your order and hand it to the courier.</td></tr>
+    <tr><td style="padding:3px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">2. You get an email with the tracking number and a link to follow it.</td></tr>
+    <tr><td style="padding:3px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">3. ${order.cod ? `Pay the courier ${esc(rupees(order.total))} when it arrives.` : "It arrives by the date above."}</td></tr>
   </table>
-</td></tr></table>
-</body></html>`;
+</div>
 
-  return { subject: `Order ${order.number} confirmed — ${rupees(order.total)}`, html, text };
+<p style="margin:22px 0 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">
+  Something not right? Reply to this email — it reaches a person, not a queue — or call
+  <a href="tel:${esc(BUSINESS.supportPhoneTel)}" style="color:${C.brandDeep};">${esc(BUSINESS.supportPhone)}</a>.
+</p>`;
+
+  const text = [
+    `Thank you for your order`,
+    ``,
+    order.cod
+      ? `Thank you ${firstName} — order ${order.number} is confirmed and we are getting it packed. You pay the courier when it reaches you.`
+      : order.paid
+        ? `Thank you ${firstName} — we have your payment and order ${order.number} is confirmed. We are getting it packed.`
+        : `Thank you ${firstName} — order ${order.number} is placed. We will confirm it the moment the payment clears.`,
+    ``,
+    `Order      ${order.number}`,
+    `Placed     ${formatDateTime(order.placedAt)}`,
+    order.invoiceNumber ? `Invoice    ${order.invoiceNumber}` : "",
+    `Payment    ${order.paymentLabel} — ${paymentState}${order.paymentRef ? ` (ref ${order.paymentRef})` : ""}`,
+    ``,
+    `WHAT YOU ORDERED`,
+    ...order.lines.map(
+      (l) =>
+        `  ${l.title}${l.variantLabel ? ` (${l.variantLabel})` : ""} × ${l.quantity} — ${rupees(l.price * l.quantity)}`,
+    ),
+    ``,
+    `  Items        ${rupees(order.itemsTotal)}`,
+    order.productDiscount > 0 ? `  Discount     − ${rupees(order.productDiscount)}` : "",
+    `  Delivery     ${order.shipping === 0 ? "Free" : rupees(order.shipping)}`,
+    order.tax > 0 ? `  Taxes (incl) ${rupees(order.tax)}` : "",
+    `  ${order.cod ? "To pay on delivery" : "Total"}        ${rupees(order.total)}`,
+    ``,
+    `DELIVERING TO`,
+    address,
+    ``,
+    `Expected by ${eta}. We will email the tracking number as soon as the courier collects it.`,
+    ``,
+    `Track this order: ${track}`,
+    `Your invoice:     ${invoiceUrl}`,
+    ``,
+    `WHAT HAPPENS NEXT`,
+    `  1. We pack your order and hand it to the courier.`,
+    `  2. You get an email with the tracking number and a link to follow it.`,
+    `  3. ${order.cod ? `Pay the courier ${rupees(order.total)} when it arrives.` : "It arrives by the date above."}`,
+    ``,
+    `Something not right? Reply to this email, or call ${BUSINESS.supportPhone}.`,
+    ``,
+    signatureText(),
+  ]
+    .filter((part) => part !== "")
+    .join("\n");
+
+  return {
+    subject: order.cod
+      ? `Order ${order.number} confirmed — ${rupees(order.total)} to pay on delivery`
+      : `Order ${order.number} confirmed — ${rupees(order.total)}`,
+    html: shell({
+      kicker: `Order ${order.number}`,
+      preheader: `${order.lines.length} item${order.lines.length === 1 ? "" : "s"} · arriving by ${formatDate(order.estimatedDelivery)}`,
+      body,
+    }),
+    text,
+  };
 }

@@ -37,8 +37,12 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
         contactName: true,
         contactEmail: true,
         itemsTotal: true,
+        productDiscount: true,
         shipping: true,
+        tax: true,
         total: true,
+        paymentStatus: true,
+        invoiceNumber: true,
         paymentMethod: true,
         paymentDetail: true,
         paymentRef: true,
@@ -49,7 +53,7 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
         shipState: true,
         shipPincode: true,
         estimatedDelivery: true,
-        lines: { select: { title: true, quantity: true, price: true } },
+        lines: { select: { title: true, quantity: true, price: true, image: true, variantLabel: true } },
       },
     });
     if (!order?.contactEmail) return;
@@ -57,6 +61,10 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
     const mail = buildOrderConfirmation({
       ...order,
       orderId: order.id,
+      // What the money has actually done. COD is never "paid" here: the
+      // courier has not collected it yet, and the email says so.
+      cod: order.paymentMethod === "COD",
+      paid: order.paymentStatus === "PAID",
       // The detail is the gateway's own words ("UPI · HDFC"); the method is
       // our column. Prefer the detail when there is one — it is more use to a
       // customer matching this against their bank statement.
