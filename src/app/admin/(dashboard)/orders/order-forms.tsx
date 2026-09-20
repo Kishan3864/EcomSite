@@ -455,8 +455,25 @@ export function AdminNoteForm({ orderId, note }: { orderId: string; note: string
   );
 }
 
-/** Cancelling needs a reason; it also restocks, so it is deliberately two-step. */
-export function CancelOrderForm({ orderId }: { orderId: string }) {
+/**
+ * Cancelling needs a reason; it also restocks, so it is deliberately two-step.
+ *
+ * On an order that already has a waybill it says so before anything else.
+ * Cancelling here restocks the items and raises a refund, and neither of those
+ * recalls a parcel that is already moving — the shipment has to be cancelled
+ * with the courier separately, and if it is not, the shop has refunded an order
+ * that is still on its way to the customer.
+ */
+export function CancelOrderForm({
+  orderId,
+  courier,
+  awb,
+}: {
+  orderId: string;
+  /** Set once a shipment exists. Drives the warning below. */
+  courier?: string | null;
+  awb?: string | null;
+}) {
   const [state, action] = useActionState(cancelOrder, INITIAL_FORM);
   const [open, setOpen] = useState(false);
 
@@ -476,6 +493,14 @@ export function CancelOrderForm({ orderId }: { orderId: string }) {
   return (
     <Form action={action} className="grid gap-2">
       <input type="hidden" name="id" value={orderId} />
+      {awb && (
+        <Notice tone="warn">
+          This order is already with {courier ?? "the courier"} on waybill {awb}. Cancelling here
+          restocks the items and raises a refund — it does <strong>not</strong> recall the parcel.
+          Cancel the shipment with {courier ?? "the courier"} first, or you will have refunded an
+          order that is still being delivered.
+        </Notice>
+      )}
       {state.error && <Notice tone="error">{state.error}</Notice>}
       <Label htmlFor="cancel-reason" hint="Shown to the customer on their order page.">
         Why is this being cancelled?

@@ -4,10 +4,15 @@ import { useActionState, useState } from "react";
 import { IndianRupee, RefreshCw, ShieldQuestion, Undo2 } from "lucide-react";
 import { Notice, SubmitButton } from "@/components/admin/client";
 import { FieldError, Label, inputCls } from "@/components/admin/ui";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { INITIAL_FORM } from "@/services/admin/form-state";
-import { refundPayment, refreshPayuPayment, resolveRefund } from "@/services/admin/payments-actions";
+import {
+  recordManualRefund,
+  refundPayment,
+  refreshPayuPayment,
+  resolveRefund,
+} from "@/services/admin/payments-actions";
 import { formatINR } from "@/lib/utils";
 
 /**
@@ -424,6 +429,130 @@ export function RefundForm({
         <SubmitButton size="sm" variant="danger" pendingText="Sending to PayU…" disabled={!sane}>
           <Undo2 size={14} /> Refund {sane ? inr(Math.round(typed * 100)) : "…"}
         </SubmitButton>
+      </div>
+    </Form>
+  );
+}
+
+/**
+ * Records a refund the shop sent by hand.
+ *
+ * For cash on delivery and hand-verified UPI, where there is no capture for
+ * PayU to reverse and somebody has to transfer the money themselves. The
+ * reference is required: without it the record is an assertion rather than
+ * something that can be checked against a bank statement later.
+ *
+ * Kept visually distinct from RefundForm above, and worded to match, because
+ * the two are not the same act. One asks a gateway to move money; this one
+ * writes down that a person already did. The admin shows them differently
+ * everywhere for the same reason.
+ */
+export function ManualRefundForm({
+  orderId,
+  orderNumber,
+  maxRupees,
+  suggestedMethod,
+}: {
+  orderId: string;
+  orderNumber: string;
+  maxRupees: number;
+  suggestedMethod: string;
+}) {
+  const [state, action] = useActionState(recordManualRefund, INITIAL_FORM);
+  const [open, setOpen] = useState(false);
+
+  if (state.ok && state.message) {
+    return (
+      <div className="grid gap-2">
+        <Notice tone="ok">{state.message}</Notice>
+        <p className="text-[12px] leading-[1.5] text-ink-500">
+          The customer has been emailed that the money is on its way back. Reload to see it counted
+          against what this order owes.
+        </p>
+      </div>
+    );
+  }
+
+  if (!open) {
+    return (
+      <div className="grid gap-2">
+        <p className="text-[12.5px] leading-[1.55] text-ink-600">
+          No gateway payment to reverse on this order. If you have sent the money yourself, record
+          it here so the order stops showing as owed.
+        </p>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className={buttonClasses("outline", "sm", "justify-self-start")}
+        >
+          Record a refund I sent
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Form action={action} className="grid gap-3">
+      <input type="hidden" name="orderId" value={orderId} />
+
+      <p className="text-[12.5px] leading-[1.55] text-ink-600">
+        This records money you have already sent for {orderNumber}. It does not move anything —
+        send the transfer first, then write it down here.
+      </p>
+
+      <label className="grid gap-1 text-[12px] font-medium text-ink-700">
+        Amount in rupees
+        <input
+          name="amount"
+          type="number"
+          min={1}
+          max={maxRupees}
+          required
+          defaultValue={maxRupees}
+          className="border border-ink-200 bg-surface px-3 py-2 text-[13.5px] tabular-nums text-ink-900"
+        />
+      </label>
+
+      <label className="grid gap-1 text-[12px] font-medium text-ink-700">
+        Reference (UTR, cheque number — this is the proof)
+        <input
+          name="reference"
+          required
+          minLength={3}
+          placeholder="e.g. 428913756201"
+          className="border border-ink-200 bg-surface px-3 py-2 font-mono text-[13px] text-ink-900"
+        />
+      </label>
+
+      <label className="grid gap-1 text-[12px] font-medium text-ink-700">
+        How you sent it
+        <input
+          name="method"
+          required
+          minLength={2}
+          defaultValue={suggestedMethod}
+          placeholder="UPI from HDFC, cash at the counter…"
+          className="border border-ink-200 bg-surface px-3 py-2 text-[13.5px] text-ink-900"
+        />
+      </label>
+
+      <label className="grid gap-1 text-[12px] font-medium text-ink-700">
+        Note (optional)
+        <input
+          name="note"
+          className="border border-ink-200 bg-surface px-3 py-2 text-[13.5px] text-ink-900"
+        />
+      </label>
+
+      {state.error && <Notice tone="error">{state.error}</Notice>}
+
+      <div className="flex flex-wrap gap-2">
+        <SubmitButton size="sm" pendingText="Recording…">
+          Record this refund
+        </SubmitButton>
+        <button type="button" onClick={() => setOpen(false)} className={buttonClasses("subtle", "sm")}>
+          Cancel
+        </button>
       </div>
     </Form>
   );

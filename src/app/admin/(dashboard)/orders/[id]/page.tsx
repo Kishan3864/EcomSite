@@ -438,7 +438,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
           {canEdit && canCancel(order.status) && (
             <Card title="Danger zone">
-              <CancelOrderForm orderId={order.id} />
+              <CancelOrderForm orderId={order.id} courier={order.courier} awb={order.awb} />
             </Card>
           )}
 

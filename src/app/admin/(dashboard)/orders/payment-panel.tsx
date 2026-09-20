@@ -6,7 +6,7 @@ import { refundableForAttempt } from "@/services/payu-ledger";
 import { Card, DateCell, KeyValue, Pill, StatusPill } from "@/components/admin/ui";
 import { CopyButton } from "@/components/admin/client";
 import { formatDateTime, formatINR } from "@/lib/utils";
-import { PayuRefreshForm, RefundForm } from "./payment-forms";
+import { ManualRefundForm, PayuRefreshForm, RefundForm } from "./payment-forms";
 
 /**
  * The whole PayU picture for one order, as far as this database holds it.
@@ -134,6 +134,16 @@ export async function PaymentSection({
   orderNumber: string;
   canEdit: boolean;
 }) {
+  // The ceiling for a manual refund, and a sensible default for how it was
+  // sent — both read here rather than guessed in the form.
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: { total: true, paymentMethod: true, paymentStatus: true },
+  });
+  const orderTotal = order?.total ?? 0;
+  const manualMethodHint =
+    order?.paymentMethod === "COD" ? "Bank transfer" : "UPI to the account they paid from";
+
   const attempts = await db.paymentAttempt.findMany({
     where: { orderId },
     // Oldest first: a customer who failed twice and then paid should read top
@@ -142,10 +152,28 @@ export async function PaymentSection({
     include: { refunds: { orderBy: { initiatedAt: "asc" } } },
   });
 
-  // Cash, or a UPI transfer confirmed against the bank by hand. There is no
-  // gateway story to tell, and the Payment card in the sidebar already says
-  // everything there is.
-  if (attempts.length === 0) return null;
+  /**
+   * Cash, or a UPI transfer confirmed against the bank by hand. There is no
+   * gateway story to tell — but there may still be money owed, and this is the
+   * only screen that can record giving it back.
+   *
+   * The panel used to return null here unconditionally, which hid the manual
+   * refund form from precisely the orders that need it: a cancelled COD or
+   * hand-verified order has no PaymentAttempt at all.
+   */
+  if (attempts.length === 0) {
+    if (!canEdit || order?.paymentStatus !== "REFUND_DUE") return null;
+    return (
+      <Card title="Refund" description="No gateway payment on this order">
+        <ManualRefundForm
+          orderId={orderId}
+          orderNumber={orderNumber}
+          maxRupees={orderTotal}
+          suggestedMethod={manualMethodHint}
+        />
+      </Card>
+    );
+  }
 
   // Only a capture can be given back, and the ceiling belongs to the capture
   // rather than to the order — a duplicate payment leaves one order with two
@@ -433,9 +461,16 @@ export async function PaymentSection({
 
           {canEdit ? (
             captured.length === 0 ? (
-              <p className="text-[12.5px] leading-relaxed text-ink-500">
-                Nothing on this order was captured by PayU, so there is nothing it can refund.
-              </p>
+              // No capture to reverse — cash on delivery, or a UPI credit the
+              // owner confirmed by hand. The money still has to go back, so the
+              // panel offers the only mechanism that exists here: record the
+              // transfer you made yourself.
+              <ManualRefundForm
+                orderId={orderId}
+                orderNumber={orderNumber}
+                maxRupees={orderTotal}
+                suggestedMethod={manualMethodHint}
+              />
             ) : (
               captured.map((attempt) => {
                 const state = ceilings.get(attempt.id);
