@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { mailConfigured, sendMail } from "@/lib/mail";
 import { orderToken } from "@/lib/order-token";
 import { buildOrderUpdate, type OrderEmailKind } from "@/lib/emails/order-updates";
+import { refundWindowText } from "./refunds";
 
 /**
  * The one way an order lifecycle email is sent.
@@ -62,6 +63,24 @@ function refundDestination(method: string): string | null {
  */
 function truthful(kind: OrderEmailKind, order: OrderRow): { ok: true } | { ok: false; why: string } {
   switch (kind) {
+    case "return-requested":
+      return order.returns.length > 0
+        ? { ok: true }
+        : { ok: false, why: "no return has been raised on this order" };
+
+    case "return-received":
+      // The item is back once it has been collected; "received" is the step
+      // after pickup, so the same proof serves and the copy is careful not to
+      // promise a refund.
+      return order.returns.some((r) => ["PICKED_UP", "REFUNDED"].includes(r.status))
+        ? { ok: true }
+        : { ok: false, why: "no return on this order has been collected" };
+
+    case "return-rejected":
+      return order.returns.some((r) => r.status === "REJECTED")
+        ? { ok: true }
+        : { ok: false, why: "no return on this order has been rejected" };
+
     case "payment-received":
       return order.paymentStatus === "PAID"
         ? { ok: true }
@@ -102,9 +121,14 @@ function truthful(kind: OrderEmailKind, order: OrderRow): { ok: true } | { ok: f
         : { ok: false, why: "no refund has been raised on this order" };
 
     case "refund-completed":
-      // The only email in the set that asserts money actually moved, so it is
-      // the strictest: the gateway must have said so.
-      return order.refunds.some((r) => r.status === "SUCCESS")
+      /**
+       * The only email in the set that asserts money actually moved, so it is
+       * the strictest. Two things count, and nothing else does: the gateway
+       * confirming SUCCESS, or a person recording a manual transfer with a
+       * reference against their name. A COD order has no capture to reverse,
+       * so without the second it could never honestly send this at all.
+       */
+      return order.refunds.some((r) => r.status === "SUCCESS") || order.manualRefunds.length > 0
         ? { ok: true }
         : { ok: false, why: "no refund on this order has been confirmed successful" };
 
@@ -137,6 +161,7 @@ const SELECT = {
   cancelReason: true,
   emailsSent: true,
   refunds: { select: { amount: true, status: true, requestId: true, createdAt: true } },
+  manualRefunds: { select: { amount: true, reference: true, recordedAt: true } },
   returns: {
     select: {
       status: true,
@@ -168,6 +193,7 @@ export async function renderOrderMail(
   const honest = truthful(kind, order);
   if (!honest.ok) return honest;
 
+  const manual = order.manualRefunds[order.manualRefunds.length - 1];
   const successful = order.refunds.find((r) => r.status === "SUCCESS");
   const latestRefund = successful ?? order.refunds[order.refunds.length - 1];
   const activeReturn = order.returns[order.returns.length - 1];
@@ -191,9 +217,17 @@ export async function renderOrderMail(
     // Refund.amount is PAISE (it matches PaymentAttempt.amount); every figure
     // in an email is whole rupees. Quoting it unconverted would tell a
     // customer they are getting a hundred times their money back.
-    refundAmount: latestRefund ? Math.round(latestRefund.amount / 100) : (activeReturn?.refundAmount ?? null),
+    refundAmount: latestRefund
+      ? Math.round(latestRefund.amount / 100)
+      : // ManualRefund.amount is already whole rupees — typed in by a person
+        // reading a bank app — so it is NOT divided by a hundred.
+        (manual?.amount ?? activeReturn?.refundAmount ?? null),
     refundDestination: refundDestination(order.paymentMethod),
-    refundRef: (kind === "refund-completed" ? successful?.requestId : null) ?? null,
+    // Quoted from the shop's own published policy, never invented here.
+    refundWindow: refundWindowText(),
+    rejectReason: order.returns.find((r) => r.status === "REJECTED")?.reason ?? null,
+    refundRef:
+      (kind === "refund-completed" ? (successful?.requestId ?? manual?.reference) : null) ?? null,
     returnItems: activeReturn?.orderLine
       ? [`${activeReturn.orderLine.title} × ${activeReturn.orderLine.quantity}`]
       : null,

@@ -35,6 +35,9 @@ import type { OrderEmail } from "./order";
  */
 
 export type OrderEmailKind =
+  | "return-requested"
+  | "return-received"
+  | "return-rejected"
   | "payment-received"
   | "payment-failed"
   | "shipped"
@@ -75,6 +78,11 @@ export interface OrderUpdateInput {
   /** Why a payment failed, in plain words. Never the gateway's raw error. */
   failureReason?: string | null;
 
+  /** Why a return was turned down, in the owner's words. */
+  rejectReason?: string | null;
+  /** The window the shop publishes for money to land, from BUSINESS.ops. */
+  refundWindow?: string | null;
+
   /** What is being returned, for the return emails. */
   returnItems?: string[] | null;
 }
@@ -103,6 +111,51 @@ function copyFor(o: OrderUpdateInput, track: string): Copy {
   const first = o.contactName.trim().split(/\s+/)[0] || "there";
 
   switch (o.kind) {
+    case "return-requested":
+      return {
+        kicker: "Return requested",
+        subject: `We have your return request — order ${o.number}`,
+        eyebrow: "Return requested",
+        headline: "We have your return request",
+        opening: `${first}, we have your request to return an item from order ${o.number}. Someone will look at it and come back to you — you do not need to send anything yet.`,
+        preheader: `Return requested on order ${o.number}`,
+        next: [
+          "We check the request and approve it, usually within a working day.",
+          "If it is approved we arrange a pickup — you do not post it yourself.",
+          "Your refund is raised once the item is back with us and checked.",
+        ],
+        caution: "Please keep the item and its packing as they are until you hear from us.",
+      };
+
+    case "return-received":
+      return {
+        kicker: "Return received",
+        subject: `Your return is back with us — order ${o.number}`,
+        eyebrow: "Return received",
+        headline: "Your return is back with us",
+        opening: `${first}, the item from order ${o.number} has reached us and we are checking it now.`,
+        preheader: `Return received on order ${o.number}`,
+        next: [
+          "We check the item against what was sent out.",
+          "Once it passes we raise your refund and email you again.",
+        ],
+        // Deliberate: arriving is not being refunded, and this is exactly the
+        // point in the journey where a customer starts expecting money.
+        caution: "No refund has been raised yet. That happens once the check is done.",
+      };
+
+    case "return-rejected":
+      return {
+        kicker: "Return not approved",
+        subject: `About your return request — order ${o.number}`,
+        eyebrow: "Return not approved",
+        headline: "We could not approve this return",
+        opening: `${first}, we have looked at the return request on order ${o.number} and we are not able to approve it${o.rejectReason ? `: ${o.rejectReason}` : "."} If that does not seem right, reply to this email — a person reads every reply and we would rather sort it out than leave it.`,
+        preheader: `Return not approved on order ${o.number}`,
+        caution:
+          "If you think this is a mistake, tell us. We will look again, and nothing about your order changes in the meantime.",
+      };
+
     case "payment-received":
       return {
         kicker: "Payment received",
@@ -200,11 +253,10 @@ function copyFor(o: OrderUpdateInput, track: string): Copy {
         headline: "Your refund has been raised",
         // "Raised", not "issued" or "processed". The money has not moved yet
         // and this email must not suggest that it has.
-        opening: `${first}, we have raised a refund of ${money(o.refundAmount ?? o.total)} for order ${o.number}. It is with ${o.refundDestination ?? "your bank"} now — they usually take 3 to 7 working days to put it back${o.refundDestination ? "" : " into the account you paid from"}. We will email you again the moment it is confirmed.`,
+        opening: `${first}, we have raised a refund of ${money(o.refundAmount ?? o.total)} for order ${o.number}. It is with ${o.refundDestination ?? "your bank"} now — they usually take ${o.refundWindow ?? "a few business days"} to put it back${o.refundDestination ? "" : " into the account you paid from"}. We will email you again the moment it is confirmed.`,
         preheader: `${money(o.refundAmount ?? o.total)} refund raised · 3–7 working days`,
         cta: { label: "View your order", href: track },
-        caution:
-          "Until your bank confirms it, the money has not moved yet. If it has not appeared after seven working days, reply to this email and we will chase it.",
+        caution: `Until your bank confirms it, the money has not moved yet. If it has not appeared after ${o.refundWindow ?? "a few business days"}, reply to this email and we will chase it.`,
       };
 
     case "refund-completed":

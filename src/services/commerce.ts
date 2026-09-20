@@ -42,6 +42,9 @@ import {
   overDailyCap,
   verifyFormToken,
 } from "@/lib/contact-guard";
+import { sendOrderMail } from "./order-mail";
+import { raiseGatewayRefund, refundToken } from "./refunds";
+import { customerMayCancel } from "@/lib/order-rules";
 import { buildContactAck } from "@/lib/emails/contact-ack";
 import { CONTACT_NOTIFY_TO, buildContactAdminEmail } from "@/lib/emails/contact-admin";
 import { upiConfigured } from "@/lib/payments/upi";
@@ -528,6 +531,8 @@ export async function requestReturn(input: {
     },
     select: { id: true },
   });
+
+  sendOrderMail(order.id, "return-requested");
 
   revalidatePath("/account/returns");
   revalidatePath("/admin", "layout");
@@ -1208,5 +1213,130 @@ export async function updateProfile(input: { name: string; phone: string }): Pro
     data: { name: input.name.trim(), phone: input.phone.trim() },
   });
   revalidatePath("/account");
+  return { ok: true };
+}
+
+/* --------------------------- Cancelling ---------------------------- */
+
+export interface CancelOrderState {
+  ok?: boolean;
+  error?: string;
+}
+
+/**
+ * Cancels an order at the customer's request.
+ *
+ * RULE ONE applies exactly as it does in admin: cancelling marks the money as
+ * owed, then raises the real refund through the shared door. It never writes
+ * REFUNDED. The refund goes through `raiseGatewayRefund`, so the row lock in
+ * `initiateRefund` protects it against the admin cancelling the same order at
+ * the same moment — the token is derived from the order id, so both attempts
+ * are one refund.
+ */
+export async function cancelOwnOrder(
+  _prev: CancelOrderState,
+  formData: FormData,
+): Promise<CancelOrderState> {
+  const orderId = String(formData.get("orderId") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 200);
+
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: {
+      id: true,
+      number: true,
+      status: true,
+      paymentStatus: true,
+      total: true,
+      customerId: true,
+      contactName: true,
+      lines: { select: { productId: true, quantity: true, title: true } },
+    },
+  });
+  if (!order || !(await canViewOrder(order))) return { error: "Order not found." };
+
+  if (!customerMayCancel(order.status)) {
+    return {
+      error:
+        order.status === "CANCELLED"
+          ? "This order is already cancelled."
+          : "This order has already been packed, so it cannot be cancelled here. Once it arrives you can return it and we will refund you.",
+    };
+  }
+
+  if (!rateLimit("order:cancel", orderId, 3, 10 * 60_000)) return { error: TOO_MANY };
+
+  const session = await getCustomerSession();
+
+  try {
+    await db.$transaction(async (tx) => {
+      // Re-read inside the transaction: an admin may have moved it meanwhile.
+      const fresh = await tx.order.findUnique({ where: { id: orderId }, select: { status: true } });
+      if (!fresh || !customerMayCancel(fresh.status)) throw new Error("moved");
+
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: "CANCELLED",
+          cancelledAt: new Date(),
+          cancelReason: reason || "Cancelled by the customer",
+          // Owed, not returned. The gateway is asked below.
+          paymentStatus: order.paymentStatus === "PAID" ? "REFUND_DUE" : "FAILED",
+        },
+      });
+
+      // Every unit goes back on the shelf, the same as an admin cancellation.
+      for (const line of order.lines) {
+        if (!line.productId) continue;
+        await tx.product.update({
+          where: { id: line.productId },
+          data: { stock: { increment: line.quantity }, soldCount: { decrement: line.quantity } },
+        });
+        await tx.stockMovement.create({
+          data: {
+            productId: line.productId,
+            delta: line.quantity,
+            reason: "Order cancelled by customer",
+            reference: order.number,
+            actorName: order.contactName,
+          },
+        });
+      }
+
+      await tx.orderEvent.create({
+        data: {
+          orderId,
+          status: "CANCELLED",
+          title: "Order cancelled",
+          description: reason
+            ? `Cancelled at your request: ${reason}`
+            : "Cancelled at your request.",
+          location: "Online",
+          actorName: order.contactName,
+        },
+      });
+    });
+  } catch {
+    return {
+      error:
+        "This order moved on while you were on this page — reload it and see where it has got to.",
+    };
+  }
+
+  if (order.paymentStatus === "PAID") {
+    const raised = await raiseGatewayRefund({
+      orderId,
+      amountRupees: order.total,
+      actor: { id: session?.id ?? null, name: order.contactName },
+      token: refundToken("cancel", orderId),
+    });
+    if (raised.ok) sendOrderMail(orderId, "refund-raised");
+  }
+
+  sendOrderMail(orderId, "cancelled");
+
+  revalidatePath(`/order/${orderId}`);
+  revalidatePath("/account/orders");
+  revalidatePath("/admin", "layout");
   return { ok: true };
 }
