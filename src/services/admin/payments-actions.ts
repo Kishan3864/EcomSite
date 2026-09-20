@@ -339,3 +339,58 @@ export async function resolveRefund(_prev: FormState, formData: FormData): Promi
 
   return { ok: true, message: outcome.message };
 }
+
+/**
+ * Records a refund the shop sent by hand.
+ *
+ * Cash on delivery and hand-verified UPI have no capture for PayU to reverse,
+ * so somebody transfers the money themselves and says so here. It is stored as
+ * a ManualRefund and never as a Refund: a typed-in reference is a person's word
+ * that they made a transfer, and it must not sit in the same table as a
+ * gateway's confirmation that money moved. The admin shows the two differently
+ * for exactly that reason.
+ *
+ * MANAGER only, and the reference is required — a manual refund with nothing to
+ * check it against is an assertion, not a record.
+ */
+export async function recordManualRefund(_prev: FormState, formData: FormData): Promise<FormState> {
+  const session = await requireAdmin("MANAGER");
+  const orderId = str(formData, "orderId");
+  const amount = Number(str(formData, "amount"));
+  const reference = str(formData, "reference").trim();
+  const method = str(formData, "method").trim();
+  const note = str(formData, "note").trim();
+
+  if (!Number.isInteger(amount) || amount <= 0)
+    return { error: "Enter the amount in whole rupees.", field: "amount" };
+  if (reference.length < 3)
+    return { error: "Put the UTR or reference in — this is the only proof it was sent.", field: "reference" };
+  if (method.length < 2) return { error: "Say how it was sent.", field: "method" };
+
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    select: { id: true, number: true, total: true },
+  });
+  if (!order) return { error: "Order not found." };
+  if (amount > order.total)
+    return { error: `That is more than the order total of ${formatINR(order.total)}.`, field: "amount" };
+
+  await db.manualRefund.create({
+    data: { orderId, amount, reference, method, note: note || null, recordedById: session.id },
+  });
+
+  await logActivity(session, {
+    action: "order.refund.manual",
+    entity: "Order",
+    entityId: orderId,
+    summary: `Recorded a manual refund of ${formatINR(amount)} on ${order.number} (${method}, ref ${reference})`,
+    metadata: { amount, reference, method },
+  });
+
+  // The customer is told the money has gone back, because a person has just
+  // said it has and put a reference against their name.
+  sendOrderMail(orderId, "refund-completed");
+
+  revalidateOrder(orderId);
+  return { ok: true, message: `Recorded ${formatINR(amount)} sent by hand.` };
+}

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { logActivity, requireAdmin, type AdminSession } from "@/lib/auth/admin";
 import { formatINR } from "@/lib/utils";
 import { sendOrderMail } from "@/services/order-mail";
+import { raiseGatewayRefund, refundToken } from "@/services/refunds";
 import { statusLabelOf } from "@/components/admin/ui";
 import type { ReturnStatus } from "@/generated/prisma/client";
 import {
@@ -150,6 +151,8 @@ export async function decideReturn(id: string, _prev: FormState, formData: FormD
     summary: `${next === "APPROVED" ? "Approved" : "Rejected"} return for ${describe(row)}`,
     metadata: { orderId: row.orderId, note: note || null },
   });
+  sendOrderMail(row.orderId, next === "APPROVED" ? "return-approved" : "return-rejected");
+
   revalidateReturn(row.orderId);
   redirect(withFlash(detailPath(id), next === "APPROVED" ? "Return approved — arrange the pickup." : "Return rejected."));
 }
@@ -200,15 +203,24 @@ export async function markReturnPickedUp(formData: FormData) {
     metadata: { orderId: row.orderId },
   });
   sendOrderMail(row.orderId, "return-picked-up");
+  sendOrderMail(row.orderId, "return-received");
 
   revalidateReturn(row.orderId);
   redirect(withFlash(next, `${row.orderLine.title} marked as picked up.`));
 }
 
 /**
- * PICKED_UP → REFUNDED. Restocks the line, records the movement, and rolls
- * the order's payment status forward — REFUNDED (and status RETURNED with an
- * event) once every line of the order has a refunded return.
+ * PICKED_UP → REFUNDED: raises the real refund, then records it.
+ *
+ * It used to do only the second half — restock, flip the order to REFUNDED and
+ * write a timeline event saying "the refund has been issued" — while no money
+ * moved and no Refund row existed. RULE ONE now governs the order: the gateway
+ * is asked FIRST, and the database only records what the gateway accepted.
+ *
+ * The refund goes through `raiseGatewayRefund`, the same door the order page
+ * uses, so the row lock inside `initiateRefund` covers both paths and the same
+ * money cannot be sent twice. The token is derived from the return's id, so a
+ * double-clicked button is one refund rather than two.
  */
 export async function refundReturn(formData: FormData) {
   const session = await requireAdmin("MANAGER");
@@ -220,12 +232,47 @@ export async function refundReturn(formData: FormData) {
   const blocked = assertTransition(row, "REFUNDED");
   if (blocked) redirect(withFlash(next, blocked, "error"));
 
+  // The money first. Nothing below may claim a refund this did not produce.
+  const raised = await raiseGatewayRefund({
+    orderId: row.orderId,
+    amountRupees: row.refundAmount,
+    actor: { id: session.id, name: session.name },
+    token: refundToken("return", row.id),
+  });
+
+  if (!raised.ok && raised.reason === "refused") {
+    // The gateway would not take it. Nothing is recorded, because recording a
+    // refund the gateway refused is exactly the lie this rewrite removes.
+    redirect(withFlash(next, raised.message, "error"));
+  }
+
+  if (!raised.ok) {
+    // No gateway capture to reverse — cash on delivery, or a UPI credit taken
+    // by hand. The return is marked as owed, not as refunded, and the owner
+    // records the transfer themselves from the order page.
+    await db.returnRequest.update({ where: { id }, data: { status: "PICKED_UP" } });
+    await db.order.update({
+      where: { id: row.orderId },
+      data: { paymentStatus: "REFUND_DUE" },
+    });
+    revalidateReturn(row.orderId);
+    redirect(
+      withFlash(
+        next,
+        `${raised.message} The order is marked as refund due — send the money and record it on the order.`,
+        "error",
+      ),
+    );
+  }
+
   let outcome: Awaited<ReturnType<typeof settleRefund>>;
   try {
-    outcome = await settleRefund(row, session);
+    outcome = await settleRefund(row, session, raised.refundId);
   } catch (error) {
     redirect(withFlash(next, error instanceof Error ? error.message : "The refund could not be completed.", "error"));
   }
+
+  sendOrderMail(row.orderId, "refund-raised");
 
   await logActivity(session, {
     action: "return.refund",
@@ -257,7 +304,7 @@ export async function refundReturn(formData: FormData) {
   redirect(withFlash(next, parts.join(" ")));
 }
 
-async function settleRefund(row: LoadedReturn, session: AdminSession) {
+async function settleRefund(row: LoadedReturn, session: AdminSession, refundId: string) {
   return db.$transaction(async (tx) => {
     const now = new Date();
 
@@ -265,7 +312,12 @@ async function settleRefund(row: LoadedReturn, session: AdminSession) {
     const fresh = await tx.returnRequest.findUnique({ where: { id: row.id }, select: { status: true } });
     if (!fresh || fresh.status !== "PICKED_UP") throw new Error("Return is no longer awaiting a refund.");
 
-    await tx.returnRequest.update({ where: { id: row.id }, data: { status: "REFUNDED", resolvedAt: now } });
+    // The return now points at the actual money, which is what stops the order
+    // page refunding the same line again.
+    await tx.returnRequest.update({
+      where: { id: row.id },
+      data: { status: "REFUNDED", resolvedAt: now, refundId },
+    });
 
     let restocked = false;
     if (row.orderLine.productId) {
@@ -295,7 +347,12 @@ async function settleRefund(row: LoadedReturn, session: AdminSession) {
     });
     const refundedLines = new Set(order.returns.filter((r) => r.status === "REFUNDED").map((r) => r.orderLineId));
     const allRefunded = order.lines.length > 0 && order.lines.every((l) => refundedLines.has(l.id));
-    const paymentStatus = allRefunded ? "REFUNDED" : "PARTIALLY_REFUNDED";
+    /**
+     * RULE ONE. A refund has been RAISED, not completed — PayU has accepted the
+     * request and will answer later. `recomputeRefundTotals` moves the order to
+     * REFUNDED when the gateway confirms SUCCESS, and only then.
+     */
+    const paymentStatus = "REFUND_DUE" as const;
 
     await tx.order.update({
       where: { id: order.id },
@@ -308,7 +365,8 @@ async function settleRefund(row: LoadedReturn, session: AdminSession) {
                 create: {
                   status: "RETURNED",
                   title: "Order returned",
-                  description: "Every item was returned and the refund has been issued.",
+                  description:
+                    "Every item was returned and the refund has been raised with the payment gateway. It is confirmed here once the money has actually moved.",
                   location: "WeekendCart returns desk",
                   actorName: session.name,
                   at: now,

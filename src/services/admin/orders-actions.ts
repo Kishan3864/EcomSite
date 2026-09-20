@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { logActivity, requireAdmin } from "@/lib/auth/admin";
 import { sendOrderMail } from "@/services/order-mail";
+import { raiseGatewayRefund, refundToken } from "@/services/refunds";
 import { DelhiveryError, cancelShipment, delhiveryConfig } from "@/lib/shipping/delhivery";
 import type { OrderStatus } from "@/generated/prisma/client";
 import {
@@ -130,8 +131,14 @@ export async function cancelOrder(_prev: FormState, formData: FormData): Promise
         status: "CANCELLED",
         cancelledAt: new Date(),
         cancelReason: reason,
-        // A paid order owes a refund; an unpaid COD order simply never collects.
-        paymentStatus: order.paymentStatus === "PAID" ? "REFUNDED" : "FAILED",
+        /**
+         * RULE ONE. A paid order that is cancelled OWES a refund; it has not
+         * had one. This line used to write REFUNDED here, which is how live
+         * orders came to claim money had gone back when nothing had been sent.
+         * The gateway is asked below, after this transaction commits, and
+         * `recomputeRefundTotals` writes REFUNDED only when PayU confirms it.
+         */
+        paymentStatus: order.paymentStatus === "PAID" ? "REFUND_DUE" : "FAILED",
       },
     });
 
@@ -205,6 +212,27 @@ export async function cancelOrder(_prev: FormState, formData: FormData): Promise
     summary: `Cancelled order ${order.number}`,
     metadata: { reason, restocked: order.lines.length, awb: order.awb, courierCancelled: !!order.awb && !courierFailed },
   });
+  /**
+   * The money, after the cancellation has committed.
+   *
+   * Through the same door the returns path uses, so the row lock in
+   * `initiateRefund` covers both and the same capture cannot be refunded twice.
+   * The token is derived from the order id: cancelling twice is one refund.
+   *
+   * A failure here leaves the order cancelled and REFUND_DUE — which is true,
+   * and visible on the reconciliation page — rather than failing the
+   * cancellation the owner asked for.
+   */
+  if (order.paymentStatus === "PAID") {
+    const raised = await raiseGatewayRefund({
+      orderId: id,
+      amountRupees: order.total,
+      actor: { id: session.id, name: session.name },
+      token: refundToken("cancel", id),
+    });
+    if (raised.ok) sendOrderMail(id, "refund-raised");
+  }
+
   sendOrderMail(id, "cancelled");
 
   revalidateOrder(id);
