@@ -29,6 +29,18 @@
  * everywhere, which is exactly what keeps the site internally consistent.
  */
 
+/**
+ * The mailbox the shop sends from and is reached on. Written once, here, and
+ * referenced by every contact field below, so support, privacy and grievance
+ * can never drift apart by a typo in one of them.
+ *
+ * This is the same mailbox the server authenticates to SMTP with (SMTP_USER in
+ * the server's .env); keep the two the same, or replies go to an inbox nobody
+ * reads. If a future grievance officer or privacy contact genuinely needs its
+ * own address, give that one field its own literal and leave this alone.
+ */
+const SUPPORT_EMAIL = "support@weekendcart.com";
+
 export const BUSINESS = {
   // ── Identity ────────────────────────────────────────────────────────────────
   /** Customer-facing brand name. Appears in the logo, page titles and copy. */
@@ -79,13 +91,13 @@ export const BUSINESS = {
 
   // ── Contact ─────────────────────────────────────────────────────────────────
   /** General support inbox. Must be monitored. */
-  supportEmail: "weekendscart@gmail.com",
+  supportEmail: SUPPORT_EMAIL,
 
   /** Where privacy and data-deletion requests go. May be the same as support. */
-  privacyEmail: "weekendscart@gmail.com",
+  privacyEmail: SUPPORT_EMAIL,
 
   /** Where formal complaints go, published on the grievance section. */
-  grievanceEmail: "weekendscart@gmail.com",
+  grievanceEmail: SUPPORT_EMAIL,
 
   /** Display format, e.g. "+91 98765 43210". A human must answer this. */
   supportPhone: "+91 76009 08865",
