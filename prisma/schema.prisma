@@ -330,8 +330,8 @@ model Product {
   ///
   /// Optional because the catalogue came first: a product bought before anyone
   /// was writing this down simply has no answer, and that is not an error.
-  supplierId        String?
-  supplier          Supplier?      @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
 
   /// What one unit cost to buy, in whole rupees.
   ///
@@ -340,11 +340,11 @@ model Product {
   /// customer-facing read may traverse OrderLine.product. The admin reads it
   /// from the Prisma row. Null means "not recorded", which is what every
   /// product bought before this column existed says.
-  costPrice         Int?
+  costPrice Int?
 
-  publishedAt       DateTime?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   images        ProductImage[]
   variantGroups VariantGroup[]
@@ -352,8 +352,8 @@ model Product {
   viewDays      ProductViewDaily[]
   questions     Question[]
   orderLines    OrderLine[]
-  relationsFrom ProductRelation[] @relation("relationFrom")
-  relationsTo   ProductRelation[] @relation("relationTo")
+  relationsFrom ProductRelation[]  @relation("relationFrom")
+  relationsTo   ProductRelation[]  @relation("relationTo")
   stockMoves    StockMovement[]
 
   @@index([status, categoryId, subcategoryId])
@@ -519,23 +519,23 @@ model Banner {
  */
 
 model Customer {
-  id            String       @id @default(cuid())
-  email         String       @unique
-  phone         String?
+  id              String       @id @default(cuid())
+  email           String       @unique
+  phone           String?
   /// Set only once the customer has proved the number with an SMS code, so an
   /// OTP sign-in never opens an account someone typed a number into. E.164.
-  verifiedPhone   String?    @unique
+  verifiedPhone   String?      @unique
   phoneVerifiedAt DateTime?
-  name          String
+  name            String
   /// Null for accounts that only ever signed in through a provider.
-  passwordHash  String?
-  tier          CustomerTier @default(SILVER)
-  loyaltyPoints Int          @default(0)
-  isActive      Boolean      @default(true)
-  notes         String?
-  lastLoginAt   DateTime?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  passwordHash    String?
+  tier            CustomerTier @default(SILVER)
+  loyaltyPoints   Int          @default(0)
+  isActive        Boolean      @default(true)
+  notes           String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   /// Pre-selected at checkout so a returning customer is not asked twice.
   preferredPayment PaymentMethod?
@@ -554,6 +554,7 @@ model Customer {
   orders    Order[]
   reviews   Review[]
   returns   ReturnRequest[]
+  messages  ContactMessage[]
 
   @@unique([authProvider, providerId])
   @@index([createdAt])
@@ -663,9 +664,9 @@ model Order {
 
   itemsTotal      Int
   mrpTotal        Int
-  productDiscount Int     @default(0)
-  shipping        Int     @default(0)
-  tax             Int     @default(0)
+  productDiscount Int @default(0)
+  shipping        Int @default(0)
+  tax             Int @default(0)
   total           Int
 
   /// Tax invoice, frozen at the moment it was raised. A GSTIN or a registered
@@ -696,9 +697,10 @@ model Order {
   placedAt          DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  lines   OrderLine[]
-  events  OrderEvent[]
-  returns ReturnRequest[]
+  lines    OrderLine[]
+  events   OrderEvent[]
+  returns  ReturnRequest[]
+  messages ContactMessage[]
 
   @@index([status, placedAt])
   @@index([customerId, placedAt])
@@ -792,14 +794,95 @@ model ContactMessage {
   repliedAt   DateTime?
   createdAt   DateTime      @default(now())
 
+  /// Who sent it, as far as the server can tell. All nullable: every message
+  /// stored before these columns existed has none of them, and a guest has no
+  /// customerId. These are also the rate limiter's counters — there is no
+  /// separate counter table, because a stored message *is* the record that one
+  /// was sent, and unlike an in-memory map it survives a deploy.
+  /// The IP as nginx saw it (X-Real-IP), never as the client claimed it.
+  ip         String?
+  /// Our own cookie value. Best effort: cleared cookies or a strict private
+  /// window start a new one. Not a browser fingerprint, deliberately.
+  deviceId   String?
+  /// Set when the sender was signed in; also what the admin badge reads.
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  /// Truncated, for triage only.
+  userAgent  String?
+  /// Set when the order number given matches a real order, so admin can open
+  /// it in one click. Resolved once, at submit; never guessed afterwards.
+  orderId    String?
+  order      Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
   @@index([status, createdAt])
+  @@index([ip, createdAt])
+  @@index([email, createdAt])
+  @@index([deviceId, createdAt])
+  @@index([customerId, createdAt])
+}
+
+/// Why a contact submission was refused.
+enum ContactAbuseReason {
+  COOLDOWN
+  DAILY_CAP
+  HONEYPOT
+  TOO_FAST
+  VALIDATION
+  LINK_SPAM
+  BLOCKED
+}
+
+/**
+ * Every refused contact submission, so an attack is visible in admin rather
+ * than silently absorbed.
+ * The message body is never stored here. A refused submission is unvetted text
+ * from an unknown sender, and keeping it would make this table the very thing
+ * the contact form is being protected from. `detail` holds a short machine-written
+ * note (which limit, how long is left), never anything the sender typed.
+ */
+model ContactAbuse {
+  id         String             @id @default(cuid())
+  reason     ContactAbuseReason
+  ip         String?
+  email      String?
+  deviceId   String?
+  customerId String?
+  userAgent  String?
+  detail     String?
+  createdAt  DateTime           @default(now())
+
+  @@index([createdAt])
+  @@index([ip, createdAt])
+}
+
+/// What a ContactBlock matches on.
+enum ContactBlockKind {
+  IP
+  EMAIL
+}
+
+/**
+ * The manual blocklist behind the admin "block this IP/email" button. Checked
+ * before anything else, and a blocked sender is told the same thing a
+ * rate-limited one is — a blocklist that announces itself is a blocklist
+ * someone tunes their way around.
+ */
+model ContactBlock {
+  id        String           @id @default(cuid())
+  kind      ContactBlockKind
+  value     String
+  reason    String?
+  createdBy String?
+  createdAt DateTime         @default(now())
+
+  @@unique([kind, value])
 }
 
 model NewsletterSubscriber {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  source    String   @default("footer")
-  createdAt DateTime @default(now())
+  id         String    @id @default(cuid())
+  email      String    @unique
+  source     String    @default("footer")
+  createdAt  DateTime  @default(now())
   /// When the welcome email went out; null until it has, so it is sent once.
   welcomedAt DateTime?
 }
@@ -828,8 +911,8 @@ model AdminUser {
   updatedAt    DateTime  @updatedAt
 
   activity ActivityLog[]
-  uploads   MediaAsset[]
-  refunds   Refund[]
+  uploads  MediaAsset[]
+  refunds  Refund[]
 }
 
 model ActivityLog {

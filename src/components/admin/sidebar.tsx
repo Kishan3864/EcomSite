@@ -113,6 +113,7 @@ const GROUPS = (c: SidebarCounts): NavGroup[] => [
         children: [
           { href: "/admin/messages", label: "Messages", exact: true },
           { href: "/admin/messages/subscribers", label: "Subscribers" },
+          { href: "/admin/messages/blocked", label: "Blocked attempts" },
         ],
       },
     ],

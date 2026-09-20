@@ -83,8 +83,24 @@ export const BUSINESS = {
    */
   registrationStatus: "unregistered" as "unregistered" | "registered",
 
-  /** Full name of the proprietor, as on PAN. Required on some invoices. */
+  /**
+   * Full name of the proprietor, as on PAN. Required on some invoices.
+   *
+   * This is the legal identity of the trader and it feeds `operatorDescription()`,
+   * which every policy page, the "Operated by" line and the email footer print.
+   * Do not shorten it to the name people call him — that is `founderName` below.
+   * Payment aggregators check this against KYC, and the Consumer Protection
+   * (E-Commerce) Rules require the trader be identified accurately.
+   */
   proprietorName: "Patel KishanKumar SureshBhai",
+
+  /**
+   * The same person, as he introduces himself. For editorial surfaces only —
+   * an about-page byline, an email sign-off — where a legal name reads like a
+   * form and not like a shopkeeper. Never use it anywhere a regulator, an
+   * aggregator or a customer's invoice is looking: those want `proprietorName`.
+   */
+  founderName: "Kishan Patel",
 
   /**
    * Udyam / MSME registration number. Printed only inside the Privacy policy

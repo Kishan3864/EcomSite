@@ -30,7 +30,7 @@ import { BUSINESS, formatAddress, isFilled, operatorDescription } from "@/config
 
 export const metadata: Metadata = {
   title: `About ${BUSINESS.brandName}`,
-  description: `${BUSINESS.brandName} is an Indian online store run by ${BUSINESS.proprietorName}, selling ${BUSINESS.categoriesSold
+  description: `${BUSINESS.brandName} is an Indian online store run by ${BUSINESS.founderName}, selling ${BUSINESS.categoriesSold
     .join(", ")
     .toLowerCase()} with honest pricing and a straightforward return policy.`,
   alternates: { canonical: "/about" },

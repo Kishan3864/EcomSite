@@ -28,6 +28,19 @@ import { lookupOrder } from "./orders";
 import { getSettings } from "./settings";
 import { visibleProducts } from "./visibility";
 import { clientIp, rateLimit, TOO_MANY } from "@/lib/rate-limit";
+import {
+  COOLDOWN_MS,
+  LIMITS,
+  cooldownFor,
+  cooldownMessage,
+  describeSender,
+  isBlocked,
+  isLinkSpam,
+  logAbuse,
+  overDailyCap,
+  verifyFormToken,
+} from "@/lib/contact-guard";
+import { buildContactAck } from "@/lib/emails/contact-ack";
 import { upiConfigured } from "@/lib/payments/upi";
 import { expireStalePendingOrders, trimUnpaidOrders } from "./order-expiry";
 import { reviewEligibilityFor, type ReviewEligibility } from "./reviews";
@@ -588,30 +601,186 @@ export async function submitReview(input: {
 
 /* ------------------------------ Inbox ------------------------------- */
 
+/**
+ * Takes a contact submission, or refuses it and says why.
+ *
+ * The checks run cheapest-first and the first one to fail wins, so a bot that
+ * trips the honeypot is never also charged a database round trip for the
+ * cooldown. Being signed in changes nothing about the limits — it only means
+ * the server stops trusting the email field and uses the account's address.
+ *
+ * Every refusal returns the same shape a validation error does. None of them
+ * reveal which identity matched: a sender who learns it was their IP simply
+ * changes network.
+ */
 export async function submitContact(input: {
   name: string;
   email: string;
   topic: string;
   orderNumber?: string;
   message: string;
+  /** The honeypot. Any value at all means a bot filled a field humans cannot see. */
+  website?: string;
+  /** Signed, issued when the form was rendered. Proves how long the form was open. */
+  formToken?: string;
 }): Promise<ActionResult> {
-  if (!rateLimit("contact:ip", await clientIp(), 5, 10 * 60_000)) return { ok: false, error: TOO_MANY };
-  if (input.name.trim().length < 2) return { ok: false, error: "Tell us your name.", field: "name" };
-  if (!EMAIL.test(input.email)) return { ok: false, error: "We need a valid email to reply to.", field: "email" };
-  if (input.message.trim().length < 10)
-    return { ok: false, error: "A sentence or two helps us answer properly.", field: "message" };
+  const session = await getCustomerSession();
 
-  await db.contactMessage.create({
+  // A signed-in customer's address comes from their account, never from the
+  // submitted field — otherwise the email cooldown is dodged by typing a
+  // different address while signed in.
+  const email = session ? session.email : String(input.email ?? "").toLowerCase().trim();
+  const sender = await describeSender(email, session?.id ?? null);
+
+  // 1. Blocklist. Before anything else, and told the same story as a cooldown.
+  if (await isBlocked(sender.ip, email)) {
+    await logAbuse("BLOCKED", sender);
+    return { ok: false, error: cooldownMessage(new Date(Date.now() + COOLDOWN_MS)) };
+  }
+
+  // 2. Honeypot. No message, no hint about what gave it away.
+  if (typeof input.website === "string" && input.website.trim() !== "") {
+    await logAbuse("HONEYPOT", sender);
+    return { ok: false, error: GENERIC_REFUSAL };
+  }
+
+  // 3. Time on form.
+  const verdict = verifyFormToken(input.formToken);
+  if (verdict !== "ok") {
+    await logAbuse(verdict === "too-fast" ? "TOO_FAST" : "VALIDATION", sender, `token:${verdict}`);
+    return {
+      ok: false,
+      error:
+        verdict === "too-fast"
+          ? "That was quick — take a moment and send it again."
+          : "This form has been open a while. Please reload the page and send it again.",
+    };
+  }
+
+  // 4. Field validation, with a ceiling on every one of them.
+  const name = String(input.name ?? "").trim();
+  const topic = String(input.topic ?? "").trim();
+  const orderNumber = String(input.orderNumber ?? "").trim();
+  const message = String(input.message ?? "").trim();
+
+  const problem = validateContactFields({ name, email, topic, orderNumber, message });
+  if (problem) {
+    await logAbuse("VALIDATION", sender, `field:${problem.field}`);
+    return { ok: false, error: problem.error, field: problem.field };
+  }
+
+  // 5. Links wearing a sentence.
+  if (isLinkSpam(message)) {
+    await logAbuse("LINK_SPAM", sender);
+    return {
+      ok: false,
+      error: "That message is mostly links, so it did not go through. Tell us in your own words and we will help.",
+    };
+  }
+
+  // 6. The cooldown, across all four identities at once.
+  const cooldown = await cooldownFor(sender);
+  if (cooldown) {
+    await logAbuse("COOLDOWN", sender, `retryAt:${cooldown.retryAt.toISOString()}`);
+    return { ok: false, error: cooldownMessage(cooldown.retryAt) };
+  }
+
+  // 7. The day's ceiling, which a patient bot would reach instead.
+  if (await overDailyCap(sender)) {
+    await logAbuse("DAILY_CAP", sender);
+    return {
+      ok: false,
+      error: "You have sent us several messages today. Please reply to one of those and we will pick it up there.",
+    };
+  }
+
+  // Link the message to a real order when the number given matches one, so
+  // support opens it with the history already in front of them. Matched on the
+  // order number alone — never guessed from the email, which would attach one
+  // customer's question to another's order.
+  const matchedOrder = orderNumber
+    ? await db.order.findFirst({
+        where: { number: { equals: orderNumber, mode: "insensitive" } },
+        select: { id: true, customerId: true },
+      })
+    : null;
+
+  const created = await db.contactMessage.create({
     data: {
-      name: input.name.trim(),
-      email: input.email.toLowerCase().trim(),
-      topic: input.topic,
-      orderNumber: input.orderNumber?.trim() || null,
-      message: input.message.trim(),
+      name,
+      email,
+      topic,
+      orderNumber: orderNumber || null,
+      message,
+      ip: sender.ip,
+      deviceId: sender.deviceId,
+      // The account if signed in; otherwise the one the matched order belongs
+      // to, which is how a guest message still lands on a customer's record.
+      customerId: session?.id ?? matchedOrder?.customerId ?? null,
+      userAgent: sender.userAgent,
+      orderId: matchedOrder?.id ?? null,
     },
+    select: { id: true },
   });
+
   revalidatePath("/admin/messages");
+
+  // The acknowledgement, only now that the row exists. After the response, so
+  // a slow SMTP server never holds up the form's answer.
+  if (mailConfigured()) {
+    after(async () => {
+      try {
+        const ack = buildContactAck({
+          name,
+          topic,
+          message,
+          orderNumber: orderNumber || null,
+          reference: created.id.slice(-8).toUpperCase(),
+        });
+        await sendMail({ to: email, subject: ack.subject, html: ack.html, text: ack.text });
+      } catch (error) {
+        // A failed acknowledgement must not lose the message, which is already
+        // stored and already visible in the inbox.
+        console.error("[contact] ack email failed", (error as { message?: string }).message ?? "");
+      }
+    });
+  }
+
   return { ok: true };
+}
+
+/** Said to a sender whose submission was refused without explaining the tell. */
+const GENERIC_REFUSAL = "We could not send that message. Please reload the page and try again.";
+
+/** Server-side field rules. The client checks the same things; only these count. */
+function validateContactFields(input: {
+  name: string;
+  email: string;
+  topic: string;
+  orderNumber: string;
+  message: string;
+}): { error: string; field: string } | null {
+  if (input.name.length < 2) return { error: "Tell us your name.", field: "name" };
+  if (input.name.length > LIMITS.name) return { error: "That name is too long.", field: "name" };
+
+  if (!EMAIL.test(input.email) || input.email.length > LIMITS.email)
+    return { error: "We need a valid email to reply to.", field: "email" };
+
+  if (!input.topic || input.topic.length > LIMITS.topic)
+    return { error: "Choose what this is about.", field: "topic" };
+
+  if (input.orderNumber.length > LIMITS.orderNumber)
+    return { error: "That order number is too long.", field: "orderNumber" };
+
+  if (input.message.length < 10)
+    return { error: "A sentence or two helps us answer properly.", field: "message" };
+  if (input.message.length > LIMITS.message)
+    return {
+      error: `Please keep it under ${LIMITS.message.toLocaleString("en-IN")} characters — attach the detail in a reply if you need to.`,
+      field: "message",
+    };
+
+  return null;
 }
 
 /**

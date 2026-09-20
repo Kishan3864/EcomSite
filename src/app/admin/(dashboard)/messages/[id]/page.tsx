@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, Archive, Mail, Package, RotateCcw, UserRound } from "lucide-react";
+import { AlertTriangle, Archive, Ban, Mail, Package, RotateCcw, UserRound } from "lucide-react";
 import { db } from "@/lib/db";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { formatDateTime } from "@/lib/utils";
 import { buttonClasses } from "@/components/ui/button";
 import { CopyButton } from "@/components/admin/client";
 import { Card, DateCell, KeyValue, Money, PageHeader, Pill, StatusPill } from "@/components/admin/ui";
-import { replyToMessage, setMessageStatus } from "@/services/admin/messages-actions";
+import { blockContactSender, replyToMessage, setMessageStatus } from "@/services/admin/messages-actions";
 import { ReplyForm } from "../reply-form";
 import { Form } from "@/components/ui/form";
 
@@ -313,6 +313,73 @@ export default async function MessagePage({ params }: { params: Promise<{ id: st
               },
             ]}
           />
+        </Card>
+
+        {/* Who sent it, as the server saw it — not as the form claimed. */}
+        <Card title="Sender">
+          <KeyValue
+            rows={[
+              {
+                label: "Signed in",
+                value: message.customerId ? (
+                  <Pill tone="brand">Account</Pill>
+                ) : (
+                  <Pill tone="neutral">Guest</Pill>
+                ),
+              },
+              {
+                label: "IP address",
+                value: message.ip ? (
+                  <span className="flex items-center gap-1 text-[12px] text-ink-700">
+                    <span className="truncate font-mono tabular-nums">{message.ip}</span>
+                    <CopyButton value={message.ip} />
+                  </span>
+                ) : (
+                  // Every message stored before this column existed.
+                  <span className="text-ink-400">Not recorded</span>
+                ),
+              },
+              {
+                label: "Device",
+                value: message.deviceId ? (
+                  <span className="truncate font-mono text-[12px] text-ink-500">
+                    {message.deviceId.slice(0, 8)}
+                  </span>
+                ) : (
+                  <span className="text-ink-400">—</span>
+                ),
+              },
+            ]}
+          />
+
+          {canManage ? (
+            <div className="mt-4 flex flex-col gap-2 border-t border-ink-100 pt-4">
+              <p className="text-[12px] leading-[1.5] text-ink-500">
+                Blocking stops this sender using the contact form. An IP can be shared by a whole
+                office or mobile network, so prefer the email unless you are sure.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Form action={blockContactSender}>
+                  <input type="hidden" name="id" value={message.id} />
+                  <input type="hidden" name="kind" value="EMAIL" />
+                  <input type="hidden" name="returnTo" value={`/admin/messages/${message.id}`} />
+                  <button type="submit" className={buttonClasses("outline", "sm")}>
+                    <Ban size={14} /> Block email
+                  </button>
+                </Form>
+                {message.ip ? (
+                  <Form action={blockContactSender}>
+                    <input type="hidden" name="id" value={message.id} />
+                    <input type="hidden" name="kind" value="IP" />
+                    <input type="hidden" name="returnTo" value={`/admin/messages/${message.id}`} />
+                    <button type="submit" className={buttonClasses("outline", "sm")}>
+                      <Ban size={14} /> Block IP
+                    </button>
+                  </Form>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
         </Card>
       </aside>
     </div>

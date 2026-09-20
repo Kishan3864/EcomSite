@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { randomUUID } from "node:crypto";
 import {
   ADMIN_COOKIE,
   CUSTOMER_COOKIE,
+  DEVICE_COOKIE,
   adminToken,
   customerToken,
 } from "@/lib/auth/session";
@@ -115,6 +117,28 @@ export async function proxy(request: NextRequest) {
       url.search = `?next=${encodeURIComponent(pathname + search)}`;
       return NextResponse.redirect(url);
     }
+  }
+
+  /**
+   * The contact form's device marker.
+   *
+   * Issued here rather than while the page renders, because a server component
+   * cannot set a cookie, and rather than in the submit action, because a cookie
+   * set by an action is not readable by that same action — the first message
+   * would always be counted as coming from an unknown device. Setting it on the
+   * way to the page means it is already in the jar by the time anything is
+   * submitted.
+   */
+  if (pathname === "/contact" && !request.cookies.get(DEVICE_COOKIE)?.value) {
+    const response = NextResponse.next();
+    response.cookies.set(DEVICE_COOKIE, randomUUID(), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 365 * 24 * 60 * 60,
+    });
+    return response;
   }
 
   return NextResponse.next();

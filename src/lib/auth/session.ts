@@ -12,6 +12,12 @@ export const ADMIN_COOKIE = "weekendcart_admin";
 export const CUSTOMER_COOKIE = "weekendcart_customer";
 export const GUEST_ORDERS_COOKIE = "weekendcart_guest_orders";
 export const PHONE_TICKET_COOKIE = "weekendcart_phone_ticket";
+/**
+ * A random per-browser id, used only as one of the contact form's rate-limit
+ * keys. It identifies a browser, not a person, and carries no claims — which is
+ * why it lives here as a plain name rather than as a signed token.
+ */
+export const DEVICE_COOKIE = "weekendcart_device";
 
 const ADMIN_TTL_SECONDS = 60 * 60 * 12; // 12 hours
 const CUSTOMER_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days

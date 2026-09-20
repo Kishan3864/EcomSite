@@ -420,7 +420,7 @@ ${p(signOff)}
 <tr>
 <td width="52" valign="top" style="padding:0 16px 0 0;"><img src="${esc(LINKS.mark)}" width="52" height="52" alt="${esc(brand)}" style="display:block;width:52px;height:52px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;"></td>
 <td valign="middle" style="padding:2px 0 2px 16px;background:${C.canvas};">
-<p class="serif" style="margin:0;font-family:${SERIF};font-size:19px;line-height:26px;color:${C.brandDeep};mso-line-height-rule:exactly;">${esc(BUSINESS.proprietorName)}</p>
+<p class="serif" style="margin:0;font-family:${SERIF};font-size:19px;line-height:26px;color:${C.brandDeep};mso-line-height-rule:exactly;">${esc(BUSINESS.founderName)}</p>
 <p style="margin:4px 0 0;font-family:${SANS};font-size:11px;line-height:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:${C.accentDeep};mso-line-height-rule:exactly;">Founder, ${esc(brand)}</p>
 </td>
 </tr>
@@ -483,7 +483,9 @@ ${signatureContacts()}
     "",
     "Warm regards,",
     "",
-    BUSINESS.proprietorName,
+    // The sign-off is from a person, not from a registered entity. The legal
+    // name still appears in this email, in the operated-by line of the footer.
+    BUSINESS.founderName,
     `Founder, ${brand}`,
     ...contactLines().map((line) => `${line.label}: ${line.plain}`),
     "",
