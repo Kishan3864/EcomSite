@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { balancedColumnClass } from "@/lib/grid";
+import { SectionHeader } from "@/components/ui/primitives";
 import { cn, formatINR } from "@/lib/utils";
 
 /**
@@ -93,25 +94,22 @@ export function ShopByPrice({ prices }: { prices: number[] }) {
 
   return (
     <section className="container-page py-8 sm:py-12">
-      <div className="mb-4 sm:mb-6">
-        <h2 className="font-display text-[20px] leading-[1.15] text-ink-950 sm:text-[26px]">
-          Shop by budget
-        </h2>
-        <p className="mt-1.5 text-[13px] text-ink-500 sm:text-[14px]">
-          Real price bands, counted from what is on the shelf today.
-        </p>
-      </div>
+      <SectionHeader
+        title="Shop by budget"
+        description="Real price bands, counted from what is on the shelf today."
+        className="mb-5 sm:mb-7"
+      />
 
       {/* Two across on a phone, then a row sized to how many doors there
           actually are. A fixed four-track row holding three bands leaves a
           quarter of the section empty, which is the same "shop with a hole in
           it" effect the department band above was just fixed for. */}
-      <ul className={cn("grid grid-cols-2 gap-2.5 sm:gap-3.5", balancedColumnClass(bands.length, 4))}>
+      <ul className={cn("grid grid-cols-2 gap-3 sm:gap-4", balancedColumnClass(bands.length, 4))}>
         {bands.map((band, i) => (
           <li key={band.href}>
             <Link
               href={band.href}
-              className="group flex h-full flex-col justify-between gap-5 bg-surface p-4 shadow-xs transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md sm:p-5"
+              className="card card-interactive group flex h-full flex-col justify-between gap-5 p-4 sm:p-5"
             >
               <span>
                 <span className="block text-[14px] font-bold tracking-[-0.01em] text-ink-950 sm:text-[15.5px]">
@@ -127,8 +125,8 @@ export function ShopByPrice({ prices }: { prices: number[] }) {
                   // The last door is the whole catalogue, so it is the one that
                   // carries the gold: it is the way through, not a filter.
                   i === bands.length - 1
-                    ? "inline-flex h-8 w-8 items-center justify-center bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5"
-                    : "inline-flex h-8 w-8 items-center justify-center bg-brand-50 text-brand-700 transition-transform duration-200 group-hover:translate-x-0.5"
+                    ? "inline-flex h-9 w-9 items-center justify-center rounded-full bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5"
+                    : "inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-transform duration-200 group-hover:translate-x-0.5"
                 }
               >
                 <ArrowRight size={15} />

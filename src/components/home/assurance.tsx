@@ -98,12 +98,12 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
 
         {/* Two across on a phone would put four words on a line. One column
             until 768px, then two, then four. */}
-        <ul className="mt-8 grid gap-px bg-hairline sm:mt-12 sm:grid-cols-2 xl:grid-cols-4">
+        <ul className="mt-8 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
           {points.map((point, i) => (
             <li key={point.title} className="card p-5 sm:p-6">
               <span
                 aria-hidden
-                className="block font-display text-[15px] leading-none text-ink-400"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 font-display text-[13px] leading-none text-brand-700"
               >
                 {String(i + 1).padStart(2, "0")}
               </span>

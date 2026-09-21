@@ -28,7 +28,7 @@ export function Shimmer({ className }: { className?: string }) {
 export function ProductCardSkeleton() {
   return (
     <div className="card overflow-hidden">
-      <Shimmer className="aspect-[3/4] w-full" />
+      <Shimmer className="m-1.5 aspect-[4/5] rounded-lg sm:m-2" />
       <div className="px-2.5 pb-3 pt-2.5 sm:px-3.5 sm:pb-3.5 sm:pt-4">
         <Shimmer className="h-[11px] w-14 sm:w-16" />
         <Shimmer className="mt-2 h-[13.5px] w-full sm:mt-2.5" />

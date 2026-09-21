@@ -10,6 +10,7 @@ import { PaperMark } from "@/components/illustration/paper-mark";
 import { ProductCard } from "@/components/product/product-card";
 import { ProductBadges } from "@/components/product/badges";
 import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
+import { SectionHeader } from "@/components/ui/primitives";
 import { cn, discountPercent, formatINR } from "@/lib/utils";
 
 /**
@@ -62,33 +63,14 @@ function BandHeader({
   // chapter, so the rule is gone and the shelf is marked the way a shop marks
   // one — a short gold tick, the name, and a way through to the rest of it.
   return (
-    <div className={className}>
-      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 sm:flex sm:flex-row sm:items-end sm:justify-between sm:gap-4">
-        <div className="contents sm:block">
-          <span className="eyebrow col-span-2">{eyebrow}</span>
-          <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
-            {title}
-          </h2>
-          {description && (
-            <p className="col-span-2 mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500 sm:mt-2.5 sm:text-[14px]">
-              {description}
-            </p>
-          )}
-        </div>
-        {href && (
-          <Link
-            href={href}
-            className="tap group col-start-2 row-start-2 inline-flex h-9 shrink-0 items-center gap-1.5 bg-surface px-4 text-[12.5px] font-semibold text-brand-700 shadow-xs transition-colors duration-200 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
-          >
-            {linkLabel}
-            <ArrowRight
-              size={14}
-              className="transition-transform duration-200 group-hover:translate-x-1"
-            />
-          </Link>
-        )}
-      </div>
-    </div>
+    <SectionHeader
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      href={href}
+      linkLabel={linkLabel}
+      className={className}
+    />
   );
 }
 
@@ -210,7 +192,7 @@ function CategoryRow({ categories }: { categories: Category[] }) {
           <Link
             key={category.slug}
             href={`/c/${category.slug}`}
-            className="tap group flex items-center gap-4 px-4 py-4 transition-colors duration-200 sm:flex-col sm:justify-center sm:gap-4 sm:py-8 sm:text-center [@media(hover:hover)]:hover:bg-ink-50"
+            className="card-interactive tap group flex items-center gap-4 px-4 py-4 sm:flex-col sm:justify-center sm:gap-4 sm:py-8 sm:text-center"
           >
             <DepartmentGlyph
               icon={category.icon}
@@ -263,7 +245,7 @@ function CategoryGrid({ categories }: { categories: Category[] }) {
           <Link
             key={category.slug}
             href={`/c/${category.slug}`}
-            className="tap group flex aspect-square flex-col items-center justify-center gap-3 px-3 text-center transition-colors duration-200 [@media(hover:hover)]:hover:bg-ink-50"
+            className="card-interactive tap group flex aspect-square flex-col items-center justify-center gap-3 px-3 text-center"
           >
             <DepartmentGlyph
               icon={category.icon}
@@ -337,7 +319,7 @@ export function Spotlight({
     <section className="container-page py-10 sm:py-20">
       <div className="grid items-start gap-7 lg:grid-cols-12 lg:gap-10">
         <div className="lg:col-span-6">
-          <div className="relative aspect-[4/5] overflow-hidden bg-ink-100 shadow-sm">
+          <div className="card relative aspect-[4/5] overflow-hidden rounded-3xl bg-ink-50">
             <Image
               src={product.image}
               alt={product.imageAlt || product.title}
@@ -399,13 +381,13 @@ export function Spotlight({
           <div className="mt-6 flex flex-col gap-2.5 sm:flex-row sm:gap-3">
             <Link
               href={`/p/${product.slug}`}
-              className="tap inline-flex h-12 items-center justify-center gap-2 bg-ink-950 px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white transition-colors duration-200 hover:bg-brand-800 sm:px-8 sm:text-[12px]"
+              className="tap inline-flex h-12 items-center justify-center gap-2 rounded-full bg-ink-950 px-7 text-[14px] font-semibold text-white transition-colors duration-200 hover:bg-brand-800 sm:px-8"
             >
               See the full detail <ArrowRight size={15} />
             </Link>
             <Link
               href={`/c/${product.categorySlug}`}
-              className="tap inline-flex h-12 items-center justify-center px-6 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-8 sm:text-[12px]"
+              className="chip tap h-12 justify-center px-7 text-[14px] font-semibold text-ink-950 transition-colors duration-200 hover:border-ink-300 hover:bg-ink-50 sm:px-8"
             >
               More like this
             </Link>
@@ -491,7 +473,7 @@ export function ProductGrid({
         className="mb-6 sm:mb-10"
       />
 
-      <div className={cn("grid grid-cols-2 gap-2.5 sm:gap-4", SM_COLS[smCols], LG_COLS[lgCols])}>
+      <div className={cn("grid grid-cols-2 gap-3 sm:gap-5", SM_COLS[smCols], LG_COLS[lgCols])}>
         {shown.map((product, i) => (
           <ProductCard
             key={product.id}
@@ -514,7 +496,8 @@ export function ProductGrid({
 
 export function EditorialBand({ banner }: { banner?: Banner }) {
   return (
-    <section className="deep-plane relative overflow-hidden">
+    <section className="container-page py-8 sm:py-14">
+      <div className="deep-plane relative isolate overflow-hidden rounded-3xl">
       {banner && (
         <div className="absolute inset-y-0 right-0 hidden w-1/2 lg:block">
           <Image src={banner.image.url} alt="" fill sizes="50vw" className="object-cover opacity-30" />
@@ -522,7 +505,7 @@ export function EditorialBand({ banner }: { banner?: Banner }) {
         </div>
       )}
 
-      <div className="container-page relative py-12 sm:py-24">
+      <div className="relative px-5 py-12 sm:px-12 sm:py-20">
         <div className="flex items-center justify-between gap-10">
           <div className="max-w-xl">
             <span className="eyebrow eyebrow-dark">{banner?.eyebrow ?? BRAND.name}</span>
@@ -536,7 +519,7 @@ export function EditorialBand({ banner }: { banner?: Banner }) {
             )}
             <Link
               href={banner?.href ?? "/products"}
-              className="tap mt-7 inline-flex h-12 items-center gap-2 bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:mt-9 sm:px-8"
+              className="tap mt-7 inline-flex h-12 items-center gap-2 rounded-full bg-gold-400 px-7 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300 sm:mt-9 sm:px-8"
             >
               {banner?.cta ?? "Browse the catalogue"} <ArrowRight size={15} />
             </Link>
@@ -547,6 +530,7 @@ export function EditorialBand({ banner }: { banner?: Banner }) {
             <PaperMark size={220} className="hidden shrink-0 text-white/25 lg:block" />
           )}
         </div>
+      </div>
       </div>
     </section>
   );

@@ -10,17 +10,11 @@ import { discountPercent, formatINR } from "@/lib/utils";
 /**
  * The masthead.
  *
- * A promo panel, which is what a shop leads with — not a page title. The old
- * masthead was a headline beside a photograph: correct typographically, and it
- * told a stranger nothing they could act on. This one carries the three things
- * that make somebody click into a catalogue they have never seen: a picture of
- * real stock, what it costs, and how much has come off.
- *
- * It is a panel with corners rather than a full-bleed band, so the first thing
- * on the page reads as an object laid on the shop rather than as the page
- * itself continuing under the header. The panel is a soft brand tint on the
- * off-white canvas — light, like everything else on the site now — with the
- * product photograph as the one saturated thing in it.
+ * A rounded deep-ocean panel — the brand's own dark surface — with two soft
+ * glows behind the words, a bold white headline, one gold action and one glass
+ * one, and the lead product floating beside it as a white card with its price.
+ * Phone first: words, then the product card, stacked; from 1024px they sit
+ * side by side.
  *
  * Everything on it is real:
  *
@@ -36,10 +30,10 @@ import { discountPercent, formatINR } from "@/lib/utils";
  */
 
 const primaryCta =
-  "inline-flex h-12 items-center justify-center gap-2 bg-gold-400 px-6 text-[14px] font-bold text-ink-950 shadow-sm transition-colors duration-200 hover:bg-gold-300";
+  "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gold-400 px-7 text-[14px] font-bold text-ink-950 shadow-[0_8px_24px_-10px_rgb(221_184_94/0.7)] transition-[background-color,transform] duration-200 hover:-translate-y-px hover:bg-gold-300";
 
 const secondaryCta =
-  "inline-flex h-12 items-center justify-center gap-2 bg-surface px-6 text-[14px] font-semibold text-ink-900 transition-colors duration-200 hover:bg-ink-50";
+  "inline-flex h-12 items-center justify-center gap-2 rounded-full bg-white/10 px-7 text-[14px] font-semibold text-white ring-1 ring-inset ring-white/25 backdrop-blur-sm transition-colors duration-200 hover:bg-white/15";
 
 export function HeroBanner({
   hasProducts,
@@ -109,14 +103,31 @@ export function HeroBanner({
 
   return (
     <section className="container-page pt-3 sm:pt-5">
-      <div className="relative overflow-hidden bg-brand-50">
-        <div className="grid items-center gap-0 lg:grid-cols-[1.05fr_0.95fr]">
-          {/* ── The words ─────────────────────────────────────────────── */}
-          <div className="order-2 px-5 pb-8 pt-7 sm:px-9 sm:pb-11 sm:pt-10 lg:order-1 lg:py-16 lg:pl-12 lg:pr-8">
-            <span className="eyebrow">{eyebrow}</span>
+      <div className="deep-plane relative isolate overflow-hidden rounded-3xl text-white shadow-[0_24px_60px_-28px_rgb(18_34_43/0.55)]">
+        {/* Two soft glows — ocean behind the words, gold behind the product —
+            so the panel has depth without a photograph behind the text. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -left-24 -top-24 -z-10 h-72 w-72 rounded-full bg-brand-400/25 blur-3xl sm:h-96 sm:w-96"
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -bottom-32 right-0 -z-10 h-80 w-80 rounded-full bg-gold-400/15 blur-3xl sm:h-[28rem] sm:w-[28rem]"
+        />
 
-            <h1 className="mt-4 font-display leading-[1.04] tracking-[-0.035em] text-ink-950">
-              <span className="text-[clamp(30px,7.6vw,38px)] lg:text-[clamp(38px,3.5vw,54px)]">
+        <div
+          className={
+            picture
+              ? "grid items-center gap-8 px-5 py-8 sm:px-10 sm:py-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12 lg:px-14 lg:py-16"
+              : "px-5 py-10 sm:px-10 sm:py-14 lg:px-14 lg:py-20"
+          }
+        >
+          {/* ── The words ─────────────────────────────────────────────── */}
+          <div className="min-w-0">
+            <span className="eyebrow eyebrow-dark">{eyebrow}</span>
+
+            <h1 className="mt-4 font-display leading-[1.02] tracking-[-0.035em] text-white">
+              <span className="text-[clamp(32px,8.4vw,42px)] lg:text-[clamp(42px,3.9vw,60px)]">
                 {heading}
               </span>
             </h1>
@@ -124,7 +135,7 @@ export function HeroBanner({
             {/* A measure, not a breakpoint. About 46 characters is the width a
                 line can reach before the eye loses its place returning to the
                 left edge, and it holds at every screen size. */}
-            <p className="mt-4 max-w-[46ch] text-[14px] leading-[1.65] text-ink-600 sm:text-[15px]">
+            <p className="mt-4 max-w-[46ch] text-[14.5px] leading-[1.65] text-white/75 sm:text-[16px]">
               {body}
             </p>
 
@@ -138,10 +149,13 @@ export function HeroBanner({
               </Link>
             </div>
 
-            <ul className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 pt-5">
+            <ul className="mt-8 flex flex-wrap items-center gap-2">
               {promises.map(({ icon: Icon, label }) => (
-                <li key={label} className="flex items-center gap-2 text-[12.5px] text-ink-600">
-                  <Icon size={15} className="shrink-0 text-brand-600" aria-hidden />
+                <li
+                  key={label}
+                  className="inline-flex items-center gap-2 rounded-full bg-white/[0.07] px-3 py-1.5 text-[12px] text-white/85 ring-1 ring-inset ring-white/15"
+                >
+                  <Icon size={14} className="shrink-0 text-gold-300" aria-hidden />
                   {label}
                 </li>
               ))}
@@ -150,63 +164,58 @@ export function HeroBanner({
 
           {/* ── The stock ─────────────────────────────────────────────── */}
           {picture && (
-            <div className="relative order-1 lg:order-2 lg:py-10 lg:pr-12">
-              {/* On a phone the picture is edge to edge and squarer; from
-                  1024px it becomes a card sitting on the panel, which is what
-                  makes it read as a product rather than as a backdrop. */}
-              {/* Square on desktop, not 4/5. The taller crop made the panel
-                  about 850px high beside a column of words about 560px high,
-                  and `items-center` spent the difference as empty panel
-                  above and below the text. */}
-              <div className="relative aspect-[16/11] w-full overflow-hidden bg-ink-100 sm:aspect-[16/9] lg:aspect-square lg:shadow-lg">
-                <Image
-                  src={picture.url}
-                  alt={picture.alt}
-                  fill
-                  // Roughly half the viewport from 1024px, the whole of it
-                  // below. Getting this wrong is the usual reason a hero looks
-                  // soft: the browser picks its source from this string, not
-                  // from the rendered box.
-                  sizes="(min-width: 1024px) 45vw, 100vw"
-                  priority
-                  className="object-cover"
-                />
+            <div className="relative mx-auto w-full max-w-[520px] lg:mr-0">
+              <div className="rounded-3xl bg-surface p-2 shadow-pop ring-1 ring-white/10 sm:p-2.5">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-ink-50 sm:aspect-[16/10] lg:aspect-square">
+                  <Image
+                    src={picture.url}
+                    alt={picture.alt}
+                    fill
+                    // Roughly half the viewport from 1024px, the whole of it
+                    // below. Getting this wrong is the usual reason a hero looks
+                    // soft: the browser picks its source from this string, not
+                    // from the rendered box.
+                    sizes="(min-width: 1024px) 45vw, 100vw"
+                    priority
+                    className="object-cover"
+                  />
 
-                {off > 0 && (
-                  <span className="absolute left-3 top-3 bg-sale-600 px-2.5 py-1.5 text-[12px] font-bold leading-none text-white shadow-md sm:left-4 sm:top-4">
-                    {off}% OFF
-                  </span>
+                  {off > 0 && (
+                    <span className="absolute left-3 top-3 rounded-full bg-sale-600 px-3 py-1.5 text-[12px] font-bold leading-none text-white shadow-md sm:left-4 sm:top-4">
+                      {off}% OFF
+                    </span>
+                  )}
+                </div>
+
+                {/* The price tag. Only drawn when there is a real product under
+                    it — a panel that shows a department photograph has no price
+                    to quote and must not invent one. */}
+                {lead && (
+                  <Link
+                    href={`/p/${lead.slug}`}
+                    className="group mt-2 flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-ink-50 sm:px-3.5 sm:py-3"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-[13px] font-semibold text-ink-900 sm:text-[14px]">
+                        {lead.title}
+                      </span>
+                      <span className="mt-1 flex items-baseline gap-2">
+                        <span className="text-[18px] font-bold leading-none tabular-nums text-ink-950">
+                          {formatINR(lead.price)}
+                        </span>
+                        {lead.mrp > lead.price && (
+                          <span className="text-[12.5px] leading-none tabular-nums text-ink-400 line-through">
+                            {formatINR(lead.mrp)}
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5">
+                      <ArrowRight size={16} />
+                    </span>
+                  </Link>
                 )}
               </div>
-
-              {/* The price tag. Only drawn when there is a real product under
-                  it — a panel that shows a department photograph has no price
-                  to quote and must not invent one. */}
-              {lead && (
-                <Link
-                  href={`/p/${lead.slug}`}
-                  className="group absolute inset-x-3 bottom-3 flex items-center justify-between gap-3 bg-surface/95 px-3.5 py-3 shadow-lg backdrop-blur-sm transition-colors hover:bg-surface sm:inset-x-5 sm:bottom-5 lg:inset-x-5 lg:bottom-5"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-[12.5px] font-semibold text-ink-900 sm:text-[13.5px]">
-                      {lead.title}
-                    </span>
-                    <span className="mt-1 flex items-baseline gap-2">
-                      <span className="text-[17px] font-bold leading-none tabular-nums text-ink-950">
-                        {formatINR(lead.price)}
-                      </span>
-                      {lead.mrp > lead.price && (
-                        <span className="text-[12px] leading-none tabular-nums text-ink-400 line-through">
-                          {formatINR(lead.mrp)}
-                        </span>
-                      )}
-                    </span>
-                  </span>
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-gold-400 text-ink-950 transition-transform duration-200 group-hover:translate-x-0.5">
-                    <ArrowRight size={16} />
-                  </span>
-                </Link>
-              )}
             </div>
           )}
         </div>

@@ -77,9 +77,11 @@ export function Counter({ payments }: { payments: PublicPayments }) {
             A fact hidden behind a horizontal scroll is a fact nobody reads. */}
         <div className="tile-grid grid-cols-2 lg:grid-cols-4">
           {cells.map((cell, i) => (
-            <div key={cell.label} className="flex min-h-[72px] flex-col justify-center px-3.5 py-4 sm:min-h-[92px] sm:px-5">
+            <div key={cell.label} className="flex min-h-[84px] flex-col justify-center px-3.5 py-4 sm:min-h-[104px] sm:px-5">
               <div className="flex items-center gap-2">
-                <CounterGlyph name={cell.glyph} delay={i * 80} className="shrink-0 text-ink-400" />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50">
+                  <CounterGlyph name={cell.glyph} delay={i * 80} className="shrink-0 text-brand-700" />
+                </span>
                 <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   {cell.label}
                 </span>

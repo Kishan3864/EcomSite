@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "@/components/ui/image";
 import { ArrowRight } from "lucide-react";
+import { SectionHeader } from "@/components/ui/primitives";
 import type { Category } from "@/lib/types";
 import { balancedColumnClass } from "@/lib/grid";
 import { cn } from "@/lib/utils";
@@ -81,34 +82,23 @@ export function ShopByCategory({ categories }: { categories: Category[] }) {
 
   return (
     <section className="container-page py-10 sm:py-16">
-      <div className="mb-5 flex items-end justify-between gap-6 sm:mb-8">
-        <div className="min-w-0">
-          <h2 className="font-display text-[22px] leading-[1.1] text-ink-950 sm:text-[28px]">
-            Shop by category
-          </h2>
-          <p className="mt-1.5 text-[13px] text-ink-500 sm:text-[14px]">
-            {single ? `Everything in ${single.name}, by collection.` : "Pick a department to start."}
-          </p>
-        </div>
-        <Link
-          href="/products"
-          className="group hidden shrink-0 items-center gap-1.5 text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800 sm:inline-flex"
-        >
-          View all
-          <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-1" />
-        </Link>
-      </div>
+      <SectionHeader
+        title="Shop by category"
+        description={single ? `Everything in ${single.name}, by collection.` : "Pick a department to start."}
+        href="/products"
+        className="mb-5 sm:mb-8"
+      />
 
       {/* Two across on a phone — the density a shopping app uses — and never
           more than four, past which a photograph is too small to read. */}
-      <ul className={cn("grid grid-cols-2 gap-2.5 sm:gap-4", columns)}>
+      <ul className={cn("grid grid-cols-2 gap-3 sm:gap-5", columns)}>
         {destinations.map((destination) => (
           <li key={destination.href}>
             <Link
               href={destination.href}
-              className="group block overflow-hidden bg-surface shadow-xs transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md"
+              className="card card-interactive group block overflow-hidden"
             >
-              <div className={cn("relative overflow-hidden bg-ink-50", shape)}>
+              <div className={cn("relative m-1.5 overflow-hidden rounded-lg bg-ink-50 sm:m-2", shape)}>
                 <Image
                   src={destination.image.url}
                   alt={destination.image.alt}
@@ -117,15 +107,16 @@ export function ShopByCategory({ categories }: { categories: Category[] }) {
                   className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                 />
               </div>
-              <span className="flex items-center justify-between gap-2 px-3 py-3 sm:px-3.5">
+              <span className="flex items-center justify-between gap-2 px-3 pb-3 pt-1.5 sm:px-3.5 sm:pb-3.5">
                 <span className="min-w-0 truncate text-[13px] font-semibold text-ink-900 transition-colors group-hover:text-brand-700 sm:text-[14px]">
                   {destination.name}
                 </span>
-                <ArrowRight
-                  size={14}
+                <span
                   aria-hidden
-                  className="shrink-0 text-ink-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-brand-700"
-                />
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-transform duration-200 group-hover:translate-x-0.5"
+                >
+                  <ArrowRight size={14} />
+                </span>
               </span>
             </Link>
           </li>

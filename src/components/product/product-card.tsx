@@ -15,12 +15,13 @@ import { QuickView } from "./quick-view";
 import { ProductBadges } from "./badges";
 
 /**
- * Product card.
+ * Product card — the same card on the home page, listings, search and the
+ * recently-viewed rail.
  *
- * An object you could pick up: a rounded surface, a hairline, a short shadow
- * that deepens as the pointer comes near. The photograph still does the
- * selling — everything else on the tile is set quietly around it — but the
- * tile is a thing lying on the page rather than a rectangle drawn on it.
+ * A bordered storefront card (.card) that lifts on hover, with the photograph
+ * set as an inset rounded tile on a soft ground so every product — cut-out or
+ * lifestyle shot — sits in the same frame. Below it: brand, name, then the
+ * price as the loudest line, the discount as a small pill beside it.
  *
  * The action is gold, and it is the only gold on the tile. Ocean carries
  * structure across the site and gold carries what you press; in a grid that
@@ -62,9 +63,7 @@ export function ProductCard({
     <>
       <article
         className={cn(
-          "group relative flex flex-col overflow-hidden bg-surface",
-          "shadow-xs transition-[box-shadow,transform] duration-300 ease-out",
-          "hover:-translate-y-0.5 hover:shadow-md",
+          "card card-interactive group relative flex flex-col overflow-hidden",
           // About 2.4 cards across a 390px phone, so the rail reads as scrollable.
           layout === "rail" && "w-[152px] sm:w-[236px]",
           className,
@@ -72,7 +71,7 @@ export function ProductCard({
       >
         <Link
           href={`/p/${product.slug}`}
-          className="tap relative block aspect-[4/5] overflow-hidden bg-ink-50"
+          className="tap relative m-1.5 block aspect-[4/5] overflow-hidden rounded-lg bg-ink-50 sm:m-2"
         >
           <Image
             src={product.image}
@@ -108,8 +107,8 @@ export function ProductCard({
             className="absolute left-2 top-2 flex-col !items-start sm:left-2.5 sm:top-2.5"
           />
 
-          {/* Utilities stay square and appear only on intent where a pointer
-              can hover; a touch screen has no hover, so there they stay put. */}
+          {/* Round utilities that appear on intent where a pointer can hover;
+              a touch screen has no hover, so there they stay put. */}
           <div className="absolute right-2 top-2 flex flex-col gap-1.5 sm:right-2.5 sm:top-2.5">
             <button
               type="button"
@@ -158,7 +157,7 @@ export function ProductCard({
           )}
         </Link>
 
-        <div className="flex flex-1 flex-col px-2.5 pb-3 pt-2.5 sm:px-3 sm:pb-3.5 sm:pt-3">
+        <div className="flex flex-1 flex-col px-2.5 pb-3 pt-1.5 sm:px-3.5 sm:pb-3.5 sm:pt-2">
           {/* Ink, not gold. The accent is worth something only while it is
               rare, and a grid of twenty tiles was spending it twenty times on
               the least important line in the card. */}
@@ -186,7 +185,7 @@ export function ProductCard({
                 <span className="text-[12px] leading-none tabular-nums text-ink-400 line-through">
                   {formatINR(product.mrp)}
                 </span>
-                <span className="text-[12px] font-semibold leading-none text-sale-600">
+                <span className="rounded-full bg-sale-50 px-1.5 py-[3px] text-[11px] font-semibold leading-none text-sale-700">
                   {off}% off
                 </span>
               </>
@@ -218,15 +217,14 @@ export function ProductCard({
             )}
           </div>
 
-          {/* One action, full width, square. It slides up on hover on desktop
-              and is simply always there on touch. */}
+          {/* One action, full width. */}
           <div className="mt-auto pt-2.5 sm:pt-3.5">
             <button
               type="button"
               onClick={handleAdd}
               disabled={outOfStock}
               className={cn(
-                "tap relative flex h-10 w-full items-center justify-center gap-2 text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
+                "tap relative flex h-10 w-full items-center justify-center gap-2 rounded-lg text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
                 outOfStock
                   ? "cursor-not-allowed bg-ink-100 text-ink-400"
                   : added

@@ -57,7 +57,7 @@ export function OrderJourney({ payments }: { payments: PublicPayments }) {
         </p>
       </div>
 
-      <div className="mt-8 sm:mt-14">
+      <div className="card mt-8 px-4 py-6 sm:mt-12 sm:px-8 sm:py-10">
         <JourneyLine steps={steps} />
       </div>
     </section>

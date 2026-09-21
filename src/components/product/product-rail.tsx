@@ -92,7 +92,7 @@ export function ProductGrid({
         // Cards with air between them, not tiles fused into one sheet. A
         // shared 1px grid made twenty products read as one table of data;
         // separate objects are what a shopper scans.
-        "grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5",
+        "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5",
         className,
       )}
     >

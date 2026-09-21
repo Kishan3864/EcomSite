@@ -138,7 +138,7 @@ export function ProductBadgeMark({
   return (
     <span
       className={cn(
-        "inline-flex items-center whitespace-nowrap font-semibold uppercase leading-none ring-1 ring-inset",
+        "inline-flex items-center whitespace-nowrap rounded-full font-semibold uppercase leading-none ring-1 ring-inset",
         size === "md" ? "h-[24px] gap-1.5 px-2 text-[10.5px] tracking-[0.09em]" : "h-[20px] gap-1 px-1.5 text-[9.5px] tracking-[0.08em]",
         spec.className,
         className,

@@ -50,7 +50,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-2 py-1",
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-1",
         "text-[11px] font-semibold leading-none tracking-[0.01em]",
         TONES[tone],
         className,
@@ -139,7 +139,7 @@ export function RatingChip({
 
   return (
     <span className={cn("inline-flex items-center gap-1.5 text-[11.5px] sm:text-xs", className)}>
-      <span className="inline-flex items-center gap-1 bg-brand-700 px-1.5 py-0.5 font-semibold text-white tabular-nums">
+      <span className="inline-flex items-center gap-1 rounded-md bg-brand-700 px-1.5 py-0.5 font-semibold text-white tabular-nums">
         {value.toFixed(1)}
         <Star size={10} fill="currentColor" strokeWidth={0} />
       </span>
@@ -194,7 +194,7 @@ export function Price({
           <span className={cn(sizes[1], "text-ink-400 line-through tabular-nums")}>
             {formatINR(mrp)}
           </span>
-          <span className={cn(sizes[2], "font-semibold text-sale-600 tabular-nums")}>
+          <span className={cn(sizes[2], "rounded-full bg-sale-50 px-2 py-0.5 font-semibold text-sale-700 tabular-nums")}>
             {off}% off
           </span>
         </>
@@ -224,11 +224,9 @@ export function SectionHeader({
     <div className={cn("flex items-end justify-between gap-4 sm:gap-6", className)}>
       <div className="min-w-0">
         {eyebrow && (
-          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600 sm:mb-2">
-            {eyebrow}
-          </p>
+          <span className="eyebrow mb-2 sm:mb-3">{eyebrow}</span>
         )}
-        <h2 className="font-display text-[20px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:text-[32px]">
+        <h2 className="block font-display text-[22px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:text-[32px]">
           {title}
         </h2>
         {description && (
@@ -243,7 +241,7 @@ export function SectionHeader({
       {href && (
         <Link
           href={href}
-          className="tap group -my-2 inline-flex shrink-0 items-center gap-1.5 py-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors hover:text-gold-700 sm:my-0 sm:py-0"
+          className="chip tap group h-9 shrink-0 px-4 text-[12.5px] font-semibold text-brand-700 transition-colors hover:border-brand-300 hover:bg-brand-50 sm:h-10 sm:px-5 sm:text-[13px]"
         >
           {linkLabel}
           <ChevronRight
@@ -362,5 +360,5 @@ export function EmptyState({
 /* ----------------------------- Divider ---------------------------- */
 
 export function Hairline({ className }: { className?: string }) {
-  return <div className={cn("h-px w-full bg-hairline", className)} />;
+  return <div className={cn("h-px w-full bg-line", className)} />;
 }

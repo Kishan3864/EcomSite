@@ -837,6 +837,11 @@
     border-top: 1px solid var(--color-line);
   }
 
+  /* A circle — avatars, colour swatches, round icon buttons. */
+  .is-circle {
+    border-radius: 9999px;
+  }
+
   .chip {
     display: inline-flex;
     align-items: center;

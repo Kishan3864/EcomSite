@@ -16,8 +16,7 @@ import { BUSINESS } from "@/config/business";
  * step with the shipping and refund pages.
  */
 
-const CARD =
-  "group flex flex-col bg-surface p-4 transition-[box-shadow,transform] duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md sm:p-5";
+const CARD = "card card-interactive group flex h-full flex-col p-5 sm:p-6";
 
 export function SupportBand() {
   const routes = [
@@ -56,11 +55,13 @@ export function SupportBand() {
           </p>
         </div>
 
-        <ul className="grid gap-2.5 sm:grid-cols-3 sm:gap-4">
+        <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
           {routes.map((route) => (
             <li key={route.href}>
               <Link href={route.href} className={CARD}>
-                <route.icon size={19} className="text-brand-700" aria-hidden />
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                  <route.icon size={19} aria-hidden />
+                </span>
                 <h3 className="mt-3 text-[14px] font-semibold tracking-[-0.01em] text-ink-950">
                   {route.title}
                 </h3>
