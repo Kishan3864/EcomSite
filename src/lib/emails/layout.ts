@@ -222,10 +222,17 @@ export interface ShellOptions {
    * opt out of is a receipt that goes missing.
    */
   unsubscribeUrl?: string;
+  /**
+   * Replaces the standard service-email line under the card, for a mail that
+   * needs to say something more exact about why it came and whether another
+   * will follow — the review request says it asks once and reminds once at
+   * most. Plain text; escaped here.
+   */
+  footerNote?: string;
 }
 
 /** Wraps a body in the shared shell and returns the complete HTML document. */
-export function shell({ kicker, preheader, body, unsubscribeUrl }: ShellOptions): string {
+export function shell({ kicker, preheader, body, unsubscribeUrl, footerNote }: ShellOptions): string {
   return `<!doctype html>
 <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -278,7 +285,9 @@ export function shell({ kicker, preheader, body, unsubscribeUrl }: ShellOptions)
             ${
               unsubscribeUrl
                 ? `You are receiving this because you subscribed to ${esc(BUSINESS.brandName)} updates. <a href="${esc(unsubscribeUrl)}" style="color:${C.muted};">Unsubscribe</a>.`
-                : `This is a service email about your order, sent to the address on it. You will get these whether or not you subscribe to anything.`
+                : footerNote
+                  ? esc(footerNote)
+                  : `This is a service email about your order, sent to the address on it. You will get these whether or not you subscribe to anything.`
             }
           </td>
         </tr>

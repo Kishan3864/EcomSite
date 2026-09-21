@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { db } from "@/lib/db";
 import { refundState } from "@/services/refunds";
+import { reviewRequestSummary } from "@/services/order-reviews";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
 import { delhiveryConfig } from "@/lib/shipping/delhivery";
 import { LiveRefresh } from "@/components/ui/live-refresh";
@@ -73,6 +74,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   // paymentStatus is an intention and has been wrong on live orders; this is
   // derived from Refund and ManualRefund rows only.
   const money = refundState(order);
+  // Where the "review what you bought" email stands, or why it will not go.
+  const reviewRequest = await reviewRequestSummary(order.id);
 
   const canEdit = hasRole(session, "MANAGER");
   const courier = delhiveryConfig();
@@ -364,6 +367,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     : []),
                   ...(order.deliveredAt
                     ? [{ label: "Delivered", value: <DateCell value={order.deliveredAt} time /> }]
+                    : []),
+                  ...(reviewRequest
+                    ? [{ label: "Review request", value: <span className="text-ink-700">{reviewRequest}</span> }]
                     : []),
                   ...(order.giftWrap
                     ? [

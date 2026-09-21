@@ -705,6 +705,11 @@ model Order {
   /// predates this column has an empty list and is simply treated as never
   /// having been emailed.
   emailsSent        String[]  @default([])
+  /// When the "review what you bought" email actually went out. The one
+  /// reminder is timed from this, not from delivery, so a request that went
+  /// out late can never be followed by its reminder minutes later. Null until
+  /// sent; see src/services/order-reviews.ts.
+  reviewRequestedAt DateTime?
   placedAt          DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 

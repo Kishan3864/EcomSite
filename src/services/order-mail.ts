@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { mailConfigured, sendMail } from "@/lib/mail";
 import { orderToken } from "@/lib/order-token";
 import { buildOrderUpdate, type OrderEmailKind } from "@/lib/emails/order-updates";
+import type { ReviewEmailKind } from "@/lib/emails/review-request";
 import { refundWindowText } from "./refunds";
 
 /**
@@ -319,8 +320,17 @@ export function sendOrderMail(orderId: string, kind: OrderEmailKind): void {
  */
 export async function renderOrderMailForPreview(
   orderId: string,
-  kind: OrderEmailKind,
+  kind: OrderEmailKind | ReviewEmailKind,
 ): Promise<{ subject: string; html: string; text: string } | null> {
+  // The review request and its reminder are sent on a timer, not through
+  // sendOrderMail, but they are order emails all the same and can be checked
+  // from the same card.
+  if (kind === "review-request" || kind === "review-reminder") {
+    const { renderReviewMail } = await import("./order-reviews");
+    const built = await renderReviewMail(orderId, kind, { ignoreRules: true });
+    return built.ok ? { subject: built.mail.subject, html: built.mail.html, text: built.mail.text } : null;
+  }
+
   // The confirmation has its own builder, with the lines and the totals.
   if (kind === "placed") {
     const { renderOrderConfirmation } = await import("./order-email");

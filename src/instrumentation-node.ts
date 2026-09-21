@@ -25,4 +25,9 @@ export async function startNodeRuntime() {
   // process open by itself.
   const timer = setInterval(() => void refreshGoogleKeys(), 30 * 60_000);
   timer.unref?.();
+
+  // Review requests after delivery, and their one reminder. Production only —
+  // the guards and the reasoning are on startReviewRequestTimer.
+  const { startReviewRequestTimer } = await import("@/services/order-reviews");
+  startReviewRequestTimer();
 }

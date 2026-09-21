@@ -560,6 +560,8 @@ const TEST_EMAIL_KINDS: { value: string; label: string }[] = [
   { value: "refund-raised", label: "Refund raised" },
   { value: "refund-completed", label: "Refund completed" },
   { value: "refund-failed", label: "Refund needs another attempt" },
+  { value: "review-request", label: "Review request (after delivery)" },
+  { value: "review-reminder", label: "Review reminder" },
 ];
 
 export function TestEmailForm({ orderId }: { orderId: string }) {

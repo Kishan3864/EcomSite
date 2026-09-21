@@ -7,6 +7,10 @@ import { buildOrderUpdate, type OrderEmailKind } from "@/lib/emails/order-update
 import { buildContactAdminEmail } from "@/lib/emails/contact-admin";
 import { buildContactAck } from "@/lib/emails/contact-ack";
 import { buildPasswordResetEmail, buildPasswordSetNotice } from "@/lib/emails/password-reset";
+import { buildReviewEmail } from "@/lib/emails/review-request";
+import { renderReviewMail } from "@/services/order-reviews";
+import { REVIEW_REQUESTS } from "@/config/review-requests";
+import { db } from "@/lib/db";
 
 /**
  * Every email the shop sends, rendered from the real templates with sample
@@ -178,6 +182,22 @@ const LIFECYCLE: {
   },
 ];
 
+/** Two products to rate: a long title with a variant, and one with no image. */
+const REVIEW_ITEMS = [
+  {
+    title: SAMPLE_LINES[0].title,
+    variantLabel: SAMPLE_LINES[0].variantLabel,
+    image: SAMPLE_LINES[0].image,
+    url: "https://weekendcart.com/review/preview-order-id/p1?t=preview-token-not-valid",
+  },
+  {
+    title: SAMPLE_LINES[1].title,
+    variantLabel: SAMPLE_LINES[1].variantLabel,
+    image: null,
+    url: "https://weekendcart.com/review/preview-order-id/p2?t=preview-token-not-valid",
+  },
+];
+
 const SAMPLES = [
   {
     key: "order-paid",
@@ -234,6 +254,38 @@ const SAMPLES = [
       ...extra,
     }),
   })),
+  {
+    key: "review-request",
+    title: `Review request — ${REVIEW_REQUESTS.delayDays} days after delivery`,
+    note: `Sent once, ${REVIEW_REQUESTS.delayDays} days after delivery, never with the delivered email. One card per product still unreviewed, each button opening that product's form with the order already checked. Not sent for a cancelled, returned or fully refunded order; hidden products are left out. Asks for an honest review and offers nothing for one.`,
+    mail: buildReviewEmail({
+      kind: "review-request",
+      number: BASE.number,
+      contactName: BASE.contactName,
+      deliveredAt: new Date(Date.now() - REVIEW_REQUESTS.delayDays * 24 * 60 * 60 * 1000),
+      items: REVIEW_ITEMS,
+      alreadyReviewed: 0,
+      reminderFollows: REVIEW_REQUESTS.reminderAfterDays !== null,
+    }),
+  },
+  {
+    key: "review-reminder",
+    title: "Review reminder — the one and only",
+    note:
+      REVIEW_REQUESTS.reminderAfterDays === null
+        ? "Switched OFF in src/config/review-requests.ts — this is what it would look like."
+        : `${REVIEW_REQUESTS.reminderAfterDays} days after the request, only for products still not reviewed, and only once. Says it is the last time we will ask. Here the customer has already reviewed one of the two.`,
+    mail: buildReviewEmail({
+      kind: "review-reminder",
+      number: BASE.number,
+      contactName: BASE.contactName,
+      deliveredAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+      items: REVIEW_ITEMS.slice(0, 1),
+      alreadyReviewed: 1,
+      reminderFollows: false,
+      askedDaysAgo: REVIEW_REQUESTS.reminderAfterDays ?? 7,
+    }),
+  },
   {
     key: "contact-admin",
     title: "Contact form — the copy that reaches support@",
@@ -310,9 +362,29 @@ export default async function EmailPreviewPage({
    */
   const wanted = (await searchParams).order?.trim();
   const real = wanted ? await renderOrderConfirmation(wanted) : null;
-  const samples = real
-    ? [{ key: "real", title: `Real order — ${wanted}`, note: `Rendered from the database through the same code path that sends it. Recipient: ${real.to}`, mail: real }, ...SAMPLES]
-    : SAMPLES;
+
+  /**
+   * The review request this real order will get, through the same rules the
+   * timer applies — only the timing is ignored, so it can be looked at before
+   * it is due. When the rules say no, the reason is shown instead.
+   */
+  const realOrder = wanted
+    ? await db.order.findFirst({
+        where: { OR: [{ id: wanted }, { number: wanted.toUpperCase() }] },
+        select: { id: true },
+      })
+    : null;
+  const realReview = realOrder ? await renderReviewMail(realOrder.id, "review-request", { ignoreTiming: true }) : null;
+
+  const samples = [
+    ...(real
+      ? [{ key: "real", title: `Real order — ${wanted}`, note: `Rendered from the database through the same code path that sends it. Recipient: ${real.to}`, mail: real }]
+      : []),
+    ...(realReview?.ok
+      ? [{ key: "real-review", title: `Real order — ${wanted} — review request`, note: `What this order will be sent, through the same rules as the timer (timing ignored so it can be seen early). Recipient: ${realReview.mail.to}`, mail: realReview.mail }]
+      : []),
+    ...SAMPLES,
+  ];
 
   return (
     <div className="container-page py-8">
@@ -327,6 +399,12 @@ export default async function EmailPreviewPage({
           window to check the phone width.
         </p>
       </header>
+
+      {realReview && !realReview.ok ? (
+        <p className="mb-6 bg-gold-50 px-4 py-3 text-[13px] text-ink-800">
+          <strong>{wanted}</strong> will not get a review request: {realReview.why}.
+        </p>
+      ) : null}
 
       {wanted && !real ? (
         <p className="mb-6 bg-gold-50 px-4 py-3 text-[13px] text-ink-800">
