@@ -192,7 +192,7 @@ export function ReviewStep() {
         {needsAccount && (
           /* Ink, not a tinted panel. It is the most important thing on the page
              and it earns that by being the only element drawn in full black. */
-          <section className="bg-surface shadow-sm p-4 sm:p-5">
+          <section className="card p-4 sm:p-5">
             <h2 className="font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
               You need an account to place this order
             </h2>
@@ -245,7 +245,7 @@ export function ReviewStep() {
           ))}
         </div>
 
-        <section className="bg-surface shadow-sm">
+        <section className="card">
           <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
             {cart.length} item{cart.length > 1 ? "s" : ""} in this order
           </h2>

@@ -73,6 +73,8 @@ export function buttonClasses(
     // it made "Add to bag" read as signage and cost a third of the button's
     // width in letter-spacing.
     "inline-flex items-center justify-center font-semibold tracking-[0.005em]",
+    // The storefront control radius (square in the admin, where the reset holds).
+    "rounded-md",
     // The stray double comma here made the whole shorthand invalid, so no
     // button was transitioning anything.
     "transition-[background-color,color,box-shadow] duration-200",

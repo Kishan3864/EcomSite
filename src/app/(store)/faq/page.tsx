@@ -57,7 +57,7 @@ export default function FaqPage() {
         <FaqAccordion groups={faqs} />
 
         <aside className="min-w-0 space-y-4 lg:sticky lg:top-[132px] lg:h-fit">
-          <div className="bg-surface shadow-sm p-4 sm:p-5">
+          <div className="card p-4 sm:p-5">
             <h2 className="font-display text-[20px] leading-tight tracking-[-0.02em] text-ink-950">
               Still stuck?
             </h2>

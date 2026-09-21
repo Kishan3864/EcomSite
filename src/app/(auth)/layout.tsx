@@ -10,5 +10,9 @@
  * break buys a slightly crisper input and risks the whole way in.
  */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-dvh bg-canvas">{children}</div>;
+  return (
+    <div data-storefront className="min-h-dvh bg-canvas">
+      {children}
+    </div>
+  );
 }

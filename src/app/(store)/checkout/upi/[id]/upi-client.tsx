@@ -92,7 +92,7 @@ export function UpiClient({
   if (unavailable) {
     return (
       <Shell orderNumber={orderNumber} amount={amount}>
-        <div className="bg-surface shadow-sm p-4 text-[13px] leading-[1.55] text-ink-700">
+        <div className="card p-4 text-[13px] leading-[1.55] text-ink-700">
           <p className="flex items-start gap-2.5">
             <AlertCircle size={16} className="mt-0.5 shrink-0 text-sale-600" />
             <span>
@@ -113,7 +113,7 @@ export function UpiClient({
   if (waiting) {
     return (
       <Shell orderNumber={orderNumber} amount={amount}>
-        <div className="bg-surface shadow-sm p-5 text-center sm:p-7">
+        <div className="card p-5 text-center sm:p-7">
           <span className="mx-auto flex h-12 w-12 items-center justify-center text-ink-900">
             <Clock size={24} strokeWidth={1.5} />
           </span>
@@ -151,7 +151,7 @@ export function UpiClient({
   return (
     <Shell orderNumber={orderNumber} amount={amount}>
       {/* Step 1 — pay */}
-      <section className="bg-surface shadow-sm p-4 sm:p-5">
+      <section className="card p-4 sm:p-5">
         <h2 className={STEP_HEAD}>
           <span className={STEP_NUMBER}>1</span>
           Pay <span className="tabular-nums text-ink-950">{formatINR(amount)}</span>
@@ -210,7 +210,7 @@ export function UpiClient({
       </section>
 
       {/* Step 2 — tell us */}
-      <section className="mt-3 bg-surface shadow-sm p-4 sm:mt-4 sm:p-5">
+      <section className="mt-3 card p-4 sm:mt-4 sm:p-5">
         <h2 className={STEP_HEAD}>
           <span className={STEP_NUMBER}>2</span>
           Tell us the reference

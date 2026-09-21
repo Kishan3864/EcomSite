@@ -32,7 +32,7 @@ export default async function NewsletterUnsubscribePage({ searchParams }: { sear
   return (
     <div className="container-page py-10 sm:py-16">
       <div className="mx-auto w-full max-w-xl">
-        <section className="bg-surface shadow-sm px-5 py-8 sm:px-10 sm:py-12">
+        <section className="card px-5 py-8 sm:px-10 sm:py-12">
           {email && e && t ? (
             <UnsubscribeForm email={email} e={e} t={t} />
           ) : (

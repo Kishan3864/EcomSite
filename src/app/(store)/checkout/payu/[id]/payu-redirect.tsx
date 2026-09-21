@@ -106,7 +106,7 @@ export function PayuRedirect({
 function Frame({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
-      <div className="w-full max-w-md bg-surface shadow-sm p-5 text-center sm:p-7">
+      <div className="w-full max-w-md card p-5 text-center sm:p-7">
         {children}
       </div>
     </div>

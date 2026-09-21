@@ -100,7 +100,7 @@ export function OrdersClient({
           }
         />
       ) : (
-        <ul className="bg-surface shadow-sm">
+        <ul className="card overflow-hidden">
           {filtered.map((order, i) => (
             <Reveal
               as="li"

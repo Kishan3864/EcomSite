@@ -181,7 +181,7 @@ export default function AboutPage() {
                   photograph stood nearly 600px tall beside a column of text
                   about 330px tall, and the row's `items-center` put the
                   difference on the page as a void above and below the words. */}
-              <div className="overflow-hidden bg-surface shadow-sm">
+              <div className="overflow-hidden card">
                 <div className="relative aspect-[3/4] overflow-hidden bg-ink-100 sm:aspect-[16/10] lg:aspect-[5/4]">
                   <Image
                     src={img(POOL.lifestyle[1], { fit: "wide", w: 900 })}

@@ -72,7 +72,7 @@ export function AddressStep() {
           {addresses.map((address) => (
             <li key={address.id}>
               {editing?.id === address.id ? (
-                <div className="bg-surface shadow-sm p-4 sm:p-5">
+                <div className="card p-4 sm:p-5">
                   <h3 className="mb-4 pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     Edit address
                   </h3>
@@ -175,7 +175,7 @@ export function AddressStep() {
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden"
             >
-              <div className="bg-surface shadow-sm p-4 sm:p-5">
+              <div className="card p-4 sm:p-5">
                 <h3 className="mb-4 pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                   New delivery address
                 </h3>
@@ -196,7 +196,7 @@ export function AddressStep() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setAdding(true)}
-              className="tap flex w-full items-center justify-center gap-2 bg-surface shadow-sm py-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-50"
+              className="tap flex w-full items-center justify-center gap-2 card py-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-50"
             >
               <Plus size={15} />
               Add a new address

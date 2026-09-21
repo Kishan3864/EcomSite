@@ -193,7 +193,7 @@ export function Gallery({
             onMouseMove={onMove}
             onMouseLeave={() => setZoom(null)}
             {...swipe}
-            className="group relative hidden aspect-[4/5] overflow-hidden bg-surface shadow-sm sm:block"
+            className="group relative hidden aspect-[4/5] overflow-hidden card sm:block"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div

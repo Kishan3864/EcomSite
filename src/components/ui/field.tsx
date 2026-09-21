@@ -258,16 +258,15 @@ export function OptionCard({
   const card = (
     <div
       className={cn(
-        "transition-[background-color,box-shadow] duration-200",
+        "card transition-[background-color,box-shadow,border-color] duration-200",
         disabled
-          ? "bg-surface shadow-sm opacity-55"
+          ? "opacity-55"
           : active
-            ? "bg-brand-100 rule-l-raised [--rule-color:var(--color-brand-700)]"
-            : // The unchosen card sits back rather than merely not being
-              // chosen: shadow-xs is the hairline ring with almost no lift, so
-              // the chosen one's elevation is the difference between them and
-              // not just its tint. It comes forward under the cursor.
-              "bg-surface shadow-xs hover:shadow-md",
+            ? // Chosen: a brand edge, a pale brand fill and a soft outer ring —
+              // three signals, so it reads as switched on from across the page.
+              "border-brand-600 bg-brand-50 shadow-[0_0_0_3px_var(--color-brand-100)]"
+            : // Unchosen: a plain card that comes forward under the cursor.
+              "hover:border-brand-300 hover:shadow-card-hover",
         className,
       )}
     >
@@ -291,7 +290,7 @@ export function OptionCard({
       >
         <span
           className={cn(
-            "mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center transition-[background-color,box-shadow] duration-200",
+            "mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full transition-[background-color,box-shadow] duration-200",
             // A radio button drawn with no border and no radius: a 22px square
             // that fills with ocean and takes a white tick when it is chosen.
             //
@@ -337,7 +336,7 @@ export function OptionCard({
           brand-300 #94b7c8 is 1.9:1 on the same fill, which is a seam you can
           see without it becoming a border. */}
       {active && children && (
-        <div className="rule-hair-t [--rule-color:var(--color-brand-300)] py-4 pr-4 pl-[50px] sm:py-5 sm:pr-5 sm:pl-14">
+        <div className="border-t border-brand-200 py-4 pr-4 pl-[50px] sm:py-5 sm:pr-5 sm:pl-14">
           {children}
         </div>
       )}

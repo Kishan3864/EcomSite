@@ -24,7 +24,7 @@ export async function StoreChrome({ children }: { children: React.ReactNode }) {
   return (
     <StoreProvider config={config}>
       <ToastProvider>
-        <div className="flex min-h-dvh flex-col">
+        <div data-storefront className="flex min-h-dvh flex-col">
           <Header />
           {/* The bottom nav reserves its own height after the footer, so this is
               only the breathing room between the page and the footer. */}

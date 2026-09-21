@@ -100,7 +100,7 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
             until 768px, then two, then four. */}
         <ul className="mt-8 grid gap-px bg-hairline sm:mt-12 sm:grid-cols-2 xl:grid-cols-4">
           {points.map((point, i) => (
-            <li key={point.title} className="bg-surface shadow-sm p-5 sm:p-6">
+            <li key={point.title} className="card p-5 sm:p-6">
               <span
                 aria-hidden
                 className="block font-display text-[15px] leading-none text-ink-400"

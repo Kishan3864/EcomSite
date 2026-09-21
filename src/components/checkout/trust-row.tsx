@@ -79,7 +79,7 @@ const SIGNALS = [
 
 export function CheckoutTrustRow({ className }: { className?: string }) {
   return (
-    // `bg-surface shadow-sm` spelled out rather than the `detail-panel`
+    // `card` spelled out rather than the `detail-panel`
     // utility, which is the same two declarations plus a rule zeroing the
     // box-shadow on its last child — and the last child here is the third
     // column, whose box-shadow IS its divider.
@@ -87,7 +87,7 @@ export function CheckoutTrustRow({ className }: { className?: string }) {
     // `role="list"` because Tailwind's preflight sets `list-style: none`, which
     // drops listitem semantics in Safari and takes the panel's "3 items" with
     // it.
-    <ul role="list" className={cn("grid bg-surface shadow-sm md:grid-cols-3", className)}>
+    <ul role="list" className={cn("grid card md:grid-cols-3", className)}>
       {SIGNALS.map(({ Icon, label, line }, i) => (
         <li
           key={label}

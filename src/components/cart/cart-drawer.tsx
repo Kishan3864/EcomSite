@@ -91,7 +91,7 @@ export function CartDrawer() {
         </div>
       ) : (
         <>
-          <div className="bg-surface shadow-sm px-4 py-3 sm:px-5 sm:py-4">
+          <div className="card px-4 py-3 sm:px-5 sm:py-4">
             {toFreeShipping > 0 ? (
               <p className="text-[13px] leading-[1.5] text-ink-600">
                 Add{" "}
@@ -117,7 +117,7 @@ export function CartDrawer() {
             </div>
           </div>
 
-          <ul className="bg-surface shadow-sm">
+          <ul className="card overflow-hidden">
             <AnimatePresence initial={false}>
               {cart.map((line) => (
                 <motion.li

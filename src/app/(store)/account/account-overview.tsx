@@ -72,7 +72,7 @@ export function AccountOverview({
       </div>
 
       {latest && (
-        <section className="bg-surface shadow-sm">
+        <section className="card">
           <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-3.5">
             <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Latest order
@@ -139,7 +139,7 @@ export function AccountOverview({
 
       {/* grid-cols-1 so an unbroken address line wraps rather than widening the page. */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-        <section className="flex flex-col bg-surface shadow-sm">
+        <section className="flex flex-col card">
           <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5">
             Default address
           </h2>
@@ -167,7 +167,7 @@ export function AccountOverview({
           </div>
         </section>
 
-        <section className="flex flex-col bg-surface shadow-sm">
+        <section className="flex flex-col card">
           <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5">
             Recent returns
           </h2>

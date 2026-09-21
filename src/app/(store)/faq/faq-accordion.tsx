@@ -77,7 +77,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
       </div>
 
       {total === 0 ? (
-        <div className="bg-surface shadow-sm px-4 py-10 text-center sm:px-6 sm:py-14">
+        <div className="card px-4 py-10 text-center sm:px-6 sm:py-14">
           <PaperMark size={120} className="mx-auto text-ink-300" />
           {/* break-words: the query is echoed back and may be one long word. */}
           <h2 className="mt-5 break-words font-display text-[20px] tracking-[-0.02em] text-ink-950">

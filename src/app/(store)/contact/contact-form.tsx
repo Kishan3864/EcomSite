@@ -87,7 +87,7 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
 
   if (sent) {
     return (
-      <Reveal className="min-w-0 bg-surface shadow-sm p-5 sm:p-8">
+      <Reveal className="min-w-0 card p-5 sm:p-8">
         <span className="eyebrow">Received</span>
         <h2 className="mt-3 font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
           Message received
@@ -116,7 +116,7 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
   }
 
   return (
-    <Form onSubmit={submit} className="min-w-0 bg-surface shadow-sm p-4 sm:p-8">
+    <Form onSubmit={submit} className="min-w-0 card p-4 sm:p-8">
       <h2 className="font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
         Send us a message
       </h2>

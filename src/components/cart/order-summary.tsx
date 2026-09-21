@@ -77,7 +77,7 @@ export function OrderSummary({
     totals.savings > 0 || (showDeliveryEstimate && lines.length > 0) || toFree > 0;
 
   return (
-    <div className={cn("bg-surface shadow-sm", className)}>
+    <div className={cn("card", className)}>
       <div className="px-4 py-3 sm:px-5">
         <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Order summary

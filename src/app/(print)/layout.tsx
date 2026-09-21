@@ -6,7 +6,7 @@
  */
 export default function PrintLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main id="main" className="min-h-dvh bg-white text-ink-900">
+    <main id="main" data-storefront className="min-h-dvh bg-white text-ink-900">
       <style>{`
         @page { size: A4 portrait; margin: 10mm; }
         @media print {
