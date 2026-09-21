@@ -81,12 +81,13 @@ export function AccountNav({
 
   // One shape for a link and for the sign-out button, so the last row of the
   // index sits on exactly the same measure as the six above it.
+  // Pills on a phone (a swipeable tab row), rounded rows in a card from lg.
   const row =
-    "tap flex h-11 items-center gap-2 whitespace-nowrap rule-b px-3.5 text-[13px] transition-colors duration-200 lg:h-12 lg:gap-3 lg:whitespace-normal lg:rule-l lg:px-4 lg:text-[13.5px]";
+    "tap flex h-10 items-center gap-2 whitespace-nowrap rounded-full px-3.5 text-[13px] transition-colors duration-200 lg:h-11 lg:gap-3 lg:whitespace-normal lg:rounded-lg lg:px-3.5 lg:text-[13.5px]";
 
   return (
     <div className="space-y-3 lg:space-y-4">
-      <div className={cn("deep-plane p-4 lg:p-5", !home && "hidden lg:block")}>
+      <div className={cn("deep-plane overflow-hidden rounded-2xl p-4 lg:p-5", !home && "hidden lg:block")}>
         <div className="flex items-center gap-3">
           <Avatar
             src={profile?.avatarUrl}
@@ -119,11 +120,11 @@ export function AccountNav({
       {/* A scrolling tab row below lg, the ruled index from lg up. */}
       <nav
         aria-label="Account"
-        className="lg:bg-surface"
+        className="lg:rounded-xl lg:border lg:bg-surface lg:p-1.5 lg:shadow-card"
       >
         <ul
           ref={tabs}
-          className="no-scrollbar flex overflow-x-auto overscroll-x-contain lg:block lg:overflow-visible"
+          className="no-scrollbar flex gap-1.5 overflow-x-auto overscroll-x-contain lg:block lg:space-y-0.5 lg:overflow-visible"
         >
           {LINKS.map((link) => {
             const active = link.exact
@@ -141,16 +142,15 @@ export function AccountNav({
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     row,
-                    "-mb-px lg:mb-0",
                     active
-                      ? "[--rule-color:var(--color-ink-950)] font-semibold text-ink-950"
-                      : "[--rule-color:transparent] text-ink-600 hover:bg-ink-50 hover:text-ink-950",
+                      ? "bg-brand-700 font-semibold text-white lg:bg-brand-50 lg:text-brand-800"
+                      : "border bg-surface text-ink-600 hover:bg-ink-50 hover:text-ink-950 lg:border-0 lg:bg-transparent",
                   )}
                 >
-                  <link.icon size={16} className={active ? "text-ink-950" : "text-ink-400"} />
+                  <link.icon size={16} className={active ? "text-current" : "text-ink-400"} />
                   <span className="flex-1">{link.label}</span>
                   {count > 0 && (
-                    <span className="text-[11.5px] font-semibold tabular-nums text-ink-500">
+                    <span className="rounded-full bg-ink-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-ink-600">
                       {count}
                     </span>
                   )}
@@ -164,7 +164,7 @@ export function AccountNav({
                 type="submit"
                 className={cn(
                   row,
-                  "w-full [--rule-color:transparent] text-left text-ink-500 hover:bg-ink-50 hover:text-sale-600",
+                  "w-full border bg-surface text-left text-ink-500 hover:bg-sale-50 hover:text-sale-600 lg:border-0 lg:bg-transparent",
                 )}
               >
                 <LogOut size={16} className="text-ink-400" />

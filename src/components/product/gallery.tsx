@@ -133,7 +133,7 @@ export function Gallery({
               aria-label={`View ${s.kind} ${i + 1}`}
               aria-current={i === index}
               className={cn(
-                "relative h-[68px] w-full overflow-hidden bg-ink-50 transition-all duration-200 md:h-[86px]",
+                "relative h-[68px] w-full overflow-hidden rounded-lg bg-ink-50 transition-all duration-200 md:h-[86px]",
                 i === index
                   ? "opacity-100 ring-2 ring-brand-700 ring-offset-1"
                   : "opacity-70 ring-1 ring-hairline hover:opacity-100",
@@ -193,7 +193,7 @@ export function Gallery({
             onMouseMove={onMove}
             onMouseLeave={() => setZoom(null)}
             {...swipe}
-            className="group relative hidden aspect-[4/5] overflow-hidden card sm:block"
+            className="card group relative hidden aspect-[4/5] overflow-hidden rounded-2xl sm:block"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div

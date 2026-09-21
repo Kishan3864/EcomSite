@@ -171,7 +171,7 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
             // gave the sheet an edge against the white tiles it floats over,
             // but the black outline made it look like a dialog; the elevation
             // does the same job without the weight.
-            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden bg-surface shadow-xl"
+            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-2xl border bg-surface shadow-pop"
           >
             <div
               className="grid"

@@ -42,7 +42,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
           same arrangement as the masthead search, and for the same reason:
           with the base ring left on the input it came out as a box drawn
           inside a box. */}
-      <div className="field-edge mb-3 flex h-11 items-center gap-2.5 bg-canvas px-3.5 transition-colors sm:mb-5 sm:h-12 sm:px-4">
+      <div className="mb-3 flex h-11 items-center gap-2.5 rounded-xl border border-line-strong bg-surface px-3.5 transition-colors focus-within:border-brand-400 sm:mb-5 sm:h-12 sm:px-4">
         <Search size={16} className="shrink-0 text-ink-400" />
         <label htmlFor="faq-search" className="sr-only">
           Search the help centre
@@ -65,10 +65,10 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
             key={c}
             onClick={() => setCategory(c)}
             className={cn(
-              "tap h-10 px-3.5 text-[12px] font-semibold tracking-[0.01em] transition-colors duration-200",
+              "chip tap h-10 px-4 text-[12.5px] font-semibold transition-colors duration-200",
               category === c
-                ? "bg-brand-700 text-white"
-                : "bg-surface text-ink-600 hover:text-ink-950",
+                ? "border-brand-700 bg-brand-700 text-white"
+                : "text-ink-600 hover:border-ink-300 hover:text-ink-950",
             )}
           >
             {c}
@@ -94,7 +94,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
               <h2 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:mb-3">
                 {group.category}
               </h2>
-              <ul>
+              <ul className="card card-divided overflow-hidden">
                 {group.items.map((item) => {
                   const expanded = open === item.q;
                   return (
@@ -103,7 +103,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
                         onClick={() => setOpen(expanded ? null : item.q)}
                         aria-expanded={expanded}
                         // At least 44px per row on phones, a comfortable thumb target.
-                        className="tap group flex min-h-11 w-full items-start gap-3 py-3.5 text-left sm:gap-4 sm:py-4"
+                        className="tap group flex min-h-11 w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-ink-50 sm:gap-4 sm:px-5 sm:py-4"
                       >
                         <span
                           className={cn(
@@ -130,7 +130,7 @@ export function FaqAccordion({ groups }: { groups: Group[] }) {
                             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                             className="overflow-hidden"
                           >
-                            <p className="max-w-[68ch] pb-4 pr-6 text-[14px] leading-[1.75] text-ink-600 sm:pb-5 sm:pr-8 sm:text-[15px]">
+                            <p className="max-w-[68ch] px-4 pb-4 pr-6 text-[14px] leading-[1.75] text-ink-600 sm:px-5 sm:pb-5 sm:pr-8 sm:text-[15px]">
                               {item.a}
                             </p>
                           </motion.div>

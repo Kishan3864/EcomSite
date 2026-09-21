@@ -287,7 +287,7 @@ function SearchField({ onOpen, className }: { onOpen: () => void; className?: st
       onClick={onOpen}
       aria-haspopup="dialog"
       className={cn(
-        "field-edge tap flex h-10 min-w-0 items-center gap-2.5 bg-ink-50 px-3.5 text-left transition-colors duration-200",
+        "tap flex h-10 min-w-0 items-center gap-2.5 rounded-full border border-line-strong bg-ink-50 px-4 text-left transition-colors duration-200 hover:border-brand-300",
         className,
       )}
     >
@@ -530,7 +530,7 @@ function AccountMenu() {
             // The same sheet the department menu is drawn on, a quarter of the
             // width: a hairline and the same elevation, so the two panels that
             // can open from this one bar are plainly the same object.
-            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden bg-surface shadow-xl"
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden rounded-2xl border bg-surface shadow-pop"
           >
             {!sessionChecked ? (
               <p className="px-4 py-6 text-center text-[13px] text-ink-500">

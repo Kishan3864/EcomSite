@@ -151,7 +151,7 @@ export function SearchBar({
       <Form onSubmit={submit} role="search">
         <div
           className={cn(
-            "field-edge flex items-center gap-2.5 bg-ink-50 px-3.5 transition-all duration-200",
+            "flex items-center gap-2.5 rounded-full border border-line-strong bg-ink-50 px-4 transition-all duration-200 focus-within:border-brand-400 focus-within:bg-surface",
             variant === "header" ? "h-11" : "h-12",
             open
               ? "shadow-[0_0_0_3px_rgb(76_124_148/0.18)]"
@@ -220,7 +220,7 @@ export function SearchBar({
             // is drawn: both are sheets laid over the same page, and a hairline
             // would lose its edge against the white tiles below the header.
             className={cn(
-              "z-50 overflow-hidden bg-surface shadow-lg",
+              "z-50 overflow-hidden rounded-2xl border bg-surface shadow-pop",
               variant === "header"
                 ? "absolute inset-x-0 top-[calc(100%+8px)]"
                 : "mt-3 flex min-h-0 flex-col",

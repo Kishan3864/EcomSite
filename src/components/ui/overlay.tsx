@@ -149,12 +149,15 @@ export function Drawer({
                 // Side drawers already fill a phone edge to edge (w-full up to
                 // 28rem); a bottom sheet stops short of the top edge.
                 side !== "bottom" && "w-full max-w-md",
-                side === "bottom" && "max-h-[90dvh]",
+                side === "right" && "sm:rounded-l-2xl",
+                side === "left" && "sm:rounded-r-2xl",
+                side === "bottom" && "max-h-[90dvh] rounded-t-3xl",
+                "overflow-hidden",
                 className,
               )}
             >
               {side === "bottom" && (
-                <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 bg-ink-300" />
+                <div className="mx-auto mt-2.5 h-1 w-10 shrink-0 rounded-full bg-ink-300" />
               )}
               {title && (
                 <header className="flex shrink-0 items-start justify-between gap-4 px-4 py-3 sm:px-5 sm:py-4">
@@ -174,7 +177,7 @@ export function Drawer({
                   <button
                     onClick={onClose}
                     aria-label="Close"
-                    className="tap -m-3 shrink-0 p-3 text-ink-500 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 sm:-m-1.5 sm:p-1.5"
+                    className="tap -m-3 shrink-0 rounded-full p-3 text-ink-500 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 sm:-m-1.5 sm:p-1.5"
                   >
                     <X size={18} />
                   </button>
@@ -252,14 +255,14 @@ export function Modal({
               // A bottom sheet on phones, clear of the home indicator; a centred
               // dialog from sm up.
               className={cn(
-                "relative flex max-h-[90dvh] w-full flex-col overflow-hidden bg-canvas pb-safe sm:max-h-[92vh] sm:max-w-2xl sm:pb-0",
+                "relative flex max-h-[90dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-canvas pb-safe sm:max-h-[92vh] sm:max-w-2xl sm:rounded-2xl sm:pb-0",
                 className,
               )}
             >
               <button
                 onClick={onClose}
                 aria-label="Close"
-                className="tap absolute right-2 top-2 z-10 bg-surface p-3 text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:right-3 sm:top-3 sm:p-2"
+                className="tap absolute right-2 top-2 z-10 rounded-full border bg-surface p-3 text-ink-600 shadow-card transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:right-3 sm:top-3 sm:p-2"
               >
                 <X size={16} />
               </button>

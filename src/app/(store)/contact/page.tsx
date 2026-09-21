@@ -100,7 +100,9 @@ export default async function ContactPage() {
             key={channel.title}
             className="flex items-start gap-3.5 p-4 sm:flex-col sm:items-stretch sm:gap-0 sm:p-5"
           >
-            <channel.icon size={22} strokeWidth={1.5} className="shrink-0 text-ink-900" />
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+              <channel.icon size={21} strokeWidth={1.6} />
+            </span>
             <div className="flex min-w-0 flex-1 flex-col">
               <h2 className="font-display text-[20px] leading-tight tracking-[-0.02em] text-ink-950 sm:mt-4">
                 {channel.title}
@@ -139,8 +141,8 @@ export default async function ContactPage() {
           formToken={formToken}
         />
 
-        <aside className="min-w-0 space-y-6">
-          <section className="pt-4">
+        <aside className="min-w-0 space-y-3">
+          <section className="card p-4 sm:p-5">
             <h2 className={ASIDE_LABEL}>When we are around</h2>
             <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">
               {BUSINESS.supportHours}. Messages that arrive outside those hours are answered the
@@ -148,7 +150,7 @@ export default async function ContactPage() {
             </p>
           </section>
 
-          <section className="pt-4">
+          <section className="card p-4 sm:p-5">
             <h2 className={ASIDE_LABEL}>Business address</h2>
             <address className="mt-2 text-[13px] not-italic leading-[1.6] text-ink-600">
               <strong className="font-semibold text-ink-900">{BRAND.legalName}</strong>
@@ -170,7 +172,7 @@ export default async function ContactPage() {
           </section>
 
           {/* Required by the Consumer Protection (E-Commerce) Rules, 2020. */}
-          <section className="pt-4">
+          <section className="card p-4 sm:p-5">
             <h2 className={ASIDE_LABEL}>Grievance officer</h2>
             <p className="mt-2 break-words text-[13px] leading-[1.6] text-ink-600">
               <strong className="font-semibold text-ink-900">

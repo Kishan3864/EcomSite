@@ -75,11 +75,11 @@ function Row({
   }
 
   return (
-    <li className="bg-surface p-4 sm:p-5">
+    <li className="rounded-xl border bg-surface p-4 sm:p-5">
       <div className="flex items-center gap-3.5 sm:gap-4">
         <Link
           href={`/p/${item.slug}`}
-          className="relative h-20 w-20 shrink-0 overflow-hidden bg-ink-100 sm:h-24 sm:w-24"
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-24 sm:w-24"
         >
           {item.image && <Image src={item.image} alt="" fill sizes="96px" className="object-cover" />}
         </Link>
@@ -128,7 +128,7 @@ function Row({
             maxLength={REVIEW_LIMITS.body}
             placeholder="What did you like? How are you using it?"
             // 16px on phones: iOS zooms the page into any smaller field.
-            className="mt-3 block w-full bg-canvas px-3.5 py-3 text-[16px] leading-[1.55] text-ink-900 outline-none placeholder:text-ink-400 sm:text-[14px]"
+            className="mt-3 block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-3 text-[16px] leading-[1.55] text-ink-900 outline-none placeholder:text-ink-400 focus:border-brand-400 sm:text-[14px]"
           />
           <p className="mt-1.5 text-[12px] text-ink-500">
             Optional · {body.length}/{REVIEW_LIMITS.body} characters
@@ -167,7 +167,7 @@ export function OrderReviewPanel({ panel, className }: { panel: ReviewPanel; cla
   const allDone = items.every((i) => i.myRating !== null);
   const postedHere = Object.keys(given).length > 0;
 
-  const card = cn("scroll-mt-24 bg-brand-50 p-4 sm:p-6", className);
+  const card = cn("scroll-mt-24 rounded-2xl border border-brand-100 bg-brand-50 p-4 sm:p-6", className);
 
   // Everything rated: one line. Just posted the last one → the same thanks
   // the row would have shown; everything rated on an earlier visit → a plain

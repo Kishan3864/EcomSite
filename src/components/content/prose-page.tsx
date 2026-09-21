@@ -22,8 +22,8 @@ export interface PolicySection {
 // would otherwise cancel the hover state the chips set. That is why the border
 // and text colours appear twice; it is not a duplication to tidy away.
 const TOC_LINK =
-  "tap flex h-10 items-center gap-2.5 whitespace-nowrap bg-surface px-3.5 text-[13px] font-medium text-ink-700 transition-colors hover:text-brand-700 " +
-  "lg:h-auto lg:items-baseline lg:whitespace-normal lg:bg-transparent lg:px-0 lg:py-2.5 lg:font-normal lg:text-ink-600 lg:hover:text-brand-700";
+  "tap flex h-10 items-center gap-2.5 whitespace-nowrap rounded-full border bg-surface px-3.5 text-[13px] font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700 " +
+  "lg:h-auto lg:items-baseline lg:whitespace-normal lg:rounded-lg lg:border-0 lg:bg-transparent lg:px-3 lg:py-2 lg:font-normal lg:text-ink-600 lg:hover:bg-ink-50 lg:hover:text-brand-700";
 
 /**
  * Shared layout for the policy pages and /services: a ruled index on the left,
@@ -97,14 +97,14 @@ export function ProsePage({
           </ul>
         </nav>
 
-        <div className="min-w-0 space-y-8 sm:space-y-12">
+        <div className="min-w-0 space-y-4 sm:space-y-5">
           {sections.map((section) => (
             // The phone header is far shorter than the desktop one, so the
             // anchor offset is too.
             <section
               key={section.id}
               id={section.id}
-              className="scroll-mt-20 pt-6 sm:pt-9 lg:scroll-mt-32"
+              className="card scroll-mt-20 p-5 sm:p-8 lg:scroll-mt-32"
             >
               <h2 className="max-w-[34ch] font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[26px]">
                 {section.heading}
