@@ -1,4 +1,5 @@
 import { BUSINESS, formatAddress, isFilled, operatorDescription } from "@/config/business";
+import { button as pillButton } from "./layout";
 import { oneClickUnsubscribeUrl, unsubscribeUrl } from "@/lib/newsletter-token";
 
 /**
@@ -205,22 +206,8 @@ function ruleCell(width: number, height: number, colour: string, align: "left" |
  * else. Square, like the storefront's buttons.
  */
 function button(href: string, label: string): string {
-  const url = esc(href);
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;margin:0 auto;">
-<tr>
-<td align="center" bgcolor="${C.brandDeep}" style="background-color:${C.brandDeep};">
-<!--[if mso]>
-<v:rect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:54px;v-text-anchor:middle;width:260px;" stroke="f" fillcolor="${C.brandDeep}">
-<w:anchorlock/>
-<center style="color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;letter-spacing:2px;">${esc(label.toUpperCase())}</center>
-</v:rect>
-<![endif]-->
-<!--[if !mso]><!-->
-<a href="${url}" target="_blank" style="display:inline-block;padding:18px 44px;background-color:${C.brandDeep};color:#ffffff;font-family:${SANS};font-size:13px;font-weight:700;line-height:18px;letter-spacing:2.5px;text-transform:uppercase;text-decoration:none;-webkit-text-size-adjust:none;">${esc(label)}</a>
-<!--<![endif]-->
-</td>
-</tr>
-</table>`;
+  // The same pill every other email uses, centred.
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="border-collapse:collapse;margin:0 auto;"><tr><td align="center">${pillButton(href, label)}</td></tr></table>`;
 }
 
 function expectRows(): string {

@@ -1,5 +1,9 @@
 import { BUSINESS } from "@/config/business";
 import {
+  actions,
+  nextSteps,
+  cardPair,
+  panel,
   C,
   SANS,
   SITE,
@@ -91,9 +95,6 @@ function thumbnail(line: OrderEmailLine): string {
 
 /** Green for money the customer keeps. Local to the receipt. */
 const SAVE = "#1f7a4d";
-const BRAND = "#1b4f74";
-const BRAND_TINT = "#eef5fb";
-const BRAND_LINE = "#d3e4f1";
 const SAVE_BG = "#e8f5ee";
 
 function priceRow(
@@ -224,57 +225,24 @@ ${eyebrow(order.cod ? "Order confirmed" : order.paid ? "Order confirmed" : "Orde
   </td></tr>
 </table>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-collapse:collapse;">
-  <tr>
-    <td class="stack" width="50%" valign="top" style="padding-right:8px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid ${C.hairline};border-radius:14px;background-color:#ffffff;">
-        <tr><td style="padding:16px 18px;">
-          <p style="margin:0 0 10px;font-family:${SANS};font-size:11px;line-height:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND};">&#9679;&nbsp; Delivering to</p>
-          <p style="margin:0;font-family:${SANS};font-size:14px;line-height:20px;font-weight:700;color:${C.ink};">${esc(order.shipName)}</p>
-          <p style="margin:4px 0 0;font-family:${SANS};font-size:13px;line-height:20px;color:${C.body};">${escLines([order.shipLine1, order.shipLine2, `${order.shipCity}, ${order.shipState}`].filter(Boolean).join(String.fromCharCode(10)))}</p>
-          <p style="margin:8px 0 0;"><span style="display:inline-block;padding:3px 10px;border-radius:999px;background-color:${C.canvas};font-family:${SANS};font-size:12px;line-height:16px;font-weight:600;color:${C.ink};">PIN ${esc(order.shipPincode)}</span></p>
-        </td></tr>
-      </table>
-    </td>
-    <td class="stack" width="50%" valign="top" style="padding-left:8px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid ${BRAND_LINE};border-radius:14px;background-color:${BRAND_TINT};">
-        <tr><td style="padding:16px 18px;">
-          <p style="margin:0 0 10px;font-family:${SANS};font-size:11px;line-height:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND};">&#9679;&nbsp; Expected by</p>
-          <p style="margin:0;font-family:${SANS};font-size:19px;line-height:25px;font-weight:800;color:${C.ink};">${esc(eta)}</p>
-          <p style="margin:8px 0 0;font-family:${SANS};font-size:12.5px;line-height:19px;color:${C.body};">We will email the tracking number the moment the courier collects it.</p>
-        </td></tr>
-      </table>
-    </td>
-  </tr>
-</table>
+${cardPair(
+  panel(
+    `${eyebrow("Delivering to")}<p style="margin:0;font-family:${SANS};font-size:14px;line-height:20px;font-weight:700;color:${C.ink};">${esc(order.shipName)}</p><p style="margin:4px 0 0;font-family:${SANS};font-size:13px;line-height:20px;color:${C.body};">${escLines([order.shipLine1, order.shipLine2, `${order.shipCity}, ${order.shipState}`].filter(Boolean).join(String.fromCharCode(10)))}</p><p style="margin:8px 0 0;"><span style="display:inline-block;padding:3px 10px;border-radius:999px;background-color:${C.canvas};font-family:${SANS};font-size:12px;line-height:16px;font-weight:600;color:${C.ink};">PIN ${esc(order.shipPincode)}</span></p>`,
+    "plain",
+  ),
+  panel(
+    `${eyebrow("Expected by")}<p style="margin:0;font-family:${SANS};font-size:19px;line-height:25px;font-weight:800;color:${C.ink};">${esc(eta)}</p><p style="margin:8px 0 0;font-family:${SANS};font-size:12.5px;line-height:19px;color:${C.body};">We will email the tracking number the moment the courier collects it.</p>`,
+    "brand",
+  ),
+)}
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-collapse:collapse;">
-  <tr>
-    <td class="stack" style="padding:0 6px 0 0;" width="50%">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>
-        <td align="center" bgcolor="${BRAND}" style="border-radius:999px;background-color:${BRAND};">
-          <a href="${esc(track)}" style="display:block;padding:14px 22px;font-family:${SANS};font-size:14px;line-height:18px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:999px;">Track this order &rarr;</a>
-        </td>
-      </tr></table>
-    </td>
-    <td class="stack" style="padding:0 0 0 6px;" width="50%">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>
-        <td align="center" style="border-radius:999px;border:1px solid ${C.hairline};background-color:#ffffff;">
-          <a href="${esc(invoiceUrl)}" style="display:block;padding:13px 22px;font-family:${SANS};font-size:14px;line-height:18px;font-weight:700;color:${C.ink};text-decoration:none;border-radius:999px;">View invoice</a>
-        </td>
-      </tr></table>
-    </td>
-  </tr>
-</table>
+${actions({ href: track, label: "Track this order" }, [{ href: invoiceUrl, label: "View invoice" }])}
 
-<div style="margin-top:26px;">
-  ${eyebrow("What happens next")}
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-    <tr><td style="padding:3px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">1. We pack your order and hand it to the courier.</td></tr>
-    <tr><td style="padding:3px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">2. You get an email with the tracking number and a link to follow it.</td></tr>
-    <tr><td style="padding:3px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">3. ${order.cod ? `Pay the courier ${esc(rupees(order.total))} when it arrives.` : "It arrives by the date above."}</td></tr>
-  </table>
-</div>
+${nextSteps([
+  "We pack your order and hand it to the courier.",
+  "You get an email with the tracking number and a link to follow it.",
+  order.cod ? `Pay the courier ${esc(rupees(order.total))} when it arrives.` : "It arrives by the date above.",
+])}
 
 <p style="margin:22px 0 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">
   Something not right? Reply to this email — it reaches a person, not a queue — or call

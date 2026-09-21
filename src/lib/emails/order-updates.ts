@@ -3,13 +3,13 @@ import {
   C,
   SANS,
   SITE,
-  button,
+  actions,
   esc,
   escLines,
   eyebrow,
   formatDate,
   formatDateTime,
-  link,
+  nextSteps,
   panel,
   row,
   rupees,
@@ -410,32 +410,18 @@ ${eyebrow(copy.eyebrow)}
 <h1 style="margin:0;font-family:${SANS};font-size:23px;line-height:30px;font-weight:700;color:${C.ink};">${esc(copy.headline)}</h1>
 <p style="margin:12px 0 0;font-family:${SANS};font-size:15px;line-height:23px;color:${C.body};">${escLines(copy.opening)}</p>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:18px;border-collapse:collapse;">
-  ${factRows}
-</table>
+<div style="margin-top:18px;">${panel(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${factRows}</table>`, "plain")}</div>
 
 ${returned}
 
 ${copy.caution ? `<div style="margin-top:20px;">${panel(`<p style="margin:0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.ink};">${escLines(copy.caution)}</p>`, "caution")}</div>` : ""}
 
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-collapse:collapse;">
-  <tr>
-    <td>${button(cta.href, cta.label)}</td>
-    ${cta.href !== track ? `<td style="padding-left:16px;">${link(track, "Your order page")}</td>` : ""}
-    <td style="padding-left:16px;">${link(invoiceUrl, "Invoice")}</td>
-  </tr>
-</table>
+${actions(cta, [
+  ...(cta.href !== track ? [{ href: track, label: "Track this order" }] : []),
+  { href: invoiceUrl, label: "View invoice" },
+])}
 
-${
-  copy.next && copy.next.length > 0
-    ? `<div style="margin-top:26px;">${eyebrow("What happens next")}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${copy.next
-        .map(
-          (step, i) =>
-            `<tr><td style="padding:3px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">${i + 1}. ${esc(step)}</td></tr>`,
-        )
-        .join("")}</table></div>`
-    : ""
-}
+${nextSteps((copy.next ?? []).map((step) => esc(step)))}
 
 <p style="margin:22px 0 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">
   Reply to this email and a person will read it, or call

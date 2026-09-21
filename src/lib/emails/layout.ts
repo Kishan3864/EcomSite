@@ -33,18 +33,20 @@ export const SITE = (isFilled(BUSINESS.url) ? BUSINESS.url : "http://localhost:3
  * dark text on an unpainted background in exactly the clients that matter.
  */
 export const C = {
-  canvas: "#f4f3f0",
+  canvas: "#f4f6f9",
   surface: "#ffffff",
-  brandDeep: "#1c333f",
-  brandSoft: "#2f5265",
-  brandTint: "#dbe7ed",
-  accent: "#26988f",
-  accentDeep: "#1a6a68",
-  ink: "#1f262b",
-  body: "#414c54",
-  muted: "#627079",
-  hairline: "#d4dae1",
-  positive: "#1a6a68",
+  brandDeep: "#1b4f74",
+  brandSoft: "#22618d",
+  brandTint: "#eef5fb",
+  brandLine: "#d3e4f1",
+  accent: "#22618d",
+  accentDeep: "#1b4f74",
+  ink: "#151c29",
+  body: "#384151",
+  muted: "#5d6878",
+  hairline: "#e1e6ec",
+  positive: "#1f7a4d",
+  positiveBg: "#e8f5ee",
   caution: "#8a6a1f",
   cautionBg: "#fbf4e2",
 };
@@ -126,23 +128,50 @@ export function emailImage(url: string): string {
 /* --------------------------------------------------------------- pieces */
 
 /**
- * The primary action. VML for Outlook on Windows, a padded anchor everywhere
- * else — Outlook ignores padding on an <a>, so without the VML the button
- * collapses to bare underlined text.
+ * THE button, in every email. A cobalt pill; VML for Outlook on Windows, which
+ * ignores padding on an <a> and would otherwise draw bare underlined text.
  */
 export function button(href: string, label: string): string {
   const url = esc(href);
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-  <tr><td align="center" bgcolor="${C.brandDeep}" style="background-color:${C.brandDeep};">
-    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:44px;v-text-anchor:middle;width:220px;" arcsize="0%" stroke="f" fillcolor="${C.brandDeep}"><w:anchorlock/><center style="color:#ffffff;font-family:${SANS};font-size:15px;font-weight:600;"><![endif]-->
-    <a href="${url}" style="display:inline-block;padding:13px 26px;font-family:${SANS};font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">${esc(label)}</a>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;">
+  <tr><td align="center" bgcolor="${C.brandDeep}" style="background-color:${C.brandDeep};border-radius:999px;">
+    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:46px;v-text-anchor:middle;width:230px;" arcsize="50%" stroke="f" fillcolor="${C.brandDeep}"><w:anchorlock/><center style="color:#ffffff;font-family:${SANS};font-size:14px;font-weight:700;"><![endif]-->
+    <a href="${url}" style="display:inline-block;padding:14px 26px;font-family:${SANS};font-size:14px;line-height:18px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:999px;">${esc(label)} &rarr;</a>
     <!--[if mso]></center></v:roundrect><![endif]-->
   </td></tr>
 </table>`;
 }
 
-/** A quieter second action, set beside the button. */
+/** The second action beside the button: the same pill, outlined. */
+export function secondaryButton(href: string, label: string): string {
+  const url = esc(href);
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;">
+  <tr><td align="center" bgcolor="#ffffff" style="background-color:#ffffff;border:1px solid ${C.hairline};border-radius:999px;">
+    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:44px;v-text-anchor:middle;width:180px;" arcsize="50%" strokecolor="${C.hairline}" fillcolor="#ffffff"><w:anchorlock/><center style="color:${C.ink};font-family:${SANS};font-size:14px;font-weight:700;"><![endif]-->
+    <a href="${url}" style="display:inline-block;padding:13px 24px;font-family:${SANS};font-size:14px;line-height:18px;font-weight:700;color:${C.ink};text-decoration:none;border-radius:999px;">${esc(label)}</a>
+    <!--[if mso]></center></v:roundrect><![endif]-->
+  </td></tr>
+</table>`;
+}
+
+/**
+ * The action row every order email ends with: one primary button, then any
+ * secondary ones (track, invoice) as outlined pills. Stacks on phones.
+ */
+export function actions(primary: { href: string; label: string }, secondary: { href: string; label: string }[] = []): string {
+  const cells = [
+    `<td class="stack" valign="middle" style="padding:0 10px 10px 0;">${button(primary.href, primary.label)}</td>`,
+    ...secondary.map((s) => `<td class="stack" valign="middle" style="padding:0 10px 10px 0;">${secondaryButton(s.href, s.label)}</td>`),
+  ];
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-collapse:collapse;">
+  <tr>${cells.join("")}</tr>
+</table>`;
+}
+
+/** An inline text link, for links inside a sentence. */
 export function link(href: string, label: string): string {
   return `<a href="${esc(href)}" style="font-family:${SANS};font-size:14px;font-weight:600;color:${C.brandDeep};text-decoration:underline;">${esc(label)}</a>`;
 }
@@ -159,18 +188,44 @@ export function row(label: string, value: string, opts: { strong?: boolean; rule
   </tr>`;
 }
 
-/** A small caps heading above a block. */
+/** A small caps heading above a block, with a cobalt dot. */
 export function eyebrow(text: string): string {
-  return `<p style="margin:0 0 8px;font-family:${SANS};font-size:11.5px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${C.muted};">${esc(text)}</p>`;
+  return `<p style="margin:0 0 10px;font-family:${SANS};font-size:11px;line-height:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${C.brandDeep};">&#9679;&nbsp; ${esc(text)}</p>`;
 }
 
-/** A tinted panel — the address block, the what-happens-next note. */
-export function panel(inner: string, tone: "canvas" | "caution" = "canvas"): string {
-  const bg = tone === "caution" ? C.cautionBg : C.canvas;
+/** A rounded card — notes, messages, the what-happens-next block. */
+export function panel(inner: string, tone: "canvas" | "caution" | "brand" | "plain" = "canvas"): string {
+  const bg = tone === "caution" ? C.cautionBg : tone === "brand" ? C.brandTint : tone === "plain" ? "#ffffff" : C.canvas;
+  const edge = tone === "brand" ? C.brandLine : C.hairline;
   return `
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background-color:${bg};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;background-color:${bg};border:1px solid ${edge};border-radius:14px;">
   <tr><td style="padding:16px 18px;">${inner}</td></tr>
 </table>`;
+}
+
+/** Two cards side by side (stacked on phones): address and delivery date, etc. */
+export function cardPair(left: string, right: string): string {
+  return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-collapse:collapse;">
+  <tr>
+    <td class="stack" width="50%" valign="top" style="padding-right:8px;">${left}</td>
+    <td class="stack" width="50%" valign="top" style="padding-left:8px;">${right}</td>
+  </tr>
+</table>`;
+}
+
+/** Numbered steps in a card — "What happens next" in every order email. */
+export function nextSteps(steps: string[]): string {
+  if (steps.length === 0) return "";
+  const rows = steps
+    .map(
+      (step, i) => `<tr>
+      <td width="30" valign="top" style="padding:5px 10px 5px 0;"><span style="display:inline-block;width:22px;height:22px;border-radius:999px;background-color:${C.brandTint};border:1px solid ${C.brandLine};font-family:${SANS};font-size:11.5px;line-height:22px;font-weight:700;text-align:center;color:${C.brandDeep};">${i + 1}</span></td>
+      <td valign="top" style="padding:6px 0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.body};">${step}</td>
+    </tr>`,
+    )
+    .join("");
+  return `<div style="margin-top:22px;">${panel(`${eyebrow("What happens next")}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">${rows}</table>`)}</div>`;
 }
 
 /**
