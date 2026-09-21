@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
 import {
@@ -150,6 +150,20 @@ export function CheckoutShell({
   // Below lg the summary folds away behind a toggle; lg always shows it.
   const [summaryOpen, setSummaryOpen] = useState(false);
   const summaryId = useId();
+  const sentinel = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+
+  // The sentinel sits right above the stepper: once it scrolls under the
+  // header, the stepper is pinned.
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setStuck(!entry.isIntersecting), {
+      rootMargin: "-120px 0px 0px 0px",
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hydrated, cart.length]);
 
   useEffect(() => {
     if (hydrated && cart.length === 0) router.replace("/cart");
@@ -193,7 +207,18 @@ export function CheckoutShell({
   return (
     <div className="pb-6 sm:pb-10">
       <div className="container-page pt-5 sm:pt-7">
-        <CheckoutStepper index={index} />
+        {/* Pinned just under the header while the step scrolls; the sentinel
+            above it tells us when it is stuck so it can lift. */}
+        <div ref={sentinel} aria-hidden className="h-px" />
+        <div
+          className={cn(
+            "sticky z-30 -mx-1 rounded-[calc(var(--radius-xl)+4px)] px-1 transition-[top,box-shadow] duration-300 ease-out",
+            stuck && "shadow-[0_14px_30px_-20px_rgb(10_15_26/0.45)]",
+          )}
+          style={{ top: "calc(var(--header-h) + 8px)" }}
+        >
+          <CheckoutStepper index={index} />
+        </div>
 
         <header className="pb-5 pt-6 sm:pb-6 sm:pt-8">
           <span className="eyebrow">
@@ -216,7 +241,7 @@ export function CheckoutShell({
         >
           <div className="min-w-0">{children}</div>
           {aside && (
-            <aside className="min-w-0 max-lg:order-first lg:sticky-under-header lg:h-fit">
+            <aside className="min-w-0 max-lg:order-first lg:sticky lg:top-[calc(var(--header-h)+104px)] lg:h-fit lg:transition-[top] lg:duration-300">
               {/* Phones and tablets: a collapsible summary above the form. */}
               <button
                 type="button"
