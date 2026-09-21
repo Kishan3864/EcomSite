@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import {
   BookOpen,
   ChefHat,
@@ -71,6 +72,5 @@ export function CategoryIcon({
   size?: number;
   className?: string;
 }) {
-  const Icon = categoryIconFor(icon, name);
-  return <Icon size={size} className={className} aria-hidden />;
+  return createElement(categoryIconFor(icon, name), { size, className, "aria-hidden": true });
 }
