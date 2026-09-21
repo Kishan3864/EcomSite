@@ -220,6 +220,18 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
       },
       {
+        // The same, for the JPEG twins scripts/email-image-twins.mjs writes
+        // beside product photos. They exist only to be embedded in email — the
+        // order confirmation's lines, the review request's cards — and were
+        // still carrying same-origin CORP, which a client that enforces it
+        // answers with a broken image (a headless Chromium refused them with
+        // ERR_BLOCKED_BY_RESPONSE.NotSameOrigin; Gmail's image proxy fetches
+        // server-side and never noticed). The site's own product photos keep
+        // same-origin: the pages serve them through the image optimiser.
+        source: "/products/:path*/:file(.+\\.email\\.jpg)",
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
+      },
+      {
         // Content-hashed build output never changes under the same name.
         source: "/_next/static/:path*",
         headers: [
