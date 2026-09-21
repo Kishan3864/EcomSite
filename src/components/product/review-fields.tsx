@@ -44,11 +44,10 @@ export function StarPicker({
             aria-pressed={value === n}
             onMouseEnter={() => setHover(n)}
             onClick={() => onChange(n)}
-            className="tap p-2 sm:p-1"
+            className="rounded-md p-2 sm:p-1"
           >
             <Star
               size={size}
-              strokeWidth={1.75}
               className={cn(
                 "transition-colors duration-200",
                 n <= (hover || value) ? "fill-gold-400 text-gold-500" : "text-ink-300",
@@ -74,7 +73,6 @@ export function StarsGiven({ value, size = 14 }: { value: number; size?: number 
         <Star
           key={n}
           size={size}
-          strokeWidth={1.75}
           aria-hidden
           className={n <= value ? "fill-gold-400 text-gold-500" : "text-ink-300"}
         />
@@ -118,6 +116,7 @@ export function ReviewFields({
           name="title"
           placeholder="Sum it up in a few words"
           maxLength={REVIEW_LIMITS.title}
+          className="rounded-md bg-surface"
         />
       </Field>
 
@@ -129,7 +128,7 @@ export function ReviewFields({
           maxLength={REVIEW_LIMITS.body}
           placeholder="How does it feel to use? Anything the next person should know?"
           // 16px on phones: iOS zooms the page into any smaller field.
-          className="w-full bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px]"
+          className="w-full rounded-md bg-surface px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px]"
         />
       </Field>
     </>

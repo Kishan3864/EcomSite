@@ -16,6 +16,15 @@ interface Slide {
   alt: string;
 }
 
+/** Round frosted control that floats over the photo. */
+const FLOAT_BTN =
+  "glass flex items-center justify-center rounded-full text-ink-700 ring-1 ring-inset ring-ink-950/5 shadow-sm transition-colors duration-200 hover:text-brand-700";
+
+/**
+ * The product gallery: a large stage on a soft ground with a thumbnail strip
+ * beside it (below it on tablets). Phones swipe a native snap track instead.
+ * Hover zooms on desktop; the expand button opens a full-screen lightbox.
+ */
 export function Gallery({
   images,
   videoPoster,
@@ -52,10 +61,8 @@ export function Gallery({
   useLockScroll(lightbox);
   useDialogFocus(lightbox, dialog);
 
-  // Phones swipe a native snap track, which reports the slide it is over. When
-  // the index moves any other way — a dot, the lightbox — bring the track
-  // along. An index the track itself reported is left alone, or the nudge would
-  // fight the scroll that produced it.
+  // Keep the phone track in step when the index moves another way (dots,
+  // lightbox), but never nudge it for an index it reported itself.
   useEffect(() => {
     const el = track.current;
     if (!el || !el.clientWidth || reported.current === index) return;
@@ -72,8 +79,7 @@ export function Gallery({
     setIndex(i);
   }
 
-  // A one-finger flick past 45px steps a slide, on the stage and in the
-  // lightbox alike. A second finger is a pinch, not a swipe.
+  // A one-finger flick past 45px steps a slide; two fingers is a pinch.
   const swipe = {
     onTouchStart: (e: React.TouchEvent) => {
       touchStart.current = e.touches.length === 1 ? e.touches[0].clientX : null;
@@ -109,55 +115,51 @@ export function Gallery({
 
   return (
     <>
-      {/* `min-w-0` is load-bearing. Without it this flex box takes its
-          min-content width from the horizontal snap track inside it and sits a
-          few pixels wider than the grid column it is in — which the mobile
-          track's -mx-3 full-bleed then doubles, putting the whole product page
-          into a horizontal scroll at 320px. */}
+      {/* `min-w-0` keeps the snap track from widening the grid column. */}
       <div className="flex min-w-0 flex-col-reverse gap-3 md:flex-row md:gap-4">
-        {/* Thumbnails — phones swipe the photos themselves instead. A row that
-            scrolls below 768px, a column beside the stage above it.
-
-            `auto-rows` and `self-start` are the whole fix for a column that
-            used to fall down the page: as a stretched flex child the grid took
-            the stage's full height and split it between however many
-            thumbnails there were, so two photos sat at the top and bottom of a
-            700px column with a canyon between them. The rows are now the
-            thumbnail's own height and the column stops where they do. */}
-        <div className="hidden grid-flow-col auto-cols-[58px] gap-2 overflow-x-auto no-scrollbar sm:grid md:w-[74px] md:auto-rows-[86px] md:grid-flow-row md:auto-cols-auto md:self-start md:overflow-visible">
-          {slides.map((s, i) => (
-            <button
-              key={s.url + i}
-              onMouseEnter={() => setIndex(i)}
-              onClick={() => setIndex(i)}
-              aria-label={`View ${s.kind} ${i + 1}`}
-              aria-current={i === index}
-              className={cn(
-                "relative h-[68px] w-full overflow-hidden rounded-lg bg-ink-50 transition-all duration-200 md:h-[86px]",
-                i === index
-                  ? "opacity-100 ring-2 ring-brand-700 ring-offset-1"
-                  : "opacity-70 ring-1 ring-hairline hover:opacity-100",
-              )}
-            >
-              <Image src={s.url} alt="" fill sizes="74px" className="object-cover" />
-              {s.kind === "video" && (
-                <span className="absolute inset-0 flex items-center justify-center bg-brand-950/45">
-                  <Play size={16} className="text-white" fill="currentColor" />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
+        {/* Thumbnail strip: a row on tablets, a column beside the stage from md.
+            `self-start` stops the column stretching to the stage's height. */}
+        {count > 1 && (
+          <div
+            role="group"
+            aria-label="Product images"
+            className="hidden grid-flow-col auto-cols-[64px] gap-2 overflow-x-auto p-1 no-scrollbar sm:grid md:w-[84px] md:auto-rows-[84px] md:grid-flow-row md:auto-cols-auto md:self-start md:overflow-visible md:p-0.5"
+          >
+            {slides.map((s, i) => (
+              <button
+                key={s.url + i}
+                type="button"
+                onMouseEnter={() => setIndex(i)}
+                onClick={() => setIndex(i)}
+                aria-label={`View ${s.kind} ${i + 1} of ${count}`}
+                aria-current={i === index}
+                className={cn(
+                  "relative h-16 w-full overflow-hidden rounded-lg bg-gradient-to-b from-ink-50 to-ink-100/70 transition-all duration-200 md:h-full",
+                  i === index
+                    ? "ring-2 ring-brand-600 ring-offset-2 ring-offset-canvas"
+                    : "opacity-70 ring-1 ring-inset ring-line hover:opacity-100",
+                )}
+              >
+                <Image src={s.url} alt="" fill sizes="84px" className="object-cover" />
+                {s.kind === "video" && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-brand-950/40 text-white">
+                    <Play size={16} fill="currentColor" />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="relative min-w-0 flex-1">
-          {/* Phones: every photo on a snap track that runs edge to edge and
-              follows the thumb, the way a shopping app's gallery does. The
-              sizes match the stage's, so the first photo is fetched once. */}
-          <div className="relative -mx-3 sm:hidden">
+          {/* Phones: a swipeable snap track on the same soft ground. */}
+          <div className="relative overflow-hidden rounded-2xl border border-line bg-gradient-to-b from-ink-50 to-ink-100/70 sm:hidden">
             <div
               ref={track}
               onScroll={onTrackScroll}
-              className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-surface"
+              aria-roledescription="carousel"
+              aria-label={`${title} images`}
+              className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
             >
               {slides.map((s, i) => (
                 <div
@@ -170,7 +172,7 @@ export function Gallery({
                     fill
                     loading={i === 0 ? "eager" : "lazy"}
                     fetchPriority={i === 0 ? "high" : "auto"}
-                    sizes="(min-width:1024px) 42vw, 100vw"
+                    sizes="(min-width:1024px) 46vw, 100vw"
                     className="object-cover"
                   />
                   {s.kind === "video" && <VideoNotice />}
@@ -179,12 +181,33 @@ export function Gallery({
             </div>
 
             <button
+              type="button"
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="tap absolute right-3 top-3 flex h-10 w-10 items-center justify-center bg-surface/95 text-ink-700 backdrop-blur"
+              className={cn(FLOAT_BTN, "absolute right-3 top-3 h-10 w-10")}
             >
               <Expand size={16} />
             </button>
+
+            {count > 1 && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center">
+                <div className="glass pointer-events-auto flex items-center gap-1.5 rounded-full px-2.5 py-2 ring-1 ring-inset ring-ink-950/5">
+                  {slides.map((s, i) => (
+                    <button
+                      key={s.url + i}
+                      type="button"
+                      onClick={() => setIndex(i)}
+                      aria-label={`Go to image ${i + 1}`}
+                      aria-current={i === index}
+                      className={cn(
+                        "h-1.5 rounded-full transition-all duration-300",
+                        i === index ? "w-5 bg-brand-700" : "w-1.5 bg-ink-300",
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Stage */}
@@ -193,7 +216,7 @@ export function Gallery({
             onMouseMove={onMove}
             onMouseLeave={() => setZoom(null)}
             {...swipe}
-            className="card group relative hidden aspect-[4/5] overflow-hidden rounded-2xl sm:block"
+            className="group relative hidden aspect-[4/5] overflow-hidden rounded-2xl border border-line bg-gradient-to-b from-ink-50 to-ink-100/70 sm:block"
           >
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
@@ -201,7 +224,7 @@ export function Gallery({
                 initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 1.02 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0"
               >
                 <Image
@@ -210,7 +233,7 @@ export function Gallery({
                   fill
                   loading={index === 0 ? "eager" : "lazy"}
                   fetchPriority={index === 0 ? "high" : "auto"}
-                  sizes="(min-width:1024px) 42vw, 100vw"
+                  sizes="(min-width:1024px) 46vw, 100vw"
                   className={cn(
                     "object-cover transition-transform duration-200",
                     zoom && slide.kind === "image" && "scale-[2.1]",
@@ -226,62 +249,55 @@ export function Gallery({
 
             {slide.kind === "video" && <VideoNotice />}
 
-            {/* Zoom affordance */}
             {slide.kind === "image" && (
-              <span className="pointer-events-none absolute bottom-3 left-3 hidden items-center gap-1.5 bg-surface/95 px-2.5 py-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 opacity-0 backdrop-blur transition-opacity duration-200 group-hover:opacity-100 md:flex">
-                <ZoomIn size={12} className="text-ink-400" /> Hover to zoom
+              <span className="glass pointer-events-none absolute bottom-3 left-3 hidden h-8 items-center gap-1.5 rounded-full px-3 text-[12px] font-medium text-ink-600 opacity-0 ring-1 ring-inset ring-ink-950/5 transition-opacity duration-200 group-hover:opacity-100 md:flex">
+                <ZoomIn size={14} /> Hover to zoom
+              </span>
+            )}
+
+            {count > 1 && (
+              <span className="glass pointer-events-none absolute bottom-3 right-3 flex h-8 items-center rounded-full px-3 text-[12px] font-medium tabular-nums text-ink-600 ring-1 ring-inset ring-ink-950/5">
+                {index + 1} / {count}
               </span>
             )}
 
             <button
+              type="button"
               onClick={() => setLightbox(true)}
               aria-label="Open full screen"
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center bg-surface/95 text-ink-700 backdrop-blur transition-colors duration-200 hover:bg-ink-950 hover:text-white"
+              className={cn(FLOAT_BTN, "absolute right-3 top-3 h-10 w-10")}
             >
-              <Expand size={15} />
+              <Expand size={16} />
             </button>
 
-            {/* Hover reveals the arrows; a touch screen has no hover, so there
-                they simply show. */}
+            {/* Arrows show on hover; on touch screens they always show. */}
             {count > 1 && (
               <>
                 <button
+                  type="button"
                   onClick={() => step(-1)}
                   aria-label="Previous image"
-                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className={cn(
+                    FLOAT_BTN,
+                    "absolute left-3 top-1/2 h-10 w-10 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100",
+                  )}
                 >
                   <ChevronLeft size={18} />
                 </button>
                 <button
+                  type="button"
                   onClick={() => step(1)}
                   aria-label="Next image"
-                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center bg-surface/95 text-ink-700 opacity-0 backdrop-blur transition-opacity duration-200 hover:text-ink-950 group-hover:opacity-100 max-md:opacity-100 [@media(hover:none)]:opacity-100"
+                  className={cn(
+                    FLOAT_BTN,
+                    "absolute right-3 top-1/2 h-10 w-10 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:none)]:opacity-100",
+                  )}
                 >
                   <ChevronRight size={18} />
                 </button>
               </>
             )}
           </div>
-
-          {/* Position dots: over the photo on phones, where they cost no
-              height, and under the stage on small tablets. */}
-          {count > 1 && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center sm:pointer-events-auto sm:static sm:mt-3 md:hidden">
-              <div className="pointer-events-auto flex gap-1.5 bg-surface/90 px-2 py-1.5 sm:bg-transparent sm:p-0">
-                {slides.map((s, i) => (
-                  <button
-                    key={s.url + i}
-                    onClick={() => setIndex(i)}
-                    aria-label={`Go to image ${i + 1}`}
-                    className={cn(
-                      "h-1.5 transition-all duration-300",
-                      i === index ? "w-6 bg-ink-950" : "w-1.5 bg-ink-300",
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -295,21 +311,21 @@ export function Gallery({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[95] flex flex-col bg-brand-950/95 outline-none"
+              className="midnight fixed inset-0 z-[95] flex flex-col outline-none"
               onClick={() => setLightbox(false)}
               role="dialog"
               aria-modal="true"
               aria-label={`${title} images`}
             >
-              {/* Full screen, so clear of the notch and the home indicator. */}
               <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5">
-                <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-white/70">
+                <p className="text-[12.5px] font-medium tabular-nums text-white/70">
                   {index + 1} of {count}
                 </p>
                 <button
+                  type="button"
                   onClick={() => setLightbox(false)}
                   aria-label="Close"
-                  className="bg-white/10 p-2.5 text-white transition-colors duration-200 hover:bg-white/20"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20"
                 >
                   <X size={20} />
                 </button>
@@ -326,35 +342,31 @@ export function Gallery({
                     onClick={(e) => e.stopPropagation()}
                     className="relative h-full w-full"
                   >
-                    <Image
-                      src={slide.url}
-                      alt={slide.alt}
-                      fill
-                      sizes="100vw"
-                      className="object-contain"
-                    />
+                    <Image src={slide.url} alt={slide.alt} fill sizes="100vw" className="object-contain" />
                   </motion.div>
                 </AnimatePresence>
 
                 {count > 1 && (
                   <>
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         step(-1);
                       }}
                       aria-label="Previous image"
-                      className="absolute left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:left-3"
+                      className="absolute left-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:left-4"
                     >
                       <ChevronLeft size={20} />
                     </button>
                     <button
+                      type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         step(1);
                       }}
                       aria-label="Next image"
-                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:right-3"
+                      className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-white/20 sm:right-4"
                     >
                       <ChevronRight size={20} />
                     </button>
@@ -362,29 +374,24 @@ export function Gallery({
                 )}
               </div>
 
-              {/* Stepping one at a time through eight photographs to reach the
-                  last one is why the thumbnails belong here too. */}
               {count > 1 && (
                 <div
-                  className="flex shrink-0 justify-center-safe gap-2 overflow-x-auto px-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:justify-center sm:px-4 sm:pb-5"
+                  className="flex shrink-0 justify-center-safe gap-2 overflow-x-auto px-3 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1 sm:justify-center sm:px-4 sm:pb-5"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {slides.map((s, i) => (
                     <button
                       key={s.url + i}
+                      type="button"
                       onClick={() => setIndex(i)}
                       aria-label={`Show image ${i + 1}`}
                       aria-current={i === index}
                       className={cn(
-                        // White, not gold: the accent is spent on the page
-                        // itself, and a lit frame reads as "this one" anyway.
-                        "relative h-14 w-12 shrink-0 overflow-hidden transition-all duration-200",
-                        i === index
-                          ? "opacity-100 ring-2 ring-white"
-                          : "opacity-50 hover:opacity-90",
+                        "relative h-14 w-14 shrink-0 overflow-hidden rounded-lg transition-all duration-200",
+                        i === index ? "opacity-100 ring-2 ring-gold-300" : "opacity-50 hover:opacity-90",
                       )}
                     >
-                      <Image src={s.url} alt="" fill sizes="48px" className="object-cover" />
+                      <Image src={s.url} alt="" fill sizes="56px" className="object-cover" />
                     </button>
                   ))}
                 </div>
@@ -400,13 +407,11 @@ export function Gallery({
 /** The video slide is only a poster for now, and says so. */
 function VideoNotice() {
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-brand-950/50 backdrop-blur-[1px]">
-      <span className="flex h-16 w-16 items-center justify-center bg-white text-ink-950 transition-transform duration-300 group-hover:scale-[1.03]">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-brand-950/45 backdrop-blur-[1px]">
+      <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-ink-950 shadow-lg transition-transform duration-300 group-hover:scale-[1.03]">
         <Play size={24} fill="currentColor" className="ml-1" />
       </span>
-      <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-white/85">
-        Product video — coming soon
-      </p>
+      <p className="text-[12.5px] font-medium text-white/90">Product video — coming soon</p>
     </div>
   );
 }

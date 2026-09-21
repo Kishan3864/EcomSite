@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Check, ChevronRight } from "lucide-react";
-import { Breadcrumbs } from "@/components/ui/primitives";
+import {
+  ArrowRight,
+  Check,
+  ChevronRight,
+  RotateCcw,
+  ShieldCheck,
+  Truck,
+  type LucideIcon,
+} from "lucide-react";
+import { Breadcrumbs, SectionHeader } from "@/components/ui/primitives";
 import { Gallery } from "@/components/product/gallery";
 import { BuyBox } from "@/components/product/buy-box";
 import { BundleSection } from "@/components/product/bundle";
@@ -76,23 +84,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-/**
- * The head of a detail section, set the way the homepage bands are: a gold
- * rule and small caps, the name in the display face, and a rule under the pair.
- * It is a step smaller than a band title so that the product's own name — the
- * only h1 on the page — still outranks everything written about it.
- */
-function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
-  return (
-    <div className="pb-3">
-      <span className="eyebrow">{eyebrow}</span>
-      <h2 className="mt-2 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:mt-2.5 sm:text-[28px]">
-        {title}
-      </h2>
-    </div>
-  );
-}
-
 export default async function ProductPage({ params }: { params: Params }) {
   const { slug } = await params;
   const product = await getProduct(slug);
@@ -122,29 +113,36 @@ export default async function ProductPage({ params }: { params: Params }) {
     { name: product.title, href: `/p/${product.slug}` },
   ];
 
-  // Every word of these three is the policy as written. They are re-typeset
-  // below, never trimmed — they are what a first-time buyer reads before
-  // deciding whether this shop can be trusted with a card number.
-  const policies = [
+  // Every word of these three is the policy as written — re-typeset, never trimmed.
+  const policies: {
+    icon: LucideIcon;
+    title: string;
+    body: string;
+    href: string;
+    linkLabel: string;
+  }[] = [
     {
-      title: `${product.returnWindowDays}-day returns`,
-      body: `Changed your mind? Return within ${product.returnWindowDays} days of delivery in original packaging. Pickup is free from every serviceable pincode and the refund starts within 48 hours of the item reaching our warehouse.`,
-      href: "/legal/refunds",
-      linkLabel: "Read the return policy",
-    },
-    {
-      title: "Warranty",
-      body: product.warranty,
-      href: "/faq",
-      linkLabel: "Warranty questions",
-    },
-    {
+      icon: Truck,
       title: "Shipping",
       body: product.freeShipping
         ? `Free standard delivery, dispatched within 24 hours and delivered in about ${product.deliveryDays} day${product.deliveryDays > 1 ? "s" : ""}. Express delivery available at checkout.`
         : `Standard delivery at ₹79, or free on orders above ₹999. Delivered in about ${product.deliveryDays} days.`,
       href: "/legal/shipping",
       linkLabel: "Shipping policy",
+    },
+    {
+      icon: RotateCcw,
+      title: `${product.returnWindowDays}-day returns`,
+      body: `Changed your mind? Return within ${product.returnWindowDays} days of delivery in original packaging. Pickup is free from every serviceable pincode and the refund starts within 48 hours of the item reaching our warehouse.`,
+      href: "/legal/refunds",
+      linkLabel: "Read the return policy",
+    },
+    {
+      icon: ShieldCheck,
+      title: "Warranty",
+      body: product.warranty,
+      href: "/faq",
+      linkLabel: "Warranty questions",
     },
   ];
 
@@ -163,44 +161,59 @@ export default async function ProductPage({ params }: { params: Params }) {
         }}
       />
 
-      <div className="container-page py-3 sm:py-7">
-        <Breadcrumbs items={crumbs} className="mb-3 sm:mb-6" />
+      {/* Hero: gallery and buy box */}
+      <div className="container-page pb-4 pt-4 sm:pb-8 sm:pt-6">
+        <Breadcrumbs items={crumbs} className="mb-4 sm:mb-6" />
 
-        <div className="grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] lg:gap-12 xl:gap-16">
-          <div className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
-            <Gallery
-              images={product.images}
-              videoPoster={product.videoPoster}
-              title={product.title}
-            />
+        <div className="grid gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-10 xl:gap-14">
+          <div className="min-w-0 lg:sticky-under-header lg:self-start">
+            <Gallery images={product.images} videoPoster={product.videoPoster} title={product.title} />
           </div>
 
-          <div>
-            <BuyBox
-              product={product}
-              brandName={brand?.name}
-              payments={payments}
-            />
+          <div className="min-w-0">
+            <BuyBox product={product} brandName={brand?.name} payments={payments} />
             <div id="buy-box-sentinel" aria-hidden className="h-px" />
           </div>
         </div>
       </div>
 
+      {/* Delivery / returns / warranty */}
+      <div className="container-page section-tight">
+        <h2 className="sr-only">Delivery, returns and warranty</h2>
+        <ul className="grid gap-3 sm:gap-4 md:grid-cols-3">
+          {policies.map((item) => (
+            <li key={item.title} className="card flex flex-col p-5">
+              <div className="flex items-center gap-3">
+                <span className="icon-tile">
+                  <item.icon size={20} aria-hidden />
+                </span>
+                <h3 className="t-h3 tabular-nums">{item.title}</h3>
+              </div>
+              <p className="t-body mt-3 flex-1 text-[13px]">{item.body}</p>
+              <Link
+                href={item.href}
+                className="group mt-4 inline-flex items-center gap-1 self-start rounded-full text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
+              >
+                {item.linkLabel}
+                <ChevronRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {/* Details */}
       <div className="container-page">
-        <div className="grid gap-8 pt-6 sm:gap-10 sm:pt-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-14">
-          <div className="space-y-8 sm:space-y-14">
-            <section>
-              <SectionHead eyebrow="In brief" title="Highlights" />
-              {/* One bordered card, a soft rule between every point. */}
-              <ul className="card card-divided mt-5 overflow-hidden">
+        <div className="space-y-10 pb-4 sm:space-y-14">
+          <div className="grid gap-4 sm:gap-5 lg:grid-cols-2">
+            <section aria-labelledby="highlights-heading" className="card p-5 sm:p-6">
+              <p className="eyebrow">In brief</p>
+              <h2 id="highlights-heading" className="t-h2 mt-2">Highlights</h2>
+              <ul className="mt-5 space-y-3">
                 {product.highlights.map((h) => (
-                  <li
-                    key={h}
-                    className="flex items-start gap-3 px-4 py-3.5 text-[13.5px] leading-[1.5] text-ink-700 sm:px-5 sm:text-[14px]"
-                  >
-                    <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                      <Check size={12} strokeWidth={2.5} />
+                  <li key={h} className="flex items-start gap-3 text-[14px] leading-[1.55] text-ink-700">
+                    <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-100">
+                      <Check size={14} aria-hidden />
                     </span>
                     {h}
                   </li>
@@ -208,61 +221,50 @@ export default async function ProductPage({ params }: { params: Params }) {
               </ul>
             </section>
 
-            <section>
-              <SectionHead eyebrow="The long version" title="About this product" />
-              <div className="mt-5 space-y-3.5 sm:space-y-4">
+            <section aria-labelledby="about-heading" className="card flex flex-col p-5 sm:p-6">
+              <p className="eyebrow">The long version</p>
+              <h2 id="about-heading" className="t-h2 mt-2">About this product</h2>
+              <div className="mt-4 space-y-3.5">
                 {product.description.split("\n\n").map((para) => (
-                  <p
-                    key={para}
-                    className="max-w-[46ch] text-[14px] leading-[1.6] text-ink-600 sm:text-[15px]"
-                  >
+                  <p key={para} className="t-body max-w-[68ch]">
                     {para}
                   </p>
                 ))}
               </div>
               {brand && (
-                <div className="card-muted mt-6 p-4 sm:mt-8 sm:p-5">
-                  <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                    About {brand.name}
-                  </p>
-                  <p className="mt-2 max-w-[46ch] text-[13.5px] leading-[1.6] text-ink-600">
+                <div className="card-muted mt-6 rounded-xl p-4">
+                  <p className="t-label">About {brand.name}</p>
+                  <p className="t-body mt-1.5 text-[13px]">
                     {brand.tagline}. Based in {brand.origin}.
                   </p>
                   <Link
                     href={`/products?brands=${brand.slug}`}
-                    className="tap group mt-3 inline-flex items-center gap-2 text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
+                    className="group mt-2.5 inline-flex items-center gap-1.5 rounded-full text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
                   >
                     See everything by {brand.name}
-                    <ArrowRight
-                      size={14}
-                      className="transition-transform duration-200 group-hover:translate-x-1"
-                    />
+                    <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
               )}
             </section>
+          </div>
 
+          {product.specifications.length > 0 && (
             <section id="specifications" className="scroll-mt-32">
-              <SectionHead eyebrow="Every figure" title="Specifications" />
-              <div className="mt-5 space-y-6 sm:space-y-8">
+              <SectionHeader eyebrow="Every figure" title="Specifications" />
+              <div className="card overflow-hidden">
                 {product.specifications.map((group) => (
-                  <div key={group.group}>
-                    <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                      {group.group}
-                    </h3>
-                    {/* The row is 44px tall and no taller until it has to be:
-                        a long value on a phone wraps and takes the height it
-                        needs rather than being squeezed into a fixed column. */}
-                    <dl className="detail-panel mt-2 px-4 sm:px-5">
+                  <div key={group.group} className="border-t border-line first:border-t-0">
+                    <h3 className="t-label bg-ink-50/70 px-4 py-2.5 sm:px-6">{group.group}</h3>
+                    {/* Two columns; a long value wraps rather than squeezing. */}
+                    <dl className="divide-y divide-line">
                       {group.items.map((item) => (
                         <div
                           key={item.label}
-                          className="table-row-line flex min-h-[44px] items-center justify-between gap-4 py-2.5"
+                          className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:px-6"
                         >
-                          <dt className="min-w-0 break-words text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                            {item.label}
-                          </dt>
-                          <dd className="min-w-0 break-words text-right text-[13.5px] tabular-nums text-ink-900">
+                          <dt className="min-w-0 break-words text-[13px] text-ink-500">{item.label}</dt>
+                          <dd className="min-w-0 break-words text-[13.5px] font-medium tabular-nums text-ink-900">
                             {item.value}
                           </dd>
                         </div>
@@ -272,50 +274,21 @@ export default async function ProductPage({ params }: { params: Params }) {
                 ))}
               </div>
             </section>
+          )}
 
-            <ReviewsSection
-              productId={product.id}
-              reviews={reviews}
-              rating={product.rating}
-              reviewCount={product.reviewCount}
-              breakdown={product.ratingBreakdown}
-            />
+          <ReviewsSection
+            productId={product.id}
+            reviews={reviews}
+            rating={product.rating}
+            reviewCount={product.reviewCount}
+            breakdown={product.ratingBreakdown}
+          />
 
-            <QnaSection questions={questions} />
-          </div>
-
-          {/* Policy sidebar: each promise in its own bordered card. */}
-          <aside className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
-            <div>
-              <span className="eyebrow">Every order</span>
-              <dl className="mt-4 space-y-3 sm:mt-5">
-                {policies.map((item) => (
-                  <div key={item.title} className="card p-4 sm:p-5">
-                    <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-ink-500">
-                      {item.title}
-                    </dt>
-                    <dd>
-                      <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">{item.body}</p>
-                      <Link
-                        href={item.href}
-                        className="tap group mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
-                      >
-                        {item.linkLabel}
-                        <ChevronRight
-                          size={13}
-                          className="transition-transform duration-200 group-hover:translate-x-0.5"
-                        />
-                      </Link>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          </aside>
+          <QnaSection questions={questions} />
         </div>
       </div>
 
-      <div className="container-page py-7 sm:py-12">
+      <div className="container-page section-tight">
         <BundleSection anchor={card} extras={toCardModels(bundle)} />
       </div>
 

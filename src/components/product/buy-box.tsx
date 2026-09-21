@@ -6,13 +6,16 @@ import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import {
   ArrowRight,
   Check,
-  CreditCard,
+  CircleCheck,
+  CircleAlert,
   Heart,
+  Lock,
   Minus,
-  Package,
   Plus,
   RotateCcw,
+  Share2,
   ShieldCheck,
+  ShoppingBag,
   Truck,
   type LucideIcon,
 } from "lucide-react";
@@ -26,14 +29,9 @@ import { BrandMark, ProductBadges } from "./badges";
 import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
 import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
 
-/** The mark beside each answer in the service tiles. */
-const LEDGER_ICONS: Record<string, LucideIcon> = {
-  Delivery: Truck,
-  Shipping: Package,
-  Returns: RotateCcw,
-  Warranty: ShieldCheck,
-  Payment: CreditCard,
-};
+/** Round icon button used for wishlist and share. */
+const ROUND_BTN =
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface text-ink-600 transition-colors duration-200 hover:border-brand-300 hover:text-brand-700";
 
 export function BuyBox({
   product,
@@ -43,11 +41,7 @@ export function BuyBox({
   product: Product;
   /** Absent when the brand is switched off: no brand line, no brand link. */
   brandName?: string | undefined;
-  /**
-   * The live payment switches, read on the server. Optional only so that this
-   * still renders if a future caller forgets to pass them — in which case the
-   * payment row is left out rather than guessed at.
-   */
+  /** Live payment switches; without them the payment row is left out. */
   payments?: PublicPayments;
 }) {
   const [selection, setSelection] = useState<Record<string, string>>(() =>
@@ -60,6 +54,7 @@ export function BuyBox({
   );
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [shared, setShared] = useState(false);
   const { addToCart, buyNow, toggleWishlist, isWishlisted } = useCommerce();
   const reduce = usePrefersReducedMotion();
 
@@ -87,14 +82,11 @@ export function BuyBox({
   const mrp = product.mrp + (price - product.price);
   const off = discountPercent(mrp, price);
   const wished = isWishlisted(product.id);
-  // Stars and RatingChip render nothing until somebody has actually scored the
-  // product, which is every product in the shop today. The line they sit on
-  // carries a fact we can stand behind instead of an empty row.
+  // No score yet → the rating line carries the dispatch promise instead.
   const hasScore = product.reviewCount > 0 && product.rating > 0;
 
-  // Cash on delivery has to clear three gates: the shop offers it at all, this
-  // product allows it, and this price is inside the limit. Any one of them
-  // failing means it is not on the table for this basket.
+  // COD must clear three gates: the shop offers it, this product allows it,
+  // and the price is inside the limit.
   const codHere = Boolean(
     payments?.cod && product.codAvailable && price <= (payments?.codLimit ?? 0),
   );
@@ -102,30 +94,23 @@ export function BuyBox({
     ? paymentSentence({ ...payments, cod: codHere })
     : null;
 
-  // The four questions asked before anybody pays, answered in one ledger
-  // rather than in four little icon tiles. Every value comes from the
-  // product or from the operations record — nothing here is decorative.
-  const ledger: { label: string; value: string }[] = [
+  // The trust row. Every value comes from the product or the ops record; the
+  // payment row only appears with a live answer from the admin switches.
+  const trust: { icon: LucideIcon; label: string; value: string }[] = [
     {
+      icon: Truck,
       label: "Delivery",
-      value: `${product.deliveryDays} working day${product.deliveryDays > 1 ? "s" : ""}`,
+      value: `${product.deliveryDays} working day${product.deliveryDays > 1 ? "s" : ""} · ${
+        product.freeShipping ? "Free shipping" : `Shipping ${formatINR(BUSINESS.ops.shippingFee)}`
+      }`,
     },
     {
-      label: "Shipping",
-      value: product.freeShipping ? "Free" : formatINR(BUSINESS.ops.shippingFee),
-    },
-    {
+      icon: RotateCcw,
       label: "Returns",
       value: `${product.returnWindowDays} days · free pickup`,
     },
-    { label: "Warranty", value: product.warranty },
-    // What this product can actually be paid with, according to the switches
-    // in the admin panel rather than to a flag on the product row. The page
-    // used to announce "Cash on Delivery available" on every product whose own
-    // flag was set, including on days when the owner had COD switched off —
-    // a promise the checkout would then refuse. With no live answer to hand
-    // the row is simply not shown; a blank is better than a guess.
-    ...(paymentLine ? [{ label: "Payment", value: paymentLine }] : []),
+    { icon: ShieldCheck, label: "Warranty", value: product.warranty },
+    ...(paymentLine ? [{ icon: Lock, label: "Secure payment", value: paymentLine }] : []),
   ];
 
   const addable: AddableProduct = fromCard({
@@ -160,51 +145,94 @@ export function BuyBox({
     setTimeout(() => setAdded(false), 1800);
   }
 
+  // Native share sheet where there is one, otherwise copy the link.
+  async function handleShare() {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: product.title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 1800);
+    } catch {
+      // Dismissed share sheet or blocked clipboard: nothing to do.
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-5 sm:gap-6">
-      <div>
-        <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-2">
+    <div className="flex flex-col gap-5">
+      {/* Brand, badges, wishlist and share */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 pt-1.5">
           {brandName && <BrandMark name={brandName} href={`/products?brands=${product.brandSlug}`} />}
           <ProductBadges product={{ badges: product.badges, price, mrp, stock: product.stock }} size="md" />
         </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={handleShare}
+            aria-label={shared ? "Link copied" : "Share this product"}
+            title={shared ? "Link copied" : "Share"}
+            className={cn(ROUND_BTN, shared && "border-brand-300 text-brand-700")}
+          >
+            {shared ? <Check size={16} /> : <Share2 size={16} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleWishlist(addable)}
+            aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
+            aria-pressed={wished}
+            className={cn(ROUND_BTN, wished && "border-sale-200 bg-sale-50 text-sale-600 hover:border-sale-200 hover:text-sale-600")}
+          >
+            <Heart size={16} className={cn(wished && "fill-current")} />
+          </button>
+          <span className="sr-only" aria-live="polite">
+            {shared ? "Link copied" : ""}
+          </span>
+        </div>
+      </div>
 
-        {/* 20px is the floor for the display face anywhere on the site —
-            below it Fraunces stops being a voice and becomes a small serif —
-            so the phone gets 20px rather than the 17px it used to run. */}
-        <h1 className="font-display text-[20px] leading-[1.2] tracking-[-0.015em] text-ink-950 sm:text-[32px] sm:leading-[1.12] sm:tracking-[-0.025em]">
-          {/* The headline is the one place that says more than the title —
-              a size, the key spec. Everywhere else, cards to invoice, is the
-              title. */}
+      {/* Title, subtitle, rating */}
+      <div>
+        {/* The headline may say more than the title (a size, the key spec). */}
+        <h1 className="text-[22px] font-bold leading-[1.18] tracking-[-0.03em] text-ink-950 sm:text-[28px] sm:leading-[1.12]">
           {product.headline ?? product.title}
         </h1>
-        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:mt-2.5 sm:text-[15px] sm:leading-[1.6]">
-          {product.subtitle}
-        </p>
+        <p className="t-body mt-2 max-w-[52ch] sm:text-[15px]">{product.subtitle}</p>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-ink-500 sm:mt-3.5">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-[12.5px] text-ink-500">
           {hasScore ? (
             <>
-              <a href="#reviews" className="tap flex items-center gap-2 hover:opacity-80">
-                <Stars value={product.rating} size={15} />
-                <RatingChip value={product.rating} count={product.reviewCount} />
+              <a
+                href="#reviews"
+                className="group inline-flex items-center gap-2 rounded-full"
+                aria-label={`Rated ${product.rating.toFixed(1)} out of 5 from ${product.reviewCount} reviews. Read reviews`}
+              >
+                <Stars value={product.rating} size={14} />
+                <RatingChip value={product.rating} count={product.reviewCount} className="text-[12.5px]" />
+                <span className="font-semibold text-brand-700 underline-offset-4 group-hover:underline">
+                  Read reviews
+                </span>
               </a>
               {product.soldCount > 0 && (
-                <span className="tabular-nums">{formatCompact(product.soldCount)}+ bought</span>
+                <span className="tabular-nums">· {formatCompact(product.soldCount)}+ bought</span>
               )}
             </>
           ) : (
-            <span className="tabular-nums">
+            <span className="inline-flex items-center gap-1.5 tabular-nums">
+              <Truck size={14} aria-hidden />
               Dispatched in {BUSINESS.ops.dispatchDays} working days
             </span>
           )}
         </div>
       </div>
 
-      {/* Price. Ruled top and bottom rather than boxed — `xl` is 22px on a
-          phone and 30px from 640px, in Jakarta with tabular figures. */}
-      <div className="py-3.5 sm:py-4">
+      {/* Price */}
+      <div className="card-muted rounded-xl px-4 py-3.5 sm:px-5 sm:py-4">
         <Price price={price} mrp={mrp} size="xl" />
-        <p className="mt-1.5 text-[13px] text-ink-500">
+        <p className="t-small mt-1.5">
           Inclusive of all taxes
           {off > 0 && (
             <>
@@ -219,43 +247,43 @@ export function BuyBox({
 
       {/* Variants */}
       {product.variants.map((group) => (
-        <section key={group.id}>
-          <h2 className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-            {group.name}:{" "}
-            <span className="font-medium normal-case tracking-normal text-ink-900">
+        <fieldset key={group.id}>
+          <legend className="mb-2.5 flex items-baseline gap-2">
+            <span className="t-label">{group.name}</span>
+            <span className="text-[13px] font-medium text-ink-900">
               {group.options.find((o) => o.value === selection[group.id])?.label}
             </span>
-          </h2>
+          </legend>
           <div className="flex flex-wrap gap-2">
             {group.options.map((option) => {
               const selected = selection[group.id] === option.value;
+              const pick = () => setSelection((s) => ({ ...s, [group.id]: option.value }));
               if (group.type === "color") {
                 return (
                   <button
                     key={option.id}
-                    onClick={() => setSelection((s) => ({ ...s, [group.id]: option.value }))}
+                    type="button"
+                    onClick={pick}
                     disabled={!option.inStock}
-                    aria-label={option.label}
+                    aria-label={option.inStock ? option.label : `${option.label}, out of stock`}
                     aria-pressed={selected}
                     title={option.inStock ? option.label : `${option.label} — out of stock`}
                     className={cn(
-                      // The colour sits inset inside its own frame, so the
-                      // chosen one is marked by the frame going to ink rather
-                      // than by a ring that would shift the row as it lands.
-                      // The frame is a background behind 3px of padding now,
-                      // which draws the same band a border used to.
-                      "tap relative flex h-10 w-10 items-center justify-center rounded-full p-[3px] transition-colors duration-200 sm:h-9 sm:w-9",
-                      selected ? "bg-ink-950" : "bg-ink-200 hover:bg-ink-400",
-                      !option.inStock && "opacity-40",
+                      // A ring outside the swatch marks the choice without moving the row.
+                      "relative flex h-10 w-10 items-center justify-center rounded-full transition-shadow duration-200",
+                      selected
+                        ? "ring-2 ring-brand-600 ring-offset-2 ring-offset-surface"
+                        : "ring-1 ring-line-strong hover:ring-ink-400",
+                      !option.inStock && "cursor-not-allowed opacity-40",
                     )}
                   >
                     <span
-                      className="h-full w-full rounded-full ring-2 ring-surface"
+                      className="h-8 w-8 rounded-full shadow-[inset_0_0_0_1px_rgb(10_15_26/0.08)]"
                       style={{ backgroundColor: option.swatch }}
                     />
                     {!option.inStock && (
                       <span className="absolute inset-0 flex items-center justify-center">
-                        <span className="h-[1.5px] w-8 rotate-45 bg-ink-500" />
+                        <span className="h-[1.5px] w-9 rotate-45 bg-ink-500" />
                       </span>
                     )}
                   </button>
@@ -264,26 +292,21 @@ export function BuyBox({
               return (
                 <button
                   key={option.id}
-                  onClick={() => setSelection((s) => ({ ...s, [group.id]: option.value }))}
+                  type="button"
+                  onClick={pick}
                   disabled={!option.inStock}
                   aria-pressed={selected}
                   className={cn(
-                    "tap min-h-10 min-w-[52px] rounded-lg border px-3 py-2 text-[13px] font-medium transition-colors duration-200 sm:min-h-0 sm:px-3.5",
+                    "inline-flex h-10 min-w-[52px] items-center justify-center rounded-full border px-4 text-[13px] font-medium transition-colors duration-200",
                     selected
-                      ? "border-brand-700 bg-brand-700 text-white"
-                      : "border-line-strong bg-surface text-ink-800 hover:border-brand-400",
-                    !option.inStock &&
-                      "cursor-not-allowed text-ink-400 line-through",
+                      ? "border-brand-700 bg-brand-50 text-brand-800 ring-1 ring-inset ring-brand-700"
+                      : "border-line-strong bg-surface text-ink-800 hover:border-brand-300",
+                    !option.inStock && "cursor-not-allowed border-dashed text-ink-400 line-through",
                   )}
                 >
                   {option.label}
                   {option.priceDelta ? (
-                    <span
-                      className={cn(
-                        "ml-1.5 text-[11.5px] tabular-nums",
-                        selected ? "text-white/70" : "text-ink-400",
-                      )}
-                    >
+                    <span className={cn("ml-1.5 text-[11.5px] tabular-nums", selected ? "text-brand-700" : "text-ink-500")}>
                       +{formatINR(option.priceDelta)}
                     </span>
                   ) : null}
@@ -291,67 +314,65 @@ export function BuyBox({
               );
             })}
           </div>
-        </section>
+        </fieldset>
       ))}
 
       {/* Quantity and stock */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div className="inline-flex items-center overflow-hidden rounded-lg border border-line-strong bg-surface">
-          <button
-            onClick={() => setQty((q) => Math.max(1, q - 1))}
-            disabled={qty <= 1}
-            aria-label="Decrease quantity"
-            className="tap flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <div className="flex items-center gap-3">
+          <span className="t-label" id="qty-label">Qty</span>
+          <div
+            role="group"
+            aria-labelledby="qty-label"
+            className="inline-flex h-11 items-center rounded-full border border-line-strong bg-surface p-1"
           >
-            <Minus size={15} />
-          </button>
-          <span className="w-10 text-center text-[14px] font-semibold tabular-nums text-ink-900 sm:w-11 sm:text-[15px]">
-            {qty}
-          </span>
-          <button
-            onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
-            disabled={qty >= product.stock}
-            aria-label="Increase quantity"
-            className="tap flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-40 sm:h-11 sm:w-11"
-          >
-            <Plus size={15} />
-          </button>
+            <button
+              type="button"
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              disabled={qty <= 1}
+              aria-label="Decrease quantity"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"
+            >
+              <Minus size={16} />
+            </button>
+            <span aria-live="polite" className="w-9 text-center text-[14px] font-semibold tabular-nums text-ink-950">
+              {qty}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
+              disabled={qty >= product.stock}
+              aria-label="Increase quantity"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
         </div>
 
         <p className="text-[13px]">
           {!available ? (
-            <span className="font-semibold text-sale-600">Currently unavailable</span>
+            <span className="inline-flex items-center gap-1.5 font-semibold text-sale-600">
+              <CircleAlert size={16} aria-hidden /> Currently unavailable
+            </span>
           ) : product.stock <= 12 ? (
-            <span className="font-semibold tabular-nums text-sale-600">
-              Only {product.stock} left in stock
+            <span className="inline-flex items-center gap-1.5 font-semibold tabular-nums text-sale-600">
+              <CircleAlert size={16} aria-hidden /> Only {product.stock} left in stock
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 font-medium text-ink-900">
-              <Check size={14} strokeWidth={2} className="text-ink-400" /> In stock, ready to
-              ship
+            <span className="inline-flex items-center gap-1.5 font-medium text-ink-800">
+              <CircleCheck size={16} className="text-brand-600" aria-hidden /> In stock, ready to ship
             </span>
           )}
         </p>
       </div>
 
-      {/* CTAs. On a phone they share one row — two equal actions and the save
-          — with tighter lettering so all three fit; the tick on "Added to bag"
-          gives way below 360px rather than push the label past the edge. */}
-      {/* items-stretch so the save button is exactly as tall as the two beside
-          it, whatever the label inside them wraps to. It used to be sized by
-          hand at sm:h-13 — a class the theme does not define — and sat a few
-          pixels proud of the row. */}
-      <div className="flex items-stretch gap-2 sm:gap-2.5">
-        {/* Gold, and the first of the pair.
-            "Add to bag" was an outline control beside a filled "Buy now",
-            which reads as a shop steering every visitor into a one-item
-            checkout. Adding to the bag is the action most people want and the
-            one the product grid has been training them to press, so it gets
-            the same gold here that it has on every card. */}
+      {/* CTAs: gold "Add to bag" first, cobalt "Buy now" beside it. */}
+      <div className="grid grid-cols-2 gap-2.5">
         <Button
           size="lg"
           variant="accent"
-          className="tap min-w-0 flex-1 px-2 text-[11px] tracking-[0.06em] sm:min-w-[160px] sm:px-8 sm:text-[12px] sm:tracking-[0.12em]"
+          className="min-w-0 px-3 max-[360px]:text-[13px]"
           onClick={handleAdd}
           disabled={!available}
         >
@@ -362,9 +383,9 @@ export function BuyBox({
                 initial={reduce ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduce ? undefined : { opacity: 0, y: -8 }}
-                className="inline-flex items-center gap-1.5 sm:gap-2"
+                className="inline-flex items-center gap-2"
               >
-                <Check size={17} strokeWidth={2.5} className="max-[360px]:hidden" /> Added to bag
+                <Check size={18} className="max-[360px]:hidden" /> Added to bag
               </motion.span>
             ) : (
               <motion.span
@@ -372,63 +393,46 @@ export function BuyBox({
                 initial={reduce ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={reduce ? undefined : { opacity: 0, y: -8 }}
+                className="inline-flex items-center gap-2"
               >
-                Add to bag
+                <ShoppingBag size={18} className="max-[360px]:hidden" /> Add to bag
               </motion.span>
             )}
           </AnimatePresence>
         </Button>
         <Button
           size="lg"
-          className="tap min-w-0 flex-1 gap-1.5 px-2 text-[11px] tracking-[0.06em] sm:min-w-[160px] sm:gap-2.5 sm:px-8 sm:text-[12px] sm:tracking-[0.12em]"
+          className="group min-w-0 px-3 max-[360px]:text-[13px]"
           onClick={() =>
             buyNow(addable, { quantity: qty, variantLabel: label, variantKey, priceOverride: price })
           }
           disabled={!available}
         >
-          Buy now <ArrowRight size={15} />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          className={cn(
-            // Square, and the same height as the buttons beside it.
-            "tap h-auto w-12 shrink-0 self-stretch",
-            wished && "text-sale-500",
-          )}
-          aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
-          onClick={() => toggleWishlist(addable)}
-        >
-          <Heart size={19} fill={wished ? "currentColor" : "none"} />
+          Buy now
+          <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-0.5" />
         </Button>
       </div>
 
       <DeliveryCheck deliveryDays={product.deliveryDays} codAvailable={codHere} />
 
-      {/* The four questions asked before paying, as bordered tiles. Values
-          are printed in full — the warranty exactly as the maker wrote it. */}
-      <dl className="grid grid-cols-2 gap-2.5">
-        {ledger.map((row) => {
-          const Icon = LEDGER_ICONS[row.label] ?? Check;
-          return (
-            <div
-              key={row.label}
-              className="card flex items-start gap-3 p-3 shadow-none sm:p-3.5 [&:last-child:nth-child(odd)]:col-span-2"
-            >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
-                <Icon size={17} strokeWidth={1.75} aria-hidden />
-              </span>
-              <span className="min-w-0">
-                <dt className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                  {row.label}
-                </dt>
-                <dd className="mt-0.5 text-[13px] font-semibold leading-[1.4] text-ink-900 wrap-break-word">
-                  {row.value}
-                </dd>
-              </span>
-            </div>
-          );
-        })}
+      {/* Trust row. Values printed in full — the warranty as the maker wrote it. */}
+      <dl className="card grid grid-cols-1 gap-px overflow-hidden bg-line p-0 min-[400px]:grid-cols-2">
+        {trust.map((row) => (
+          <div
+            key={row.label}
+            className="flex items-start gap-3 bg-surface p-3.5 min-[400px]:[&:last-child:nth-child(odd)]:col-span-2"
+          >
+            <span className="icon-tile icon-tile-sm">
+              <row.icon size={16} aria-hidden />
+            </span>
+            <span className="min-w-0">
+              <dt className="t-label text-[10.5px]">{row.label}</dt>
+              <dd className="mt-1 text-[12.5px] font-medium leading-[1.4] text-ink-900 wrap-break-word">
+                {row.value}
+              </dd>
+            </span>
+          </div>
+        ))}
       </dl>
     </div>
   );

@@ -4,7 +4,7 @@ import { ProductBadges } from "./badges";
 import { useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { ArrowRight, Heart, Minus, Plus } from "lucide-react";
+import { ArrowRight, Heart, Minus, Plus, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
 import { Modal } from "@/components/ui/overlay";
 import { Button } from "@/components/ui/button";
@@ -26,113 +26,112 @@ export function QuickView({
   const { addToCart, buyNow, toggleWishlist, isWishlisted } = useCommerce();
   const wished = isWishlisted(product.id);
 
-  // Stars and RatingChip both render nothing until somebody has actually
-  // scored the product, so the row that holds them has to go with them: an
-  // empty flex row still takes a gap from the column above it, which left a
-  // 12px hole between the subtitle and the price on every new listing.
+  // The rating row goes entirely when there is no score, so it leaves no gap.
   const hasScore = product.reviewCount > 0 && product.rating > 0;
 
-  // The two promises, as a ledger rather than a tinted block of icons — the
-  // same four-row table the homepage spread uses under its price.
-  const ledger: { label: string; value: string }[] = [
+  const ledger = [
     {
+      icon: Truck,
       label: "Delivery",
       value: `Delivered in ${product.deliveryDays} day${product.deliveryDays > 1 ? "s" : ""}${
         product.freeShipping ? " · Free shipping" : ""
       }`,
     },
-    { label: "Warranty", value: "Genuine product with brand warranty" },
+    { icon: ShieldCheck, label: "Warranty", value: "Genuine product with brand warranty" },
   ];
 
   return (
     <Modal open={open} onClose={onClose} title={product.title}>
-      {/* The card only offers quick view from sm up; below that this is a
-          bottom sheet, so the photo is kept short and the type at app scale. */}
       <div className="grid gap-0 bg-surface sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
-        <div className="relative aspect-square bg-ink-100 sm:aspect-auto sm:min-h-[420px]">
-          <Image
-            src={product.image}
-            alt={product.imageAlt}
-            fill
-            sizes="(min-width:640px) 45vw, 100vw"
-            className="object-cover"
-          />
+        <div className="p-3 sm:p-4 sm:pr-0">
+          <div className="relative aspect-square overflow-hidden rounded-xl bg-gradient-to-b from-ink-50 to-ink-100/70 sm:aspect-auto sm:h-full sm:min-h-[420px]">
+            <Image
+              src={product.image}
+              alt={product.imageAlt}
+              fill
+              sizes="(min-width:640px) 45vw, 100vw"
+              className="object-cover"
+            />
+          </div>
         </div>
 
-        <div className="flex flex-col gap-3.5 p-4 sm:gap-4 sm:p-6">
+        <div className="flex flex-col gap-4 p-4 sm:p-6">
           <div>
-            {product.brand && <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{product.brand}</p>}
+            {product.brand && <p className="t-label">{product.brand}</p>}
             <ProductBadges product={product} size="md" className="mt-2" />
-            <h2 className="mt-1.5 font-display text-[20px] leading-[1.1] tracking-[-0.02em] text-ink-950 sm:text-[26px]">
-              {product.title}
-            </h2>
-            {product.subtitle && (
-              <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
-                {product.subtitle}
-              </p>
-            )}
+            <h2 className="t-h2 mt-2">{product.title}</h2>
+            {product.subtitle && <p className="t-body mt-1.5 max-w-[52ch]">{product.subtitle}</p>}
           </div>
 
           {hasScore && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <Stars value={product.rating} />
-              <RatingChip value={product.rating} count={product.reviewCount} />
+              <RatingChip value={product.rating} count={product.reviewCount} className="text-[12.5px]" />
             </div>
           )}
 
           <Price price={product.price} mrp={product.mrp} size="lg" />
 
           {product.colors.length > 1 && (
-            <div>
-              <p className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                Colour: <span className="text-ink-900">{color}</span>
-              </p>
-              {/* Square swatches, marked by a ring rather than a fatter border:
-                  a border that thickens on selection shifts the colour patch
-                  itself, so the row appears to twitch as you choose. */}
+            <fieldset>
+              <legend className="mb-2.5 flex items-baseline gap-2">
+                <span className="t-label">Colour</span>
+                <span className="text-[13px] font-medium text-ink-900">{color}</span>
+              </legend>
               <div className="flex flex-wrap gap-2.5">
                 {product.colors.map((c) => (
                   <button
                     key={c.name}
+                    type="button"
                     onClick={() => setColor(c.name)}
                     aria-label={c.name}
                     aria-pressed={color === c.name}
                     className={cn(
-                      "tap h-10 w-10 transition-colors duration-200 sm:h-8 sm:w-8",
+                      "flex h-10 w-10 items-center justify-center rounded-full transition-shadow duration-200",
                       color === c.name
-                        ? "ring-1 ring-ink-950 ring-offset-2"
-                        : "",
+                        ? "ring-2 ring-brand-600 ring-offset-2 ring-offset-surface"
+                        : "ring-1 ring-line-strong hover:ring-ink-400",
                     )}
-                    style={{ backgroundColor: c.hex }}
-                  />
+                  >
+                    <span
+                      className="h-8 w-8 rounded-full shadow-[inset_0_0_0_1px_rgb(10_15_26/0.08)]"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  </button>
                 ))}
               </div>
-            </div>
+            </fieldset>
           )}
 
-          <div className="flex items-center gap-4">
-            <div className="inline-flex items-center overflow-hidden bg-surface">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div
+              role="group"
+              aria-label="Quantity"
+              className="inline-flex h-11 items-center rounded-full border border-line-strong bg-surface p-1"
+            >
               <button
+                type="button"
                 onClick={() => setQty((q) => Math.max(1, q - 1))}
-                className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"
                 disabled={qty <= 1}
                 aria-label="Decrease quantity"
               >
-                <Minus size={15} />
+                <Minus size={16} />
               </button>
-              <span className="w-10 text-center text-[13.5px] font-semibold tabular-nums text-ink-950">
+              <span aria-live="polite" className="w-9 text-center text-[14px] font-semibold tabular-nums text-ink-950">
                 {qty}
               </span>
               <button
+                type="button"
                 onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
-                className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:opacity-40"
                 disabled={qty >= product.stock}
                 aria-label="Increase quantity"
               >
-                <Plus size={15} />
+                <Plus size={16} />
               </button>
             </div>
-            <span className="text-[13px] leading-[1.4] text-ink-500">
+            <span className="t-small">
               {product.stock > 12
                 ? "In stock"
                 : product.stock > 0
@@ -142,9 +141,9 @@ export function QuickView({
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             <Button
-              className="flex-1"
+              className="min-w-0 flex-1 px-3"
               variant="accent"
               onClick={() => {
                 addToCart(fromCard(product), { quantity: qty, variantLabel: color });
@@ -152,10 +151,11 @@ export function QuickView({
               }}
               disabled={product.stock <= 0}
             >
+              <ShoppingBag size={16} aria-hidden className="max-[360px]:hidden" />
               Add to bag
             </Button>
             <Button
-              className="flex-1"
+              className="min-w-0 flex-1 px-3"
               onClick={() => {
                 buyNow(fromCard(product), { quantity: qty, variantLabel: color });
                 onClose();
@@ -164,29 +164,28 @@ export function QuickView({
             >
               Buy now
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
+            <button
+              type="button"
               aria-label={wished ? "Remove from wishlist" : "Save to wishlist"}
+              aria-pressed={wished}
               onClick={() => toggleWishlist(fromCard(product))}
-              className={cn(wished && "text-sale-500")}
+              className={cn(
+                "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors duration-200",
+                wished
+                  ? "border-sale-200 bg-sale-50 text-sale-600"
+                  : "border-line-strong text-ink-600 hover:border-brand-300 hover:text-brand-700",
+              )}
             >
-              <Heart size={17} fill={wished ? "currentColor" : "none"} />
-            </Button>
+              <Heart size={18} className={cn(wished && "fill-current")} />
+            </button>
           </div>
 
-          <dl className="detail-panel px-4">
+          <dl className="card-muted divide-y divide-line rounded-xl px-4">
             {ledger.map((row) => (
-              <div
-                key={row.label}
-                className="table-row-line flex items-baseline justify-between gap-4 py-3"
-              >
-                <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                  {row.label}
-                </dt>
-                <dd className="text-right text-[13px] font-medium text-ink-900 sm:text-[13.5px]">
-                  {row.value}
-                </dd>
+              <div key={row.label} className="flex items-center gap-3 py-3">
+                <row.icon size={16} aria-hidden className="shrink-0 text-brand-700" />
+                <dt className="t-label w-20 shrink-0 text-[10.5px]">{row.label}</dt>
+                <dd className="min-w-0 text-[13px] font-medium text-ink-900">{row.value}</dd>
               </div>
             ))}
           </dl>
@@ -194,13 +193,10 @@ export function QuickView({
           <Link
             href={`/p/${product.slug}`}
             onClick={onClose}
-            className="tap group inline-flex self-start items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors hover:text-gold-700 sm:text-[12px]"
+            className="group inline-flex items-center gap-1.5 self-start rounded-full text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
           >
             See full details
-            <ArrowRight
-              size={14}
-              className="transition-transform duration-200 group-hover:translate-x-1"
-            />
+            <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>
       </div>

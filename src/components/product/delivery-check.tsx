@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { CircleAlert, CircleCheck, Info, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { BUSINESS } from "@/config/business";
@@ -16,16 +17,11 @@ interface CheckResult {
 
 const COURIER = BUSINESS.ops.courierPartners[0] ?? "our courier";
 
-/**
- * A rule down the left is the whole of the difference between the three
- * answers. Three tinted panels would put three coloured boxes into a column
- * that is otherwise ink on paper, and the wording of each answer already says
- * plainly which one it is — the rule only has to mark where it begins.
- */
-const TONE_RULE: Record<CheckResult["tone"], string> = {
-  ok: "[--rule-color:var(--color-brand-700)]",
-  info: "[--rule-color:var(--color-rule)]",
-  error: "[--rule-color:var(--color-sale-600)]",
+/** Icon and tint for each kind of answer. */
+const TONES: Record<CheckResult["tone"], { icon: typeof CircleCheck; panel: string; mark: string }> = {
+  ok: { icon: CircleCheck, panel: "bg-brand-50 ring-brand-100", mark: "text-brand-700" },
+  info: { icon: Info, panel: "bg-ink-50 ring-line", mark: "text-ink-500" },
+  error: { icon: CircleAlert, panel: "bg-sale-50 ring-sale-100", mark: "text-sale-600" },
 };
 
 /**
@@ -99,13 +95,20 @@ export function DeliveryCheck({
     });
   }
 
-  return (
-    <section className="pt-4 sm:pt-5">
-      <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-        Check delivery to your pincode
-      </h2>
+  const tone = result ? TONES[result.tone] : null;
 
-      <Form onSubmit={check} className="mt-2.5 flex gap-2 sm:mt-3">
+  return (
+    <section aria-labelledby="pincode-heading" className="card p-4 sm:p-5">
+      <div className="flex items-center gap-3">
+        <span className="icon-tile icon-tile-sm">
+          <MapPin size={16} aria-hidden />
+        </span>
+        <h2 id="pincode-heading" className="t-h3 text-[14px]">
+          Check delivery to your pincode
+        </h2>
+      </div>
+
+      <Form onSubmit={check} className="mt-3.5 flex gap-2">
         <label htmlFor="pincode" className="sr-only">
           Pincode
         </label>
@@ -119,41 +122,37 @@ export function DeliveryCheck({
           inputMode="numeric"
           autoComplete="postal-code"
           placeholder="e.g. 395006"
-          // Paper, not canvas: the field now sits straight on the page rather
-          // than inside a tinted panel, and a canvas-coloured input on a
-          // canvas-coloured page is a border with nothing in it.
           // 16px on phones: iOS zooms the page into any smaller field.
-          className="h-11 min-w-0 flex-1 bg-ink-50 px-3.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px]"
+          className="h-11 min-w-0 flex-1 rounded-md px-3.5 text-[16px] tabular-nums text-ink-900 outline-none placeholder:text-ink-400 sm:text-[14px]"
         />
-        <Button type="submit" variant="outline" loading={checking} className="shrink-0">
+        <Button type="submit" loading={checking} className="shrink-0 px-5">
           Check
         </Button>
       </Form>
 
       <AnimatePresence mode="wait">
-        {result && (
+        {result && tone && (
           <motion.div
             key={result.title}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
             <div
               role={result.tone === "error" ? "alert" : "status"}
-              className={cn("mt-3.5 rule-l pl-3.5", TONE_RULE[result.tone])}
+              className={cn("mt-3 flex items-start gap-2.5 rounded-md p-3 ring-1 ring-inset", tone.panel)}
             >
-              {/* Tabular figures because this line is usually a date or the
-                  pincode read back, and both are numerals in running text. */}
-              <p className="text-[13px] font-medium leading-[1.5] tabular-nums text-ink-950 sm:text-[13.5px]">
-                {result.title}
-              </p>
-              {result.detail && (
-                <p className="mt-1 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600">
-                  {result.detail}
+              <tone.icon size={18} aria-hidden className={cn("mt-px shrink-0", tone.mark)} />
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold leading-[1.5] tabular-nums text-ink-950">
+                  {result.title}
                 </p>
-              )}
+                {result.detail && (
+                  <p className="mt-0.5 text-[12.5px] leading-[1.55] text-ink-600">{result.detail}</p>
+                )}
+              </div>
             </div>
           </motion.div>
         )}

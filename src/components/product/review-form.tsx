@@ -6,35 +6,17 @@ import { PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { reviewEligibility, submitReview, type ReviewEligibility } from "@/services/commerce";
 import { useStore } from "@/store/store";
-import { cn, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { reviewProblem } from "@/lib/review-rules";
 import { Form } from "@/components/ui/form";
 import { ReviewFields } from "./review-fields";
 
-/**
- * The same ruled note however it is filled, so the section never jumps about.
- *
- * A note here is a paragraph under a rule with a small-caps kicker over it,
- * not a tinted box with an icon in the corner: four different coloured panels
- * stacked under a list of reviews made the explanation look like a warning,
- * when in every case it is simply the shop saying who may write one.
- */
+/** One soft panel however it is filled, so the section never jumps about. */
 function Note({ label, children }: { label?: string; children: React.ReactNode }) {
   return (
-    <div className="mt-5 pt-4 sm:mt-6 sm:pt-5">
-      {label && (
-        <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-          {label}
-        </p>
-      )}
-      <p
-        className={cn(
-          "max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]",
-          label && "mt-2",
-        )}
-      >
-        {children}
-      </p>
+    <div className="card-muted mt-4 rounded-xl p-4 sm:p-5">
+      {label && <p className="t-h3 text-[14px]">{label}</p>}
+      <p className={label ? "t-body mt-1 max-w-[62ch]" : "t-body max-w-[62ch]"}>{children}</p>
     </div>
   );
 }
@@ -133,22 +115,20 @@ export function ReviewForm({ productId }: { productId: string }) {
 
   if (!open) {
     return (
-      <div className="mt-5 pt-4 sm:mt-6 sm:pt-5">
-        <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-          Write a review
-        </p>
-        <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]">
-          You bought this on order{" "}
-          <span className="font-semibold tabular-nums text-ink-900">{status.orderNumber}</span> —
-          your review will be marked a verified purchase.
-        </p>
-        <Button
-          variant="outline"
-          size="md"
-          className="tap mt-4 w-full sm:w-auto"
-          onClick={() => setOpen(true)}
-        >
-          <PenLine size={15} /> Write a review
+      <div className="card edge-glow mt-4 flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
+        <span className="icon-tile">
+          <PenLine size={20} aria-hidden />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="t-h3">Write a review</p>
+          <p className="t-body mt-1 max-w-[56ch]">
+            You bought this on order{" "}
+            <span className="font-semibold tabular-nums text-ink-900">{status.orderNumber}</span> —
+            your review will be marked a verified purchase.
+          </p>
+        </div>
+        <Button className="w-full shrink-0 sm:w-auto" onClick={() => setOpen(true)}>
+          <PenLine size={16} aria-hidden /> Write a review
         </Button>
       </div>
     );
@@ -175,15 +155,19 @@ export function ReviewForm({ productId }: { productId: string }) {
   }
 
   return (
-    <Form
-      onSubmit={submit}
-      className="mt-5 card p-4 sm:mt-6 sm:p-5"
-    >
-      <h3 className="text-[14px] font-semibold text-ink-950 sm:text-[15px]">Write a review</h3>
-      <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500">
-        Posting as {customer?.name ?? "your account"}. Only the stars are needed — a few words
-        help the next person more. Reviews are checked before they appear.
-      </p>
+    <Form onSubmit={submit} className="card mt-4 p-4 sm:p-6">
+      <div className="flex items-start gap-3">
+        <span className="icon-tile icon-tile-sm">
+          <PenLine size={16} aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <h3 className="t-h3">Write a review</h3>
+          <p className="t-small mt-1 max-w-[60ch]">
+            Posting as {customer?.name ?? "your account"}. Only the stars are needed — a few words
+            help the next person more. Reviews are checked before they appear.
+          </p>
+        </div>
+      </div>
 
       <ReviewFields rating={rating} onRating={setRating} />
 
@@ -193,17 +177,11 @@ export function ReviewForm({ productId }: { productId: string }) {
         </p>
       )}
 
-      <div className="mt-5 flex gap-2">
-        <Button type="submit" size="sm" loading={pending} className="tap h-10 sm:h-9">
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+        <Button type="submit" loading={pending} className="w-full sm:w-auto">
           Submit review
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="tap h-10 sm:h-9"
-          onClick={() => setOpen(false)}
-        >
+        <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={() => setOpen(false)}>
           Cancel
         </Button>
       </div>

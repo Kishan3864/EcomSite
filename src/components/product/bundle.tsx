@@ -3,20 +3,17 @@
 import { useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
+import { Plus, ShoppingBag } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
 import { Button } from "@/components/ui/button";
+import { SectionHeader } from "@/components/ui/primitives";
 import { fromCard, useCommerce } from "@/store/commerce";
 import { cn, formatINR } from "@/lib/utils";
 
 /**
- * Frequently bought together — the anchor product plus its cross-sells.
- *
- * It used to be a scrolling row of photographs on one side and the very same
- * products listed again as ticked lines on the other, so every name and every
- * price was printed twice. One ruled line per product carries the picture, the
- * name, the price and the switch together, and a list of lines cannot come out
- * ragged however many cross-sells the shop has attached — which a row of tiles
- * three or five across certainly can.
+ * Frequently bought together — the anchor product plus its cross-sells, one
+ * row per product (photo, name, price, switch) in a card, with the total in a
+ * panel beside it.
  */
 export function BundleSection({
   anchor,
@@ -39,89 +36,78 @@ export function BundleSection({
 
   return (
     <section>
-      <div className="pb-3 sm:pb-4">
-        <span className="eyebrow">Add to the order</span>
-        <h2 className="mt-1.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
-          Frequently bought together
-        </h2>
-        <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500 sm:mt-2.5 sm:text-[14px]">
-          Customers who bought this usually add these to the same order.
-        </p>
-      </div>
-      {/* The thick rule and the thin one, three pixels apart, that heads every
-          band on the site. */}
-      <div aria-hidden className="mt-[3px] h-px w-full bg-rule" />
+      <SectionHeader
+        eyebrow="Add to the order"
+        title="Frequently bought together"
+        description="Customers who bought this usually add these to the same order."
+      />
 
-      <div className="mt-5 grid gap-5 sm:mt-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10">
-        <ul className="tile-grid grid-cols-1">
-          {all.map((product, i) => (
-            <li key={product.id} className="flex items-center gap-3 p-2.5 sm:gap-4 sm:p-3.5">
-              <Link
-                href={`/p/${product.slug}`}
-                className="tap relative h-[70px] w-14 shrink-0 overflow-hidden bg-ink-100 sm:h-20 sm:w-16"
-              >
-                {/* A dropped product keeps its line and loses its colour, so
-                    the shape of the list never moves as things are ticked. */}
-                <Image
-                  src={product.image}
-                  alt={product.imageAlt || product.title}
-                  fill
-                  sizes="64px"
-                  className={cn(
-                    "object-cover transition-opacity duration-200",
-                    !picked[product.id] && "opacity-40 grayscale",
-                  )}
-                />
-              </Link>
+      <div className="card overflow-hidden lg:grid lg:grid-cols-[minmax(0,1fr)_320px]">
+        <ul className="divide-y divide-line">
+          {all.map((product, i) => {
+            const on = picked[product.id] ?? false;
+            return (
+              <li key={product.id} className="relative flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
+                {i > 0 && (
+                  <span
+                    aria-hidden
+                    className="absolute -top-2.5 left-[36px] z-10 flex h-5 w-5 items-center justify-center rounded-full bg-surface text-ink-500 ring-1 ring-line sm:left-[46px]"
+                  >
+                    <Plus size={14} />
+                  </span>
+                )}
+                <Link
+                  href={`/p/${product.slug}`}
+                  className="relative h-[68px] w-[68px] shrink-0 overflow-hidden rounded-lg bg-gradient-to-b from-ink-50 to-ink-100/70 sm:h-20 sm:w-20"
+                >
+                  <Image
+                    src={product.image}
+                    alt={product.imageAlt || product.title}
+                    fill
+                    sizes="80px"
+                    className={cn(
+                      "object-cover transition-opacity duration-200",
+                      !on && "opacity-40 grayscale",
+                    )}
+                  />
+                </Link>
 
-              <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-2.5 sm:gap-3">
-                <input
-                  type="checkbox"
-                  checked={picked[product.id] ?? false}
-                  disabled={i === 0}
-                  onChange={() =>
-                    setPicked((p) => ({ ...p, [product.id]: !p[product.id] }))
-                  }
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-700)] disabled:opacity-60"
-                />
-                <span className="min-w-0 flex-1">
-                  {/* Ink, not ocean. The one coloured word in the whole band
-                      was sitting on its least important line — the label that
-                      only says which of these is the product already open. */}
-                  {i === 0 && (
-                    <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">
-                      This item
+                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                  <span className="min-w-0 flex-1">
+                    {i === 0 && <span className="t-label mb-1 block text-[10.5px]">This item</span>}
+                    <span className={cn("line-clamp-2 text-[13.5px] font-medium leading-[1.4]", on ? "text-ink-900" : "text-ink-500")}>
+                      {product.title}
                     </span>
-                  )}
-                  <span className="block text-[13px] font-medium leading-[1.4] text-ink-900 sm:text-[13.5px]">
-                    {product.title}
+                    <span className="t-price mt-1 block text-[14px]">{formatINR(product.price)}</span>
                   </span>
-                  <span className="mt-1 block text-[13px] font-semibold leading-none tabular-nums text-ink-900 sm:text-[13.5px]">
-                    {formatINR(product.price)}
-                  </span>
-                </span>
-              </label>
-            </li>
-          ))}
+                  <input
+                    type="checkbox"
+                    checked={on}
+                    disabled={i === 0}
+                    onChange={() => setPicked((p) => ({ ...p, [product.id]: !p[product.id] }))}
+                    className="h-5 w-5 shrink-0 disabled:opacity-60"
+                    aria-label={i === 0 ? `${product.title} (this item, always included)` : `Include ${product.title}`}
+                  />
+                </label>
+              </li>
+            );
+          })}
         </ul>
 
-        {/* The total is ruled off from the list rather than boxed: a hairline
-            above it on a phone, and beside it once there is room for a column. */}
-        <div className="pt-4 lg:pl-8 lg:pt-0">
-          <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+        <div className="card-muted m-3 flex flex-col justify-center rounded-xl p-5 lg:m-4">
+          <p className="t-label">
             Total for {selected.length} item{selected.length > 1 ? "s" : ""}
           </p>
-          <p className="mt-2.5 flex items-baseline gap-3">
-            <span className="text-[24px] font-semibold leading-none tabular-nums text-ink-950 sm:text-[28px]">
-              {formatINR(total)}
-            </span>
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-2.5">
+            <span className="t-price text-[26px] leading-none">{formatINR(total)}</span>
             {mrpTotal > total && (
-              <span className="text-[13.5px] leading-none tabular-nums text-ink-400 line-through sm:text-[15px]">
+              <span className="text-[14px] leading-none text-ink-400 line-through tabular-nums">
                 {formatINR(mrpTotal)}
               </span>
             )}
           </p>
           <Button
+            variant="accent"
             className="mt-5 w-full"
             disabled={selected.length === 0}
             onClick={() =>
@@ -130,9 +116,8 @@ export function BundleSection({
               )
             }
           >
-            {/* One span, not three children: the button is a flex row with a
-                gap, and a bare numeral between two text nodes would be spaced
-                off from its own sentence. */}
+            <ShoppingBag size={16} aria-hidden />
+            {/* One span so the numeral is not spaced off by the flex gap. */}
             <span>
               Add <span className="tabular-nums">{selected.length}</span> to bag
             </span>

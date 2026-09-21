@@ -3,22 +3,25 @@
 import { useMemo, useState } from "react";
 import Image from "@/components/ui/image";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, ThumbsUp, VerifiedIcon } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronDown,
+  MessageCircleQuestion,
+  MessageSquareText,
+  PenLine,
+  Star,
+  ThumbsUp,
+} from "lucide-react";
 import type { QuestionAnswer, RatingBreakdown, Review } from "@/lib/types";
 import { ReviewForm } from "./review-form";
-import { Stars } from "@/components/ui/primitives";
-import { Button } from "@/components/ui/button";
+import { SectionHeader, Stars } from "@/components/ui/primitives";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { cn, formatCompact, formatDate } from "@/lib/utils";
 
 /**
- * Ratings and reviews.
- *
- * This is the page's trust surface, so it is drawn like a printed record: a
- * measured average, five bars that are a measure rather than a traffic light,
- * and a ruled list underneath. Nothing here is allowed to imply a score the
- * shop has not been given — the average, the stars and the bars each appear
- * only once there is something real behind them, and when there is not, the
- * panel says so in the shop's own words.
+ * Ratings and reviews: a summary card (average, stars, bars, write-a-review)
+ * beside a list where each review is its own card. Nothing implies a score
+ * the shop has not been given — each part appears only with real data.
  */
 export function ReviewsSection({
   productId,
@@ -45,25 +48,25 @@ export function ReviewsSection({
 
   const total = Object.values(breakdown).reduce((a, b) => a + b, 0);
 
-  // A listing nobody has reviewed yet would otherwise print "0.0" beside five
-  // empty stars and "0 ratings" — which reads as a product everyone disliked
-  // rather than one nobody has received yet. The panel says which it is, and
-  // the form beneath still explains who may write the first one.
+  // Nobody has reviewed it yet: say so rather than print "0.0" and empty stars.
   if (reviewCount === 0 && reviews.length === 0) {
     return (
       <section id="reviews" className="scroll-mt-32">
-        <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
-          Ratings and reviews
-        </h2>
-        <div className="card mt-4 p-4 sm:mt-5 sm:p-6">
-          <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-            No reviews yet
-          </p>
-          <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[14px]">
-            Reviews here are written only by customers who bought this and had it delivered, so
-            there are none until the first one arrives. That is also why the ones you do see can be
-            trusted.
-          </p>
+        <SectionHeader eyebrow="From customers" title="Ratings and reviews" />
+        <div className="card p-5 sm:p-6">
+          <div className="flex items-start gap-4">
+            <span className="icon-tile">
+              <MessageSquareText size={20} aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <h3 className="t-h3">No reviews yet</h3>
+              <p className="t-body mt-1.5 max-w-[60ch]">
+                Reviews here are written only by customers who bought this and had it delivered, so
+                there are none until the first one arrives. That is also why the ones you do see can
+                be trusted.
+              </p>
+            </div>
+          </div>
           <ReviewForm productId={productId} />
         </div>
       </section>
@@ -72,48 +75,34 @@ export function ReviewsSection({
 
   return (
     <section id="reviews" className="scroll-mt-32">
-      <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
-        Ratings and reviews
-      </h2>
+      <SectionHeader eyebrow="From customers" title="Ratings and reviews" />
 
-      <div className="mt-4 grid gap-5 sm:mt-6 sm:gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
-        {/* Summary, in its own card */}
-        <div className="card h-fit p-4 sm:p-5 lg:sticky lg:top-[132px]">
-          {/* Phones set the score beside the bars, as shopping apps do, rather
-              than stacking two short blocks; from sm they stack as before. With
-              no score to set beside them the two-track grid would size itself
-              to the bars alone, so it is only a grid when both halves exist. */}
+      <div className="grid gap-4 sm:gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
+        {/* Summary card */}
+        <div className="card h-fit p-5 lg:sticky-under-header">
           <div
             className={cn(
-              rating > 0 && "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-6 sm:block",
+              rating > 0 && "grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-6 lg:block",
             )}
           >
-            {/* The score is set in the text face with tabular figures. Fraunces
-                is for titles, and its proportional numerals put the decimal in
-                a different place on every product in the shop. */}
             {rating > 0 && (
-              <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-end sm:gap-3">
-                <span className="text-[32px] font-semibold leading-none tracking-[-0.03em] tabular-nums text-ink-950 sm:text-[52px]">
-                  {rating.toFixed(1)}
+              <div className="flex flex-col items-start gap-1.5">
+                <span className="flex items-baseline gap-1">
+                  <span className="t-price text-[40px] leading-none sm:text-[48px]">
+                    {rating.toFixed(1)}
+                  </span>
+                  <span className="text-[13px] font-medium text-ink-500">/ 5</span>
                 </span>
-                <div className="sm:pb-1.5">
-                  <Stars value={rating} size={16} />
-                  <p className="mt-1.5 text-[13px] tabular-nums text-ink-500">
-                    {formatCompact(reviewCount)} ratings
-                  </p>
-                </div>
+                <Stars value={rating} size={16} />
+                <p className="t-small tabular-nums">
+                  {formatCompact(reviewCount)} ratings
+                </p>
               </div>
             )}
 
-            {/* Five bars in one colour (gold). Colouring the top two ocean, the middle
-                one gold and the bottom two rose turned a record of what
-                customers said into the shop's own verdict on it, and spent the
-                two colours that are meant to mean a signal and a reduction on
-                a chart. The bar is a measure; only the filtered row changes
-                colour, because that is a state of this page rather than a
-                judgement on the product. */}
+            {/* Bars: one gold measure; the filtered row turns cobalt. */}
             {total > 0 && (
-              <ul className={cn("space-y-2", rating > 0 && "sm:mt-6")}>
+              <ul className={cn("space-y-1.5", rating > 0 && "lg:mt-5")}>
                 {([5, 4, 3, 2, 1] as const).map((star) => {
                   const count = breakdown[star];
                   const pct = (count / total) * 100;
@@ -121,33 +110,29 @@ export function ReviewsSection({
                   return (
                     <li key={star}>
                       <button
+                        type="button"
                         onClick={() => setFilter(active ? "all" : star)}
                         aria-pressed={active}
-                        className="tap group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5"
+                        aria-label={`${star} star reviews: ${count}. ${active ? "Show all reviews" : "Show only these"}`}
+                        className={cn(
+                          "group grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors",
+                          active ? "bg-brand-50" : "hover:bg-ink-50",
+                        )}
                       >
-                        <span
-                          className={cn(
-                            "w-3 text-right text-[13px] tabular-nums transition-colors",
-                            active ? "text-ink-950" : "text-ink-500 group-hover:text-ink-950",
-                          )}
-                        >
+                        <span className="inline-flex w-7 items-center gap-0.5 text-[12.5px] font-medium tabular-nums text-ink-700">
                           {star}
+                          <Star size={14} aria-hidden className="text-gold-500" fill="currentColor" strokeWidth={0} />
                         </span>
-                        <span className="block h-2 w-full overflow-hidden rounded-full bg-ink-100">
+                        <span className="block h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
                           <motion.span
                             initial={{ width: 0 }}
                             whileInView={{ width: `${pct}%` }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                            className={cn("block h-full rounded-full", active ? "bg-brand-700" : "bg-gold-400")}
+                            className={cn("block h-full rounded-full", active ? "bg-brand-600" : "bg-gold-400")}
                           />
                         </span>
-                        <span
-                          className={cn(
-                            "w-9 text-right text-[13px] tabular-nums transition-colors sm:w-10",
-                            active ? "text-ink-950" : "text-ink-500 group-hover:text-ink-950",
-                          )}
-                        >
+                        <span className="w-9 text-right text-[12.5px] tabular-nums text-ink-500">
                           {formatCompact(count)}
                         </span>
                       </button>
@@ -165,13 +150,14 @@ export function ReviewsSection({
             ].map((chip) => (
               <button
                 key={chip.key}
+                type="button"
                 onClick={() => setFilter(chip.key)}
                 aria-pressed={filter === chip.key}
                 className={cn(
-                  "chip tap h-9 px-3.5 text-[12.5px] font-semibold transition-colors duration-200",
+                  "inline-flex h-8 items-center rounded-full border px-3 text-[12.5px] font-medium transition-colors duration-200",
                   filter === chip.key
                     ? "border-brand-700 bg-brand-700 text-white"
-                    : "text-ink-600 hover:border-ink-300 hover:text-ink-950",
+                    : "border-line-strong text-ink-700 hover:border-brand-300 hover:text-brand-700",
                 )}
               >
                 {chip.label}
@@ -179,24 +165,22 @@ export function ReviewsSection({
             ))}
           </div>
 
-          {/* The rule runs the width of the column and the words stop at the
-              measure, so the note reads as a footnote to the panel above it
-              rather than as another tinted box. Every word of it is the
-              shop's own promise and is kept as written. */}
-          <div className="mt-5 border-t pt-4">
-            <p className="max-w-[46ch] text-[12.5px] leading-[1.6] text-ink-500">
-              Only customers who bought the product on WeekendCart can leave a review. We never edit
-              or remove a review for being negative.
-            </p>
-          </div>
+          <a href="#write-review" className={buttonClasses("outline", "md", "mt-5 w-full")}>
+            <PenLine size={16} aria-hidden /> Write a review
+          </a>
+
+          <p className="t-small mt-4 border-t border-line pt-4">
+            Only customers who bought the product on WeekendCart can leave a review. We never edit
+            or remove a review for being negative.
+          </p>
         </div>
 
-        {/* List */}
-        <div>
+        {/* List: each review its own card */}
+        <div className="min-w-0">
           {filtered.length === 0 ? (
-            <p className="pt-4 text-[13px] text-ink-500 sm:text-[13.5px]">
+            <div className="card-muted rounded-xl p-5 text-[13px] text-ink-500">
               No reviews match that filter yet.
-            </p>
+            </div>
           ) : (
             <ul className="space-y-3">
               <AnimatePresence initial={false}>
@@ -207,89 +191,83 @@ export function ReviewsSection({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                     className="card p-4 sm:p-5"
                   >
-                    <div className="flex items-start justify-between gap-3 sm:gap-4">
-                      <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                        {/* Initials in a round tinted mark. */}
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11.5px] font-semibold tracking-[0.04em] text-brand-800">
-                          {review.author
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] font-semibold text-ink-950 sm:text-[14px] lg:flex-nowrap">
-                            {review.author}
-                            {review.verified && (
-                              <span
-                                title="Verified purchase"
-                                className="inline-flex items-center gap-1 px-1.5 py-[3px] text-[10px] font-semibold uppercase leading-none tracking-[0.1em] text-brand-700"
-                              >
-                                <VerifiedIcon size={10} /> Verified purchase
-                              </span>
-                            )}
-                          </p>
-                          <p className="mt-0.5 text-[13px] text-ink-500">
-                            {review.location} · {formatDate(review.createdAt, "short")}
-                          </p>
-                        </div>
-                      </div>
-                      <Stars value={review.rating} size={13} className="shrink-0" />
-                    </div>
-
-                    {/* Words are optional: a stars-only review shows its
-                        stars and nothing else, rather than an empty heading. */}
-                    {review.title && (
-                      <h3 className="mt-3 text-[14px] font-semibold text-ink-950 sm:text-[14.5px]">
-                        {review.title}
-                      </h3>
-                    )}
-                    {review.body && (
-                      <p
-                        className={cn(
-                          "max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]",
-                          review.title ? "mt-1.5" : "mt-3",
-                        )}
-                      >
-                        {review.body}
-                      </p>
-                    )}
-
-                    {review.images && review.images.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-2 lg:flex-nowrap">
-                        {review.images.map((src) => (
+                    <article>
+                      <header className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <span
-                            key={src}
-                            className="relative h-16 w-16 overflow-hidden bg-ink-100"
+                            aria-hidden
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[12px] font-semibold text-brand-800 ring-1 ring-inset ring-brand-100"
                           >
-                            <Image src={src} alt="" fill sizes="64px" className="object-cover" />
+                            {review.author
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <button
-                      onClick={() =>
-                        setHelpful((h) => ({ ...h, [review.id]: !h[review.id] }))
-                      }
-                      aria-pressed={Boolean(helpful[review.id])}
-                      className={cn(
-                        "tap mt-3 inline-flex h-9 items-center gap-2 px-3 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200",
-                        helpful[review.id]
-                          ? "bg-brand-700 text-white"
-                          : "text-ink-500 hover:text-ink-950",
-                      )}
-                    >
-                      <ThumbsUp size={12} />
-                      <span>
-                        Helpful{" "}
-                        <span className="tabular-nums">
-                          ({review.helpfulCount + (helpful[review.id] ? 1 : 0)})
+                          <div className="min-w-0">
+                            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] font-semibold text-ink-950">
+                              {review.author}
+                              {review.verified && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-medium text-brand-800 ring-1 ring-inset ring-brand-100">
+                                  <BadgeCheck size={14} aria-hidden /> Verified purchase
+                                </span>
+                              )}
+                            </p>
+                            <p className="t-small mt-0.5">
+                              {review.location} · {formatDate(review.createdAt, "short")}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="shrink-0 pt-1">
+                          <span className="sr-only">Rated {review.rating} out of 5</span>
+                          <Stars value={review.rating} size={14} />
                         </span>
-                      </span>
-                    </button>
+                      </header>
+
+                      {review.title && <h3 className="t-h3 mt-3.5">{review.title}</h3>}
+                      {review.body && (
+                        <p className={cn("t-body max-w-[70ch]", review.title ? "mt-1.5" : "mt-3.5")}>
+                          {review.body}
+                        </p>
+                      )}
+
+                      {review.images && review.images.length > 0 && (
+                        <div className="mt-3.5 flex flex-wrap gap-2">
+                          {review.images.map((src) => (
+                            <span
+                              key={src}
+                              className="relative h-16 w-16 overflow-hidden rounded-lg bg-ink-100 ring-1 ring-inset ring-line sm:h-20 sm:w-20"
+                            >
+                              <Image src={src} alt="" fill sizes="80px" className="object-cover" />
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="mt-3.5 border-t border-line pt-3">
+                        <button
+                          type="button"
+                          onClick={() => setHelpful((h) => ({ ...h, [review.id]: !h[review.id] }))}
+                          aria-pressed={Boolean(helpful[review.id])}
+                          className={cn(
+                            "inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px] font-medium transition-colors duration-200",
+                            helpful[review.id]
+                              ? "border-brand-700 bg-brand-700 text-white"
+                              : "border-line-strong text-ink-600 hover:border-brand-300 hover:text-brand-700",
+                          )}
+                        >
+                          <ThumbsUp size={14} aria-hidden />
+                          <span>
+                            Helpful{" "}
+                            <span className="tabular-nums">
+                              ({review.helpfulCount + (helpful[review.id] ? 1 : 0)})
+                            </span>
+                          </span>
+                        </button>
+                      </div>
+                    </article>
                   </motion.li>
                 ))}
               </AnimatePresence>
@@ -297,11 +275,7 @@ export function ReviewsSection({
           )}
 
           {visible < filtered.length && (
-            <Button
-              variant="outline"
-              className="tap mt-4 w-full sm:mt-6"
-              onClick={() => setVisible((v) => v + 4)}
-            >
+            <Button variant="outline" className="mt-4 w-full" onClick={() => setVisible((v) => v + 4)}>
               <span>
                 Show more reviews{" "}
                 <span className="tabular-nums">({filtered.length - visible} left)</span>
@@ -309,7 +283,9 @@ export function ReviewsSection({
             </Button>
           )}
 
-          <ReviewForm productId={productId} />
+          <div id="write-review" className="scroll-mt-32">
+            <ReviewForm productId={productId} />
+          </div>
         </div>
       </div>
     </section>
@@ -323,90 +299,98 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
 
   return (
     <section id="qna" className="scroll-mt-32">
-      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1 sm:gap-4">
-        <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
-          Questions and answers
-        </h2>
-        <p className="text-[13px] text-ink-500">
-          Cannot find your answer?{" "}
-          <a
-            href="/contact"
-            className="font-semibold text-brand-700 underline-offset-4 hover:underline"
-          >
-            Ask our team
-          </a>
-        </p>
-      </div>
+      <SectionHeader
+        eyebrow="Good to know"
+        title="Questions and answers"
+        action={
+          questions.length > 0 ? (
+            <p className="t-small hidden sm:block">
+              Cannot find your answer?{" "}
+              <a href="/contact" className="font-semibold text-brand-700 underline-offset-4 hover:underline">
+                Ask our team
+              </a>
+            </p>
+          ) : undefined
+        }
+      />
 
-      {/* A heading over an empty rule reads as something that failed to load.
-          A new listing has no questions yet, and saying so — with the way to
-          ask one — is the honest version of the same space. */}
       {questions.length === 0 ? (
-        <div className="mt-3 pt-4 sm:mt-5 sm:pt-5">
-          <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-            No questions about this one yet
-          </p>
-          <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[14px]">
-            Ask us anything — size, fit, what is in the box, how it runs. We answer within a day,
-            and anything useful is published here for the next person wondering the same.
-          </p>
-          <a
-            href="/contact"
-            className="tap mt-4 inline-flex items-center text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors hover:text-gold-700"
-          >
-            Ask a question
-          </a>
+        <div className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:p-6">
+          <span className="icon-tile">
+            <MessageCircleQuestion size={20} aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="t-h3">No questions about this one yet</h3>
+            <p className="t-body mt-1.5 max-w-[60ch]">
+              Ask us anything — size, fit, what is in the box, how it runs. We answer within a day,
+              and anything useful is published here for the next person wondering the same.
+            </p>
+            <a href="/contact" className={buttonClasses("outline", "sm", "mt-4")}>
+              Ask a question
+            </a>
+          </div>
         </div>
       ) : (
-        /* A ruled index that opens in place — the same shape as the collection
-           list on the homepage, so a question reads as a line in a contents
-           page rather than as another card. */
-        <ul className="card card-divided mt-4 overflow-hidden sm:mt-5">
-          {questions.map((qa) => {
-            const expanded = open === qa.id;
-            return (
-              <li key={qa.id}>
-                <button
-                  onClick={() => setOpen(expanded ? null : qa.id)}
-                  aria-expanded={expanded}
-                  className="tap flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-ink-50 sm:px-5 sm:py-4"
-                >
-                  <span className="min-w-0 flex-1 text-[13.5px] font-medium leading-[1.45] text-ink-900 sm:text-[14px]">
-                    {qa.question}
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    className={cn(
-                      "mt-0.5 shrink-0 text-ink-400 transition-transform duration-200",
-                      expanded && "rotate-180",
+        <>
+          <ul className="card card-divided overflow-hidden">
+            {questions.map((qa) => {
+              const expanded = open === qa.id;
+              return (
+                <li key={qa.id}>
+                  <button
+                    type="button"
+                    onClick={() => setOpen(expanded ? null : qa.id)}
+                    aria-expanded={expanded}
+                    aria-controls={`qa-${qa.id}`}
+                    className="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors hover:bg-ink-50 sm:px-5"
+                  >
+                    <span aria-hidden className="mt-px text-[12px] font-bold text-brand-700">Q</span>
+                    <span className="min-w-0 flex-1 text-[14px] font-medium leading-[1.45] text-ink-900">
+                      {qa.question}
+                    </span>
+                    <ChevronDown
+                      size={16}
+                      aria-hidden
+                      className={cn(
+                        "mt-0.5 shrink-0 text-ink-500 transition-transform duration-200",
+                        expanded && "rotate-180",
+                      )}
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {expanded && (
+                      <motion.div
+                        id={`qa-${qa.id}`}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex gap-3 px-4 pb-4 sm:px-5 sm:pb-5">
+                          <span aria-hidden className="mt-px text-[12px] font-bold text-gold-700">A</span>
+                          <div className="min-w-0">
+                            <p className="t-body max-w-[70ch]">{qa.answer}</p>
+                            <p className="t-small mt-2 tabular-nums">
+                              Answered by {qa.answeredBy} · {formatDate(qa.answeredAt, "short")} ·{" "}
+                              {qa.upvotes} found this useful
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
                     )}
-                  />
-                </button>
-                <AnimatePresence initial={false}>
-                  {expanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-4 pb-4 sm:px-5 sm:pb-5">
-                        <p className="max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]">
-                          {qa.answer}
-                        </p>
-                        <p className="mt-2 text-[13px] tabular-nums text-ink-500">
-                          Answered by {qa.answeredBy} · {formatDate(qa.answeredAt, "short")} ·{" "}
-                          {qa.upvotes} found this useful
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </li>
-            );
-          })}
-        </ul>
+                  </AnimatePresence>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="t-small mt-3 sm:hidden">
+            Cannot find your answer?{" "}
+            <a href="/contact" className="font-semibold text-brand-700 underline-offset-4 hover:underline">
+              Ask our team
+            </a>
+          </p>
+        </>
       )}
     </section>
   );
