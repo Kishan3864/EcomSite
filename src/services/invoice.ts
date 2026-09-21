@@ -14,6 +14,7 @@ import {
   type TaxSplit,
 } from "@/lib/gst";
 import { getSettings } from "./settings";
+import { BUSINESS } from "@/config/business";
 
 /**
  * Builds the tax invoice for an order.
@@ -156,7 +157,17 @@ export async function getInvoice(orderId: string): Promise<Invoice | null> {
 
   // Orders raised before the invoice columns existed fall back to Settings.
   const sellerGstin = order.sellerGstin ?? settings.store.gstin;
-  const sellerStateCode = order.sellerStateCode ?? gstinState(sellerGstin);
+  /**
+   * The seller's state: the code frozen on the order, else the GSTIN's first
+   * two digits, else the registered address in BUSINESS. Empty counts as
+   * missing — with no GSTIN, checkout froze "" here, which printed as "Other
+   * Territory ()" and, never matching the buyer's code, called every sale
+   * inter-state even when both ends are in Gujarat.
+   */
+  const sellerStateCode =
+    [order.sellerStateCode, gstinState(sellerGstin), stateCode(BUSINESS.address.state)]
+      .map((code) => (code ?? "").trim())
+      .find((code) => code !== "" && code !== "97") ?? "97";
   const placeCode = order.placeOfSupplyCode ?? stateCode(order.shipState);
   const interState = sellerStateCode !== placeCode;
   // A supplier with no GST registration issues a bill of supply and charges no
