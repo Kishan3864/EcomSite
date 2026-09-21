@@ -108,11 +108,10 @@ export function buttonClasses(
      */
     variant !== "ghost" &&
       variant !== "link" &&
-      [
-        "shadow-[inset_0_1px_0_0_rgb(255_255_255/0.13),inset_0_0_0_1px_rgb(0_0_0/0.09),0_1px_2px_0_rgb(18_23_27/0.09)]",
-        "hover:shadow-[inset_0_1px_0_0_rgb(255_255_255/0.16),inset_0_0_0_1px_rgb(0_0_0/0.11),0_3px_8px_-2px_rgb(18_23_27/0.17)]",
-        "active:shadow-[inset_0_0_0_1px_rgb(0_0_0/0.13),inset_0_2px_5px_-1px_rgb(18_23_27/0.2)]",
-      ].join(" "),
+      // The values live in variables (src/app/storefront.css): the admin keeps
+      // the lit-key shadow described above, the storefront is flat with a
+      // soft lift on hover.
+      "shadow-(--btn-shadow) hover:shadow-(--btn-shadow-hover) active:shadow-(--btn-shadow-active)",
     SIZES[size],
     // `link` is a word inside a sentence rather than a control, so it gives the
     // box back after the size has been applied. tailwind-merge keeps the last

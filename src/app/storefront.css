@@ -1,0 +1,415 @@
+/* ================================================================== *
+ *  STOREFRONT DESIGN SYSTEM — "Midnight & Champagne" (2026-09-21)
+ *
+ *  A full rebuild of the customer-facing look. Everything below is
+ *  SCOPED to pages that carry [data-storefront] (the (store), (auth)
+ *  and (print) layouts, plus portals via :has on the root) so the
+ *  admin panel keeps the exact values declared in globals.css @theme.
+ *
+ *  Palette, built around the logo (ocean #2f5265 + gold #a9820f):
+ *    brand  — midnight cobalt. The logo's blue with more depth and a
+ *             touch more chroma: links, primary buttons, focus, active.
+ *    gold   — champagne. The logo's gold, cleaned. The one "press this"
+ *             colour (add to bag) and small premium highlights.
+ *    iris   — a cool violet used ONLY inside gradients (hero aurora,
+ *             hairline glows). Never text, never a button.
+ *    ink    — cool graphite neutrals; canvas is a crisp cool white.
+ *    sale   — raspberry, reductions only.
+ *
+ *  Contrast (on white): ink-900 16.9:1, ink-600 7.4:1, ink-500 5.3:1
+ *  (floor for readable text), brand-700 8.4:1, brand-600 6.1:1,
+ *  gold-700 6.3:1; ink-950 on gold-400 9.8:1. Focus ring brand-500 at
+ *  4.7:1 against canvas.
+ *
+ *  Type: Plus Jakarta Sans (self-hosted). Base 14px. Scale:
+ *    t-display 30→46  t-h1 24→32  t-h2 19→24  t-h3 15
+ *    t-body 14  t-small 12.5  t-label 11 caps  t-price (figures)
+ *
+ *  Icons: lucide only, one stroke (1.75), sizes 14/16/18/20/24,
+ *  always currentColor. Enforced below for every lucide svg.
+ *
+ *  Spacing: 4px grid. Section rhythm .section (40 → 52 → 64px).
+ *  Radii: control 12 (rounded-md), card 18 (rounded-xl),
+ *  panel 22–28 (rounded-2xl/3xl), pill rounded-full.
+ * ================================================================== */
+
+@theme {
+  --color-iris-50: #f4f3ff;
+  --color-iris-100: #e9e7ff;
+  --color-iris-200: #d4d0fe;
+  --color-iris-300: #b4acfb;
+  --color-iris-400: #9084f3;
+  --color-iris-500: #7262e6;
+  --color-iris-600: #5d4bcb;
+
+  --animate-fade-up: fade-up 0.5s var(--ease-out-quint) both;
+  --animate-float: float 7s ease-in-out infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+}
+
+/* Button elevation lives in variables so the storefront can flatten it
+   while the admin keeps the values it has always had. */
+:root {
+  --btn-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.13), inset 0 0 0 1px rgb(0 0 0 / 0.09), 0 1px 2px 0 rgb(18 23 27 / 0.09);
+  --btn-shadow-hover: inset 0 1px 0 0 rgb(255 255 255 / 0.16), inset 0 0 0 1px rgb(0 0 0 / 0.11), 0 3px 8px -2px rgb(18 23 27 / 0.17);
+  --btn-shadow-active: inset 0 0 0 1px rgb(0 0 0 / 0.13), inset 0 2px 5px -1px rgb(18 23 27 / 0.2);
+  --header-h: 60px;
+  --sticky-top: calc(var(--header-h) + 12px);
+}
+
+:root:has([data-storefront]) {
+  /* brand — midnight cobalt */
+  --color-brand-50: #eef5fb;
+  --color-brand-100: #dbeaf5;
+  --color-brand-200: #b8d5ea;
+  --color-brand-300: #88b7d8;
+  --color-brand-400: #5593c0;
+  --color-brand-500: #2f76a6;
+  --color-brand-600: #22618d;
+  --color-brand-700: #1b4f74;
+  --color-brand-800: #17415f;
+  --color-brand-900: #12324a;
+  --color-brand-950: #0a1e2e;
+
+  /* gold — champagne */
+  --color-gold-50: #fcf8ee;
+  --color-gold-100: #f8efd6;
+  --color-gold-200: #f0dfae;
+  --color-gold-300: #e6cc80;
+  --color-gold-400: #d9b556;
+  --color-gold-500: #a9820f;
+  --color-gold-600: #8c6b0d;
+  --color-gold-700: #74590e;
+  --color-gold-800: #5f4a0f;
+  --color-gold-900: #4f3d0e;
+
+  /* ink — cool graphite */
+  --color-ink-50: #f5f7fa;
+  --color-ink-100: #edf0f4;
+  --color-ink-200: #dfe4ea;
+  --color-ink-300: #c5ccd6;
+  --color-ink-400: #98a2b1;
+  --color-ink-500: #5d6878;
+  --color-ink-600: #485263;
+  --color-ink-700: #384151;
+  --color-ink-800: #252d3b;
+  --color-ink-900: #151c29;
+  --color-ink-950: #0a0f1a;
+
+  --color-canvas: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-hairline: #e9edf1;
+  --color-line: #e4e8ee;
+  --color-line-strong: #d3d9e1;
+  --color-rule: #c9d0da;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+  --radius-3xl: 28px;
+  --radius-4xl: 36px;
+  --radius-field: 12px;
+
+  --shadow-xs: 0 1px 2px 0 rgb(10 15 26 / 0.05);
+  --shadow-sm: 0 1px 2px 0 rgb(10 15 26 / 0.05), 0 2px 6px -2px rgb(10 15 26 / 0.06);
+  --shadow-md: 0 4px 14px -4px rgb(10 15 26 / 0.1), 0 2px 4px -2px rgb(10 15 26 / 0.05);
+  --shadow-lg: 0 16px 36px -12px rgb(10 15 26 / 0.16), 0 4px 10px -4px rgb(10 15 26 / 0.06);
+  --shadow-xl: 0 28px 64px -20px rgb(10 15 26 / 0.24);
+  --shadow-card: 0 1px 2px 0 rgb(10 15 26 / 0.04);
+  --shadow-card-hover: 0 18px 40px -18px rgb(27 79 116 / 0.28), 0 6px 14px -8px rgb(10 15 26 / 0.1);
+  --shadow-pop: 0 24px 56px -20px rgb(10 15 26 / 0.28), 0 8px 18px -10px rgb(10 15 26 / 0.12);
+  --shadow-glow: 0 0 0 4px rgb(47 118 166 / 0.14);
+
+  --btn-shadow: none;
+  --btn-shadow-hover: 0 8px 20px -10px rgb(10 15 26 / 0.45);
+  --btn-shadow-active: none;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 116px;
+  }
+  :root[data-scrolled] {
+    --header-h: 68px;
+  }
+}
+
+@layer base {
+  body:has([data-storefront]) {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--color-ink-800);
+  }
+
+  /* One icon style: every lucide glyph in the storefront draws at the same
+     stroke. Filled glyphs (stars drawn with strokeWidth 0) keep their fill. */
+  body:has([data-storefront]) svg.lucide:not([stroke-width="0"]) {
+    stroke-width: 1.75;
+  }
+
+  body:has([data-storefront]) :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+  }
+
+  body:has([data-storefront]) ::selection {
+    background: var(--color-brand-100);
+    color: var(--color-ink-950);
+  }
+
+  body:has([data-storefront]) .font-display {
+    letter-spacing: -0.028em;
+    font-weight: 650;
+  }
+
+  /* Fields: white, a crisp line, a soft glow on focus. */
+  body:has([data-storefront]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+  body:has([data-storefront]) select,
+  body:has([data-storefront]) textarea {
+    background-color: var(--color-surface);
+    box-shadow: inset 0 0 0 1px var(--color-line-strong);
+    transition: box-shadow 160ms ease;
+  }
+  body:has([data-storefront]) input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):focus,
+  body:has([data-storefront]) select:focus,
+  body:has([data-storefront]) textarea:focus {
+    box-shadow: inset 0 0 0 1px var(--color-brand-500), var(--shadow-glow);
+  }
+  body:has([data-storefront]) input[type="checkbox"],
+  body:has([data-storefront]) input[type="radio"] {
+    accent-color: var(--color-brand-700);
+  }
+}
+
+/* ---------------------------- Type scale ---------------------------- */
+@utility t-display {
+  font-size: clamp(1.875rem, 1.2rem + 2.6vw, 2.875rem);
+  line-height: 1.04;
+  letter-spacing: -0.038em;
+  font-weight: 700;
+  color: var(--color-ink-950);
+}
+@utility t-h1 {
+  font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.032em;
+  font-weight: 700;
+  color: var(--color-ink-950);
+}
+@utility t-h2 {
+  font-size: clamp(1.1875rem, 1.05rem + 0.55vw, 1.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.026em;
+  font-weight: 650;
+  color: var(--color-ink-950);
+}
+@utility t-h3 {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  font-weight: 600;
+  color: var(--color-ink-900);
+}
+@utility t-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--color-ink-600);
+}
+@utility t-small {
+  font-size: 0.78125rem;
+  line-height: 1.5;
+  color: var(--color-ink-500);
+}
+@utility t-label {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-500);
+}
+@utility t-price {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--color-ink-950);
+}
+
+/* Sticky elements under the header (filter sidebars, summaries, tabs). */
+@utility sticky-under-header {
+  position: sticky;
+  top: var(--sticky-top);
+  transition: top 240ms var(--ease-out-quint);
+}
+
+@layer components {
+  /* Section rhythm. */
+  .section {
+    padding-block: 2.5rem;
+  }
+  @media (min-width: 640px) {
+    .section { padding-block: 3.25rem; }
+  }
+  @media (min-width: 1024px) {
+    .section { padding-block: 4rem; }
+  }
+  .section-tight {
+    padding-block: 1.75rem;
+  }
+  @media (min-width: 1024px) {
+    .section-tight { padding-block: 2.5rem; }
+  }
+
+  /* Frosted chrome: the header, the bottom nav, floating bars. */
+  .glass {
+    background-color: rgb(255 255 255 / 0.84);
+    -webkit-backdrop-filter: saturate(1.6) blur(18px);
+    backdrop-filter: saturate(1.6) blur(18px);
+  }
+
+  /* The futuristic ground: soft cobalt, iris and champagne light on a
+     near-white plane. Used by the hero and a few feature panels. */
+  .aurora {
+    background-color: var(--color-brand-50);
+    background-image:
+      radial-gradient(60% 80% at 8% 10%, color-mix(in oklab, var(--color-iris-200) 70%, transparent) 0%, transparent 60%),
+      radial-gradient(55% 70% at 92% 20%, color-mix(in oklab, var(--color-brand-200) 80%, transparent) 0%, transparent 62%),
+      radial-gradient(50% 60% at 60% 100%, color-mix(in oklab, var(--color-gold-100) 90%, transparent) 0%, transparent 65%);
+  }
+
+  /* The dark counterpart, for the few night panels (footer, promo). */
+  .midnight {
+    background-color: var(--color-brand-950);
+    background-image:
+      radial-gradient(70% 90% at 0% 0%, color-mix(in oklab, var(--color-brand-600) 45%, transparent) 0%, transparent 60%),
+      radial-gradient(50% 70% at 100% 100%, color-mix(in oklab, var(--color-iris-500) 28%, transparent) 0%, transparent 62%);
+    color: #fff;
+  }
+
+  /* A faint technical grid, masked to fade out. Decorative only. */
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgb(10 15 26 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(10 15 26 / 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  }
+
+  /* Gradient hairline border for feature cards. */
+  .edge-glow {
+    position: relative;
+    isolation: isolate;
+  }
+  .edge-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--color-brand-300), var(--color-iris-300) 50%, var(--color-gold-300));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Icon holder: one shape for every icon that sits in a tile. */
+  .icon-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 12px;
+    background-color: var(--color-brand-50);
+    color: var(--color-brand-700);
+  }
+  .icon-tile-sm {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 10px;
+  }
+
+  /* Count bubble for the bag / wishlist. */
+  .count-dot {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding-inline: 5px;
+    border-radius: 9999px;
+    background-color: var(--color-brand-700);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 0 0 2px var(--color-surface);
+  }
+
+  /* Staggered entry for lists that appear on load. */
+  .reveal > * {
+    animation: var(--animate-fade-up);
+  }
+  .reveal > *:nth-child(2) { animation-delay: 40ms; }
+  .reveal > *:nth-child(3) { animation-delay: 80ms; }
+  .reveal > *:nth-child(4) { animation-delay: 120ms; }
+  .reveal > *:nth-child(5) { animation-delay: 160ms; }
+  .reveal > *:nth-child(n + 6) { animation-delay: 200ms; }
+}
+
+/* Storefront restyles of the shared classes. Scoped, because the admin
+   names some of the same classes. */
+body:has([data-storefront]) .eyebrow {
+  gap: 0.5rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-brand-600);
+}
+body:has([data-storefront]) .eyebrow::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--color-brand-500), var(--color-iris-500));
+}
+body:has([data-storefront]) .eyebrow-dark {
+  color: var(--color-brand-200);
+}
+body:has([data-storefront]) .eyebrow-dark::before {
+  background: var(--color-gold-300);
+}
+body:has([data-storefront]) .deep-plane,
+body:has([data-storefront]) .peacock-surface {
+  background-color: var(--color-brand-950);
+  background-image:
+    radial-gradient(70% 90% at 0% 0%, color-mix(in oklab, var(--color-brand-600) 45%, transparent) 0%, transparent 60%),
+    radial-gradient(50% 70% at 100% 100%, color-mix(in oklab, var(--color-iris-500) 28%, transparent) 0%, transparent 62%);
+}
+body:has([data-storefront]) .chip {
+  border-color: var(--color-line-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal > * {
+    animation: none !important;
+  }
+}
