@@ -4,13 +4,13 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, MapPin, Pencil, Plus, Trash2 } from "lucide-react";
 import type { Address } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { AddressForm } from "@/components/checkout/address-form";
 import { Badge } from "@/components/ui/primitives";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { removeAddress } from "@/services/commerce";
@@ -73,7 +73,10 @@ export function AddressStep() {
             <li key={address.id}>
               {editing?.id === address.id ? (
                 <div className="card p-4 sm:p-5">
-                  <h3 className="mb-4 pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                  <h3 className="t-h3 mb-4 flex items-center gap-3">
+                    <span className="icon-tile icon-tile-sm" aria-hidden>
+                      <Pencil size={16} />
+                    </span>
                     Edit address
                   </h3>
                   <AddressForm
@@ -102,7 +105,7 @@ export function AddressStep() {
                           fill of its own. ink-600, not ink-500 — the chosen card
                           is filled brand-100 now, where ink-500 is 4.05:1 and
                           fails. Same reason for the phone line below. */}
-                      <span className="px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] text-ink-600">
+                      <span className="rounded-full bg-surface px-2 py-[3px] text-[10.5px] font-semibold uppercase leading-[14px] tracking-[0.08em] text-ink-600 ring-1 ring-inset ring-line-strong">
                         {address.label}
                       </span>
                       {address.isDefault && <Badge tone="success">Default</Badge>}
@@ -130,7 +133,7 @@ export function AddressStep() {
                       className="h-10 sm:h-8"
                       onClick={() => setEditing(address)}
                     >
-                      <Pencil size={12} /> Edit
+                      <Pencil size={14} /> Edit
                     </Button>
                     {addresses.length > 1 && (
                       <Button
@@ -156,7 +159,7 @@ export function AddressStep() {
                           });
                         }}
                       >
-                        <Trash2 size={12} /> Remove
+                        <Trash2 size={14} /> Remove
                       </Button>
                     )}
                   </div>
@@ -176,7 +179,10 @@ export function AddressStep() {
               className="overflow-hidden"
             >
               <div className="card p-4 sm:p-5">
-                <h3 className="mb-4 pb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                <h3 className="t-h3 mb-4 flex items-center gap-3">
+                  <span className="icon-tile icon-tile-sm" aria-hidden>
+                    <MapPin size={16} />
+                  </span>
                   New delivery address
                 </h3>
                 <AddressForm
@@ -196,29 +202,28 @@ export function AddressStep() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               onClick={() => setAdding(true)}
-              className="tap flex w-full items-center justify-center gap-2 card py-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-50"
+              className="tap flex w-full items-center justify-center gap-2.5 rounded-xl border border-dashed border-line-strong bg-surface/60 py-4 text-[13px] font-semibold text-brand-700 transition-colors duration-200 hover:border-brand-300 hover:bg-brand-50"
             >
-              <Plus size={15} />
+              <span className="icon-tile icon-tile-sm" aria-hidden>
+                <Plus size={16} />
+              </span>
               Add a new address
             </motion.button>
           )}
         </AnimatePresence>
 
         {error && (
-          <p role="alert" className="text-[13px] font-medium text-sale-600">
+          <p role="alert" className="rounded-md bg-sale-50 px-3.5 py-2.5 text-[13px] font-medium text-sale-700">
             {error}
           </p>
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          {/* A 40px touch target on phones; the negative margin keeps the row. */}
-          <Link
-            href="/checkout/contact"
-            className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
-          >
+          <Link href="/checkout/contact" className={buttonClasses("ghost", "sm", "-ml-3 h-10 text-ink-600")}>
+            <ArrowLeft size={16} aria-hidden />
             Back to contact
           </Link>
-          <Button size="lg" className="hidden min-w-[200px] lg:inline-flex" onClick={next}>
+          <Button size="lg" className="hidden min-w-[220px] lg:inline-flex" onClick={next}>
             Continue to delivery
             <ArrowRight size={17} />
           </Button>

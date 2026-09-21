@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { buttonClasses } from "@/components/ui/button";
 import { formatINR } from "@/lib/utils";
@@ -48,13 +48,11 @@ export function PayuRedirect({
   if (error) {
     return (
       <Frame>
-        <span className="mx-auto flex h-12 w-12 items-center justify-center text-sale-600 sm:h-14 sm:w-14">
-          <AlertTriangle size={26} />
+        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-sale-50 text-sale-600 ring-1 ring-inset ring-sale-200">
+          <AlertTriangle size={24} aria-hidden />
         </span>
-        <h1 className="mt-4 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:mt-5 sm:text-[26px]">
-          Payment could not be started
-        </h1>
-        <p className="mx-auto mt-2.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
+        <h1 className="t-h2 mt-5">Payment could not be started</h1>
+        <p className="t-body mx-auto mt-2 max-w-[46ch]">
           {error}
         </p>
         <div className="mt-5 flex flex-col gap-2 sm:mt-6 sm:flex-row sm:justify-center">
@@ -72,29 +70,31 @@ export function PayuRedirect({
   return (
     <Frame>
       <Logo className="mx-auto h-7 w-auto" />
-      <h1 className="mt-6 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
-        Taking you to secure payment
-      </h1>
-      <p className="mt-2.5 text-[13px] leading-[1.5] text-ink-600 sm:text-[14px]">
+      <span className="icon-tile mx-auto mt-6 flex" aria-hidden>
+        <ShieldCheck size={20} />
+      </span>
+      <h1 className="t-h2 mt-4">Taking you to secure payment</h1>
+      <p className="t-body mt-2">
         Order <span className="tabular-nums">{orderNumber}</span> ·{" "}
-        <strong className="font-semibold tabular-nums text-ink-950">{formatINR(amount)}</strong>
+        <strong className="t-price">{formatINR(amount)}</strong>
       </p>
 
-      {/* A hairline that is being drawn, rather than a coloured progress pill. */}
-      <div className="mt-5 h-0.5 w-full overflow-hidden bg-hairline">
-        <div className="h-full w-1/3 animate-[loading_1.1s_ease-in-out_infinite] bg-ink-950" />
+      {/* An indeterminate bar while the signed form is posted. */}
+      <div className="mt-5 h-1 w-full overflow-hidden rounded-full bg-ink-100">
+        <div className="h-full w-1/3 rounded-full bg-linear-to-r from-brand-600 to-brand-400 motion-safe:animate-[loading_1.1s_ease-in-out_infinite]" />
       </div>
 
       <form ref={form} action={endpoint} method="POST" className="mt-5">
         {Object.entries(fields).map(([name, value]) => (
           <input key={name} type="hidden" name={name} value={value} />
         ))}
-        <button type="submit" className={buttonClasses("primary", "lg", "w-full")}>
+        <button type="submit" className={buttonClasses("accent", "lg", "w-full")}>
           Continue to payment
+          <ArrowRight size={18} aria-hidden />
         </button>
       </form>
 
-      <p className="mt-4 text-[13px] leading-[1.5] text-ink-500">
+      <p className="t-small mt-4">
         Card and UPI details are entered on PayU, never on this site
       </p>
 
@@ -106,7 +106,7 @@ export function PayuRedirect({
 function Frame({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
-      <div className="w-full max-w-md card p-5 text-center sm:p-7">
+      <div className="card w-full max-w-md p-6 text-center sm:p-8">
         {children}
       </div>
     </div>

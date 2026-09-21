@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { AlertTriangle, Check, Loader2, UserRound } from "lucide-react";
+import { AlertTriangle, Check, Info, Loader2, ShieldCheck, UserRound } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { buttonClasses } from "@/components/ui/button";
 import { useStore } from "@/store/store";
@@ -124,23 +124,21 @@ export function ProcessingClient() {
   if (phase === "failed" && failure) {
     return (
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
-        <div className="w-full max-w-md card p-5 text-center sm:p-7">
-          {/* A drawn frame around the glyph rather than a tinted tile; the
-              colour that matters is in the mark, not behind it. */}
+        <div className="card w-full max-w-md p-6 text-center sm:p-8">
           <span
             className={cn(
-              "mx-auto flex h-12 w-12 items-center justify-center sm:h-14 sm:w-14",
+              "mx-auto flex h-16 w-16 items-center justify-center rounded-2xl ring-1 ring-inset",
               failure.needsAccount
-                ? "text-brand-700"
-                : "text-sale-600",
+                ? "bg-brand-50 text-brand-700 ring-brand-100"
+                : "bg-sale-50 text-sale-600 ring-sale-200",
             )}
           >
-            {failure.needsAccount ? <UserRound size={26} /> : <AlertTriangle size={26} />}
+            {failure.needsAccount ? <UserRound size={24} /> : <AlertTriangle size={24} />}
           </span>
-          <h1 className="mt-4 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:mt-5 sm:text-[26px]">
+          <h1 className="t-h2 mt-5">
             {failure.needsAccount ? "An account is needed first" : "Payment not completed"}
           </h1>
-          <p className="mx-auto mt-2.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 wrap-break-word sm:text-[14px]">
+          <p className="t-body mx-auto mt-2 max-w-[46ch] wrap-break-word">
             {failure.message}
           </p>
 
@@ -169,7 +167,7 @@ export function ProcessingClient() {
             )}
           </div>
 
-          <p className="mx-auto mt-6 max-w-[46ch] pt-4 text-[13px] leading-[1.55] text-ink-500">
+          <p className="t-small mx-auto mt-6 max-w-[46ch] border-t border-line pt-4">
             If money left your account, it is a bank-side hold and reverses on its own within 5 to 7
             business days. Send us the reference and we will chase it.
           </p>
@@ -182,12 +180,12 @@ export function ProcessingClient() {
     <>
       <div className="flex min-h-[calc(100dvh-120px)] flex-col items-center justify-center px-3 py-8 sm:px-4 sm:py-16">
         <div className="w-full max-w-md">
-          <div className="mb-5 flex justify-center sm:mb-8">
+          <div className="mb-6 flex justify-center sm:mb-8">
             <Logo href={null} />
           </div>
 
           <div className="card overflow-hidden">
-            <div className="deep-plane px-4 py-7 text-center sm:px-6 sm:py-9">
+            <div className="midnight relative px-5 py-8 text-center sm:px-6 sm:py-10">
               {/* Within the house limits: nothing here scales by more than
                   three per cent and nothing travels. The old frame popped from
                   90% and the tick from 60%, which is a bounce, and a bounce is
@@ -196,7 +194,7 @@ export function ProcessingClient() {
                 initial={reduce ? false : { scale: 0.98, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                className="mx-auto flex h-14 w-14 items-center justify-center sm:h-16 sm:w-16"
+                className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-inset ring-white/15"
               >
                 <AnimatePresence mode="wait" initial={false}>
                   {complete ? (
@@ -206,41 +204,45 @@ export function ProcessingClient() {
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Check size={30} className="text-gold-300" strokeWidth={2} />
+                      <Check size={24} className="text-gold-300" />
                     </motion.span>
                   ) : (
                     <motion.span key="busy" exit={{ opacity: 0 }}>
-                      <Loader2 size={28} className="animate-spin text-white/80" />
+                      <Loader2 size={24} className="animate-spin text-white/85 motion-reduce:animate-none" />
                     </motion.span>
                   )}
                 </AnimatePresence>
               </motion.div>
 
-              <h1 className="mt-6 font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-white sm:mt-7 sm:text-[26px]">
+              <h1 aria-live="polite" className="t-h2 mt-6 text-white">
                 {stage.title}
               </h1>
               {stage.detail && (
-                <p className="mt-2 text-[13px] leading-[1.5] text-white/65">{stage.detail}</p>
+                <p className="mt-2 text-[13px] leading-[1.5] text-white/70">{stage.detail}</p>
               )}
 
-              {/* The amount is money, so it is set in the text face with
-                  tabular figures — Fraunces' proportional numerals made it
-                  jump sideways as the stages changed underneath it. */}
+              {/* Money in tabular figures, so it holds still as stages change. */}
               {amount !== null && (
-                <p className="mt-5 text-[24px] font-semibold leading-none tabular-nums text-white sm:text-[28px]">
+                <p className="t-price mt-5 text-[26px] leading-none text-white sm:text-[30px]">
                   {formatINR(amount)}
                 </p>
               )}
             </div>
 
-            <div className="px-4 sm:px-6">
-              <p className="py-4 text-[13px] leading-[1.55] text-ink-600">
-                Your card and UPI details are entered on PayU&apos;s secure page. They never
-                reach our servers.
+            <div className="card-divided px-5 sm:px-6">
+              <p className="flex items-start gap-3 py-4 text-[13px] leading-[1.55] text-ink-600">
+                <ShieldCheck size={16} aria-hidden className="mt-0.5 shrink-0 text-brand-700" />
+                <span>
+                  Your card and UPI details are entered on PayU&apos;s secure page. They never
+                  reach our servers.
+                </span>
               </p>
-              <p className="py-4 text-[13px] leading-[1.55] text-ink-600">
-                Do not close this tab. If the payment window did not open, check your pop-up
-                blocker.
+              <p className="flex items-start gap-3 py-4 text-[13px] leading-[1.55] text-ink-600">
+                <Info size={16} aria-hidden className="mt-0.5 shrink-0 text-ink-500" />
+                <span>
+                  Do not close this tab. If the payment window did not open, check your pop-up
+                  blocker.
+                </span>
               </p>
             </div>
           </div>

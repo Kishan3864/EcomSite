@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { ArrowLeft, CreditCard, MapPin, Package, Pencil, Truck, UserRound } from "lucide-react";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { useCheckoutPaymentMethods } from "@/components/checkout/payment-methods";
 import { OrderSummary } from "@/components/cart/order-summary";
@@ -94,6 +94,7 @@ export function ReviewStep() {
   const summaryRows = [
     {
       title: "Delivery address",
+      Icon: MapPin,
       href: "/checkout/address",
       body: address ? (
         <>
@@ -114,6 +115,7 @@ export function ReviewStep() {
     },
     {
       title: "Delivery",
+      Icon: Truck,
       // No link: there is one delivery, so there is nothing to go and change.
       body: (
         <>
@@ -128,6 +130,7 @@ export function ReviewStep() {
     },
     {
       title: "Payment method",
+      Icon: CreditCard,
       href: "/checkout/payment",
       body: (
         <>
@@ -168,7 +171,7 @@ export function ReviewStep() {
           <Link
             href={REGISTER_HREF}
             className={buttonClasses(
-              "primary",
+              "accent",
               "lg",
               "w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8",
             )}
@@ -177,6 +180,7 @@ export function ReviewStep() {
           </Link>
         ) : (
           <Button
+            variant="accent"
             size="lg"
             className="w-full px-4 sm:w-auto sm:min-w-[240px] sm:px-8"
             loading={placing || !sessionChecked}
@@ -188,19 +192,20 @@ export function ReviewStep() {
         )
       }
     >
-      <div className="space-y-6">
+      <div className="space-y-5 sm:space-y-6">
         {needsAccount && (
-          /* Ink, not a tinted panel. It is the most important thing on the page
-             and it earns that by being the only element drawn in full black. */
-          <section className="card p-4 sm:p-5">
-            <h2 className="font-display text-[20px] leading-[1.15] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
-              You need an account to place this order
-            </h2>
-            <p className="mt-2.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
+          /* The most important thing on the page, so the one panel with a
+             gradient edge. */
+          <section className="card edge-glow p-4 sm:p-6">
+            <span className="icon-tile" aria-hidden>
+              <UserRound size={20} />
+            </span>
+            <h2 className="t-h2 mt-4">You need an account to place this order</h2>
+            <p className="t-body mt-2 max-w-[52ch]">
               Your order history, tracking and returns all live in your account, so we ask for one
               before the payment goes through. Creating it takes a minute.
             </p>
-            <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:text-[14px]">
+            <p className="t-body mt-2 max-w-[52ch]">
               Nothing here is lost. Your bag, address, delivery and payment choices stay exactly as
               they are and we bring you back to this page.
             </p>
@@ -208,35 +213,31 @@ export function ReviewStep() {
               <Link href={REGISTER_HREF} className={buttonClasses("primary", "md")}>
                 Create an account
               </Link>
-              <Link
-                href={SIGN_IN_HREF}
-                className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors duration-200 hover:text-brand-700 lg:my-0 lg:py-0"
-              >
+              <Link href={SIGN_IN_HREF} className={buttonClasses("outline", "md")}>
                 I already have one
               </Link>
             </div>
           </section>
         )}
 
-        {/* One shared hairline grid: three panes of the same document rather
-            than three cards floating side by side. */}
-        <div className="tile-grid grid-cols-1 sm:grid-cols-3">
-          {summaryRows.map((row) => (
-            <section key={row.title} className="min-w-0 p-3.5 sm:p-4">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <h2 className="min-w-0 truncate text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                  {row.title}
-                </h2>
-                {/* A 40px target on phones; the negative margin keeps the row
-                    height. Delivery has no link — there is one, so there is
-                    nothing to go and change. */}
+        <div className="grid gap-3 sm:grid-cols-3">
+          {summaryRows.map(({ Icon, ...row }) => (
+            <section key={row.title} className="card min-w-0 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <span className="icon-tile icon-tile-sm" aria-hidden>
+                    <Icon size={16} />
+                  </span>
+                  <h2 className="t-label min-w-0 truncate">{row.title}</h2>
+                </span>
+                {/* Delivery has no link — there is one, so nothing to change. */}
                 {row.href && (
                   <Link
                     href={row.href}
                     aria-label={`Change ${row.title.toLowerCase()}`}
-                    className="tap -m-2.5 shrink-0 p-3.5 text-ink-400 transition-colors duration-200 hover:text-brand-700 sm:m-0 sm:p-1"
+                    className="tap -m-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-500 transition-colors duration-200 hover:bg-brand-50 hover:text-brand-700"
                   >
-                    <Pencil size={12} />
+                    <Pencil size={14} />
                   </Link>
                 )}
               </div>
@@ -245,36 +246,37 @@ export function ReviewStep() {
           ))}
         </div>
 
-        <section className="card">
-          <h2 className="px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5">
+        <section className="card overflow-hidden">
+          <h2 className="t-h3 flex items-center gap-3 px-4 py-3.5 sm:px-5">
+            <span className="icon-tile icon-tile-sm" aria-hidden>
+              <Package size={16} />
+            </span>
             {cart.length} item{cart.length > 1 ? "s" : ""} in this order
           </h2>
-          <ul>
+          <ul className="card-divided border-t border-line">
             {cart.map((line) => (
-              <li key={line.id} className="flex gap-3 px-4 py-3 sm:gap-4 sm:px-5 sm:py-4">
+              <li key={line.id} className="flex gap-3 px-4 py-3.5 sm:gap-4 sm:px-5 sm:py-4">
                 <Link
                   href={`/p/${line.slug}`}
-                  className="relative h-20 w-16 shrink-0 overflow-hidden bg-ink-100"
+                  className="relative h-20 w-16 shrink-0 overflow-hidden rounded-md bg-ink-100 ring-1 ring-inset ring-line"
                 >
                   <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                 </Link>
                 <div className="min-w-0 flex-1">
-                  {line.brand && <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{line.brand}</p>}
+                  {line.brand && <p className="t-label truncate text-[10px]">{line.brand}</p>}
                   <Link
                     href={`/p/${line.slug}`}
-                    className="mt-1 line-clamp-2 text-[13.5px] font-medium leading-[1.35] text-ink-900 transition-colors duration-200 hover:text-brand-700"
+                    className="mt-0.5 line-clamp-2 text-[13.5px] font-medium leading-[1.35] text-ink-900 transition-colors duration-200 hover:text-brand-700"
                   >
                     {line.title}
                   </Link>
-                  <p className="mt-1 text-[13px] text-ink-500">
+                  <p className="t-small mt-1">
                     {line.variantLabel ? `${line.variantLabel} · ` : ""}Quantity{" "}
                     <span className="tabular-nums">{line.quantity}</span>
                   </p>
                   <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1.5" />
                 </div>
-                <p className="shrink-0 text-[14px] font-semibold tabular-nums text-ink-950">
-                  {formatINR(line.price * line.quantity)}
-                </p>
+                <p className="t-price shrink-0 text-[14.5px]">{formatINR(line.price * line.quantity)}</p>
               </li>
             ))}
           </ul>
@@ -283,7 +285,7 @@ export function ReviewStep() {
         {/* The one Pay button on a desktop is in the order summary beside this;
             on a phone it is the pinned bar. This keeps only the terms — a second
             button here made two places to press for one payment. */}
-        <p className="pt-4 text-[13px] leading-[1.55] text-ink-500">
+        <p className="t-small pt-1">
           By placing this order you agree to our{" "}
           <Link href="/legal/terms" className="font-medium text-brand-700 hover:underline">
             terms
@@ -295,11 +297,8 @@ export function ReviewStep() {
           .
         </p>
 
-        {/* A 40px touch target on phones; the negative margin keeps the line. */}
-        <Link
-          href="/checkout/payment"
-          className="-my-2.5 inline-block py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
-        >
+        <Link href="/checkout/payment" className={buttonClasses("ghost", "sm", "-ml-3 h-10 text-ink-600")}>
+          <ArrowLeft size={16} aria-hidden />
           Back to payment
         </Link>
       </div>

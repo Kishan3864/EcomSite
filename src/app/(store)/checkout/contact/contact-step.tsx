@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, UserRound } from "lucide-react";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { OrderSummary } from "@/components/cart/order-summary";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { useStore } from "@/store/store";
 import { computeTotals } from "@/lib/pricing";
@@ -91,10 +91,13 @@ export function ContactStep() {
     >
       <Form id="checkout-contact" onSubmit={submit} className="space-y-6">
         <section className="card p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3 pb-3">
-            <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-              Contact details
-            </h2>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="icon-tile icon-tile-sm" aria-hidden>
+                <UserRound size={16} />
+              </span>
+              <h2 className="t-h3">Contact details</h2>
+            </div>
             {confirming && (
               <Button
                 type="button"
@@ -112,7 +115,7 @@ export function ContactStep() {
             /* Read back as a ledger: the label in the left column, the value
                right of it, one ruled row apiece. An email longer than the row
                wraps rather than pushing the column about. */
-            <dl className="pt-1">
+            <dl className="card-muted card-divided mt-4 px-4">
               {(
                 [
                   { label: "Name", value: form.name },
@@ -120,15 +123,12 @@ export function ContactStep() {
                   // Every digit the same width, so the number reads as a number.
                   { label: "Mobile", value: form.phone, numeric: true },
                 ] as { label: string; value: string; numeric?: boolean }[]
-              ).map((row, i) => (
+              ).map((row) => (
                 <div
                   key={row.label}
-                  className={cn(
-                    "flex min-h-11 flex-wrap items-center gap-x-4 gap-y-0.5 py-2",
-                    i > 0 && "rule-hair-t",
-                  )}
+                  className="flex min-h-11 flex-wrap items-center gap-x-4 gap-y-0.5 py-2.5"
                 >
-                  <dt className="w-[72px] shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                  <dt className="t-label w-[72px] shrink-0">
                     {row.label}
                   </dt>
                   <dd
@@ -196,9 +196,7 @@ export function ContactStep() {
             </div>
           )}
 
-          {/* A rule and a paragraph, rather than a tinted box: the note is read
-              in the same ink as everything else on the page. */}
-          <p className="mt-4 pt-3.5 text-[13px] leading-[1.55] text-ink-600">
+          <p className="mt-5 border-t border-line pt-4 text-[13px] leading-[1.55] text-ink-600">
             {customer ? (
               <span className="min-w-0">
                 Signed in as{" "}
@@ -223,14 +221,11 @@ export function ContactStep() {
         </section>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* A 40px touch target on phones; the negative margin keeps the row. */}
-          <Link
-            href="/cart"
-            className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:py-0"
-          >
+          <Link href="/cart" className={buttonClasses("ghost", "sm", "-ml-3 h-10 text-ink-600")}>
+            <ArrowLeft size={16} aria-hidden />
             Back to bag
           </Link>
-          <Button type="submit" size="lg" className="hidden min-w-[200px] lg:inline-flex">
+          <Button type="submit" size="lg" className="hidden min-w-[220px] lg:inline-flex">
             Continue to address
             <ArrowRight size={17} />
           </Button>

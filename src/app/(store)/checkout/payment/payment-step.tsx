@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Globe } from "lucide-react";
+import { ArrowLeft, ArrowRight, Globe } from "lucide-react";
 import type { PaymentMethodId } from "@/lib/types";
 import { CheckoutAside, CheckoutShell } from "@/components/checkout/shell";
 import { useCheckoutPaymentMethods } from "@/components/checkout/payment-methods";
 import { OrderSummary } from "@/components/cart/order-summary";
 import { Badge } from "@/components/ui/primitives";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { OptionCard } from "@/components/ui/field";
 import { PaymentMark, type PaymentMarkName } from "@/components/brand/payment-marks";
 import { useStore } from "@/store/store";
@@ -115,22 +115,22 @@ const LEAD_MARKS: Partial<Record<PaymentMethodId, PaymentMarkName>> = {
  */
 function MethodLead({ id }: { id: PaymentMethodId }) {
   const name = LEAD_MARKS[id];
-  // mt-px against `items-start`, not `items-center`: the longest method name
-  // wraps to two lines on a phone, and a mark centred on a two-line block
-  // floats between them instead of sitting on the name.
-  const wrap = "mt-px shrink-0 text-ink-600";
+  // A white tile, so the mark keeps its contrast on the chosen card's tint.
+  // `-mt-1` sits it on the name's first line when a long name wraps.
+  const wrap =
+    "-mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-surface text-ink-600 ring-1 ring-inset ring-line";
 
   if (id === "online") {
     return (
       <span className={wrap}>
-        <Globe size={15} strokeWidth={1.6} aria-hidden />
+        <Globe size={16} aria-hidden />
       </span>
     );
   }
   if (!name) return null;
   return (
     <span className={wrap}>
-      <PaymentMark name={name} size={15} />
+      <PaymentMark name={name} size={16} />
     </span>
   );
 }
@@ -171,8 +171,8 @@ function MarkRow({
   items: readonly { id: PaymentMarkName; label: string }[];
 }) {
   return (
-    <div className="rounded-lg border bg-surface px-2.5 py-2.5">
-      <span className="block text-[10.5px] font-semibold uppercase leading-none tracking-[0.12em] text-ink-500">
+    <div className="rounded-md border border-line bg-surface px-3 py-3 shadow-xs">
+      <span className="t-label block text-[10.5px] leading-none">
         {label}
       </span>
       <ul
@@ -505,7 +505,7 @@ export function PaymentStep() {
                   // needed telling was never told. See field.tsx.
                   note={disabled ? codReason : undefined}
                   title={
-                    <span className="flex items-start gap-2">
+                    <span className="flex items-start gap-3">
                       <MethodLead id={method.id} />
                       {method.name}
                     </span>
@@ -546,7 +546,7 @@ export function PaymentStep() {
                         // plainly one statement made twice.
                         <span
                           aria-hidden
-                          className="bg-brand-700 px-1.5 py-1 text-[10px] font-semibold uppercase leading-none tracking-[0.14em] text-white"
+                          className="inline-flex items-center rounded-full bg-brand-700 px-2 py-[3px] text-[10px] font-semibold uppercase leading-[14px] tracking-[0.1em] text-white"
                         >
                           Selected
                         </span>
@@ -562,7 +562,7 @@ export function PaymentStep() {
                         BHIM, Amazon Pay and every other UPI app work the same way.
                       </p>
                       {/* Three ruled rows: what to do, in the order it happens. */}
-                      <ol>
+                      <ol className="space-y-1">
                         {[
                           "Scan our QR, or tap through to your UPI app on a phone.",
                           `Pay ${formatINR(totals.total)} and copy the 12-digit reference your app shows.`,
@@ -570,12 +570,12 @@ export function PaymentStep() {
                         ].map((line, i) => (
                           <li
                             key={line}
-                            className="flex gap-3 py-2.5 text-[13px] leading-[1.55] text-ink-600"
+                            className="flex gap-3 py-1.5 text-[13px] leading-[1.55] text-ink-600"
                           >
-                            {/* Ocean, not ink-400: these sit on the chosen
-                                card's brand-100 fill, where ink-400 is 2:1 and
-                                a numeral is text, not a glyph stroke. */}
-                            <span className="shrink-0 font-semibold tabular-nums text-brand-700">
+                            {/* Ocean on white, not ink-400: a numeral is text,
+                                not a glyph stroke, and must hold contrast on
+                                the chosen card's tint. */}
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface text-[11px] font-semibold tabular-nums text-brand-700 ring-1 ring-inset ring-brand-200">
                               {i + 1}
                             </span>
                             <span className="min-w-0">{line}</span>
@@ -613,25 +613,21 @@ export function PaymentStep() {
         </div>
 
         {error && (
-          <p role="alert" className="text-[13px] font-medium text-sale-600">
+          <p role="alert" className="rounded-md bg-sale-50 px-3.5 py-2.5 text-[13px] font-medium text-sale-700">
             {error}
           </p>
         )}
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-          {/* A 44px touch target on phones, which is the size the rest of the
-              shop uses and the size the old comment here claimed. It was
-              `py-2.5` on 11px text with no line-height utility — 16.5 + 20 =
-              36.5px — and the comment asserting 40px was what kept anyone from
-              measuring it. `min-h-11` states the target outright instead of
-              deriving it from padding; the negative margin keeps the row. */}
+          {/* 44px tall on phones: the shop's touch-target size. */}
           <Link
             href="/checkout/address"
-            className="-my-2.5 inline-flex min-h-11 items-center py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-ink-950 lg:my-0 lg:min-h-0 lg:py-0"
+            className={buttonClasses("ghost", "sm", "-ml-3 h-11 text-ink-600 lg:h-10")}
           >
+            <ArrowLeft size={16} aria-hidden />
             Back to address
           </Link>
-          <Button size="lg" className="hidden min-w-[200px] lg:inline-flex" onClick={next}>
+          <Button size="lg" className="hidden min-w-[220px] lg:inline-flex" onClick={next}>
             Review order
             <ArrowRight size={17} />
           </Button>

@@ -4,10 +4,21 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, Minus, Plus } from "lucide-react";
+import {
+  ArrowRight,
+  Bookmark,
+  Heart,
+  Minus,
+  PackageX,
+  Plus,
+  ShoppingBag,
+  Trash2,
+  Truck,
+} from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 import { OrderSummary } from "@/components/cart/order-summary";
+import { CheckoutTrustRow } from "@/components/checkout/trust-row";
 import { useStore } from "@/store/store";
 import { useCommerce } from "@/store/commerce";
 import { computeTotals } from "@/lib/pricing";
@@ -15,19 +26,9 @@ import { unavailableProductIds } from "@/services/cart-availability";
 
 import { cn, formatINR } from "@/lib/utils";
 
-/**
- * The bag.
- *
- * Drawn as a ruled index rather than a stack of cards: one hairline between
- * lines, nothing boxed, nothing shadowed. A bag of six items used to be six
- * separate objects floating on the page, which made a short bag look thin and
- * a long one look like a filing cabinet. As an index it reads as one document
- * at any length, and the ledger beside it is the same document's total.
- */
-
-/** The row of small-caps actions under each line, and its phone strip twin. */
+/** The small icon+word actions under each line. */
 const LINE_ACTION =
-  "text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200";
+  "tap inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-medium text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950";
 
 export function CartClient() {
   const { cart, saved, config, dispatch, hydrated } = useStore();
@@ -54,13 +55,13 @@ export function CartClient() {
 
   if (!hydrated) {
     return (
-      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-px">
+      <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-36 sm:h-32" />
+            <div key={i} className="skeleton h-36 rounded-xl sm:h-40" />
           ))}
         </div>
-        <div className="skeleton h-72" />
+        <div className="skeleton h-80 rounded-xl" />
       </div>
     );
   }
@@ -68,6 +69,7 @@ export function CartClient() {
   if (cart.length === 0 && saved.length === 0) {
     return (
       <EmptyState
+        icon={<ShoppingBag size={24} />}
         title="Your bag is empty"
         body="Nothing here yet. Browse the catalogue and anything you add will be saved on this device."
         action={
@@ -85,45 +87,54 @@ export function CartClient() {
 
   return (
     <>
-      <div className="grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_368px] lg:gap-8">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8">
         <div className="min-w-0 space-y-8 sm:space-y-10">
           {cart.length > 0 ? (
-            <section>
-              <header className="mb-2.5 flex items-center justify-between gap-4 sm:mb-3">
-                <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                  In your bag ({cart.length})
+            <section aria-labelledby="bag-heading">
+              <header className="mb-3 flex items-center justify-between gap-4">
+                <h2 id="bag-heading" className="t-h3 flex items-center gap-2">
+                  In your bag
+                  <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11.5px] font-semibold tabular-nums text-brand-700">
+                    {cart.length}
+                  </span>
                 </h2>
-                {/* Padding widens the touch target; the negative margin keeps the row.
-                    Off from lg, so the desktop focus ring still hugs the words. */}
                 <button
                   onClick={() => dispatch({ type: "cart/clear" })}
-                  className="-my-2.5 py-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-sale-600 lg:my-0 lg:py-0"
+                  className="tap inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-medium text-ink-500 transition-colors duration-200 hover:bg-sale-50 hover:text-sale-600"
                 >
+                  <Trash2 size={14} aria-hidden />
                   Clear bag
                 </button>
               </header>
 
               {blocked && (
-                <div role="alert" className="mb-3 rounded-xl border border-sale-200 bg-sale-50 px-3.5 py-3 sm:px-4">
-                  <p className="text-[13.5px] font-semibold text-ink-950">
-                    {goneLines.length === 1 ? "One item is" : `${goneLines.length} items are`} no longer available
-                  </p>
-                  <p className="mt-0.5 text-[13px] leading-[1.5] text-ink-600">
-                    Remove {goneLines.length === 1 ? "it" : "them"} to continue to checkout. The rest of your bag is fine.
-                  </p>
-                  <ul className="mt-2 space-y-1.5">
-                    {goneLines.map((line) => (
-                      <li key={line.id} className="flex items-center justify-between gap-3 text-[13px] text-ink-800">
-                        <span className="min-w-0 truncate">{line.title}</span>
-                        <button
-                          onClick={() => dispatch({ type: "cart/remove", id: line.id })}
-                          className={cn(LINE_ACTION, "shrink-0 text-sale-600 hover:text-sale-700")}
-                        >
-                          Remove
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                <div role="alert" className="mb-3 rounded-xl border border-sale-200 bg-sale-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <span className="icon-tile icon-tile-sm bg-white text-sale-600" aria-hidden>
+                      <PackageX size={16} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13.5px] font-semibold text-ink-950">
+                        {goneLines.length === 1 ? "One item is" : `${goneLines.length} items are`} no longer available
+                      </p>
+                      <p className="mt-0.5 text-[13px] leading-[1.5] text-ink-600">
+                        Remove {goneLines.length === 1 ? "it" : "them"} to continue to checkout. The rest of your bag is fine.
+                      </p>
+                      <ul className="mt-2 space-y-1">
+                        {goneLines.map((line) => (
+                          <li key={line.id} className="flex items-center justify-between gap-3 text-[13px] text-ink-800">
+                            <span className="min-w-0 truncate">{line.title}</span>
+                            <button
+                              onClick={() => dispatch({ type: "cart/remove", id: line.id })}
+                              className="tap inline-flex h-9 shrink-0 items-center rounded-full px-3 text-[12.5px] font-semibold text-sale-600 transition-colors duration-200 hover:bg-white hover:text-sale-700"
+                            >
+                              Remove
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               )}
               <ul className="space-y-3">
@@ -158,49 +169,49 @@ export function CartClient() {
                         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                         className="card overflow-hidden"
                       >
-                        <div className="flex gap-3 p-3 sm:gap-5 sm:p-4">
+                        <div className="flex gap-3.5 p-3.5 sm:gap-5 sm:p-5">
                           <Link
                             href={`/p/${line.slug}`}
-                            className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-32 sm:w-28"
+                            className="relative h-28 w-24 shrink-0 overflow-hidden rounded-lg bg-ink-100 ring-1 ring-inset ring-line sm:h-36 sm:w-28"
                           >
                             <Image
                               src={line.image}
                               alt=""
                               fill
-                              sizes="(min-width: 640px) 112px, 80px"
+                              sizes="(min-width: 640px) 112px, 96px"
                               className="object-cover"
                             />
                           </Link>
 
                           <div className="flex min-w-0 flex-1 flex-col">
-                            {line.brand && <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{line.brand}</p>}
-                            <Link
-                              href={`/p/${line.slug}`}
-                              className="mt-1 line-clamp-2 text-[13.5px] font-medium leading-[1.35] text-ink-900 transition-colors duration-200 hover:text-brand-700 sm:text-[14px]"
-                            >
-                              {line.title}
-                            </Link>
-                            {line.variantLabel && (
-                              <p className="mt-1 text-[13px] leading-[1.5] text-ink-500">
-                                {line.variantLabel}
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                {line.brand && <p className="t-label truncate text-[10px]">{line.brand}</p>}
+                                <Link
+                                  href={`/p/${line.slug}`}
+                                  className="mt-0.5 line-clamp-2 text-[14px] font-medium leading-[1.35] text-ink-900 transition-colors duration-200 hover:text-brand-700"
+                                >
+                                  {line.title}
+                                </Link>
+                                {line.variantLabel && <p className="t-small mt-1">{line.variantLabel}</p>}
+                              </div>
+                              <p className="t-price hidden shrink-0 text-right text-[16px] sm:block">
+                                {formatINR(line.price * line.quantity)}
                               </p>
-                            )}
+                            </div>
 
-                            <Price price={line.price} mrp={line.mrp} size="md" className="mt-2" />
+                            <Price price={line.price} mrp={line.mrp} size="sm" className="mt-2" />
 
-                            {/* A fact, in the same ink as every other fact on the
-                                page. It used to be printed in brand ocean on
-                                every line, which spent the page's structural
-                                colour on its least important sentence. */}
-                            <p className="mt-1.5 text-[13px] leading-[1.5] text-ink-500">
+                            <p className="t-small mt-1.5 flex items-center gap-1.5">
+                              <Truck size={14} aria-hidden className="shrink-0" />
                               {line.deliveryDays <= 2
                                 ? `Delivered in ${line.deliveryDays} day${line.deliveryDays > 1 ? "s" : ""}`
                                 : `Delivered in ${line.deliveryDays} days`}
                               {line.freeShipping && " · Free"}
                             </p>
 
-                            <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 pt-3">
-                              <div className="inline-flex items-center overflow-hidden rounded-lg border border-line-strong">
+                            <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-2 pt-3">
+                              <div className="inline-flex items-center rounded-full bg-surface ring-1 ring-inset ring-line-strong">
                                 <button
                                   onClick={() =>
                                     dispatch({
@@ -210,11 +221,14 @@ export function CartClient() {
                                     })
                                   }
                                   aria-label="Decrease quantity"
-                                  className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:h-9 sm:w-9"
+                                  className="tap flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 sm:h-9 sm:w-9"
                                 >
                                   <Minus size={14} />
                                 </button>
-                                <span className="w-9 text-center text-[13px] font-semibold tabular-nums text-ink-950 sm:text-[13.5px]">
+                                <span
+                                  aria-live="polite"
+                                  className="w-8 text-center text-[13.5px] font-semibold tabular-nums text-ink-950"
+                                >
                                   {line.quantity}
                                 </span>
                                 <button
@@ -227,60 +241,69 @@ export function CartClient() {
                                   }
                                   disabled={line.quantity >= line.stock}
                                   aria-label="Increase quantity"
-                                  className="flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-950 hover:text-white disabled:pointer-events-none disabled:text-ink-400 sm:h-9 sm:w-9"
+                                  className="tap flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950 disabled:pointer-events-none disabled:text-ink-300 sm:h-9 sm:w-9"
                                 >
                                   <Plus size={14} />
                                 </button>
                               </div>
 
+                              <span className="t-price ml-auto text-[15px] sm:hidden">
+                                {formatINR(line.price * line.quantity)}
+                              </span>
+
                               {/* From sm up the actions sit beside the stepper; phones
                                   get them as a full-width strip under the item. */}
-                              <button
-                                onClick={saveForLater}
-                                className={`hidden text-ink-500 hover:text-ink-950 sm:inline-flex ${LINE_ACTION}`}
-                              >
-                                Save for later
-                              </button>
-
-                              <button
-                                onClick={wishlist}
-                                className={`hidden text-ink-500 hover:text-ink-950 sm:inline-flex ${LINE_ACTION}`}
-                              >
-                                {wishlisted ? "Wishlisted" : "Wishlist"}
-                              </button>
-
-                              <button
-                                onClick={remove}
-                                className={`ml-auto hidden text-ink-500 hover:text-sale-600 sm:inline-flex ${LINE_ACTION}`}
-                              >
-                                Remove
-                              </button>
+                              <div className="hidden flex-1 items-center gap-1 sm:flex">
+                                <button onClick={saveForLater} className={LINE_ACTION}>
+                                  <Bookmark size={14} aria-hidden />
+                                  Save for later
+                                </button>
+                                <button onClick={wishlist} className={LINE_ACTION} aria-pressed={wishlisted}>
+                                  <Heart
+                                    size={14}
+                                    aria-hidden
+                                    className={cn(wishlisted && "fill-current text-sale-600")}
+                                  />
+                                  {wishlisted ? "Wishlisted" : "Wishlist"}
+                                </button>
+                                <button
+                                  onClick={remove}
+                                  className={cn(LINE_ACTION, "ml-auto hover:bg-sale-50 hover:text-sale-600")}
+                                >
+                                  <Trash2 size={14} aria-hidden />
+                                  Remove
+                                </button>
+                              </div>
                             </div>
                           </div>
-
-                          <p className="hidden shrink-0 text-right text-[15px] font-semibold tabular-nums text-ink-950 sm:block">
-                            {formatINR(line.price * line.quantity)}
-                          </p>
                         </div>
 
                         {/* Phones: three 40px targets across the line, like a native cart. */}
-                        <div className="flex border-t sm:hidden">
+                        <div className="grid grid-cols-3 border-t border-line sm:hidden">
                           <button
                             onClick={saveForLater}
-                            className={`tap flex h-10 flex-auto items-center justify-center whitespace-nowrap px-2 text-ink-500 hover:text-ink-950 ${LINE_ACTION}`}
+                            className="tap flex h-11 items-center justify-center gap-1.5 whitespace-nowrap px-2 text-[12px] font-medium text-ink-600 transition-colors duration-200 hover:text-ink-950"
                           >
+                            <Bookmark size={14} aria-hidden />
                             Save for later
                           </button>
                           <button
                             onClick={wishlist}
-                            className={`tap flex h-10 flex-auto items-center justify-center whitespace-nowrap px-2 text-ink-500 hover:text-ink-950 ${LINE_ACTION}`}
+                            aria-pressed={wishlisted}
+                            className="tap flex h-11 items-center justify-center gap-1.5 whitespace-nowrap border-x border-line px-2 text-[12px] font-medium text-ink-600 transition-colors duration-200 hover:text-ink-950"
                           >
+                            <Heart
+                              size={14}
+                              aria-hidden
+                              className={cn(wishlisted && "fill-current text-sale-600")}
+                            />
                             {wishlisted ? "Wishlisted" : "Wishlist"}
                           </button>
                           <button
                             onClick={remove}
-                            className={`tap flex h-10 flex-auto items-center justify-center whitespace-nowrap px-2 text-ink-500 hover:text-sale-600 ${LINE_ACTION}`}
+                            className="tap flex h-11 items-center justify-center gap-1.5 whitespace-nowrap px-2 text-[12px] font-medium text-ink-600 transition-colors duration-200 hover:text-sale-600"
                           >
+                            <Trash2 size={14} aria-hidden />
                             Remove
                           </button>
                         </div>
@@ -292,6 +315,7 @@ export function CartClient() {
             </section>
           ) : (
             <EmptyState
+              icon={<ShoppingBag size={24} />}
               title="Nothing in your bag"
               body="You still have items saved for later below."
               action={
@@ -299,30 +323,25 @@ export function CartClient() {
                   Browse products
                 </Link>
               }
-              className="py-7 sm:py-10"
+              className="py-8 sm:py-10"
             />
           )}
 
           {saved.length > 0 && (
-            <section>
-              <h2 className="mb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:mb-3">
-                Saved for later ({saved.length})
+            <section aria-labelledby="saved-heading">
+              <h2 id="saved-heading" className="t-h3 mb-3 flex items-center gap-2">
+                <Bookmark size={16} aria-hidden className="text-ink-500" />
+                Saved for later
+                <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[11.5px] font-semibold tabular-nums text-ink-700">
+                  {saved.length}
+                </span>
               </h2>
-              {/* One shared hairline grid rather than a row of boxed cards. An
-                  odd count would otherwise leave the last cell as a rectangle
-                  of bare hairline, so the last tile takes the whole row. */}
-              <ul className="tile-grid grid-cols-1 sm:grid-cols-2">
+              <ul className="grid gap-3 sm:grid-cols-2">
                 {saved.map((line) => (
-                  <li
-                    key={line.id}
-                    className={cn(
-                      "flex gap-3 p-3 sm:gap-3.5 sm:p-3.5",
-                      saved.length % 2 === 1 && "sm:last:col-span-2",
-                    )}
-                  >
+                  <li key={line.id} className="card flex gap-3 p-3 sm:gap-3.5 sm:p-3.5">
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg bg-ink-100"
+                      className="relative h-24 w-20 shrink-0 overflow-hidden rounded-md bg-ink-100 ring-1 ring-inset ring-line"
                     >
                       <Image src={line.image} alt="" fill sizes="80px" className="object-cover" />
                     </Link>
@@ -334,21 +353,21 @@ export function CartClient() {
                         {line.title}
                       </Link>
                       <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1.5" />
-                      {/* Both buttons are wider than the text column at 320px and in
-                          the two-up tablet grid, so they may wrap there. */}
+                      {/* Both buttons may wrap at 320px and in the two-up tablet grid. */}
                       <div className="mt-auto flex flex-wrap gap-2 pt-2.5 lg:flex-nowrap">
                         <Button
                           size="xs"
                           variant="outline"
-                          className="h-10 px-2.5 sm:h-8 sm:px-3"
+                          className="h-10 px-3 sm:h-8"
                           onClick={() => dispatch({ type: "cart/unsave", id: line.id })}
                         >
+                          <ShoppingBag size={14} aria-hidden />
                           Move to bag
                         </Button>
                         <Button
                           size="xs"
                           variant="ghost"
-                          className="h-10 px-2.5 sm:h-8 sm:px-3"
+                          className="h-10 px-3 sm:h-8"
                           onClick={() => dispatch({ type: "cart/removeSaved", id: line.id })}
                         >
                           Remove
@@ -363,7 +382,7 @@ export function CartClient() {
         </div>
 
         {cart.length > 0 && (
-          <aside className="min-w-0 space-y-3 sm:space-y-4 lg:sticky lg:top-[132px] lg:h-fit">
+          <aside className="min-w-0 space-y-3 sm:space-y-4 lg:sticky-under-header lg:h-fit">
             <OrderSummary
               totals={totals}
               lines={cart}
@@ -371,7 +390,8 @@ export function CartClient() {
               cta={blocked ? undefined : "Proceed to checkout"}
               ctaHref="/checkout/address"
             />
-            <p className="text-[13px] leading-[1.5] text-ink-500">
+            <CheckoutTrustRow variant="stack" />
+            <p className="t-small px-1">
               Prices and availability are confirmed at checkout. Items in your bag are not reserved.
             </p>
           </aside>
@@ -384,18 +404,14 @@ export function CartClient() {
           than fixed: it parks at the end of the bag instead of covering the
           footer. */}
       {cart.length > 0 && !blocked && (
-        <div className="sticky bottom-[calc(61px_+_env(safe-area-inset-bottom))] z-30 -mx-3 mt-4 flex items-center justify-between gap-3 border-t bg-surface/95 px-3 py-2.5 shadow-[0_-10px_24px_-14px_rgb(18_23_27/0.2)] backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
+        <div className="glass sticky bottom-[calc(61px_+_env(safe-area-inset-bottom))] z-30 -mx-3 mt-5 flex items-center justify-between gap-3 border-t border-line px-3 py-3 shadow-[0_-12px_28px_-18px_rgb(10_15_26/0.28)] sm:-mx-6 sm:px-6 lg:hidden">
           <p className="min-w-0">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-              Total payable
-            </span>
-            <span className="mt-0.5 block text-[17px] font-semibold leading-tight tabular-nums text-ink-950">
-              {formatINR(totals.total)}
-            </span>
+            <span className="t-label block">Total payable</span>
+            <span className="t-price mt-1 block text-[18px] leading-tight">{formatINR(totals.total)}</span>
           </p>
           <Link
             href="/checkout/address"
-            className={buttonClasses("primary", "md", "shrink-0 px-5 sm:min-w-[240px]")}
+            className={buttonClasses("accent", "lg", "shrink-0 px-6 sm:min-w-[240px]")}
           >
             Checkout
             <ArrowRight size={16} />

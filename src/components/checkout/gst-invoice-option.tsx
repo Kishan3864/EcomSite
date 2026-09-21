@@ -33,7 +33,7 @@ export function GstInvoiceOption({
   }
 
   return (
-    <div className="card p-4">
+    <div className="card p-4 sm:p-5">
       <label className="flex cursor-pointer items-start gap-3">
         <input
           type="checkbox"
@@ -49,10 +49,10 @@ export function GstInvoiceOption({
         />
         <span>
           <span className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950 sm:text-[14px]">
-            <Building2 size={15} className="text-brand-600" />
+            <Building2 size={16} aria-hidden className="text-brand-700" />
             This is a business purchase
           </span>
-          <span className="mt-1 block text-[12.5px] text-ink-600">
+          <span className="t-small mt-1 block">
             Add your GSTIN and it goes on the tax invoice, so your business can claim the input
             credit.
           </span>

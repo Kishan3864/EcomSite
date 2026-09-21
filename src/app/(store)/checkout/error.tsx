@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { TriangleAlert } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 
 /**
@@ -27,24 +28,27 @@ export default function CheckoutError({
   }, [error]);
 
   return (
-    <div className="container-page flex min-h-[60dvh] flex-col items-center justify-center py-10 text-center sm:py-20">
-      <span className="eyebrow">Checkout</span>
-      <h1 className="mt-4 max-w-[22ch] font-display text-[24px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:mt-5 sm:text-[38px]">
-        This step would not load
-      </h1>
-      <p className="mt-4 max-w-[48ch] text-[14px] leading-[1.6] text-ink-600 sm:text-[15px]">
+    <div className="container-page flex min-h-[60dvh] items-center justify-center py-10 sm:py-20">
+      <div className="card relative w-full max-w-xl overflow-hidden px-5 py-10 text-center sm:px-10 sm:py-14">
+      <div aria-hidden className="grid-lines pointer-events-none absolute inset-0 opacity-70" />
+      <span className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-sale-50 text-sale-600 ring-1 ring-inset ring-sale-200">
+        <TriangleAlert size={24} aria-hidden />
+      </span>
+      <span className="eyebrow relative mt-5 justify-center">Checkout</span>
+      <h1 className="t-h1 relative mx-auto mt-2.5 max-w-[22ch]">This step would not load</h1>
+      <p className="t-body relative mx-auto mt-3 max-w-[48ch]">
         Nothing has been charged and no order was placed. Everything you have
         entered so far is still here — try the step again.
       </p>
 
       {error.digest && (
-        <p className="mt-5 text-[13px] text-ink-500 sm:mt-6">
+        <p className="t-small relative mt-5">
           Reference{" "}
           <span className="break-all font-mono font-semibold text-ink-900">{error.digest}</span>
         </p>
       )}
 
-      <div className="mt-7 flex w-full max-w-sm flex-col flex-wrap justify-center gap-2 sm:mt-9 sm:w-auto sm:max-w-none sm:flex-row sm:gap-3">
+      <div className="relative mx-auto mt-7 flex w-full max-w-sm flex-col flex-wrap justify-center gap-2 sm:mt-8 sm:w-auto sm:max-w-none sm:flex-row sm:gap-3">
         <button type="button" onClick={reset} className={buttonClasses("primary")}>
           Try this step again
         </button>
@@ -54,6 +58,7 @@ export default function CheckoutError({
         <Link href="/contact" className={buttonClasses("ghost")}>
           Get help with this order
         </Link>
+      </div>
       </div>
     </div>
   );

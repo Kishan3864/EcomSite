@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Breadcrumbs } from "@/components/ui/primitives";
+import { PageHeader } from "@/components/ui/primitives";
 import { CartClient } from "./cart-client";
 
 export const metadata: Metadata = {
@@ -10,25 +10,16 @@ export const metadata: Metadata = {
 };
 
 export default async function CartPage() {
-
   return (
-    <div className="container-page py-4 sm:py-7">
-      <Breadcrumbs
-        items={[
+    <div className="container-page pb-10 sm:pb-14">
+      <PageHeader
+        crumbs={[
           { name: "Home", href: "/" },
           { name: "Your bag", href: "/cart" },
         ]}
-        className="mb-3 sm:mb-5"
+        title="Your bag"
+        description="Items stay here on this device until you check out. Nothing is reserved."
       />
-
-      <header className="mb-4 sm:mb-7">
-        <h1 className="font-display text-[24px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[36px]">
-          Your bag
-        </h1>
-        <p className="mt-1 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
-          Items stay here on this device until you check out. Nothing is reserved.
-        </p>
-      </header>
 
       <CartClient />
     </div>

@@ -1,9 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useId, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  ClipboardCheck,
+  CreditCard,
+  MapPin,
+  ShoppingBag,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { buttonClasses } from "@/components/ui/button";
@@ -31,10 +40,90 @@ export const CHECKOUT_STEPS = [
 
 export type StepId = (typeof CHECKOUT_STEPS)[number]["id"];
 
-/** Every step draws its own 2px segment of one continuous rule. */
-/** One step of the progress bar: a numbered circle and its label. */
-const STEP_BASE =
-  "flex min-w-0 items-center gap-2 text-[12.5px] font-semibold leading-none transition-colors duration-200";
+/** One glyph per step, drawn inside the step's circle (presentational only). */
+const STEP_ICONS: Record<StepId, LucideIcon> = {
+  contact: UserRound,
+  address: MapPin,
+  payment: CreditCard,
+  review: ClipboardCheck,
+};
+
+/**
+ * The progress stepper: a circle per step joined by a rule. The current step
+ * is filled cobalt with a halo, finished ones carry a tick and link back, the
+ * ones ahead are outlined. Phones name only the current step so four fit 320px.
+ */
+function CheckoutStepper({ index }: { index: number }) {
+  return (
+    <nav aria-label="Checkout progress" className="card px-3 py-3 sm:px-5 sm:py-4">
+      <ol className="flex items-center gap-2 sm:gap-3">
+        {CHECKOUT_STEPS.map((s, i) => {
+          const done = i < index;
+          const current = i === index;
+          const Icon = STEP_ICONS[s.id];
+          const last = i === CHECKOUT_STEPS.length - 1;
+
+          const body = (
+            <>
+              <span
+                aria-hidden
+                className={cn(
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-[background-color,box-shadow,color] duration-200",
+                  current
+                    ? "bg-brand-700 text-white shadow-[0_0_0_4px_var(--color-brand-100)]"
+                    : done
+                      ? "bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200"
+                      : "bg-surface text-ink-500 ring-1 ring-inset ring-line-strong",
+                )}
+              >
+                {done ? <Check size={16} /> : <Icon size={16} />}
+              </span>
+              <span className={cn("min-w-0 flex-col leading-none", current ? "flex" : "hidden sm:flex")}>
+                <span className="t-label text-[10px] tabular-nums">Step {i + 1}</span>
+                <span
+                  className={cn(
+                    "mt-1 truncate text-[13px] font-semibold",
+                    current ? "text-ink-950" : done ? "text-ink-700" : "text-ink-500",
+                  )}
+                >
+                  {s.label}
+                </span>
+              </span>
+            </>
+          );
+
+          return (
+            <li key={s.id} className={cn("flex min-w-0 items-center gap-2 sm:gap-3", !last && "flex-1")}>
+              {done ? (
+                <Link
+                  href={s.href}
+                  aria-label={`Back to ${s.label}`}
+                  className="tap flex min-w-0 items-center gap-2.5 rounded-full transition-opacity duration-200 hover:opacity-80"
+                >
+                  {body}
+                </Link>
+              ) : (
+                <span aria-current={current ? "step" : undefined} className="flex min-w-0 items-center gap-2.5">
+                  {body}
+                </span>
+              )}
+              {!last && (
+                <span aria-hidden className="relative h-0.5 min-w-3 flex-1 overflow-hidden rounded-full bg-line">
+                  <span
+                    className={cn(
+                      "absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-brand-600 to-brand-400 transition-[width] duration-300 ease-out",
+                      done ? "w-full" : "w-0",
+                    )}
+                  />
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
 
 export function CheckoutShell({
   step,
@@ -58,6 +147,9 @@ export function CheckoutShell({
   const { cart, hydrated } = useStore();
   const router = useRouter();
   const pathname = usePathname();
+  // Below lg the summary folds away behind a toggle; lg always shows it.
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  const summaryId = useId();
 
   useEffect(() => {
     if (hydrated && cart.length === 0) router.replace("/cart");
@@ -67,19 +159,15 @@ export function CheckoutShell({
 
   if (!hydrated) {
     return (
-      <div className="container-page py-6 sm:py-10">
-        <div className="skeleton h-12 sm:h-16" />
-        {/* The trust panel's own height, reserved. It renders below the heading
-            on every step and only after hydration, so with nothing standing in
-            for it the whole page jumped by the panel's height the moment the
-            store arrived. ~126px stacked on a phone, ~112px once it is three
-            columns from md. The heading block above it is still unmatched —
-            that is older and not this change's to fix, but this is the tall
-            part. */}
-        <div className="skeleton mt-4 h-[126px] sm:mt-6 md:h-28" />
-        <div className="mt-4 grid gap-4 sm:mt-6 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_368px]">
-          <div className="skeleton h-80 sm:h-96" />
-          <div className="skeleton h-72" />
+      <div className="container-page pb-10 pt-5 sm:pt-7">
+        <div className="skeleton h-[62px] rounded-xl sm:h-[70px]" />
+        <div className="skeleton mt-6 h-16 max-w-md rounded-md sm:mt-8 sm:h-20" />
+        {/* The trust panel's own height, reserved, so the page does not jump
+            when the store arrives. */}
+        <div className="skeleton mt-5 h-[126px] rounded-xl sm:mt-6 md:h-24" />
+        <div className="mt-5 grid gap-5 sm:mt-6 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="skeleton h-80 rounded-xl sm:h-96" />
+          <div className="skeleton h-72 rounded-xl" />
         </div>
       </div>
     );
@@ -89,6 +177,7 @@ export function CheckoutShell({
     return (
       <div className="container-page py-8 sm:py-14">
         <EmptyState
+          icon={<ShoppingBag size={24} />}
           title="Your bag is empty"
           body="There is nothing to check out yet. Add something first and we will bring you straight back here."
           action={
@@ -103,121 +192,81 @@ export function CheckoutShell({
 
   return (
     <div className="pb-6 sm:pb-10">
-      {/* The reassurance strip used to be here, above the progress nav: three
-          uppercase stamps in a full-bleed band, the first thing on the page and
-          the last thing anyone read. It is now CheckoutTrustRow, under the
-          heading, where it has room to say what it means. The note that stood
-          here argued that the padlock and shield glyphs it once carried were the
-          badge every scam site wears; that argument has moved with it, along
-          with the distinction it was missing and the owner's own decision to
-          overrule half of it — see trust-row.tsx. */}
+      <div className="container-page pt-5 sm:pt-7">
+        <CheckoutStepper index={index} />
 
-      {/* Progress: numbered circles joined by a line. The current step is
-          filled with a soft ring, finished ones carry a tick and link back,
-          the ones ahead are outlined. Labels show from 640px; on a phone only
-          the current step is named, so four steps fit a 320px screen. */}
-      <nav aria-label="Checkout progress" className="border-b bg-surface">
-        <div className="container-page">
-          <ol className="flex items-center gap-2 py-3 sm:gap-3 sm:py-4">
-            {CHECKOUT_STEPS.map((s, i) => {
-              const done = i < index;
-              const current = i === index;
-              const classes = cn(
-                STEP_BASE,
-                current ? "text-ink-950" : done ? "text-ink-600 hover:text-ink-950" : "text-ink-400",
-              );
-              const mark = (
-                <span
-                  aria-hidden
-                  className={cn(
-                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] tabular-nums",
-                    current
-                      ? "bg-brand-700 text-white shadow-[0_0_0_4px_var(--color-brand-100)]"
-                      : done
-                        ? "bg-brand-50 text-brand-700"
-                        : "border border-line-strong bg-surface text-ink-400",
-                  )}
-                >
-                  {done ? <Check size={14} strokeWidth={2.5} /> : i + 1}
-                </span>
-              );
-              const label = (
-                <span className={cn("min-w-0 truncate", !current && "hidden sm:inline")}>{s.label}</span>
-              );
-
-              return (
-                <li key={s.id} className={cn("flex min-w-0 items-center gap-2 sm:gap-3", i < CHECKOUT_STEPS.length - 1 && "flex-1")}>
-                  {done ? (
-                    <Link href={s.href} aria-label={`Back to ${s.label}`} className={cn("tap", classes)}>
-                      {mark}
-                      {label}
-                    </Link>
-                  ) : (
-                    <span aria-current={current ? "step" : undefined} className={classes}>
-                      {mark}
-                      {label}
-                    </span>
-                  )}
-                  {i < CHECKOUT_STEPS.length - 1 && (
-                    <span aria-hidden className={cn("h-px min-w-3 flex-1", done ? "bg-brand-300" : "bg-line")} />
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      </nav>
-
-      <div className="container-page pt-6 sm:pt-10">
-        <header className="mb-5 sm:mb-8">
+        <header className="pb-5 pt-6 sm:pb-6 sm:pt-8">
           <span className="eyebrow">
             Step {index + 1} of {CHECKOUT_STEPS.length}
           </span>
-          <h1 className="mt-2.5 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
-            {title}
-          </h1>
-          {description && (
-            <p className="mt-2 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:mt-2.5 sm:text-[14px]">
-              {description}
-            </p>
-          )}
+          <h1 className="t-h1 mt-2.5">{title}</h1>
+          {description && <p className="t-body mt-1.5 max-w-[52ch]">{description}</p>}
         </header>
 
-        {/* Under the heading rather than above the nav, and outside the motion
-            grid below: anything inside that re-slides on every step change,
-            and a promise that animates in four times reads as decoration. On a
-            phone this is the first thing past the title, which is where a
-            first-time shopper's nerve is actually tested. */}
-        <CheckoutTrustRow className="mb-6 sm:mb-8" />
+        {/* Outside the motion grid below, so the promise does not re-slide on
+            every step change. */}
+        <CheckoutTrustRow className="mb-5 sm:mb-8" />
 
         <motion.div
           key={pathname}
           initial={{ opacity: 0, x: 8 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-          className="grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_368px] lg:gap-8"
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-8"
         >
           <div className="min-w-0">{children}</div>
-          <aside className="min-w-0 space-y-3 sm:space-y-4 lg:sticky lg:top-6 lg:h-fit">
-            {aside}
-          </aside>
+          {aside && (
+            <aside className="min-w-0 max-lg:order-first lg:sticky-under-header lg:h-fit">
+              {/* Phones and tablets: a collapsible summary above the form. */}
+              <button
+                type="button"
+                onClick={() => setSummaryOpen((o) => !o)}
+                aria-expanded={summaryOpen}
+                aria-controls={summaryId}
+                className="tap card flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors duration-200 hover:border-brand-200 lg:hidden"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="icon-tile icon-tile-sm" aria-hidden>
+                    <ShoppingBag size={16} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[13px] font-semibold text-ink-900">
+                      {summaryOpen ? "Hide order summary" : "Show order summary"}
+                    </span>
+                    <span className="t-small block">
+                      {cart.length} item{cart.length > 1 ? "s" : ""}
+                    </span>
+                  </span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                  {total !== undefined && <span className="t-price text-[15px]">{formatINR(total)}</span>}
+                  <ChevronDown
+                    size={18}
+                    aria-hidden
+                    className={cn("text-ink-500 transition-transform duration-200", summaryOpen && "rotate-180")}
+                  />
+                </span>
+              </button>
+              <div
+                id={summaryId}
+                className={cn("space-y-3 max-lg:mt-3 sm:space-y-4", summaryOpen ? "block" : "hidden lg:block")}
+              >
+                {aside}
+              </div>
+            </aside>
+          )}
         </motion.div>
 
-        {/* Below lg the summary stacks under the form, so the way forward is
-            pinned to the bottom edge instead of sitting a long scroll away.
-            Sticky rather than fixed: it rides along through the form and the
-            summary, then parks above the footer. */}
+        {/* Below lg the way forward is pinned to the bottom edge. Sticky rather
+            than fixed: it rides along through the form, then parks above the
+            footer. */}
         {action && (
-          <div className="sticky bottom-0 z-30 -mx-3 mt-4 border-t bg-surface/95 px-3 pb-safe shadow-[0_-10px_24px_-14px_rgb(18_23_27/0.2)] backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
-            <div className="flex items-center justify-between gap-4 py-2.5">
+          <div className="glass sticky bottom-0 z-30 -mx-3 mt-5 border-t border-line px-3 pb-safe shadow-[0_-12px_28px_-18px_rgb(10_15_26/0.28)] sm:-mx-6 sm:px-6 lg:hidden">
+            <div className="flex items-center justify-between gap-4 py-3">
               {total !== undefined && (
                 <p className="hidden min-w-0 sm:block">
-                  <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                    Total payable
-                  </span>
-                  <span className="mt-0.5 block text-[17px] font-semibold leading-tight tabular-nums text-ink-950">
-                    {formatINR(total)}
-                  </span>
+                  <span className="t-label block">Total payable</span>
+                  <span className="t-price mt-1 block text-[18px] leading-tight">{formatINR(total)}</span>
                 </p>
               )}
               {action}
@@ -235,33 +284,29 @@ export function CheckoutAside() {
 
   return (
     <div className="card overflow-hidden">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
-        <h2 className="min-w-0 truncate text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+      <div className="flex items-center justify-between gap-3 px-4 py-3.5 sm:px-5">
+        <h2 className="t-label min-w-0 truncate">
           {cart.length} item{cart.length > 1 ? "s" : ""} in your bag
         </h2>
-        {/* Padding widens the touch target; the negative margin keeps the layout.
-            Off from lg, so the desktop focus ring still hugs the word. */}
+        {/* Padding widens the touch target; the negative margin keeps the layout. */}
         <Link
           href="/cart"
-          className="-m-2.5 shrink-0 p-2.5 text-[12.5px] font-semibold text-brand-700 transition-colors duration-200 hover:text-brand-800 lg:m-0 lg:p-0"
+          className="-m-2 shrink-0 rounded-full px-3 py-2 text-[12.5px] font-semibold text-brand-700 transition-colors duration-200 hover:bg-brand-50"
         >
           Edit
         </Link>
       </div>
-      <ul className="card-divided border-t">
+      <ul className="card-divided border-t border-line">
         {cart.map((line) => (
-          <li key={line.id} className="flex items-center gap-3 px-4 py-2.5 sm:px-5 sm:py-3">
-            {/* Routed through the shared image component like every other
-                picture on the site, so the remote-image policy applies here
-                too; it used to be a raw <img> with the lint rule switched off. */}
-            <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg bg-ink-100">
+          <li key={line.id} className="flex items-center gap-3 px-4 py-3 sm:px-5">
+            {/* Routed through the shared image component so the remote-image
+                policy applies here too. */}
+            <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-md bg-ink-100 ring-1 ring-inset ring-line">
               <Image src={line.image} alt="" fill sizes="48px" className="object-cover" />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-medium text-ink-900">
-                {line.title}
-              </span>
-              <span className="mt-0.5 block text-[13px] text-ink-500">
+              <span className="block truncate text-[13px] font-medium text-ink-900">{line.title}</span>
+              <span className="t-small mt-0.5 block">
                 {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty{" "}
                 <span className="tabular-nums">{line.quantity}</span>
               </span>

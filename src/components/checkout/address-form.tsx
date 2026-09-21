@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { Address } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
@@ -34,6 +34,7 @@ export function AddressForm({
 }) {
   const [form, setForm] = useState<Omit<Address, "id">>(initial ?? EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const typeLabelId = useId();
 
   function set<K extends keyof Omit<Address, "id">>(key: K, value: Omit<Address, "id">[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -59,12 +60,11 @@ export function AddressForm({
   return (
     <Form onSubmit={submit} className="space-y-4 sm:space-y-5">
       <div>
-        <span className="mb-2 block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+        <span id={typeLabelId} className="t-label mb-2 block">
           Address type
         </span>
-        {/* Three square switches drawn in the same hairline as everything
-            else, so the chosen one is ink and the rest are outline. */}
-        <div className="flex gap-2">
+        {/* Three pill switches: the chosen one is filled cobalt, the rest outlined. */}
+        <div role="group" aria-labelledby={typeLabelId} className="flex gap-2">
           {(["Home", "Work", "Other"] as const).map((label) => (
             <button
               key={label}
@@ -200,8 +200,8 @@ export function AddressForm({
         Make this my default delivery address
       </label>
 
-      <div className="flex flex-wrap gap-2 pt-1">
-        <Button type="submit" className="flex-1 sm:flex-initial">
+      <div className="flex flex-wrap gap-2 border-t border-line pt-4">
+        <Button type="submit" className="flex-1 sm:flex-initial sm:min-w-[180px]">
           {submitLabel}
         </Button>
         {onCancel && (

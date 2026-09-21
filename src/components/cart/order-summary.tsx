@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Receipt, Tag, Truck } from "lucide-react";
 import type { CartLine, DeliveryOption, OrderTotals } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { estimatedDelivery } from "@/lib/pricing";
@@ -10,18 +10,13 @@ import { useStore } from "@/store/store";
 import { cn, formatDate, formatINR } from "@/lib/utils";
 
 /**
- * What the order costs, set as a ledger rather than as a card.
- *
- * A shopper reads a bill the way they read a receipt: down the right-hand
- * column. So every line is one ruled row of a fixed height with the label left
- * and the figure right, and every figure is set in the text face with tabular
- * numerals — Fraunces' proportional figures made the column wander a couple of
- * pixels a row, which is exactly the wobble that makes a shop look improvised.
+ * What the order costs: one ruled row per figure, label left, figure right,
+ * every number in tabular figures so the column reads straight down.
  */
 
 // Labels such as "Create an account to pay" are wider than a 320px screen at
-// the lg button's padding, so on phones the padding narrows and the label may
-// take two lines inside the same 48px button rather than overflow it.
+// the lg button's padding, so on phones the label may take two lines inside
+// the same 48px button rather than overflow it.
 const CTA_FIT = "w-full px-4 text-center whitespace-normal sm:px-8 sm:whitespace-nowrap";
 
 export function OrderSummary({
@@ -77,22 +72,17 @@ export function OrderSummary({
     totals.savings > 0 || (showDeliveryEstimate && lines.length > 0) || toFree > 0;
 
   return (
-    <div className={cn("card", className)}>
-      <div className="px-4 py-3 sm:px-5">
-        <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-          Order summary
-        </h2>
+    <div className={cn("card overflow-hidden", className)}>
+      <div className="flex items-center gap-3 px-4 pb-2 pt-4 sm:px-5 sm:pt-5">
+        <span className="icon-tile icon-tile-sm" aria-hidden>
+          <Receipt size={16} />
+        </span>
+        <h2 className="t-h3">Order summary</h2>
       </div>
 
       <dl className="px-4 sm:px-5">
-        {rows.map((row, i) => (
-          <div
-            key={row.label}
-            className={cn(
-              "flex h-11 items-center justify-between gap-4",
-              i > 0 && "rule-hair-t",
-            )}
-          >
+        {rows.map((row) => (
+          <div key={row.label} className="flex min-h-10 items-center justify-between gap-4 py-1.5">
             <dt
               className={cn(
                 "min-w-0 truncate text-[13px]",
@@ -116,19 +106,16 @@ export function OrderSummary({
           </div>
         ))}
 
-        {/* The heavier rule is the one typographic signal that the column has
-            been added up; nothing else on the summary is allowed to be louder. */}
-        <div className="flex h-14 items-center justify-between gap-4">
-          <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
-            Total payable
-          </dt>
+        {/* The one heavier rule: the column has been added up. */}
+        <div className="mt-1.5 flex items-center justify-between gap-4 border-t border-dashed border-line-strong py-4">
+          <dt className="text-[13.5px] font-semibold text-ink-950">Total payable</dt>
           <dd className="min-w-0">
             <motion.span
               key={totals.total}
               initial={{ opacity: 0.5, y: -3 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.25 }}
-              className="block text-[19px] font-semibold leading-none tabular-nums text-ink-950 sm:text-[21px]"
+              className="t-price block text-[20px] leading-none sm:text-[22px]"
             >
               {formatINR(totals.total)}
             </motion.span>
@@ -137,56 +124,62 @@ export function OrderSummary({
       </dl>
 
       {notes && (
-        <div className="space-y-1.5 px-4 py-3 sm:px-5 sm:py-3.5">
+        <div className="mx-4 mb-4 space-y-2 card-muted px-3.5 py-3 sm:mx-5">
           {totals.savings > 0 && (
-            <p className="text-[13px] leading-[1.5] text-ink-600">
-              You save{" "}
-              <span className="font-semibold tabular-nums text-sale-600">
-                {formatINR(totals.savings)}
-              </span>{" "}
-              on this order
+            <p className="flex items-start gap-2 text-[12.5px] leading-[1.5] text-ink-600">
+              <Tag size={14} aria-hidden className="mt-0.5 shrink-0 text-sale-600" />
+              <span>
+                You save{" "}
+                <span className="font-semibold tabular-nums text-sale-600">
+                  {formatINR(totals.savings)}
+                </span>{" "}
+                on this order
+              </span>
             </p>
           )}
 
           {showDeliveryEstimate && lines.length > 0 && (
-            <p className="text-[13px] leading-[1.5] text-ink-600">
-              Estimated delivery{" "}
-              <span className="font-semibold tabular-nums text-ink-900">
-                {formatDate(eta.from, "day")} – {formatDate(eta.to, "day")}
+            <p className="flex items-start gap-2 text-[12.5px] leading-[1.5] text-ink-600">
+              <Truck size={14} aria-hidden className="mt-0.5 shrink-0 text-brand-700" />
+              <span>
+                Estimated delivery{" "}
+                <span className="font-semibold tabular-nums text-ink-900">
+                  {formatDate(eta.from, "day")} – {formatDate(eta.to, "day")}
+                </span>
               </span>
             </p>
           )}
 
           {toFree > 0 && (
-            <p className="text-[13px] leading-[1.5] text-ink-500">
-              Add <span className="tabular-nums">{formatINR(toFree)}</span> more to qualify for free
-              standard delivery.
+            <p className="flex items-start gap-2 text-[12.5px] leading-[1.5] text-ink-500">
+              <Truck size={14} aria-hidden className="mt-0.5 shrink-0 text-ink-500" />
+              <span>
+                Add <span className="tabular-nums">{formatINR(toFree)}</span> more to qualify for free
+                standard delivery.
+              </span>
             </p>
           )}
         </div>
       )}
 
       {cta && (
-        <div className="p-4 sm:p-5">
+        <div className="border-t border-line p-4 sm:p-5">
+          {/* Gold: the one "press this" colour, for the bag's and the order's
+              main buy action. */}
           {ctaHref ? (
-            <Link href={ctaHref} className={buttonClasses("primary", "lg", CTA_FIT)}>
+            <Link href={ctaHref} className={buttonClasses("accent", "lg", CTA_FIT)}>
               {cta}
-              <ArrowRight size={17} />
+              <ArrowRight size={18} />
             </Link>
           ) : (
-            <button onClick={onCta} className={buttonClasses("primary", "lg", CTA_FIT)}>
+            <button onClick={onCta} className={buttonClasses("accent", "lg", CTA_FIT)}>
               {cta}
-              <ArrowRight size={17} />
+              <ArrowRight size={18} />
             </button>
           )}
-          {/* The sentence does the reassuring. A padlock glyph beside it is the
-              badge every scam site wears, and it is worth less than the words.
-              That still holds here, and it is not contradicted by the marks the
-              payment step now carries: those name a mechanism a customer is
-              scanning for — a card, a banknote, PhonePe — where a padlock beside
-              "secure" only asserts a virtue about us. Wayfinding gets a glyph.
-              A claim does not. This line is a claim. */}
-          <p className="mt-3 text-center text-[13px] leading-[1.5] text-ink-500">
+          {/* The sentence does the reassuring; a padlock beside it would be a
+              seal, not wayfinding. */}
+          <p className="t-small mt-3 text-center">
             {footnote ?? "Secure checkout. Your details are never shared."}
           </p>
         </div>
