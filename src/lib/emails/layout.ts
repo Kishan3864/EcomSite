@@ -242,6 +242,7 @@ export function shell({ kicker, preheader, body, unsubscribeUrl, footerNote }: S
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <title>${esc(kicker)}</title>
+<style>@media only screen and (max-width:520px){.stack{display:block !important;width:100% !important;padding:0 0 10px 0 !important;}}</style>
 <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
 </head>
 <body style="margin:0;padding:0;width:100%;background-color:${C.canvas};-webkit-text-size-adjust:100%;">

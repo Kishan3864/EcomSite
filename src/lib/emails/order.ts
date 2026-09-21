@@ -3,15 +3,12 @@ import {
   C,
   SANS,
   SITE,
-  button,
   emailImage,
   esc,
   escLines,
   eyebrow,
   formatDate,
   formatDateTime,
-  link,
-  panel,
   rupees,
   shell,
   signatureText,
@@ -94,6 +91,9 @@ function thumbnail(line: OrderEmailLine): string {
 
 /** Green for money the customer keeps. Local to the receipt. */
 const SAVE = "#1f7a4d";
+const BRAND = "#1b4f74";
+const BRAND_TINT = "#eef5fb";
+const BRAND_LINE = "#d3e4f1";
 const SAVE_BG = "#e8f5ee";
 
 function priceRow(
@@ -226,23 +226,44 @@ ${eyebrow(order.cod ? "Order confirmed" : order.paid ? "Order confirmed" : "Orde
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-collapse:collapse;">
   <tr>
-    <td width="50%" valign="top" style="padding-right:8px;">
-      ${panel(
-        `${eyebrow("Delivering to")}<p style="margin:0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.ink};">${escLines(address)}</p>`,
-      )}
+    <td class="stack" width="50%" valign="top" style="padding-right:8px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid ${C.hairline};border-radius:14px;background-color:#ffffff;">
+        <tr><td style="padding:16px 18px;">
+          <p style="margin:0 0 10px;font-family:${SANS};font-size:11px;line-height:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND};">&#9679;&nbsp; Delivering to</p>
+          <p style="margin:0;font-family:${SANS};font-size:14px;line-height:20px;font-weight:700;color:${C.ink};">${esc(order.shipName)}</p>
+          <p style="margin:4px 0 0;font-family:${SANS};font-size:13px;line-height:20px;color:${C.body};">${escLines([order.shipLine1, order.shipLine2, `${order.shipCity}, ${order.shipState}`].filter(Boolean).join(String.fromCharCode(10)))}</p>
+          <p style="margin:8px 0 0;"><span style="display:inline-block;padding:3px 10px;border-radius:999px;background-color:${C.canvas};font-family:${SANS};font-size:12px;line-height:16px;font-weight:600;color:${C.ink};">PIN ${esc(order.shipPincode)}</span></p>
+        </td></tr>
+      </table>
     </td>
-    <td width="50%" valign="top" style="padding-left:8px;">
-      ${panel(
-        `${eyebrow("Expected by")}<p style="margin:0;font-family:${SANS};font-size:13.5px;line-height:21px;color:${C.ink};font-weight:600;">${esc(eta)}</p><p style="margin:6px 0 0;font-family:${SANS};font-size:12.5px;line-height:19px;color:${C.muted};">We will email the tracking number the moment the courier collects it.</p>`,
-      )}
+    <td class="stack" width="50%" valign="top" style="padding-left:8px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border:1px solid ${BRAND_LINE};border-radius:14px;background-color:${BRAND_TINT};">
+        <tr><td style="padding:16px 18px;">
+          <p style="margin:0 0 10px;font-family:${SANS};font-size:11px;line-height:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:${BRAND};">&#9679;&nbsp; Expected by</p>
+          <p style="margin:0;font-family:${SANS};font-size:19px;line-height:25px;font-weight:800;color:${C.ink};">${esc(eta)}</p>
+          <p style="margin:8px 0 0;font-family:${SANS};font-size:12.5px;line-height:19px;color:${C.body};">We will email the tracking number the moment the courier collects it.</p>
+        </td></tr>
+      </table>
     </td>
   </tr>
 </table>
 
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;border-collapse:collapse;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-collapse:collapse;">
   <tr>
-    <td>${button(track, "Track this order")}</td>
-    <td style="padding-left:16px;">${link(invoiceUrl, "View invoice")}</td>
+    <td class="stack" style="padding:0 6px 0 0;" width="50%">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>
+        <td align="center" bgcolor="${BRAND}" style="border-radius:999px;background-color:${BRAND};">
+          <a href="${esc(track)}" style="display:block;padding:14px 22px;font-family:${SANS};font-size:14px;line-height:18px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:999px;">Track this order &rarr;</a>
+        </td>
+      </tr></table>
+    </td>
+    <td class="stack" style="padding:0 0 0 6px;" width="50%">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr>
+        <td align="center" style="border-radius:999px;border:1px solid ${C.hairline};background-color:#ffffff;">
+          <a href="${esc(invoiceUrl)}" style="display:block;padding:13px 22px;font-family:${SANS};font-size:14px;line-height:18px;font-weight:700;color:${C.ink};text-decoration:none;border-radius:999px;">View invoice</a>
+        </td>
+      </tr></table>
+    </td>
   </tr>
 </table>
 
