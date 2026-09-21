@@ -59,7 +59,7 @@ export async function renderOrderConfirmation(orderId: string) {
         shipState: true,
         shipPincode: true,
         estimatedDelivery: true,
-        lines: { select: { title: true, quantity: true, price: true, image: true, variantLabel: true } },
+        lines: { select: { title: true, quantity: true, price: true, mrp: true, image: true, variantLabel: true } },
       },
     });
     if (!order?.contactEmail) return null;

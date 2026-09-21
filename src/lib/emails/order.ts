@@ -12,7 +12,6 @@ import {
   formatDateTime,
   link,
   panel,
-  row,
   rupees,
   shell,
   signatureText,
@@ -44,6 +43,8 @@ export interface OrderEmailLine {
   quantity: number;
   /** Unit price, whole rupees. */
   price: number;
+  /** Unit MRP, whole rupees. Absent in older previews; treated as the price. */
+  mrp?: number;
   /** Product image path or URL; made absolute before it is used. */
   image?: string | null;
 }
@@ -91,8 +92,31 @@ function thumbnail(line: OrderEmailLine): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="64" height="64" bgcolor="${C.canvas}" style="width:64px;height:64px;background-color:${C.canvas};">&nbsp;</td></tr></table>`;
 }
 
+/** Green for money the customer keeps. Local to the receipt. */
+const SAVE = "#1f7a4d";
+const SAVE_BG = "#e8f5ee";
+
+function priceRow(
+  label: string,
+  value: string,
+  opts: { strong?: boolean; rule?: boolean; color?: string; small?: boolean } = {},
+): string {
+  const border = opts.rule ? `border-top:1px dashed ${C.hairline};` : "";
+  const pad = opts.rule ? "12px 0 6px" : opts.small ? "0 0 2px" : "5px 0";
+  const size = opts.strong ? "17px" : opts.small ? "12px" : "14px";
+  const labelColor = opts.strong ? C.ink : C.muted;
+  const valueColor = opts.color ?? (opts.small ? C.muted : C.ink);
+  return `
+  <tr>
+    <td style="${border}padding:${pad};font-family:${SANS};font-size:${size};line-height:22px;font-weight:${opts.strong ? 700 : 400};color:${labelColor};">${esc(label)}</td>
+    <td align="right" style="${border}padding:${pad};font-family:${SANS};font-size:${size};line-height:22px;font-weight:${opts.strong ? 800 : 600};color:${valueColor};white-space:nowrap;">${esc(value)}</td>
+  </tr>`;
+}
+
 function lineRow(line: OrderEmailLine): string {
   const lineTotal = line.price * line.quantity;
+  const mrpTotal = Math.max(line.mrp ?? line.price, line.price) * line.quantity;
+  const off = mrpTotal > lineTotal ? Math.round(((mrpTotal - lineTotal) / mrpTotal) * 100) : 0;
   return `
   <tr>
     <td width="64" valign="top" style="padding:14px 14px 14px 0;">${thumbnail(line)}</td>
@@ -100,8 +124,12 @@ function lineRow(line: OrderEmailLine): string {
       <p style="margin:0;font-size:14px;line-height:20px;font-weight:600;color:${C.ink};">${esc(line.title)}</p>
       ${line.variantLabel ? `<p style="margin:3px 0 0;font-size:12.5px;line-height:18px;color:${C.muted};">${esc(line.variantLabel)}</p>` : ""}
       <p style="margin:4px 0 0;font-size:12.5px;line-height:18px;color:${C.muted};">Qty ${line.quantity} · ${esc(rupees(line.price))} each</p>
+      ${off > 0 ? `<p style="margin:6px 0 0;"><span style="display:inline-block;padding:2px 8px;border-radius:999px;background-color:${SAVE_BG};font-size:11.5px;line-height:16px;font-weight:700;color:${SAVE};">${off}% off</span></p>` : ""}
     </td>
-    <td valign="top" align="right" style="padding:14px 0 14px 10px;font-family:${SANS};font-size:14px;font-weight:600;color:${C.ink};white-space:nowrap;">${esc(rupees(lineTotal))}</td>
+    <td valign="top" align="right" style="padding:14px 0 14px 10px;font-family:${SANS};white-space:nowrap;">
+      <p style="margin:0;font-size:14px;line-height:20px;font-weight:700;color:${C.ink};">${esc(rupees(lineTotal))}</p>
+      ${off > 0 ? `<p style="margin:2px 0 0;font-size:12px;line-height:18px;color:${C.muted};text-decoration:line-through;">${esc(rupees(mrpTotal))}</p>` : ""}
+    </td>
   </tr>`;
 }
 
@@ -144,13 +172,23 @@ export function buildOrderConfirmation(order: OrderEmailInput): OrderEmail {
       ? `Thank you ${esc(firstName)} — we have your payment and order <strong style="color:${C.ink};">${esc(order.number)}</strong> is confirmed. We are getting it packed.`
       : `Thank you ${esc(firstName)} — order <strong style="color:${C.ink};">${esc(order.number)}</strong> is placed. We will confirm it the moment the payment clears.`;
 
+  // The bill, top to bottom, so every line adds up to the one below it:
+  // MRP − discount = subtotal, + delivery = total. itemsTotal is already the
+  // selling-price sum; productDiscount is MRP − selling price.
+  const itemCount = order.lines.reduce((n, l) => n + l.quantity, 0);
+  const mrpTotal = order.itemsTotal + order.productDiscount;
   const totals = [
-    row("Items", rupees(order.itemsTotal)),
-    order.productDiscount > 0 ? row("Discount", `− ${rupees(order.productDiscount)}`) : "",
-    row("Delivery", order.shipping === 0 ? "Free" : rupees(order.shipping)),
-    order.tax > 0 ? row("Taxes (included)", rupees(order.tax)) : "",
-    row(order.cod ? "To pay on delivery" : "Total", rupees(order.total), { strong: true, rule: true }),
+    priceRow(`Total MRP (${itemCount} item${itemCount === 1 ? "" : "s"})`, rupees(mrpTotal)),
+    order.productDiscount > 0 ? priceRow("Discount on MRP", `− ${rupees(order.productDiscount)}`, { color: SAVE }) : "",
+    order.productDiscount > 0 ? priceRow("Subtotal", rupees(order.itemsTotal), { rule: true }) : "",
+    priceRow("Delivery", order.shipping === 0 ? "FREE" : `+ ${rupees(order.shipping)}`, order.shipping === 0 ? { color: SAVE } : {}),
+    priceRow(order.cod ? "To pay on delivery" : "Total amount", rupees(order.total), { strong: true, rule: true }),
+    order.tax > 0 ? priceRow("Inclusive of GST", rupees(order.tax), { small: true }) : "",
   ].join("");
+  const savedBanner =
+    order.productDiscount > 0
+      ? `<tr><td colspan="2" style="padding:12px 0 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td style="padding:10px 14px;border-radius:10px;background-color:${SAVE_BG};font-family:${SANS};font-size:13px;line-height:19px;font-weight:700;color:${SAVE};">You saved ${esc(rupees(order.productDiscount))} on this order</td></tr></table></td></tr>`
+      : "";
 
   const body = `
 ${eyebrow(order.cod ? "Order confirmed" : order.paid ? "Order confirmed" : "Order placed")}
@@ -176,8 +214,14 @@ ${eyebrow(order.cod ? "Order confirmed" : order.paid ? "Order confirmed" : "Orde
   ${order.lines.map(lineRow).join("")}
 </table>
 
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;border-collapse:collapse;">
-  ${totals}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;border-collapse:separate;border:1px solid ${C.hairline};border-radius:14px;background-color:#fafbfc;">
+  <tr><td style="padding:16px 18px 18px;">
+    ${eyebrow("Price details")}
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      ${totals}
+      ${savedBanner}
+    </table>
+  </td></tr>
 </table>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;border-collapse:collapse;">
@@ -236,11 +280,14 @@ ${eyebrow(order.cod ? "Order confirmed" : order.paid ? "Order confirmed" : "Orde
         `  ${l.title}${l.variantLabel ? ` (${l.variantLabel})` : ""} × ${l.quantity} — ${rupees(l.price * l.quantity)}`,
     ),
     ``,
-    `  Items        ${rupees(order.itemsTotal)}`,
-    order.productDiscount > 0 ? `  Discount     − ${rupees(order.productDiscount)}` : "",
-    `  Delivery     ${order.shipping === 0 ? "Free" : rupees(order.shipping)}`,
-    order.tax > 0 ? `  Taxes (incl) ${rupees(order.tax)}` : "",
-    `  ${order.cod ? "To pay on delivery" : "Total"}        ${rupees(order.total)}`,
+    `PRICE DETAILS`,
+    `  Total MRP          ${rupees(order.itemsTotal + order.productDiscount)}`,
+    order.productDiscount > 0 ? `  Discount on MRP    − ${rupees(order.productDiscount)}` : "",
+    order.productDiscount > 0 ? `  Subtotal           ${rupees(order.itemsTotal)}` : "",
+    `  Delivery           ${order.shipping === 0 ? "FREE" : `+ ${rupees(order.shipping)}`}`,
+    `  ${order.cod ? "To pay on delivery" : "Total amount"}       ${rupees(order.total)}`,
+    order.tax > 0 ? `  (Inclusive of GST ${rupees(order.tax)})` : "",
+    order.productDiscount > 0 ? `  You saved ${rupees(order.productDiscount)} on this order` : "",
     ``,
     `DELIVERING TO`,
     address,
