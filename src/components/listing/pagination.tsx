@@ -28,82 +28,87 @@ export function Pagination({
   // hole the list has no ellipsis for, one stands in on phones only.
   const crowded = pages.filter((p) => p !== "gap").length >= 5;
 
-  // Rounded bordered cells, the current page filled in brand.
+  // Round cells in a frosted pill; the current page filled in cobalt.
   const linkClass =
-    "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-[13px] font-medium tabular-nums transition-colors duration-200";
-  const restClass = "bg-surface text-ink-700 hover:border-brand-300 hover:text-ink-950";
-  const spentClass = "bg-canvas text-ink-400";
-  const gapClass = "px-1 text-[13px] text-ink-400";
+    "inline-flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-[13px] font-medium tabular-nums transition-colors duration-200";
+  const restClass = "text-ink-700 hover:bg-brand-50 hover:text-brand-800";
+  const spentClass = "text-ink-300";
+  const gapClass = "px-1 text-[13px] text-ink-500";
 
   return (
     <nav
       aria-label="Pagination"
-      className={cn("flex items-center justify-center gap-1 sm:gap-1.5", className)}
+      className={cn("flex flex-col items-center gap-2.5", className)}
     >
-      {page > 1 ? (
-        <Link
-          href={hrefFor(page - 1)}
-          rel="prev"
-          aria-label="Previous page"
-          className={cn(linkClass, "tap", restClass)}
-        >
-          <ChevronLeft size={16} />
-        </Link>
-      ) : (
-        <span className={cn(linkClass, spentClass)}>
-          <ChevronLeft size={16} />
-        </span>
-      )}
+      <div className="card flex max-w-full items-center gap-0.5 rounded-full p-1 sm:gap-1">
+        {page > 1 ? (
+          <Link
+            href={hrefFor(page - 1)}
+            rel="prev"
+            aria-label="Previous page"
+            className={cn(linkClass, "tap", restClass)}
+          >
+            <ChevronLeft size={16} />
+          </Link>
+        ) : (
+          <span aria-hidden className={cn(linkClass, spentClass)}>
+            <ChevronLeft size={16} />
+          </span>
+        )}
 
-      {pages.map((p, i) => {
-        if (p === "gap") {
-          return (
-            <span key={`gap-${i}`} className={gapClass}>
-              &hellip;
-            </span>
-          );
-        }
-
-        const neighbour = crowded && Math.abs(p - page) === 1 && p !== 1 && p !== totalPages;
-        const phoneGap = neighbour && pages[p < page ? i - 1 : i + 1] !== "gap";
-
-        return (
-          <Fragment key={p}>
-            {phoneGap && (
-              <span className={cn(gapClass, "sm:hidden")} aria-hidden>
+        {pages.map((p, i) => {
+          if (p === "gap") {
+            return (
+              <span key={`gap-${i}`} className={gapClass}>
                 &hellip;
               </span>
-            )}
-            <Link
-              href={hrefFor(p)}
-              aria-current={p === page ? "page" : undefined}
-              className={cn(
-                linkClass,
-                "tap",
-                neighbour && "hidden sm:inline-flex",
-                p === page ? "border-brand-700 bg-brand-700 font-semibold text-white" : restClass,
-              )}
-            >
-              {p}
-            </Link>
-          </Fragment>
-        );
-      })}
+            );
+          }
 
-      {page < totalPages ? (
-        <Link
-          href={hrefFor(page + 1)}
-          rel="next"
-          aria-label="Next page"
-          className={cn(linkClass, "tap", restClass)}
-        >
-          <ChevronRight size={16} />
-        </Link>
-      ) : (
-        <span className={cn(linkClass, spentClass)}>
-          <ChevronRight size={16} />
-        </span>
-      )}
+          const neighbour = crowded && Math.abs(p - page) === 1 && p !== 1 && p !== totalPages;
+          const phoneGap = neighbour && pages[p < page ? i - 1 : i + 1] !== "gap";
+
+          return (
+            <Fragment key={p}>
+              {phoneGap && (
+                <span className={cn(gapClass, "sm:hidden")} aria-hidden>
+                  &hellip;
+                </span>
+              )}
+              <Link
+                href={hrefFor(p)}
+                aria-current={p === page ? "page" : undefined}
+                className={cn(
+                  linkClass,
+                  "tap",
+                  neighbour && "hidden sm:inline-flex",
+                  p === page ? "bg-brand-700 font-semibold text-white shadow-sm" : restClass,
+                )}
+              >
+                {p}
+              </Link>
+            </Fragment>
+          );
+        })}
+
+        {page < totalPages ? (
+          <Link
+            href={hrefFor(page + 1)}
+            rel="next"
+            aria-label="Next page"
+            className={cn(linkClass, "tap", restClass)}
+          >
+            <ChevronRight size={16} />
+          </Link>
+        ) : (
+          <span aria-hidden className={cn(linkClass, spentClass)}>
+            <ChevronRight size={16} />
+          </span>
+        )}
+      </div>
+      <p className="t-small tabular-nums">
+        Page {page} of {totalPages}
+      </p>
     </nav>
   );
 }

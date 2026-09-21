@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronDown, RotateCcw, Star, X } from "lucide-react";
+import { ChevronDown, RotateCcw, SlidersHorizontal, Star, X } from "lucide-react";
 import type { ProductFacets, ProductQuery } from "@/lib/types";
 import { activeFilters } from "@/lib/query";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,17 @@ function toggleInList(current: string[] | undefined, value: string) {
   return [...set].join(",") || null;
 }
 
+const CLEAR_ALL = {
+  brands: null,
+  colors: null,
+  minPrice: null,
+  maxPrice: null,
+  rating: null,
+  discount: null,
+  inStock: null,
+  fast: null,
+};
+
 /* --------------------------- Filter group -------------------------- */
 
 function Group({
@@ -53,23 +64,27 @@ function Group({
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
-  // Below lg this panel lives in the filter sheet, so rows grow to finger
-  // height there; the desktop sidebar keeps its tighter rhythm.
+  // Finger-height rows in the phone sheet; tighter in the desktop rail.
   return (
-    <section className="border-b py-1.5 last:border-b-0 lg:py-4">
+    <section className="border-b border-line py-2 last:border-b-0 lg:py-3">
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="tap flex min-h-10 w-full items-center justify-between gap-2 text-left lg:min-h-0"
+        className="tap -mx-2 flex min-h-11 w-[calc(100%+1rem)] items-center justify-between gap-2 rounded-md px-2 text-left transition-colors hover:bg-ink-50 lg:min-h-9"
       >
-        <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 sm:text-[12px]">
+        <span className="t-label text-ink-900">
           {title}
-          {count ? <span className="ml-1.5 tabular-nums text-ink-500">({count})</span> : null}
+          {count ? (
+            <span className="ml-1.5 rounded-full bg-brand-50 px-1.5 py-px tabular-nums text-brand-700">
+              {count}
+            </span>
+          ) : null}
         </span>
         <ChevronDown
-          size={15}
+          size={16}
           className={cn(
-            "shrink-0 text-ink-400 transition-transform duration-200",
+            "shrink-0 text-ink-500 transition-transform duration-200",
             open && "rotate-180",
           )}
         />
@@ -83,7 +98,7 @@ function Group({
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <div className="pt-1 lg:pt-3.5">{children}</div>
+            <div className="pb-1 pt-1.5">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -104,14 +119,19 @@ function CheckRow({
   count?: number;
   swatch?: string;
 }) {
-  // Ink, not ocean: a column of twenty ticks is the most repeated element on
-  // the page, and colouring every one of them spends the accent on the least
-  // important thing in the rail.
+  // The real input comes first so the drawn box can show keyboard focus.
   return (
-    <label className="tap group flex cursor-pointer items-center gap-2.5 py-2.5 lg:py-1.5">
+    <label
+      className={cn(
+        "tap group -mx-2 flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-2.5 transition-colors duration-150 lg:py-1.5",
+        checked ? "bg-brand-50/70" : "hover:bg-ink-50",
+      )}
+    >
+      <input type="checkbox" checked={checked} onChange={onChange} className="peer sr-only" />
       <span
         className={cn(
-          "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors duration-150",
+          "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[6px] border transition-colors duration-150",
+          "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-500",
           checked ? "border-brand-700 bg-brand-700" : "border-line-strong bg-surface group-hover:border-brand-400",
         )}
       >
@@ -127,18 +147,23 @@ function CheckRow({
           </svg>
         )}
       </span>
-      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
       {swatch && (
         <span
-          className="h-3.5 w-3.5 shrink-0"
+          aria-hidden
+          className="h-4 w-4 shrink-0 rounded-full ring-1 ring-inset ring-ink-950/10"
           style={{ backgroundColor: swatch }}
         />
       )}
-      <span className="min-w-0 flex-1 truncate text-[13px] text-ink-700 transition-colors group-hover:text-ink-950">
+      <span
+        className={cn(
+          "min-w-0 flex-1 truncate text-[13px] transition-colors group-hover:text-ink-950",
+          checked ? "font-medium text-ink-950" : "text-ink-700",
+        )}
+      >
         {label}
       </span>
       {count != null && (
-        <span className="shrink-0 text-[13px] tabular-nums text-ink-400">{count}</span>
+        <span className="shrink-0 text-[12px] tabular-nums text-ink-500">{count}</span>
       )}
     </label>
   );
@@ -180,11 +205,9 @@ export function FilterPanel({
 
   return (
     <div className="text-ink-900">
-      {/* 48px with a rule beneath it from lg up, which is the height of the
-          toolbar in the column alongside — so the rail and the grid start on
-          one line rather than a few pixels apart. */}
-      <div className="flex min-h-11 items-center justify-between gap-3 lg:h-12 lg:min-h-0">
-        <h2 className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 sm:text-[12px]">
+      <div className="flex min-h-12 items-center justify-between gap-3 border-b border-line">
+        <h2 className="flex items-center gap-2 text-[13.5px] font-semibold text-ink-950">
+          <SlidersHorizontal size={16} className="text-brand-700" aria-hidden />
           Filters
           {active.length > 0 && (
             <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-700 px-1.5 text-[10.5px] font-semibold leading-none tabular-nums text-white">
@@ -194,22 +217,11 @@ export function FilterPanel({
         </h2>
         {active.length > 0 && (
           <button
-            onClick={() =>
-              setParams({
-                brands: null,
-                colors: null,
-                minPrice: null,
-                maxPrice: null,
-                rating: null,
-                discount: null,
-                inStock: null,
-                fast: null,
-              })
-            }
-            // The negative margin grows the tap area without moving the row.
-            className="tap -my-3 inline-flex items-center gap-1.5 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 transition-colors hover:text-ink-950 lg:my-0 lg:py-0"
+            type="button"
+            onClick={() => setParams(CLEAR_ALL)}
+            className="tap -mr-2 inline-flex min-h-9 items-center gap-1.5 rounded-md px-2 text-[12.5px] font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800"
           >
-            <RotateCcw size={12} /> Clear all
+            <RotateCcw size={14} aria-hidden /> Clear all
           </button>
         )}
       </div>
@@ -279,8 +291,10 @@ export function FilterPanel({
           </div>
           {facets.brands.length > 8 && (
             <button
+              type="button"
               onClick={() => setShowAllBrands((s) => !s)}
-              className="tap inline-flex min-h-10 items-center text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors hover:text-brand-700 lg:mt-2 lg:min-h-0"
+              aria-expanded={showAllBrands}
+              className="tap mt-1 inline-flex min-h-10 items-center text-[12.5px] font-semibold text-brand-700 transition-colors hover:text-brand-800 lg:min-h-8"
             >
               {showAllBrands ? "Show fewer" : `Show all ${facets.brands.length} brands`}
             </button>
@@ -295,30 +309,39 @@ export function FilterPanel({
             return (
               <label
                 key={r.value}
-                className="tap group flex cursor-pointer items-center gap-2.5 py-2.5 lg:py-1.5"
+                className={cn(
+                  "tap group -mx-2 flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-2.5 transition-colors duration-150 lg:py-1.5",
+                  chosen ? "bg-brand-50/70" : "hover:bg-ink-50",
+                )}
               >
                 <input
                   type="radio"
                   name="rating"
                   checked={chosen}
                   onChange={() => setParams({ rating: r.value })}
-                  className="sr-only"
+                  className="peer sr-only"
                 />
                 {/* A round radio: an outlined ring, and a brand dot when chosen. */}
                 <span
                   className={cn(
                     "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border transition-colors duration-150",
+                    "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand-500",
                     chosen ? "border-brand-700" : "border-line-strong group-hover:border-brand-400",
                   )}
                 >
                   {chosen && <span className="h-[9px] w-[9px] rounded-full bg-brand-700" />}
                 </span>
-                <span className="flex flex-1 items-center gap-1 text-[13px] text-ink-700">
+                <span
+                  className={cn(
+                    "flex flex-1 items-center gap-1 text-[13px]",
+                    chosen ? "font-medium text-ink-950" : "text-ink-700",
+                  )}
+                >
                   <span className="tabular-nums">{r.value}</span>
-                  <Star size={12} className="text-ink-400" fill="currentColor" strokeWidth={0} />
+                  <Star size={14} className="text-gold-500" fill="currentColor" strokeWidth={0} />
                   <span className="text-ink-500">and above</span>
                 </span>
-                <span className="text-[13px] tabular-nums text-ink-400">{r.count}</span>
+                <span className="text-[12px] tabular-nums text-ink-500">{r.count}</span>
               </label>
             );
           })}
@@ -394,45 +417,43 @@ function PriceRange({
   const [lo, setLo] = useState(value[0] ?? min);
   const [hi, setHi] = useState(value[1] ?? max);
 
+  // 16px text on phones: iOS zooms into any smaller field on focus.
+  const field =
+    "h-10 w-full rounded-md bg-surface px-3 text-[16px] tabular-nums text-ink-900 outline-none sm:text-[13px] lg:h-9";
+
   return (
-    <div className="mt-3 pt-3 lg:mt-4 lg:pt-4">
+    <div className="card-muted mt-3 p-3">
       <div className="flex items-center gap-2">
         <label className="min-w-0 flex-1">
-          <span className="mb-1.5 block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-            Min
-          </span>
-          {/* 16px on phones: iOS zooms the page into any field set smaller than
-              that the moment it is focused, which no app would do. */}
+          <span className="t-label mb-1.5 block">Min</span>
           <input
             type="number"
             value={lo}
             min={min}
             max={hi}
             onChange={(e) => setLo(Number(e.target.value))}
-            className="h-10 w-full rounded-lg border border-line-strong bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors focus:border-brand-400 sm:text-[13px] lg:h-9"
+            className={field}
           />
         </label>
-        <span aria-hidden className="mt-6 text-ink-400">
-          —
+        <span aria-hidden className="mt-6 text-ink-500">
+          –
         </span>
         <label className="min-w-0 flex-1">
-          <span className="mb-1.5 block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-            Max
-          </span>
+          <span className="t-label mb-1.5 block">Max</span>
           <input
             type="number"
             value={hi}
             min={lo}
             max={max}
             onChange={(e) => setHi(Number(e.target.value))}
-            className="h-10 w-full rounded-lg border border-line-strong bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors focus:border-brand-400 sm:text-[13px] lg:h-9"
+            className={field}
           />
         </label>
       </div>
       <Button
         variant="outline"
         size="sm"
-        className="mt-2.5 h-10 w-full lg:h-9"
+        className="mt-2.5 h-10 w-full bg-surface lg:h-9"
         onClick={() => onCommit(Math.min(lo, hi), Math.max(lo, hi))}
       >
         Apply price
@@ -455,36 +476,29 @@ export function ActiveChips({
 
   if (chips.length === 0) return null;
 
-  // One swipeable row on phones and tablets rather than a wrapping stack that
-  // pushes the grid down; it bleeds to the screen edge like the bar above it.
+  // One swipeable row on phones, bleeding to the screen edge; wraps on desktop.
   return (
-    <div className="no-scrollbar -mx-3 mb-3 flex items-center gap-1.5 overflow-x-auto px-3 sm:-mx-6 sm:px-6 lg:mx-0 lg:mb-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+    <div
+      role="group"
+      aria-label="Active filters"
+      className="no-scrollbar -mx-3 mb-4 flex items-center gap-1.5 overflow-x-auto px-3 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0"
+    >
       {chips.map((chip) => (
         <button
           key={chip.key}
+          type="button"
           onClick={() => setParams(chip.clear)}
-          // Rose is for reductions, so dismissing a filter is not painted in
-          // it. A hairline that darkens to ink says "this comes off" quietly.
-          className="chip tap group h-9 shrink-0 whitespace-nowrap pl-3.5 pr-2.5 text-[12.5px] font-medium text-ink-700 transition-colors duration-200 hover:border-ink-300 hover:text-ink-950 lg:h-8"
+          aria-label={`Remove filter: ${chip.label}`}
+          className="tap group inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-brand-200 bg-brand-50 pl-3 pr-2 text-[12.5px] font-medium text-brand-800 transition-colors duration-200 hover:border-brand-300 hover:bg-brand-100"
         >
           {chip.label}
-          <X size={12} className="text-ink-400 transition-colors group-hover:text-ink-950" />
+          <X size={14} className="text-brand-600 transition-colors group-hover:text-brand-800" aria-hidden />
         </button>
       ))}
       <button
-        onClick={() =>
-          setParams({
-            brands: null,
-            colors: null,
-            minPrice: null,
-            maxPrice: null,
-            rating: null,
-            discount: null,
-            inStock: null,
-            fast: null,
-          })
-        }
-        className="tap ml-1.5 shrink-0 whitespace-nowrap py-2 text-[12.5px] font-semibold text-brand-700 transition-colors hover:text-brand-800 lg:py-0"
+        type="button"
+        onClick={() => setParams(CLEAR_ALL)}
+        className="tap ml-1 inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 text-[12.5px] font-semibold text-ink-600 transition-colors hover:bg-ink-100 hover:text-ink-950"
       >
         Clear all
       </button>

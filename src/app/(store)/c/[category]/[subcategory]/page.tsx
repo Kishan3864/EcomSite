@@ -6,6 +6,9 @@ import { toCardModels } from "@/lib/card";
 import { parseQuery, type RawSearchParams } from "@/lib/query";
 import { getBrands, getSubcategory, searchProducts } from "@/services/catalog";
 import { cn } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/category-icon";
+import { glyphNameFor } from "@/components/illustration/glyph-name";
 
 type Params = Promise<{ category: string; subcategory: string }>;
 
@@ -85,33 +88,43 @@ export default async function SubcategoryPage({
       hideCategoryFilter
       brandLabels={brandLabels}
     >
-      <nav aria-label="Sibling categories" className="mb-4 sm:mb-8">
-        {/* The rail bleeds to the screen edge by exactly the page gutter. */}
-        <ul className="rail -mx-3 gap-2 px-3 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:px-0">
-          <li>
+      <nav aria-label="Sibling categories" className="mb-6 sm:mb-8">
+        {/* One swipeable row on phones, bleeding by the page gutter; wraps on desktop. */}
+        <ul className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+          <li className="shrink-0">
             <Link
               href={`/c/${category.slug}`}
-              className="tap inline-block whitespace-nowrap bg-surface px-3 py-2 text-[12px] font-medium text-ink-700 transition-colors sm:px-3.5 sm:text-[12.5px]"
+              className="tap inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border border-line-strong bg-surface pl-2.5 pr-3.5 text-[12.5px] font-medium text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700"
             >
+              <ArrowLeft size={14} aria-hidden />
               All {category.name}
             </Link>
           </li>
-          {category.subcategories.map((sub) => (
-            <li key={sub.slug}>
-              <Link
-                href={`/c/${category.slug}/${sub.slug}`}
-                aria-current={sub.slug === subcategory.slug ? "page" : undefined}
-                className={cn(
-                  "tap inline-block whitespace-nowrap px-3 py-2 text-[12px] font-medium transition-colors sm:px-3.5 sm:text-[12.5px]",
-                  sub.slug === subcategory.slug
-                    ? "bg-brand-900 text-white"
-                    : "bg-surface text-ink-700",
-                )}
-              >
-                {sub.name}
-              </Link>
-            </li>
-          ))}
+          {category.subcategories.map((sub) => {
+            const current = sub.slug === subcategory.slug;
+            return (
+              <li key={sub.slug} className="shrink-0">
+                <Link
+                  href={`/c/${category.slug}/${sub.slug}`}
+                  aria-current={current ? "page" : undefined}
+                  className={cn(
+                    "tap inline-flex h-9 items-center gap-1.5 whitespace-nowrap rounded-full border pl-3 pr-3.5 text-[12.5px] font-medium transition-colors",
+                    current
+                      ? "border-brand-700 bg-brand-700 text-white"
+                      : "border-line-strong bg-surface text-ink-700 hover:border-brand-300 hover:text-brand-700",
+                  )}
+                >
+                  <CategoryIcon
+                    icon={glyphNameFor(sub.name) ?? category.icon}
+                    name={sub.name}
+                    size={14}
+                    className={current ? "text-white" : "text-ink-500"}
+                  />
+                  {sub.name}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </ListingShell>

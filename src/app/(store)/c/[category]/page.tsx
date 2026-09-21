@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight } from "lucide-react";
-import { DepartmentGlyph } from "@/components/illustration/department-glyph";
+import { ArrowUpRight, Check } from "lucide-react";
+import Image from "@/components/ui/image";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { glyphNameFor } from "@/components/illustration/glyph-name";
 import { balancedColumnClass } from "@/lib/grid";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,7 @@ export default async function CategoryPage({
   const query = { ...parseQuery(rawParams), category: category.slug };
   const [result, brands] = await Promise.all([searchProducts(query), getBrands()]);
   const brandLabels = Object.fromEntries(brands.map((b) => [b.slug, b.name]));
+  const subs = category.subcategories;
 
   return (
     <ListingShell
@@ -79,53 +81,81 @@ export default async function CategoryPage({
       hideCategoryFilter
       brandLabels={brandLabels}
     >
-      <div className="mb-4 space-y-4 sm:mb-8 sm:space-y-6">
-        {/* The collections, on the shared hairline grid the rest of the shop is
-            drawn on. The photographs that used to head this rail showed one
-            product apiece and implied a whole shelf; the department's drawn mark
-            makes no such promise, costs no round trip, and is the same mark the
-            menu and the homepage now use. */}
-        {category.subcategories.length > 0 && (
-          /* One column of ruled rows on a phone, a row of tiles from 640px.
-             The tile depends on hover to say "this is a link", and a phone has
-             no hover — so on a phone it is a row with a chevron instead, which
-             says the same thing without one. */
-          <div className={cn("tile-grid grid-cols-1", balancedColumnClass(category.subcategories.length, 4))}>
-            {category.subcategories.map((sub) => (
-              <Link
-                key={sub.slug}
-                href={`/c/${category.slug}/${sub.slug}`}
-                className="tap group flex items-center gap-3 px-4 py-3.5 transition-colors duration-200 sm:flex-col sm:justify-center sm:gap-2.5 sm:px-3 sm:py-5 sm:text-center [@media(hover:hover)]:hover:bg-ink-50"
-              >
-                <DepartmentGlyph
-                  icon={glyphNameFor(sub.name) ?? category.icon}
-                  name={sub.name}
-                  size={28}
-                  className="shrink-0 text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:hidden"
-                />
-                <DepartmentGlyph
-                  icon={glyphNameFor(sub.name) ?? category.icon}
-                  name={sub.name}
-                  size={40}
-                  className="hidden text-ink-900 transition-colors duration-200 group-hover:text-brand-700 sm:block"
-                />
-                <span className="min-w-0 flex-1 text-[13.5px] font-medium leading-[1.35] text-ink-900 sm:flex-none">
-                  {sub.name}
-                </span>
-                <ChevronRight size={15} className="shrink-0 text-ink-400 sm:hidden" />
-              </Link>
-            ))}
-          </div>
+      <div className="mb-6 space-y-5 sm:mb-10 sm:space-y-6">
+        {subs.length > 0 && (
+          <section aria-labelledby="subcategories-heading">
+            <div className="mb-3 flex items-baseline justify-between gap-3 sm:mb-4">
+              <h2 id="subcategories-heading" className="t-h3">
+                Shop by collection
+              </h2>
+              <span className="t-small tabular-nums">
+                {subs.length} {subs.length === 1 ? "collection" : "collections"}
+              </span>
+            </div>
+
+            {/* A swipeable rail on phones; a balanced grid from 640px. */}
+            <ul
+              className={cn(
+                "no-scrollbar -mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-1",
+                "sm:mx-0 sm:grid sm:snap-none sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0",
+                balancedColumnClass(subs.length, 4),
+              )}
+            >
+              {subs.map((sub, i) => (
+                <li key={sub.slug} className="w-[150px] shrink-0 snap-start sm:w-auto">
+                  <Link
+                    href={`/c/${category.slug}/${sub.slug}`}
+                    className="card card-interactive group flex h-full flex-col overflow-hidden"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-b from-ink-50 to-ink-100/70 sm:aspect-[16/9]">
+                      {sub.image?.url && (
+                        <Image
+                          src={sub.image.url}
+                          alt=""
+                          fill
+                          priority={i < 2}
+                          sizes="(min-width:1024px) 22vw, (min-width:640px) 30vw, 150px"
+                          className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05]"
+                        />
+                      )}
+                      <span
+                        aria-hidden
+                        className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ink-950/25 to-transparent"
+                      />
+                      <span className="icon-tile icon-tile-sm absolute bottom-2.5 left-2.5 bg-surface/90 shadow-sm ring-1 ring-inset ring-ink-950/5 backdrop-blur">
+                        <CategoryIcon icon={glyphNameFor(sub.name) ?? category.icon} name={sub.name} size={16} />
+                      </span>
+                    </div>
+                    <div className="flex flex-1 items-start justify-between gap-2 p-3 sm:p-3.5">
+                      <div className="min-w-0">
+                        <h3 className="t-h3 text-[13.5px] transition-colors group-hover:text-brand-700 sm:text-[14px]">
+                          {sub.name}
+                        </h3>
+                        {sub.description && (
+                          <p className="t-small mt-0.5 line-clamp-1 hidden sm:block">{sub.description}</p>
+                        )}
+                      </div>
+                      <ArrowUpRight
+                        size={16}
+                        aria-hidden
+                        className="mt-0.5 shrink-0 text-ink-500 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-700"
+                      />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
-        {/* The promises the department can actually be held to, set as a ruled
-            line of text rather than a row of coloured pills: a claim reads as
-            true in proportion to how quietly it is made. */}
         {category.highlights.length > 0 && (
-          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 py-2.5">
+          <ul className="flex flex-wrap items-center gap-2">
             {category.highlights.map((h) => (
-              <li key={h} className="flex items-center gap-2.5 text-[13px] text-ink-600">
-                <span aria-hidden className="h-px w-3.5 shrink-0 bg-ink-400" />
+              <li
+                key={h}
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-[12.5px] font-medium text-brand-800"
+              >
+                <Check size={14} aria-hidden />
                 {h}
               </li>
             ))}

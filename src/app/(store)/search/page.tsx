@@ -4,6 +4,8 @@ import { ListingShell } from "@/components/listing/listing-shell";
 import { toCardModels } from "@/lib/card";
 import { parseQuery, type RawSearchParams } from "@/lib/query";
 import { getBrands, getCategories, searchProducts } from "@/services/catalog";
+import { LayoutGrid, Search, Sparkles } from "lucide-react";
+import { CategoryIcon } from "@/components/ui/category-icon";
 
 export async function generateMetadata({
   searchParams,
@@ -71,23 +73,27 @@ export default async function SearchPage({
       clearHref={term ? `/search?q=${encodeURIComponent(term)}` : "/search"}
       brandLabels={brandLabels}
       emptyVariant="no-results"
+      emptySuggestions={
+        term ? suggestions.map((s) => ({ label: s, href: `/search?q=${encodeURIComponent(s)}` })) : undefined
+      }
     >
       {!term && (
-        // Each list is one swipeable row on phones instead of a tall wrapped
-        // stack, bleeding to the screen edge by exactly the page gutter.
-        <div className="mb-5 space-y-4 sm:mb-8 sm:space-y-7">
+        // Each list is one swipeable row on phones, bleeding by the page gutter.
+        <div className="mb-6 grid gap-5 sm:mb-10 lg:grid-cols-2 lg:gap-6">
           {suggestions.length > 0 && (
-            <section>
-              <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3">
+            <section className="card p-4 sm:p-5" aria-labelledby="search-suggestions">
+              <h2 id="search-suggestions" className="t-label mb-3 flex items-center gap-2">
+                <Sparkles size={14} className="text-brand-600" aria-hidden />
                 Try one of these
               </h2>
-              <ul className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+              <ul className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
                 {suggestions.map((s) => (
                   <li key={s} className="shrink-0">
                     <Link
                       href={`/search?q=${encodeURIComponent(s)}`}
-                      className="chip tap whitespace-nowrap px-3.5 py-2 text-[12px] text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700 sm:text-[12.5px]"
+                      className="chip tap h-9 whitespace-nowrap px-3.5 text-[12.5px] font-medium text-ink-700 transition-colors hover:text-brand-700"
                     >
+                      <Search size={14} className="text-ink-500" aria-hidden />
                       {s}
                     </Link>
                   </li>
@@ -97,23 +103,27 @@ export default async function SearchPage({
           )}
 
           {categories.length > 0 && (
-          <section>
-            <h2 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400 sm:mb-3">
-              {suggestions.length > 0 ? "Or browse a department" : "Browse a department"}
-            </h2>
-            <ul className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
-              {categories.map((c) => (
-                <li key={c.slug} className="shrink-0">
-                  <Link
-                    href={`/c/${c.slug}`}
-                    className="tap inline-block whitespace-nowrap bg-ink-100 px-3 py-2 text-[12px] font-medium text-ink-800 transition-colors hover:bg-brand-100 hover:text-brand-800 sm:px-3.5 sm:text-[12.5px]"
-                  >
-                    {c.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </section>
+            <section className="card p-4 sm:p-5" aria-labelledby="search-departments">
+              <h2 id="search-departments" className="t-label mb-3 flex items-center gap-2">
+                <LayoutGrid size={14} className="text-brand-600" aria-hidden />
+                {suggestions.length > 0 ? "Or browse a department" : "Browse a department"}
+              </h2>
+              <ul className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+                {categories.map((c) => (
+                  <li key={c.slug} className="shrink-0">
+                    <Link
+                      href={`/c/${c.slug}`}
+                      className="tap group inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full bg-brand-50 pl-1 pr-3.5 text-[12.5px] font-medium text-brand-800 transition-colors hover:bg-brand-100"
+                    >
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-surface text-brand-700">
+                        <CategoryIcon icon={c.icon} name={c.name} size={14} />
+                      </span>
+                      {c.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
         </div>
       )}
