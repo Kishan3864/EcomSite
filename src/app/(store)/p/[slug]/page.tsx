@@ -192,16 +192,16 @@ export default async function ProductPage({ params }: { params: Params }) {
           <div className="space-y-8 sm:space-y-14">
             <section>
               <SectionHead eyebrow="In brief" title="Highlights" />
-              {/* A ruled index rather than a bulleted list: the two columns
-                  share one set of rules, so the pairs line up across the gap
-                  and the block reads as a single table of facts. */}
-              <ul className="mt-5 grid sm:grid-cols-2">
+              {/* One bordered card, a soft rule between every point. */}
+              <ul className="card card-divided mt-5 overflow-hidden">
                 {product.highlights.map((h) => (
                   <li
                     key={h}
-                    className="flex items-start gap-2.5 py-3 pr-6 text-[13.5px] leading-[1.5] text-ink-700 sm:text-[14px]"
+                    className="flex items-start gap-3 px-4 py-3.5 text-[13.5px] leading-[1.5] text-ink-700 sm:px-5 sm:text-[14px]"
                   >
-                    <Check size={14} className="mt-[3px] shrink-0 text-ink-400" strokeWidth={2} />
+                    <span className="mt-px flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                      <Check size={12} strokeWidth={2.5} />
+                    </span>
                     {h}
                   </li>
                 ))}
@@ -221,7 +221,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                 ))}
               </div>
               {brand && (
-                <div className="mt-6 pt-4 sm:mt-8">
+                <div className="card-muted mt-6 p-4 sm:mt-8 sm:p-5">
                   <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
                     About {brand.name}
                   </p>
@@ -230,7 +230,7 @@ export default async function ProductPage({ params }: { params: Params }) {
                   </p>
                   <Link
                     href={`/products?brands=${brand.slug}`}
-                    className="tap group mt-3 inline-flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors hover:text-brand-700"
+                    className="tap group mt-3 inline-flex items-center gap-2 text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
                   >
                     See everything by {brand.name}
                     <ArrowRight
@@ -284,15 +284,13 @@ export default async function ProductPage({ params }: { params: Params }) {
             <QnaSection questions={questions} />
           </div>
 
-          {/* Policy sidebar. One ruled block, not three cards: these three
-              paragraphs are the shop's promise, and a promise reads as a
-              promise when it is set as a document rather than as furniture. */}
+          {/* Policy sidebar: each promise in its own bordered card. */}
           <aside className="min-w-0 lg:sticky lg:top-[132px] lg:h-fit">
-            <div className="pt-4 sm:pt-5">
+            <div>
               <span className="eyebrow">Every order</span>
-              <dl className="mt-4 sm:mt-5">
+              <dl className="mt-4 space-y-3 sm:mt-5">
                 {policies.map((item) => (
-                  <div key={item.title} className="py-4">
+                  <div key={item.title} className="card p-4 sm:p-5">
                     <dt className="text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-ink-500">
                       {item.title}
                     </dt>
@@ -300,12 +298,12 @@ export default async function ProductPage({ params }: { params: Params }) {
                       <p className="mt-2 text-[13px] leading-[1.6] text-ink-600">{item.body}</p>
                       <Link
                         href={item.href}
-                        className="tap group mt-2.5 inline-flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors hover:text-brand-700"
+                        className="tap group mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
                       >
                         {item.linkLabel}
                         <ChevronRight
                           size={13}
-                          className="text-ink-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-700"
+                          className="transition-transform duration-200 group-hover:translate-x-0.5"
                         />
                       </Link>
                     </dd>

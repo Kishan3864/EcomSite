@@ -55,7 +55,7 @@ export function ReviewsSection({
         <h2 className="font-display text-[18px] tracking-[-0.02em] text-ink-950 sm:text-[28px]">
           Ratings and reviews
         </h2>
-        <div className="mt-3 pt-4 sm:mt-5 sm:pt-5">
+        <div className="card mt-4 p-4 sm:mt-5 sm:p-6">
           <p className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
             No reviews yet
           </p>
@@ -76,9 +76,9 @@ export function ReviewsSection({
         Ratings and reviews
       </h2>
 
-      <div className="mt-3 grid gap-5 pt-4 sm:mt-5 sm:gap-8 sm:pt-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12">
-        {/* Summary */}
-        <div>
+      <div className="mt-4 grid gap-5 sm:mt-6 sm:gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
+        {/* Summary, in its own card */}
+        <div className="card h-fit p-4 sm:p-5 lg:sticky lg:top-[132px]">
           {/* Phones set the score beside the bars, as shopping apps do, rather
               than stacking two short blocks; from sm they stack as before. With
               no score to set beside them the two-track grid would size itself
@@ -105,7 +105,7 @@ export function ReviewsSection({
               </div>
             )}
 
-            {/* Five bars in one ink. Colouring the top two ocean, the middle
+            {/* Five bars in one colour (gold). Colouring the top two ocean, the middle
                 one gold and the bottom two rose turned a record of what
                 customers said into the shop's own verdict on it, and spent the
                 two colours that are meant to mean a signal and a reduction on
@@ -133,13 +133,13 @@ export function ReviewsSection({
                         >
                           {star}
                         </span>
-                        <span className="block h-1.5 w-full overflow-hidden bg-ink-100">
+                        <span className="block h-2 w-full overflow-hidden rounded-full bg-ink-100">
                           <motion.span
                             initial={{ width: 0 }}
                             whileInView={{ width: `${pct}%` }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                            className={cn("block h-full", active ? "bg-brand-700" : "bg-ink-900")}
+                            className={cn("block h-full rounded-full", active ? "bg-brand-700" : "bg-gold-400")}
                           />
                         </span>
                         <span
@@ -168,10 +168,10 @@ export function ReviewsSection({
                 onClick={() => setFilter(chip.key)}
                 aria-pressed={filter === chip.key}
                 className={cn(
-                  "tap inline-flex h-9 items-center px-3.5 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[11.5px]",
+                  "chip tap h-9 px-3.5 text-[12.5px] font-semibold transition-colors duration-200",
                   filter === chip.key
-                    ? "bg-brand-700 text-white"
-                    : "text-ink-600 hover:text-ink-950",
+                    ? "border-brand-700 bg-brand-700 text-white"
+                    : "text-ink-600 hover:border-ink-300 hover:text-ink-950",
                 )}
               >
                 {chip.label}
@@ -183,8 +183,8 @@ export function ReviewsSection({
               measure, so the note reads as a footnote to the panel above it
               rather than as another tinted box. Every word of it is the
               shop's own promise and is kept as written. */}
-          <div className="mt-5 pt-4">
-            <p className="max-w-[46ch] text-[13px] leading-[1.6] text-ink-500">
+          <div className="mt-5 border-t pt-4">
+            <p className="max-w-[46ch] text-[12.5px] leading-[1.6] text-ink-500">
               Only customers who bought the product on WeekendCart can leave a review. We never edit
               or remove a review for being negative.
             </p>
@@ -198,7 +198,7 @@ export function ReviewsSection({
               No reviews match that filter yet.
             </p>
           ) : (
-            <ul>
+            <ul className="space-y-3">
               <AnimatePresence initial={false}>
                 {filtered.slice(0, visible).map((review) => (
                   <motion.li
@@ -208,14 +208,12 @@ export function ReviewsSection({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="py-4 sm:py-5"
+                    className="card p-4 sm:p-5"
                   >
                     <div className="flex items-start justify-between gap-3 sm:gap-4">
                       <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-                        {/* Initials in a hairline square, like a stamp on a
-                            docket. The round tinted disc was the one piece of
-                            app furniture left on the page. */}
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center text-[11.5px] font-semibold tracking-[0.04em] text-ink-700">
+                        {/* Initials in a round tinted mark. */}
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11.5px] font-semibold tracking-[0.04em] text-brand-800">
                           {review.author
                             .split(" ")
                             .map((n) => n[0])
@@ -363,7 +361,7 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
         /* A ruled index that opens in place — the same shape as the collection
            list on the homepage, so a question reads as a line in a contents
            page rather than as another card. */
-        <ul className="mt-3 sm:mt-5">
+        <ul className="card card-divided mt-4 overflow-hidden sm:mt-5">
           {questions.map((qa) => {
             const expanded = open === qa.id;
             return (
@@ -371,7 +369,7 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
                 <button
                   onClick={() => setOpen(expanded ? null : qa.id)}
                   aria-expanded={expanded}
-                  className="tap flex w-full items-start gap-3 py-3.5 text-left sm:py-4"
+                  className="tap flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-ink-50 sm:px-5 sm:py-4"
                 >
                   <span className="min-w-0 flex-1 text-[13.5px] font-medium leading-[1.45] text-ink-900 sm:text-[14px]">
                     {qa.question}
@@ -393,7 +391,7 @@ export function QnaSection({ questions }: { questions: QuestionAnswer[] }) {
                       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="pb-4 sm:pb-5">
+                      <div className="px-4 pb-4 sm:px-5 sm:pb-5">
                         <p className="max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]">
                           {qa.answer}
                         </p>

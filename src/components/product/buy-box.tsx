@@ -3,7 +3,19 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { ArrowRight, Check, Heart, Minus, Plus } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  CreditCard,
+  Heart,
+  Minus,
+  Package,
+  Plus,
+  RotateCcw,
+  ShieldCheck,
+  Truck,
+  type LucideIcon,
+} from "lucide-react";
 import type { Product } from "@/lib/types";
 import { BUSINESS } from "@/config/business";
 import { Button } from "@/components/ui/button";
@@ -13,6 +25,15 @@ import { DeliveryCheck } from "./delivery-check";
 import { BrandMark, ProductBadges } from "./badges";
 import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
 import { cn, discountPercent, formatCompact, formatINR } from "@/lib/utils";
+
+/** The mark beside each answer in the service tiles. */
+const LEDGER_ICONS: Record<string, LucideIcon> = {
+  Delivery: Truck,
+  Shipping: Package,
+  Returns: RotateCcw,
+  Warranty: ShieldCheck,
+  Payment: CreditCard,
+};
 
 export function BuyBox({
   product,
@@ -223,13 +244,13 @@ export function BuyBox({
                       // than by a ring that would shift the row as it lands.
                       // The frame is a background behind 3px of padding now,
                       // which draws the same band a border used to.
-                      "tap relative flex h-10 w-10 items-center justify-center p-[3px] transition-colors duration-200 sm:h-9 sm:w-9",
+                      "tap relative flex h-10 w-10 items-center justify-center rounded-full p-[3px] transition-colors duration-200 sm:h-9 sm:w-9",
                       selected ? "bg-ink-950" : "bg-ink-200 hover:bg-ink-400",
                       !option.inStock && "opacity-40",
                     )}
                   >
                     <span
-                      className="h-full w-full"
+                      className="h-full w-full rounded-full ring-2 ring-surface"
                       style={{ backgroundColor: option.swatch }}
                     />
                     {!option.inStock && (
@@ -247,10 +268,10 @@ export function BuyBox({
                   disabled={!option.inStock}
                   aria-pressed={selected}
                   className={cn(
-                    "tap min-h-10 min-w-[52px] px-3 py-2 text-[13px] font-medium transition-colors duration-200 sm:min-h-0 sm:px-3.5",
+                    "tap min-h-10 min-w-[52px] rounded-lg border px-3 py-2 text-[13px] font-medium transition-colors duration-200 sm:min-h-0 sm:px-3.5",
                     selected
-                      ? "bg-brand-700 text-white"
-                      : "bg-surface text-ink-800",
+                      ? "border-brand-700 bg-brand-700 text-white"
+                      : "border-line-strong bg-surface text-ink-800 hover:border-brand-400",
                     !option.inStock &&
                       "cursor-not-allowed text-ink-400 line-through",
                   )}
@@ -275,7 +296,7 @@ export function BuyBox({
 
       {/* Quantity and stock */}
       <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <div className="field-edge inline-flex items-center overflow-hidden bg-ink-100">
+        <div className="inline-flex items-center overflow-hidden rounded-lg border border-line-strong bg-surface">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             disabled={qty <= 1}
@@ -384,23 +405,30 @@ export function BuyBox({
 
       <DeliveryCheck deliveryDays={product.deliveryDays} codAvailable={codHere} />
 
-      {/* The ledger. Four icon tiles said less than five ruled lines do, and
-          the warranty no longer has to be cut to its first three words to fit
-          a tile — it is printed as the manufacturer wrote it. */}
-      <dl className="detail-panel px-4 sm:px-5">
-        {ledger.map((row) => (
-          <div
-            key={row.label}
-            className="table-row-line flex min-h-[44px] items-center justify-between gap-4 py-2.5"
-          >
-            <dt className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-              {row.label}
-            </dt>
-            <dd className="min-w-0 text-right text-[13.5px] font-medium tabular-nums text-ink-900">
-              {row.value}
-            </dd>
-          </div>
-        ))}
+      {/* The four questions asked before paying, as bordered tiles. Values
+          are printed in full — the warranty exactly as the maker wrote it. */}
+      <dl className="grid grid-cols-2 gap-2.5">
+        {ledger.map((row) => {
+          const Icon = LEDGER_ICONS[row.label] ?? Check;
+          return (
+            <div
+              key={row.label}
+              className="card flex items-start gap-3 p-3 shadow-none sm:p-3.5 [&:last-child:nth-child(odd)]:col-span-2"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
+                <Icon size={17} strokeWidth={1.75} aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <dt className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                  {row.label}
+                </dt>
+                <dd className="mt-0.5 text-[13px] font-semibold leading-[1.4] text-ink-900 wrap-break-word">
+                  {row.value}
+                </dd>
+              </span>
+            </div>
+          );
+        })}
       </dl>
     </div>
   );
