@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { Lock, Send } from "lucide-react";
+import { CircleCheck, Lock, MessageSquareText, Send } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/field";
 import { Reveal } from "@/components/ui/motion";
@@ -87,20 +87,21 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
 
   if (sent) {
     return (
-      <Reveal className="min-w-0 card p-5 sm:p-8">
-        <span className="eyebrow">Received</span>
-        <h2 className="mt-3 font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
-          Message received
-        </h2>
+      <Reveal className="card min-w-0 p-5 sm:p-8">
+        <span className="icon-tile">
+          <CircleCheck size={20} aria-hidden />
+        </span>
+        <p className="t-label mt-5 text-brand-700">Received</p>
+        <h2 className="t-h2 mt-1.5">Message received</h2>
         {/* Everything interpolated here is React-escaped, so a message
             containing markup renders as the text it is. break-words: the
             echoed email is one unbreakable word. */}
-        <p className="mt-3 max-w-[60ch] break-words text-[14px] leading-[1.65] text-ink-600 sm:text-[15px]">
+        <p className="t-body mt-3 max-w-[60ch] break-words">
           Thanks {form.name.split(" ")[0]} — we have your message about{" "}
           <strong className="font-semibold text-ink-900">{form.topic.toLowerCase()}</strong> and
           will reply to <strong className="font-semibold text-ink-900">{form.email}</strong>.
         </p>
-        <p className="mt-3 max-w-[60ch] break-words text-[14px] leading-[1.65] text-ink-600 sm:text-[15px]">
+        <p className="t-body mt-3 max-w-[60ch] break-words">
           A confirmation with a copy of what you wrote is on its way from{" "}
           <strong className="font-semibold text-ink-900">{BUSINESS.supportEmail}</strong>. If it is
           not in your inbox in a few minutes, look in spam and mark it as safe — that is also the
@@ -116,14 +117,19 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
   }
 
   return (
-    <Form onSubmit={submit} className="min-w-0 card p-4 sm:p-8">
-      <h2 className="font-display text-[22px] leading-tight tracking-[-0.02em] text-ink-950 sm:text-[28px]">
-        Send us a message
-      </h2>
-      <p className="mt-2 max-w-[60ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[14px]">
-        The more specific you are, the faster we can fix it. Include an order number if you have
-        one.
-      </p>
+    <Form onSubmit={submit} className="card relative min-w-0 overflow-hidden p-4 sm:p-7">
+      <div className="flex items-start gap-3.5">
+        <span className="icon-tile">
+          <MessageSquareText size={20} aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <h2 className="t-h2">Send us a message</h2>
+          <p className="t-body mt-1 max-w-[60ch] text-[13px]">
+            The more specific you are, the faster we can fix it. Include an order number if you
+            have one.
+          </p>
+        </div>
+      </div>
 
       {/*
         The honeypot.
@@ -147,7 +153,7 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
         />
       </div>
 
-      <div className="mt-5 grid gap-4 sm:mt-7 sm:grid-cols-2 sm:gap-5">
+      <div className="mt-6 grid gap-4 border-t border-line pt-6 sm:grid-cols-2 sm:gap-5">
         <Field label="Your name" htmlFor="c-name" error={errors.name}>
           <Input
             id="c-name"
@@ -168,12 +174,12 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
               so an editable field here would only be a box that silently does
               nothing.
             */
-            <div className="flex items-center gap-2 border border-ink-200 bg-ink-50 px-3.5 py-3">
+            <div className="flex h-11 items-center gap-2 rounded-md bg-ink-50 px-3.5 ring-1 ring-inset ring-line">
               <Lock size={14} className="shrink-0 text-ink-500" aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-[16px] text-ink-700 sm:text-[14px]">
                 {account.email}
               </span>
-              <span className="shrink-0 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-brand-700">
+              <span className="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-brand-700">
                 Verified
               </span>
             </div>
@@ -225,14 +231,14 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
             onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
             placeholder="Tell us what happened…"
             // 16px on phones, as in the shared inputs: iOS zooms into smaller fields.
-            className="w-full border bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px]"
+            className="w-full resize-y rounded-md bg-ink-50 px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-[box-shadow] placeholder:text-ink-400 sm:text-[14px]"
           />
         </Field>
       </div>
 
       {/* Phones: the note, then a full-width send button. */}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
-        <p className="max-w-[46ch] text-[13px] leading-[1.6] text-ink-500">
+        <p className="t-small max-w-[46ch]">
           We reply from{" "}
           <span className="font-medium text-ink-700">{BUSINESS.supportEmail}</span> — add it to your
           contacts so our answer does not land in spam. We use what you send only to answer you; see
@@ -243,7 +249,7 @@ export function ContactForm({ account, formToken }: ContactFormProps) {
           .
         </p>
         <Button type="submit" size="lg" loading={pending}>
-          <Send size={16} /> Send message
+          <Send size={16} aria-hidden /> Send message
         </Button>
       </div>
     </Form>

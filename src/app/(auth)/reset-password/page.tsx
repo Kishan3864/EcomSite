@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { findResetToken } from "@/lib/auth/password-reset";
 import { ResetForm } from "./reset-form";
 
@@ -45,20 +46,16 @@ export default async function ResetPasswordPage({
   if (!found.ok) {
     const copy = DEAD[found.reason] ?? DEAD.unknown;
     return (
-      <div className="mx-auto w-full max-w-[420px] px-4 py-12">
-        <h1 className="font-display text-[26px] leading-tight tracking-[-0.02em] text-ink-950">
-          {copy.title}
-        </h1>
-        <p className="mt-3 text-[14px] leading-[1.65] text-ink-600">{copy.body}</p>
-        <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-          <Link href="/forgot-password" className={buttonClasses("primary", "md")}>
+      <AuthShell title={copy.title} subtitle={copy.body}>
+        <div className="flex flex-col gap-2.5 sm:flex-row">
+          <Link href="/forgot-password" className={buttonClasses("primary", "md", "h-10 flex-1")}>
             Ask for a new link
           </Link>
-          <Link href="/login" className={buttonClasses("outline", "md")}>
+          <Link href="/login" className={buttonClasses("outline", "md", "h-10 flex-1")}>
             Back to sign in
           </Link>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
@@ -68,18 +65,15 @@ export default async function ResetPasswordPage({
   const setting = !found.hasPassword;
 
   return (
-    <div className="mx-auto w-full max-w-[420px] px-4 py-12">
-      <h1 className="font-display text-[26px] leading-tight tracking-[-0.02em] text-ink-950">
-        {setting ? "Set a password for your account" : "Set a new password"}
-      </h1>
-      <p className="mt-3 text-[14px] leading-[1.65] text-ink-600">
-        {setting
+    <AuthShell
+      title={setting ? "Set a password for your account" : "Set a new password"}
+      subtitle={
+        setting
           ? "You sign in with Google at the moment. Add a password and you can use either — the Google button keeps working exactly as it does now."
-          : "Choose something you have not used elsewhere. This link works once."}
-      </p>
-      <div className="mt-6">
-        <ResetForm token={token} setting={setting} />
-      </div>
-    </div>
+          : "Choose something you have not used elsewhere. This link works once."
+      }
+    >
+      <ResetForm token={token} setting={setting} />
+    </AuthShell>
   );
 }

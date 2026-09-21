@@ -13,7 +13,7 @@ import { Form } from "@/components/ui/form";
 
 /** Matches the block the shared `Form` draws for a failed constraint. */
 const ERROR_BLOCK =
-  "flex items-start gap-2 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600";
+  "flex items-start gap-2 rounded-md bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-700 ring-1 ring-inset ring-sale-200";
 
 function strength(password: string) {
   let score = 0;
@@ -138,7 +138,7 @@ export function RegisterForm({ next }: { next?: string }) {
                 key={i}
                 initial={false}
                 animate={{ opacity: i < score ? 1 : 0.25 }}
-                className={cn("h-[3px] flex-1", i < score ? TONES[score] : "bg-ink-200")}
+                className={cn("h-[3px] flex-1 rounded-full", i < score ? TONES[score] : "bg-ink-200")}
               />
             ))}
           </div>

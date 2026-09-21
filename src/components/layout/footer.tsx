@@ -1,6 +1,8 @@
 import Link from "next/link";
 import {
+  ArrowUpRight,
   ChevronDown,
+  Clock,
   Headset,
   Mail,
   MapPin,
@@ -9,7 +11,7 @@ import {
   ShieldCheck,
   Truck,
 } from "lucide-react";
-import { BRAND, Logo } from "@/components/brand/logo";
+import { BRAND, LogoLight } from "@/components/brand/logo";
 import { BUSINESS, formatAddress, isFilled, isGstRegistered } from "@/config/business";
 import { InstagramIcon, YoutubeIcon } from "@/components/brand/social-icons";
 import { getCategories } from "@/services/catalog";
@@ -24,24 +26,28 @@ const TRUST_ICONS = {
   headset: Headset,
 } as const;
 
-const LINK_COLUMNS = [
+interface FooterLink {
+  label: string;
+  href: string;
+}
+
+const SHOP_LINKS: FooterLink[] = [
+  { label: "All products", href: "/products" },
+  { label: "New arrivals", href: "/products?sort=newest" },
+  { label: "Bestsellers", href: "/products?sort=popularity" },
+  { label: "Under ₹999", href: "/products?maxPrice=999" },
+];
+
+const STATIC_COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
-    title: "Shop",
+    title: "Help",
     links: [
-      { label: "All products", href: "/products" },
-      { label: "New arrivals", href: "/products?sort=newest" },
-      { label: "Bestsellers", href: "/products?sort=popularity" },
-      { label: "Under ₹999", href: "/products?maxPrice=999" },
-    ],
-  },
-  {
-    title: "Your account",
-    links: [
+      { label: "Help and FAQ", href: "/faq" },
+      { label: "Track an order", href: "/track" },
+      { label: "My orders", href: "/account/orders" },
+      { label: "Returns and refunds", href: "/account/returns" },
       { label: "Sign in", href: "/login" },
       { label: "Create account", href: "/register" },
-      { label: "My orders", href: "/account/orders" },
-      { label: "Track an order", href: "/track" },
-      { label: "Returns and refunds", href: "/account/returns" },
       { label: "Wishlist", href: "/wishlist" },
     ],
   },
@@ -51,13 +57,10 @@ const LINK_COLUMNS = [
       { label: `About ${BUSINESS.brandName}`, href: "/about" },
       { label: "What we do", href: "/services" },
       { label: "Contact us", href: "/contact" },
-      { label: "Help and FAQ", href: "/faq" },
-      { label: "Track an order", href: "/track" },
     ],
   },
   {
-    // Every policy page reachable from every page, without logging in. Payment
-    // aggregators check this specifically during merchant review.
+    // Every policy reachable from every page, signed out — payment reviewers check.
     title: "Policies",
     links: [
       { label: "Privacy policy", href: "/legal/privacy" },
@@ -70,245 +73,249 @@ const LINK_COLUMNS = [
   },
 ];
 
+const LEGAL_LINKS: FooterLink[] = [
+  { label: "Privacy", href: "/legal/privacy" },
+  { label: "Terms", href: "/legal/terms" },
+  { label: "Refunds", href: "/legal/refunds" },
+  { label: "Shipping", href: "/legal/shipping" },
+];
+
+function ColumnList({ links, mobile = false }: { links: FooterLink[]; mobile?: boolean }) {
+  return (
+    <ul className={mobile ? "pb-3" : "space-y-2.5"}>
+      {links.map((link) => (
+        <li key={link.href}>
+          <Link
+            href={link.href}
+            className={
+              mobile
+                ? "tap flex h-10 items-center text-[13px] text-white/70 transition-colors hover:text-white"
+                : "text-[13px] text-white/65 transition-colors duration-200 hover:text-white"
+            }
+          >
+            {link.label}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export async function Footer() {
   const categories = await getCategories();
+
+  const columns = [
+    {
+      title: "Shop",
+      links: [
+        ...categories.slice(0, 6).map((c) => ({ label: c.name, href: `/c/${c.slug}` })),
+        ...SHOP_LINKS,
+      ],
+    },
+    ...STATIC_COLUMNS,
+  ];
+
+  const socials = [
+    { href: BRAND.social.instagram, icon: InstagramIcon, label: "Instagram" },
+    { href: BRAND.social.youtube, icon: YoutubeIcon, label: "YouTube" },
+  ].filter(({ href }) => isFilled(href)); // only profiles that exist
+
   return (
-    // No top margin below lg: the <main> above already ends in pb-16 there.
-    <footer className="bg-surface lg:mt-20">
-      {/* Trust strip. Four rows on one shared hairline grid, the way the rest
-          of the site draws a set of equal things — the coloured chip behind each
-          glyph was the last card look left in the chrome. All four stay: this is
-          the only place the return window is printed on the screen somebody is
-          standing on when they decide whether to buy. */}
-      <div>
-        <div className="container-page py-4 sm:py-8">
-          <div className="tile-grid overflow-hidden grid-cols-2 lg:grid-cols-4">
-            {trustBadges.map((badge) => {
-              const Icon = TRUST_ICONS[badge.icon as keyof typeof TRUST_ICONS];
-              return (
-                <div key={badge.title} className="flex items-start gap-2.5 p-3 sm:gap-3.5 sm:p-5">
-                  <Icon
-                    size={20}
-                    strokeWidth={1.5}
-                    aria-hidden
-                    className="mt-px shrink-0 text-ink-900"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold leading-[1.35] tabular-nums text-ink-950 sm:text-[13.5px]">
-                      {badge.title}
-                    </p>
-                    <p className="mt-1 text-[13px] leading-[1.45] text-ink-500">
-                      {badge.body}
-                    </p>
-                  </div>
+    // No top margin below lg: <main> already ends in pb-16 there.
+    <footer className="lg:mt-16">
+      {/* Trust strip — the one place the return window shows on every page. */}
+      <div className="container-page pb-6 sm:pb-10">
+        <ul className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+          {trustBadges.map((badge) => {
+            const Icon = TRUST_ICONS[badge.icon as keyof typeof TRUST_ICONS];
+            return (
+              <li key={badge.title} className="card flex flex-col gap-3 p-3.5 sm:flex-row sm:items-start sm:p-4">
+                <span className="icon-tile icon-tile-sm">
+                  <Icon size={18} aria-hidden />
+                </span>
+                <div className="min-w-0">
+                  <p className="t-h3 text-[13px] tabular-nums sm:text-[13.5px]">{badge.title}</p>
+                  <p className="t-small mt-0.5">{badge.body}</p>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
-      {/* Newsletter. The one dark plane in the chrome, so it gets the shared
-          eyebrow class rather than the hand-rolled gold label it used to carry. */}
-      <div className="deep-plane">
-        <div className="container-page grid gap-4 py-8 sm:gap-8 sm:py-14 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16">
-          <div>
-            <span className="eyebrow eyebrow-dark">The WeekendCart Dispatch</span>
-            <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-white sm:mt-4 sm:text-[32px]">
-              New drops and genuine offers. No noise, no spam.
-            </h2>
-            <p className="mt-3 max-w-[46ch] text-[14px] leading-[1.55] text-white/70 sm:mt-4 sm:text-[15px] sm:leading-[1.6]">
-              We write about what we have stocked and why, plus first word when something is back
-              in stock. Unsubscribe in one click.
-            </p>
-          </div>
-          <NewsletterForm welcomeEmail={mailConfigured()} />
-        </div>
-      </div>
+      <div className="midnight relative overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:linear-gradient(to_right,rgb(255_255_255/0.35)_1px,transparent_1px),linear-gradient(to_bottom,rgb(255_255_255/0.35)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_at_top,#000_20%,transparent_70%)]" />
 
-      {/* Links */}
-      <div className="container-page grid gap-6 py-7 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 sm:py-14 md:grid-cols-4 lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-12">
-        <div className="sm:col-span-2 md:col-span-4 lg:col-span-1">
-          <Logo />
-          <p className="mt-3.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-600 sm:mt-4 sm:text-[14px] sm:leading-[1.6]">
-            {BRAND.description}
-          </p>
-          {/* The glyphs are decoration beside text that already says what each
-              line is, so they sit at ink-400 with the rest of the drawn marks
-              rather than pulling brand colour into a repeating list. */}
-          <ul className="mt-4 space-y-2.5 text-[13px] text-ink-600 sm:mt-5 sm:text-[13.5px]">
-            <li className="flex items-center gap-2.5">
-              <Phone size={14} strokeWidth={1.5} aria-hidden className="shrink-0 text-ink-400" />
-              <a
-                href={`tel:${BRAND.supportPhoneTel}`}
-                className="tap tabular-nums transition-colors duration-200 hover:text-brand-700"
-              >
-                {BRAND.supportPhone}
-              </a>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <Mail size={14} strokeWidth={1.5} aria-hidden className="shrink-0 text-ink-400" />
-              <a
-                href={`mailto:${BRAND.supportEmail}`}
-                className="tap min-w-0 break-all transition-colors duration-200 hover:text-brand-700"
-              >
-                {BRAND.supportEmail}
-              </a>
-            </li>
-            <li className="flex items-start gap-2.5">
-              <MapPin size={14} strokeWidth={1.5} aria-hidden className="mt-0.5 shrink-0 text-ink-400" />
-              <span className="min-w-0 leading-[1.5]">{formatAddress()}</span>
-            </li>
-          </ul>
-          <div className="mt-5 flex gap-1.5 sm:mt-6">
-            {[
-              { href: BRAND.social.instagram, icon: InstagramIcon, label: "Instagram" },
-              { href: BRAND.social.youtube, icon: YoutubeIcon, label: "YouTube" },
-            ]
-              // A dead social link is a trust signal reviewers notice. Render
-              // only the profiles that actually exist.
-              .filter(({ href }) => isFilled(href))
-              .map(({ href, icon: Icon, label }) => (
-              <a
-                key={label}
-                href={href}
-                aria-label={label}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="tap is-circle flex h-10 w-10 items-center justify-center text-ink-600 transition-colors duration-200 hover:bg-ink-50 hover:text-ink-950 lg:h-9 lg:w-9"
-              >
-                <Icon size={16} />
-              </a>
-            ))}
+        <div className="container-page relative">
+          {/* Newsletter band */}
+          <div className="grid gap-5 border-b border-white/10 py-9 sm:py-12 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
+            <div>
+              <span className="eyebrow eyebrow-dark">The WeekendCart Dispatch</span>
+              <h2 className="mt-3 text-[20px] font-semibold leading-[1.15] tracking-[-0.026em] text-white sm:text-[24px]">
+                New drops and genuine offers. No noise, no spam.
+              </h2>
+              <p className="mt-2.5 max-w-[46ch] text-[13.5px] leading-[1.6] text-white/65">
+                We write about what we have stocked and why, plus first word when something is back
+                in stock. Unsubscribe in one click.
+              </p>
+            </div>
+            <NewsletterForm welcomeEmail={mailConfigured()} />
           </div>
-        </div>
 
-        {LINK_COLUMNS.map((column) => (
-          <nav key={column.title} aria-label={column.title} className="hidden sm:block">
-            <h3 className="mb-4 pb-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
-              {column.title}
-            </h3>
-            <ul className="space-y-2.5">
-              {column.links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-[13px] text-ink-600 transition-colors duration-200 hover:text-brand-700"
+          {/* Brand + contact, then the link columns */}
+          <div className="grid gap-8 py-9 sm:py-12 lg:grid-cols-[1.25fr_2.75fr] lg:gap-14">
+            <div>
+              <LogoLight />
+              <p className="mt-4 max-w-[42ch] text-[13px] leading-[1.6] text-white/60">
+                {BRAND.description}
+              </p>
+              <ul className="mt-5 space-y-3 text-[13px] text-white/75">
+                <li className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.07] text-brand-200 ring-1 ring-inset ring-white/10">
+                    <Phone size={14} aria-hidden />
+                  </span>
+                  <a
+                    href={`tel:${BRAND.supportPhoneTel}`}
+                    className="tap tabular-nums transition-colors hover:text-white"
                   >
-                    {link.label}
+                    {BRAND.supportPhone}
+                  </a>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.07] text-brand-200 ring-1 ring-inset ring-white/10">
+                    <Mail size={14} aria-hidden />
+                  </span>
+                  <a
+                    href={`mailto:${BRAND.supportEmail}`}
+                    className="tap min-w-0 break-all transition-colors hover:text-white"
+                  >
+                    {BRAND.supportEmail}
+                  </a>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.07] text-brand-200 ring-1 ring-inset ring-white/10">
+                    <Clock size={14} aria-hidden />
+                  </span>
+                  <span className="min-w-0 pt-1.5 leading-[1.5]">{BUSINESS.supportHours}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.07] text-brand-200 ring-1 ring-inset ring-white/10">
+                    <MapPin size={14} aria-hidden />
+                  </span>
+                  <span className="min-w-0 pt-1.5 leading-[1.5]">{formatAddress()}</span>
+                </li>
+              </ul>
+
+              {socials.length > 0 && (
+                <div className="mt-6 flex gap-2">
+                  {socials.map(({ href, icon: Icon, label }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      aria-label={label}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="tap flex h-10 w-10 items-center justify-center rounded-full bg-white/[0.07] text-white/80 ring-1 ring-inset ring-white/10 transition-colors duration-200 hover:bg-white/15 hover:text-white"
+                    >
+                      <Icon size={16} />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop / tablet columns */}
+            <div className="hidden gap-8 sm:grid sm:grid-cols-4">
+              {columns.map((column) => (
+                <nav key={column.title} aria-label={column.title}>
+                  <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                    {column.title}
+                  </h3>
+                  <ColumnList links={column.links} />
+                </nav>
+              ))}
+            </div>
+
+            {/* Phones: the same columns as an accordion (only one set ever shows) */}
+            <div className="divide-y divide-white/10 border-y border-white/10 sm:hidden">
+              {columns.map((column) => (
+                <nav key={column.title} aria-label={column.title}>
+                  <details name="footer-links" className="group">
+                    <summary className="tap flex h-12 cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
+                      <h3 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white">
+                        {column.title}
+                      </h3>
+                      <ChevronDown
+                        size={16}
+                        aria-hidden
+                        className="text-white/60 transition-transform duration-200 group-open:rotate-180"
+                      />
+                    </summary>
+                    <ColumnList links={column.links} mobile />
+                  </details>
+                </nav>
+              ))}
+            </div>
+          </div>
+
+          {/* Category sitemap, only when departments exist */}
+          {categories.length > 0 && (
+            <div className="border-t border-white/10 py-6">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/50">
+                Browse every category
+              </p>
+              <ul className="flex flex-wrap gap-1.5">
+                {categories.flatMap((c) => [
+                  <li key={c.slug}>
+                    <Link
+                      href={`/c/${c.slug}`}
+                      className="tap inline-flex h-8 items-center rounded-full bg-white/[0.08] px-3 text-[12.5px] font-medium text-white/85 transition-colors hover:bg-white/15 hover:text-white"
+                    >
+                      {c.name}
+                    </Link>
+                  </li>,
+                  ...c.subcategories.map((s) => (
+                    <li key={`${c.slug}-${s.slug}`}>
+                      <Link
+                        href={`/c/${c.slug}/${s.slug}`}
+                        className="tap inline-flex h-8 items-center rounded-full px-3 text-[12.5px] text-white/60 ring-1 ring-inset ring-white/10 transition-colors hover:text-white hover:ring-white/25"
+                      >
+                        {s.name}
+                      </Link>
+                    </li>
+                  )),
+                ])}
+              </ul>
+            </div>
+          )}
+
+          {/* Legal line. BottomNav adds its own spacer after the footer. */}
+          <div className="flex flex-col gap-3 border-t border-white/10 py-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[12.5px] leading-[1.5] tabular-nums text-white/55">
+              &copy; {new Date().getFullYear()} {BRAND.legalName}. All rights reserved.
+              {isGstRegistered ? ` GSTIN ${BUSINESS.gstin}.` : ""}
+            </p>
+            <ul className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              {LEGAL_LINKS.map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="tap text-[12.5px] text-white/55 transition-colors hover:text-white"
+                  >
+                    {l.label}
                   </Link>
                 </li>
               ))}
-            </ul>
-          </nav>
-        ))}
-
-        {/* Phones get the same columns as an accordion, the way an app lists them:
-            four tidy rows instead of four stacked lists. Only one set is ever
-            displayed, so assistive tech never meets the links twice. */}
-        <div className="sm:hidden">
-          {LINK_COLUMNS.map((column) => (
-            <nav key={column.title} aria-label={column.title}>
-              <details name="footer-links" className="group">
-                <summary className="tap flex h-11 list-none items-center justify-between [&::-webkit-details-marker]:hidden">
-                  <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950">
-                    {column.title}
-                  </h3>
-                  <ChevronDown
-                    size={16}
-                    aria-hidden
-                    className="text-ink-400 transition-transform duration-200 group-open:rotate-180"
-                  />
-                </summary>
-                <ul className="pb-2">
-                  {column.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="tap flex h-10 items-center text-[13px] text-ink-600"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            </nav>
-          ))}
-        </div>
-      </div>
-
-      {/* Category sitemap. Left out entirely while there are no departments —
-          a heading with nothing under it reads as something that failed to
-          load, and it comes back by itself with the first category. */}
-      {categories.length > 0 && (
-      <div>
-        <div className="container-page py-5 sm:py-8">
-          <h3 className="mb-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:mb-4">
-            Browse every category
-          </h3>
-          {/* On phones the chips wrap inside a wide strip that scrolls sideways,
-              a few rows deep, rather than stacking a dozen rows down the page.
-
-              They are ruled boxes now, not pills: a department is drawn with a
-              full ink edge and a collection with a hairline, so the hierarchy is
-              read from the weight of the rule instead of from two shades of
-              grey fill. */}
-          <div className="-mx-3 overflow-x-auto px-3 no-scrollbar sm:mx-0 sm:overflow-visible sm:px-0">
-            <ul className="flex w-max max-w-[72rem] flex-wrap gap-x-1.5 gap-y-1.5 sm:w-auto sm:max-w-none">
-              {categories.flatMap((c) => [
-                <li key={c.slug}>
-                  <Link
-                    href={`/c/${c.slug}`}
-                    className="tap inline-block px-2.5 py-1.5 text-[13px] font-medium text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:px-3"
-                  >
-                    {c.name}
-                  </Link>
-                </li>,
-                ...c.subcategories.map((s) => (
-                  <li key={`${c.slug}-${s.slug}`}>
-                    <Link
-                      href={`/c/${c.slug}/${s.slug}`}
-                      className="tap inline-block px-2.5 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:text-ink-950 sm:px-3"
-                    >
-                      {s.name}
-                    </Link>
-                  </li>
-                )),
-              ])}
-            </ul>
-          </div>
-        </div>
-      </div>
-      )}
-
-      {/* Legal. No bottom-nav clearance here: BottomNav leaves its own spacer
-          after the footer, and only on the pages where it actually shows. */}
-      <div className="bg-canvas">
-        <div className="container-page flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-6">
-          <p className="text-[13px] leading-[1.5] tabular-nums text-ink-500">
-            &copy; {new Date().getFullYear()} {BRAND.legalName}. All rights reserved.
-            {isGstRegistered ? ` GSTIN ${BUSINESS.gstin}.` : ""}
-          </p>
-          <ul className="flex flex-wrap gap-x-4 gap-y-2 sm:gap-x-5">
-            {[
-              { label: "Privacy", href: "/legal/privacy" },
-              { label: "Terms", href: "/legal/terms" },
-              { label: "Refunds", href: "/legal/refunds" },
-              { label: "Shipping", href: "/legal/shipping" },
-              { label: "Payments", href: "/legal/payments" },
-              { label: "Disclaimer", href: "/legal/disclaimer" },
-            ].map((l) => (
-              <li key={l.href}>
+              <li>
                 <Link
-                  href={l.href}
-                  className="tap text-[13px] text-ink-500 transition-colors duration-200 hover:text-brand-700"
+                  href="/contact"
+                  className="tap inline-flex items-center gap-1 text-[12.5px] font-medium text-gold-300 transition-colors hover:text-gold-200"
                 >
-                  {l.label}
+                  Contact <ArrowUpRight size={14} aria-hidden />
                 </Link>
               </li>
-            ))}
-          </ul>
+            </ul>
+          </div>
         </div>
       </div>
     </footer>

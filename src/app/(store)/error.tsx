@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { LifeBuoy, RotateCw, ShoppingBag, TriangleAlert } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 
 /**
@@ -34,39 +35,45 @@ export default function StoreError({
   }, [error]);
 
   return (
-    <div className="container-page flex min-h-[60dvh] flex-col items-center justify-center py-10 text-center sm:py-20">
-      <span className="eyebrow">Something broke</span>
-      <h1 className="mt-4 max-w-[22ch] font-display text-[24px] leading-[1.08] tracking-[-0.03em] text-ink-950 sm:mt-5 sm:text-[40px]">
-        That did not work, and it is our fault
-      </h1>
+    <div className="container-page flex min-h-[60dvh] items-center justify-center py-8 sm:py-16">
+      <div className="card relative w-full max-w-2xl overflow-hidden px-5 py-10 text-center sm:px-12 sm:py-14">
+        <div aria-hidden className="aurora pointer-events-none absolute inset-x-0 top-0 h-40 opacity-80 [mask-image:linear-gradient(to_bottom,#000,transparent)]" />
+        <div aria-hidden className="grid-lines pointer-events-none absolute inset-0 opacity-60" />
 
-      {/* Said plainly, because the page most likely to land here is the
-          checkout, and the first thing anybody wants to know when a payment
-          screen breaks is whether their money has gone. */}
-      <p className="mt-4 max-w-[48ch] text-[14px] leading-[1.6] text-ink-600 sm:text-[15px]">
-        The page failed to load. Nothing you did caused it. No payment was taken
-        and no order was placed by this — your bag is still exactly as you left
-        it. Try again, and if it keeps happening, tell us and we will finish the
-        order for you.
-      </p>
+        <div className="relative">
+          <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-surface text-brand-700 shadow-md ring-1 ring-inset ring-brand-100">
+            <TriangleAlert size={24} aria-hidden />
+          </span>
+          <p className="t-label mt-6 text-brand-700">Something broke</p>
+          <h1 className="t-h1 mx-auto mt-2 max-w-[22ch]">That did not work, and it is our fault</h1>
 
-      {error.digest && (
-        <p className="mt-5 text-[13px] text-ink-500 sm:mt-6">
-          Reference{" "}
-          <span className="break-all font-mono font-semibold text-ink-900">{error.digest}</span>
-        </p>
-      )}
+          {/* Plain words: the page most likely to land here is the checkout. */}
+          <p className="t-body mx-auto mt-3 max-w-[48ch]">
+            The page failed to load. Nothing you did caused it. No payment was taken
+            and no order was placed by this — your bag is still exactly as you left
+            it. Try again, and if it keeps happening, tell us and we will finish the
+            order for you.
+          </p>
 
-      <div className="mt-7 flex w-full max-w-sm flex-col flex-wrap justify-center gap-2 sm:mt-9 sm:w-auto sm:max-w-none sm:flex-row sm:gap-3">
-        <button type="button" onClick={reset} className={buttonClasses("primary")}>
-          Try again
-        </button>
-        <Link href="/cart" className={buttonClasses("outline")}>
-          Back to your bag
-        </Link>
-        <Link href="/contact" className={buttonClasses("ghost")}>
-          Contact support
-        </Link>
+          {error.digest && (
+            <p className="t-small mx-auto mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-full bg-ink-50 px-3 py-1.5 ring-1 ring-inset ring-line">
+              Reference{" "}
+              <span className="break-all font-mono font-semibold text-ink-900">{error.digest}</span>
+            </p>
+          )}
+
+          <div className="mt-7 flex flex-col justify-center gap-2 sm:flex-row">
+            <button type="button" onClick={reset} className={buttonClasses("primary")}>
+              <RotateCw size={16} aria-hidden /> Try again
+            </button>
+            <Link href="/cart" className={buttonClasses("outline")}>
+              <ShoppingBag size={16} aria-hidden /> Back to your bag
+            </Link>
+            <Link href="/contact" className={buttonClasses("ghost")}>
+              <LifeBuoy size={16} aria-hidden /> Contact support
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -7,10 +7,7 @@ import { cn } from "@/lib/utils";
 /**
  * Mobile OTP or email and password — one form at a time, mobile first.
  *
- * The two choices are set as tabs under a single rule rather than as a pair of
- * pills in a tinted tray. A tray with a raised white pill inside it is the one
- * control on these screens that still looked like a bought component, and the
- * underline says the same thing with one line.
+ * The two choices are a segmented control: one tray, the active tab raised.
  */
 export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactNode }) {
   const [method, setMethod] = useState<"phone" | "email">("phone");
@@ -24,7 +21,7 @@ export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactN
       <div
         role="tablist"
         aria-label="Sign-in method"
-        className="mb-4 grid grid-cols-2 sm:mb-6"
+        className="mb-4 grid grid-cols-2 gap-1 rounded-md bg-ink-100 p-1 sm:mb-5"
       >
         {tabs.map(({ id, label, Icon }) => (
           <button
@@ -36,13 +33,13 @@ export function LoginMethods({ phone, email }: { phone: ReactNode; email: ReactN
             aria-controls={`login-panel-${id}`}
             onClick={() => setMethod(id)}
             className={cn(
-              "tap inline-flex h-11 items-center justify-center gap-2 rule-b text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:text-[12px]",
+              "tap inline-flex h-9 items-center justify-center gap-2 rounded-[9px] text-[12.5px] font-semibold transition-[background-color,color,box-shadow] duration-200",
               method === id
-                ? "[--rule-color:var(--color-ink-950)] text-ink-950"
-                : "[--rule-color:transparent] text-ink-500 hover:text-ink-900",
+                ? "bg-surface text-ink-950 shadow-sm"
+                : "text-ink-500 hover:text-ink-900",
             )}
           >
-            <Icon size={15} className={method === id ? "text-ink-950" : "text-ink-400"} />
+            <Icon size={16} aria-hidden className={method === id ? "text-brand-700" : "text-ink-500"} />
             {label}
           </button>
         ))}

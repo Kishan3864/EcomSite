@@ -18,7 +18,7 @@ import { Form } from "@/components/ui/form";
  * across route folders, which is how the rest of the shop shares a class.
  */
 const ERROR_BLOCK =
-  "flex items-start gap-2 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600";
+  "flex items-start gap-2 rounded-md bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-700 ring-1 ring-inset ring-sale-200";
 
 function SignInButton() {
   const { pending } = useFormStatus();

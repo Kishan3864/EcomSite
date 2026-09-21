@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { motion } from "motion/react";
-import { KeyRound } from "lucide-react";
+import { CircleCheck, KeyRound } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { resetPassword } from "@/services/commerce";
@@ -28,18 +28,21 @@ export function ResetForm({ token, setting }: { token: string; setting: boolean 
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-surface p-4 sm:p-5"
+        className="rounded-xl bg-brand-50/60 p-4 ring-1 ring-inset ring-brand-100 sm:p-5"
       >
-        <span className="eyebrow">Done</span>
-        <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950">
+        <span className="icon-tile bg-surface">
+          <CircleCheck size={20} aria-hidden />
+        </span>
+        <p className="t-label mt-4 text-brand-700">Done</p>
+        <h2 className="t-h2 mt-1.5">
           {state.wasFirstPassword ? "Your password is set" : "Your password is changed"}
         </h2>
-        <p className="mt-2.5 text-[14px] leading-[1.55] text-ink-600">
+        <p className="t-body mt-2">
           {state.wasFirstPassword
             ? "You can now sign in with your email and this password, or carry on with Google — both work. We have emailed you to confirm it, in case it was not you."
             : "Sign in with the new one. The link you just used will not work again, and any other reset link we sent you has stopped working too."}
         </p>
-        <Link href="/login" className={`${buttonClasses("primary", "md")} mt-5`}>
+        <Link href="/login" className={buttonClasses("primary", "md", "mt-5 h-10 w-full")}>
           Go to sign in
         </Link>
       </motion.div>
@@ -47,7 +50,7 @@ export function ResetForm({ token, setting }: { token: string; setting: boolean 
   }
 
   return (
-    <Form action={action} className="bg-surface p-4 sm:p-5">
+    <Form action={action}>
       <input type="hidden" name="token" value={token} />
 
       <Field label="New password" htmlFor="new-password" error={state.field === "password" ? state.error : undefined}>
@@ -65,7 +68,7 @@ export function ResetForm({ token, setting }: { token: string; setting: boolean 
 
       {/* An error with no field is about the link itself, not the password. */}
       {state.error && !state.field ? (
-        <p className="mt-3 bg-gold-50 px-3.5 py-2.5 text-[13px] leading-[1.5] text-ink-800">
+        <p className="mt-3 rounded-md bg-gold-50 px-3.5 py-2.5 text-[13px] leading-[1.5] text-ink-800 ring-1 ring-inset ring-gold-200">
           {state.error}{" "}
           <Link href="/forgot-password" className="font-medium text-brand-700 hover:underline">
             Ask for a new link

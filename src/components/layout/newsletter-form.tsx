@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Mail } from "lucide-react";
 import { subscribeNewsletter } from "@/services/commerce";
 import { Form } from "@/components/ui/form";
 
@@ -17,30 +17,24 @@ async function subscribe(_prev: State, formData: FormData): Promise<State> {
   return result.ok ? { ok: true } : { error: result.error };
 }
 
-/**
- * White rather than gold, even though this is the strongest thing on the
- * plane. The footer is on every page of the shop, and gold is spent on one
- * filled call to action per page — if the newsletter took it here, no page
- * could ever have its own. White on ocean is the stronger fill in any case.
- */
+/** White, not gold: gold is spent on one CTA per page and the footer is on all of them. */
 function SubscribeButton() {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
-      className="tap inline-flex h-12 items-center justify-center gap-2 bg-white px-6 text-[13.5px] font-semibold tracking-[0.005em] text-ink-950 transition-colors duration-200 hover:bg-ink-100 disabled:opacity-70"
+      className="tap inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-md bg-white px-5 text-[13.5px] font-semibold text-ink-950 transition-colors duration-200 hover:bg-brand-50 disabled:opacity-70"
     >
       {pending ? "Signing you up…" : "Subscribe"}
-      <ArrowRight size={16} />
+      <ArrowRight size={16} aria-hidden />
     </button>
   );
 }
 
 /**
- * Writes a real subscriber row, which the admin inbox lists and exports.
- * `welcomeEmail` says whether email is configured, so the thank-you line never
- * promises a welcome note the server cannot send.
+ * Writes a real subscriber row. `welcomeEmail` says whether mail is configured,
+ * so the thank-you never promises a note the server cannot send.
  */
 export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolean }) {
   const [state, action] = useActionState(subscribe, {});
@@ -48,8 +42,10 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
   if (state.ok) {
     return (
       <div className="w-full">
-        <p className="flex items-center gap-2.5 bg-white/5 px-4 py-3.5 text-[14px] leading-[1.5] text-white">
-          <Check size={17} strokeWidth={1.5} className="shrink-0 text-gold-300" />
+        <p className="flex items-center gap-3 rounded-xl bg-white/[0.07] px-4 py-3.5 text-[13.5px] leading-[1.5] text-white ring-1 ring-inset ring-white/10">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gold-400 text-ink-950">
+            <Check size={16} aria-hidden />
+          </span>
           {welcomeEmail
             ? "Thank you for subscribing! If you are new here, a welcome note is on its way to your inbox."
             : "Thank you for subscribing! You are on the list."}
@@ -60,36 +56,41 @@ export function NewsletterForm({ welcomeEmail = false }: { welcomeEmail?: boolea
 
   return (
     <Form action={action} className="w-full">
-      <div className="flex flex-col gap-2.5 sm:flex-row">
+      <div className="flex flex-col gap-2 rounded-2xl bg-white/[0.06] p-2 ring-1 ring-inset ring-white/10 sm:flex-row">
         <label htmlFor="newsletter-email" className="sr-only">
           Email address
         </label>
-        <input
-          id="newsletter-email"
-          name="email"
-          type="email"
-          required
-          placeholder="you@example.in"
-          aria-invalid={Boolean(state.error)}
-          // flex-1 only from sm up. Below that the row stacks into a column,
-          // and flex-1 there means a flex-basis of 0 on the vertical axis —
-          // which is what squashed this input to a sliver on phones.
-          // text-base on phones: iOS zooms the page into any input set smaller
-          // than 16px the moment it is focused.
-          className="h-12 w-full shrink-0 bg-white/5 px-4 text-base text-white outline-none transition-colors duration-200 placeholder:text-white/45 focus:bg-white/10 sm:w-auto sm:flex-1 sm:text-[14px]"
-        />
+        <div className="relative w-full sm:flex-1">
+          <Mail
+            size={16}
+            aria-hidden
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50"
+          />
+          {/* text-base on phones: iOS zooms into inputs under 16px. Utilities
+              beat the base-layer field style, so it stays transparent. */}
+          <input
+            id="newsletter-email"
+            name="email"
+            type="email"
+            required
+            placeholder="you@example.in"
+            aria-invalid={Boolean(state.error)}
+            aria-describedby={state.error ? "newsletter-error" : undefined}
+            className="h-12 w-full rounded-md bg-transparent pl-10 pr-3 text-base text-white shadow-none outline-none placeholder:text-white/40 focus:bg-white/[0.06] focus:ring-2 focus:ring-inset focus:ring-brand-300/70 sm:text-[14px]"
+          />
+        </div>
         <SubscribeButton />
       </div>
-      {/* The message is set in white and marked by a gold rule rather than
-          being written in gold itself: on this plane the only other gold is
-          the subscribe button, and an error painted the same colour as the
-          thing that caused it reads as part of the button. */}
       {state.error && (
-        <p role="alert" className="mt-3 rule-l [--rule-color:var(--color-gold-400)] pl-3 text-[13px] leading-[1.5] text-white">
+        <p
+          id="newsletter-error"
+          role="alert"
+          className="mt-3 border-l-2 border-gold-400 pl-3 text-[13px] leading-[1.5] text-white"
+        >
           {state.error}
         </p>
       )}
-      <p className="mt-3.5 text-[13px] leading-[1.5] text-white/55">
+      <p className="mt-3 text-[12.5px] leading-[1.5] text-white/55">
         By subscribing you agree to our{" "}
         <Link
           href="/legal/privacy"

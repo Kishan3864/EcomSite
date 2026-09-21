@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useFormStatus } from "react-dom";
 import { motion } from "motion/react";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, MailCheck, Send } from "lucide-react";
 import { buttonClasses, Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { requestPasswordHelp } from "@/services/commerce";
@@ -40,17 +40,18 @@ export function ForgotForm() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-surface p-4 sm:p-5"
+        className="rounded-xl bg-brand-50/60 p-4 ring-1 ring-inset ring-brand-100 sm:p-5"
       >
-        <span className="eyebrow">Check your email</span>
-        <h2 className="mt-3 font-display text-[22px] leading-[1.1] tracking-[-0.02em] text-ink-950">
-          Check your inbox
-        </h2>
-        <p className="mt-2.5 text-[14px] leading-[1.55] text-ink-600">
+        <span className="icon-tile bg-surface">
+          <MailCheck size={20} aria-hidden />
+        </span>
+        <p className="t-label mt-4 text-brand-700">Check your email</p>
+        <h2 className="t-h2 mt-1.5">Check your inbox</h2>
+        <p className="t-body mt-2">
           If there is an account for that address, a link is on its way. It works once and expires
           in an hour. Look in spam if it has not arrived in a few minutes.
         </p>
-        <p className="mt-3 text-[13px] leading-[1.5] text-ink-500">
+        <p className="t-small mt-3">
           In a hurry? Call{" "}
           <a
             href={`tel:${BRAND.supportPhoneTel}`}
@@ -90,9 +91,8 @@ export function ForgotForm() {
         />
       </Field>
 
-      {/* A rule rather than a tinted tray: the sentence is an aside, not an
-          alarm, and the shop draws asides with a line down the side. */}
-      <p className="pl-3.5 text-[13px] leading-[1.55] text-ink-600">
+      {/* An aside, set as a quiet inset note. */}
+      <p className="t-small rounded-md bg-ink-50 px-3.5 py-3 ring-1 ring-inset ring-line">
         The link expires in an hour and can only be used once. If you normally sign in with Google,
         this is how you add a password as well — Google carries on working either way.
       </p>
