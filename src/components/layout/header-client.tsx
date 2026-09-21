@@ -6,9 +6,11 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import {
+  BadgePercent,
   ChevronDown,
   ChevronRight,
   CreditCard,
+  Flame,
   Heart,
   LifeBuoy,
   LogIn,
@@ -16,17 +18,21 @@ import {
   MapPin,
   Menu,
   Package,
+  ReceiptText,
   RotateCcw,
   Search,
+  ShieldCheck,
   ShoppingBag,
+  Sparkles,
   Truck,
   User,
   UserPlus,
   UserRound,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { DepartmentGlyph } from "@/components/illustration/department-glyph";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { MegaMenu } from "./mega-menu";
 import { SearchBar } from "./search-bar";
 import { isFunnelRoute } from "./bottom-nav";
@@ -36,31 +42,40 @@ import { Drawer } from "@/components/ui/overlay";
 import { logoutAction } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cartCount } from "@/lib/pricing";
-import { cn } from "@/lib/utils";
+import { cn, formatINR } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 import { BUSINESS } from "@/config/business";
 import { Avatar } from "@/components/account/avatar";
 
+interface NavLink {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}
+
 /** Everything the account owns, in the order a shopper is likely to want it. */
-const ACCOUNT_LINKS = [
+const ACCOUNT_LINKS: NavLink[] = [
   { href: "/account", label: "My account", icon: UserRound },
   { href: "/account/orders", label: "My orders", icon: Package },
-  { href: "/track", label: "Track an order", icon: Truck },
+  { href: "/track", label: "Track order", icon: Truck },
   { href: "/account/addresses", label: "Saved addresses", icon: MapPin },
   { href: "/account/settings#payment", label: "Payment preferences", icon: CreditCard },
-  { href: "/account/returns", label: "Returns and refunds", icon: RotateCcw },
+  { href: "/account/returns", label: "Returns & refunds", icon: RotateCcw },
   { href: "/wishlist", label: "Wishlist", icon: Heart },
-  { href: "/contact", label: "Help and support", icon: LifeBuoy },
+  { href: "/contact", label: "Help & support", icon: LifeBuoy },
 ];
 
-const GUEST_LINKS = [
-  { href: "/login", label: "Sign in", icon: LogIn },
-  { href: "/register", label: "Create an account", icon: UserPlus },
+const GUEST_LINKS: NavLink[] = [
+  { href: "/track", label: "Track order", icon: Truck },
+  { href: "/wishlist", label: "Wishlist", icon: Heart },
+  { href: "/contact", label: "Help & support", icon: LifeBuoy },
 ];
 
-const GUEST_HELP_LINKS = [
-  { href: "/track", label: "Track an order", icon: Truck },
-  { href: "/contact", label: "Help and support", icon: LifeBuoy },
+/** Shortcuts into the ranked shelves; the same destinations the home page links to. */
+const QUICK_LINKS: NavLink[] = [
+  { href: "/products?sort=newest", label: "New arrivals", icon: Sparkles },
+  { href: "/products?sort=popularity", label: "Best sellers", icon: Flame },
+  { href: "/products?discount=25&sort=discount", label: "Deals", icon: BadgePercent },
 ];
 
 export function HeaderClient({
@@ -71,7 +86,7 @@ export function HeaderClient({
   categories: Category[];
 }) {
   const [scrolled, setScrolled] = useState(false);
-  // The drawers are keyed to the route they were opened on, so navigating
+  // Drawers are keyed to the route they were opened on, so navigating
   // anywhere closes them without an effect chasing the pathname.
   const [menuOpenAt, setMenuOpenAt] = useState<string | null>(null);
   const [searchOpenAt, setSearchOpenAt] = useState<string | null>(null);
@@ -79,173 +94,135 @@ export function HeaderClient({
   const { cart, wishlist, unavailable, hydrated, openCartDrawer } = useStore();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const root = document.documentElement;
+    const onScroll = () => {
+      const s = window.scrollY > 24;
+      setScrolled(s);
+      // Sticky elements further down read --header-h, which follows this.
+      if (s) root.dataset.scrolled = "";
+      else delete root.dataset.scrolled;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      delete root.dataset.scrolled;
+    };
   }, []);
 
   const menuOpen = menuOpenAt === pathname;
   const searchOpen = searchOpenAt === pathname;
-  const count = hydrated ? cartCount(cart.filter((l) => !unavailable.includes(l.productId))) : 0;
+  const lines = hydrated ? cart.filter((l) => !unavailable.includes(l.productId)) : [];
+  const count = cartCount(lines);
+  const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
   const wishCount = hydrated ? wishlist.length : 0;
 
   return (
     <>
       <AnnouncementBar />
 
-      {/* A light masthead on a light page.
-          It was briefly a saturated dark bar — the classic retail device — and
-          the owner's verdict was that it made the shop feel heavy. So the
-          chrome is white again, and what marks "the shop starts here" is not
-          weight but order: a tinted announcement strip above, a ruled
-          department rail below, and a shadow that arrives only once the page
-          has moved underneath. The bar reads as a shelf the page slides under,
-          not as a wall it sits behind. */}
       <header
         className={cn(
-          "sticky top-0 z-50 bg-surface/95 backdrop-blur-xl transition-shadow duration-300",
-          // The masthead is separated from the page by elevation alone now: it
-          // had a hairline under it, and a transparency trick on phones so the
-          // search strip below could own the one edge. With no borders left,
-          // neither exists and the shadow on scroll does the whole job.
-          scrolled ? "shadow-sm" : "",
+          "glass sticky top-0 z-50 border-b transition-[box-shadow,border-color] duration-300",
+          scrolled ? "border-line shadow-[0_8px_24px_-18px_rgb(10_15_26/0.35)]" : "border-transparent",
         )}
       >
-        {/* Each row carries its own container rather than one wrapping them
-            all, so a row can paint its own full-width ground (the department
-            rail does) without a negative-margin bleed that would put the whole
-            document into a horizontal scroll behind a visible scrollbar. */}
-        <div className="container-page">
-          {/* ---------------------------- Desktop --------------------------- */}
-          <div className="hidden items-center gap-6 py-3 lg:flex">
-            <Logo />
-            <div className="max-w-2xl flex-1">
-              <SearchBar docs={searchDocs} />
-            </div>
-            <nav className="flex items-center gap-1" aria-label="Account and cart">
-              <AccountMenu />
-              <HeaderAction
-                href="/wishlist"
-                icon={<Heart size={19} />}
-                label="Wishlist"
-                sublabel="Saved"
-                count={wishCount}
-              />
-              <button
-                onClick={openCartDrawer}
-                className="group relative flex items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-ink-100"
-              >
-                <span className="relative">
-                  <ShoppingBag size={19} className="text-ink-700" />
-                  <CountBubble count={count} />
-                </span>
-                <span className="hidden xl:block">
-                  {/* The three controls in this row all carry a sublabel over
-                      a name, and all three are set the same.
-
-                      They were a step larger. The size came down because the
-                      masthead now has eleven departments under it and the row
-                      was shouting over them; what did NOT come down is the
-                      contrast. An earlier version set this line at 10px in
-                      ink-400 and it was the one thing in the masthead nobody
-                      could read — the fault was the colour, not the size. At
-                      ink-500 it is 5.1:1 on white, so it stays legible small,
-                      and the letter-spacing keeps the small caps open. */}
-                  <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-500">
-                    Your bag
-                  </span>
-                  <span className="block text-[12px] font-semibold text-ink-900">
-                    {count > 0 ? `${count} item${count > 1 ? "s" : ""}` : "Empty"}
-                  </span>
-                </span>
-              </button>
-            </nav>
+        {/* ---------------------------- Desktop ---------------------------- */}
+        <div className="container-page hidden h-16 items-center gap-5 lg:flex">
+          <Logo size="sm" className="shrink-0" />
+          <div className="mx-auto w-full max-w-[640px] flex-1">
+            <SearchBar docs={searchDocs} />
           </div>
+          <nav className="flex shrink-0 items-center gap-1" aria-label="Account and bag">
+            <AccountMenu />
+            <Link
+              href="/wishlist"
+              aria-label={`Wishlist${wishCount ? `, ${wishCount} saved` : ""}`}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-ink-100 hover:text-ink-950"
+            >
+              <Heart size={20} />
+              <CountBubble count={wishCount} />
+            </Link>
+            <button
+              type="button"
+              onClick={openCartDrawer}
+              aria-label={`Open bag, ${count} item${count === 1 ? "" : "s"}`}
+              className="group ml-1 flex h-10 items-center gap-2.5 rounded-full bg-ink-950 pl-3 pr-4 text-white transition-colors hover:bg-brand-800"
+            >
+              <span className="relative">
+                <ShoppingBag size={18} />
+                <CountBubble count={count} tone="gold" />
+              </span>
+              <span className="text-[12.5px] font-semibold tabular-nums">
+                {count > 0 ? formatINR(subtotal) : "Bag"}
+              </span>
+            </button>
+          </nav>
         </div>
 
-        {/* The department bar only exists to hold departments. With none it
-            would be a rule across the page with two links pushed to the far
-            right — so it is left out until there is a category to put in it. */}
+        {/* The department row folds away once the page moves, leaving a
+            compact single bar. */}
         {categories.length > 0 && (
-          <div className="hidden lg:block">
-            <div className="container-page flex items-center justify-between gap-6 py-1">
+          <div
+            className={cn(
+              "hidden transition-[max-height,opacity] duration-300 ease-out lg:block",
+              scrolled ? "max-h-0 overflow-hidden opacity-0" : "max-h-14 opacity-100",
+            )}
+            // Hidden rows must not keep their links in the tab order.
+            inert={scrolled}
+          >
+            <div className="container-page flex h-12 items-center gap-6">
               <MegaMenu categories={categories} />
-              <div className="flex shrink-0 items-center gap-5 text-[13px]">
-                <Link
-                  href="/track"
-                  className="inline-flex items-center gap-1.5 text-ink-600 transition-colors duration-200 hover:text-brand-700"
-                >
-                  <Package size={14} /> Track order
-                </Link>
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-1.5 text-ink-600 transition-colors duration-200 hover:text-brand-700"
-                >
-                  <LifeBuoy size={14} /> Help
-                </Link>
+              <div className="flex shrink-0 items-center gap-1">
+                {QUICK_LINKS.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[12.5px] font-medium text-ink-600 transition-colors hover:bg-brand-50 hover:text-brand-700"
+                  >
+                    <Icon size={14} />
+                    {label}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        <div className="container-page">
-          {/* ---------------------------- Mobile ---------------------------- */}
-          {/* 57px exactly: the listing toolbar sticks at top-[57px], its top
-              rule tucked under this bar's. */}
-          <div className="flex h-[57px] items-center gap-0.5 lg:hidden">
-            <button
-              onClick={() => setMenuOpenAt(pathname)}
-              aria-label="Open menu"
-              className="tap -ml-2 flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100"
-            >
-              <Menu size={21} />
-            </button>
-            <Logo size="sm" className="h-[34px] w-[126px] sm:h-[38px] sm:w-[141px]" />
-            {/* Tablets have the width for the field itself. */}
-            <SearchField
-              onOpen={() => setSearchOpenAt(pathname)}
-              className="mx-3 hidden flex-1 sm:flex"
-            />
-            <button
-              onClick={() => setSearchOpenAt(pathname)}
-              aria-label="Search"
-              className="tap ml-auto flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100 sm:hidden"
-            >
+        {/* ---------------------------- Mobile ---------------------------- */}
+        <div className="container-page flex h-14 items-center gap-1 lg:hidden">
+          <IconButton label="Open menu" onClick={() => setMenuOpenAt(pathname)} className="-ml-2">
+            <Menu size={22} />
+          </IconButton>
+          <Logo size="sm" className="h-[32px] w-[118px] sm:h-[36px] sm:w-[134px]" />
+          <SearchField onOpen={() => setSearchOpenAt(pathname)} className="mx-3 hidden flex-1 sm:flex" />
+          <div className="ml-auto flex items-center sm:ml-0">
+            <IconButton label="Search" onClick={() => setSearchOpenAt(pathname)} className="sm:hidden">
               <Search size={20} />
-            </button>
+            </IconButton>
             <Link
               href="/wishlist"
               aria-label="Wishlist"
-              className="tap flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100"
+              className="tap relative flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-ink-100"
             >
-              <span className="relative">
-                <Heart size={20} />
-                <CountBubble count={wishCount} />
-              </span>
+              <Heart size={20} />
+              <CountBubble count={wishCount} />
             </Link>
-            <button
-              onClick={openCartDrawer}
-              aria-label="Open bag"
-              className="tap -mr-2 flex h-10 w-10 shrink-0 items-center justify-center text-ink-700 transition-colors hover:bg-ink-100"
-            >
+            <IconButton label="Open bag" onClick={openCartDrawer} className="-mr-2">
               <span className="relative">
                 <ShoppingBag size={20} />
                 <CountBubble count={count} />
               </span>
-            </button>
+            </IconButton>
           </div>
         </div>
       </header>
 
-      {/* Phones lead with a full-width search field, as shopping apps do. It
-          scrolls away with the page and the magnifier in the sticky bar takes
-          over from there. It shares the bar's white ground and closes with the
-          same hairline, so the masthead ends at one edge rather than leaving a
-          field floating on the canvas under it. */}
+      {/* Phones lead with a full-width search field, as shopping apps do; it
+          scrolls away and the magnifier in the sticky bar takes over. */}
       {!isFunnelRoute(pathname) && (
-        <div className="bg-surface sm:hidden">
-          <div className="container-page pb-2.5">
+        <div className="bg-surface/80 sm:hidden">
+          <div className="container-page pb-3 pt-0.5">
             <SearchField onOpen={() => setSearchOpenAt(pathname)} className="w-full" />
           </div>
         </div>
@@ -253,8 +230,6 @@ export function HeaderClient({
 
       <MobileMenu open={menuOpen} onClose={() => setMenuOpenAt(null)} categories={categories} />
 
-      {/* A fixed height rather than one that follows the results, so the field
-          holds its place above the keyboard as suggestions come and go. */}
       <Drawer
         open={searchOpen}
         onClose={() => setSearchOpenAt(null)}
@@ -262,24 +237,41 @@ export function HeaderClient({
         title="Search WeekendCart"
         className="h-[90dvh] max-h-[90dvh]"
       >
-        {/* The Drawer's scroll area already clears the home indicator. */}
         <div className="h-full p-4">
-          <SearchBar
-            docs={searchDocs}
-            variant="sheet"
-            autoFocus
-            onNavigate={() => setSearchOpenAt(null)}
-          />
+          <SearchBar docs={searchDocs} variant="sheet" autoFocus onNavigate={() => setSearchOpenAt(null)} />
         </div>
       </Drawer>
     </>
   );
 }
 
-/**
- * Stands in for the search input below desktop: it looks like the field and
- * opens the search sheet, which is where typing happens on a touch screen.
- */
+function IconButton({
+  label,
+  onClick,
+  className,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={cn(
+        "tap flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-700 transition-colors hover:bg-ink-100",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Looks like the field and opens the search sheet, where typing happens on touch. */
 function SearchField({ onOpen, className }: { onOpen: () => void; className?: string }) {
   return (
     <button
@@ -287,32 +279,28 @@ function SearchField({ onOpen, className }: { onOpen: () => void; className?: st
       onClick={onOpen}
       aria-haspopup="dialog"
       className={cn(
-        "tap flex h-10 min-w-0 items-center gap-2.5 rounded-full border border-line-strong bg-ink-50 px-4 text-left transition-colors duration-200 hover:border-brand-300",
+        "tap flex h-11 min-w-0 items-center gap-2.5 rounded-full border border-line bg-ink-50 px-4 text-left transition-colors duration-200 hover:border-line-strong",
         className,
       )}
     >
-      <Search size={16} className="shrink-0 text-ink-400" />
-      <span className="truncate text-[13.5px] text-ink-500">Search WeekendCart</span>
+      <Search size={18} className="shrink-0 text-ink-400" />
+      <span className="truncate text-[13.5px] text-ink-500">Search products, brands and more</span>
     </button>
   );
 }
 
-function CountBubble({ count }: { count: number }) {
+function CountBubble({ count, tone = "brand" }: { count: number; tone?: "brand" | "gold" }) {
   const reduce = usePrefersReducedMotion();
   return (
     <AnimatePresence>
       {count > 0 && (
         <motion.span
-          initial={reduce ? { opacity: 0 } : { scale: 0.4, opacity: 0 }}
+          key={count}
+          initial={reduce ? { opacity: 0 } : { scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={reduce ? { opacity: 0 } : { scale: 0.4, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 560, damping: 20 }}
-          // Brand, not sale colour. A bag count is a fact, not a reduction,
-          // and sale colour spent on it is the reason a genuine price cut
-          // further down the page stops being believed. Brand-700 is dark
-          // enough to carry white and is already the colour of "yours" across
-          // the account menu, so the count reads as part of the same thing.
-          className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums"
+          exit={reduce ? { opacity: 0 } : { scale: 0.5, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 560, damping: 22 }}
+          className={cn("count-dot", tone === "gold" && "!bg-gold-400 !text-ink-950 !shadow-[0_0_0_2px_var(--color-ink-950)]")}
         >
           {count > 99 ? "99+" : count}
         </motion.span>
@@ -321,72 +309,26 @@ function CountBubble({ count }: { count: number }) {
   );
 }
 
-function HeaderAction({
-  href,
-  icon,
-  label,
-  sublabel,
-  count = 0,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  sublabel: string;
-  count?: number;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2.5 px-3 py-2 transition-colors hover:bg-ink-100"
-    >
-      <span className="relative text-ink-700">
-        {icon}
-        <CountBubble count={count} />
-      </span>
-      <span className="hidden xl:block">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-500">
-          {sublabel}
-        </span>
-        <span className="block text-[12px] font-semibold text-ink-900">{label}</span>
-      </span>
-    </Link>
-  );
-}
-
-function MenuLink({
-  href,
-  label,
-  icon: Icon,
-  onSelect,
-}: {
-  href: string;
-  label: string;
-  icon: typeof User;
-  onSelect: () => void;
-}) {
+function MenuLink({ href, label, icon: Icon, onSelect }: NavLink & { onSelect: () => void }) {
   return (
     <Link
       href={href}
       role="menuitem"
       onClick={onSelect}
-      // Ruled rows, as the department menu indexes its collections: the rule
-      // is what makes eight destinations read as one list rather than as eight
-      // separate things floating in a panel.
-      className="group flex h-10 items-center gap-2.5 px-4 text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700 focus-visible:text-brand-700"
+      className="group flex h-10 items-center gap-3 rounded-lg px-2 text-[13px] font-medium text-ink-700 outline-none transition-colors duration-150 hover:bg-ink-50 hover:text-ink-950 focus-visible:bg-brand-50 focus-visible:text-brand-800"
     >
-      <Icon
-        size={15}
-        className="shrink-0 text-ink-400 transition-colors duration-200 group-hover:text-brand-700"
-      />
-      {label}
+      <span className="icon-tile icon-tile-sm !bg-ink-50 !text-ink-500 transition-colors group-hover:!bg-brand-50 group-hover:!text-brand-700 group-focus-visible:!bg-surface group-focus-visible:!text-brand-700">
+        <Icon size={16} />
+      </span>
+      <span className="flex-1">{label}</span>
+      <ChevronRight size={14} className="text-ink-300 opacity-0 transition-opacity group-hover:opacity-100" />
     </Link>
   );
 }
 
 /**
  * Signing out redirects to the home page, which is not one of the routes the
- * store re-checks the session on, so the customer is cleared here as well —
- * otherwise the header goes on greeting somebody who has already left.
+ * store re-checks the session on, so the customer is cleared here as well.
  */
 function SignOutForm({
   className,
@@ -446,8 +388,7 @@ function AccountMenu() {
     };
   }, [open]);
 
-  // Landing on the first item means the arrow keys have somewhere to start and
-  // a keyboard user is never left with focus on a trigger that has moved on.
+  // Land on the first item so the arrow keys have somewhere to start.
   useEffect(() => {
     if (!open) return;
     wrapper.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
@@ -462,9 +403,7 @@ function AccountMenu() {
       return;
     }
 
-    const items = Array.from(
-      wrapper.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
-    );
+    const items = Array.from(wrapper.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
     if (items.length === 0) return;
 
     e.preventDefault();
@@ -494,26 +433,25 @@ function AccountMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? "account-menu" : undefined}
-        className="flex items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-ink-100"
+        className={cn(
+          "flex h-10 items-center gap-2 rounded-full pl-1.5 pr-3 text-left transition-colors hover:bg-ink-100",
+          open && "bg-ink-100",
+        )}
       >
-        <span className="text-ink-700">
-          <User size={19} />
-        </span>
-        <span className="sr-only xl:hidden">Account</span>
-        <span className="hidden xl:block">
-          <span className="block text-[10px] font-semibold uppercase tracking-[0.1em] text-ink-500">
-            {customer ? "Your account" : sessionChecked ? "Sign in" : ""}
+        {customer ? (
+          <Avatar src={customer.avatarUrl} seed={customer.email} size={28} />
+        ) : (
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink-100 text-ink-700">
+            <User size={16} />
           </span>
-          <span className="block text-[12px] font-semibold text-ink-900">
-            {customer ? `Hi, ${customer.name.split(" ")[0]}` : "Account"}
-          </span>
+        )}
+        <span className="hidden text-[12.5px] font-semibold text-ink-900 xl:block">
+          {customer ? `Hi, ${customer.name.split(" ")[0]}` : "Account"}
         </span>
+        <span className="sr-only xl:hidden">Your account</span>
         <ChevronDown
-          size={13}
-          className={cn(
-            "hidden text-ink-400 transition-transform duration-200 xl:block",
-            open && "rotate-180",
-          )}
+          size={14}
+          className={cn("text-ink-400 transition-transform duration-200", open && "rotate-180")}
         />
       </button>
 
@@ -523,62 +461,67 @@ function AccountMenu() {
             id="account-menu"
             role="menu"
             aria-label="Your account"
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            // The same sheet the department menu is drawn on, a quarter of the
-            // width: a hairline and the same elevation, so the two panels that
-            // can open from this one bar are plainly the same object.
-            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(276px,calc(100vw-2rem))] overflow-hidden rounded-2xl border bg-surface shadow-pop"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(300px,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-line bg-surface shadow-pop"
           >
             {!sessionChecked ? (
-              <p className="px-4 py-6 text-center text-[13px] text-ink-500">
-                Checking your session&hellip;
-              </p>
+              <p className="px-4 py-6 text-center text-[13px] text-ink-500">Checking your session&hellip;</p>
             ) : customer ? (
               <>
-                <div role="none" className="flex items-center gap-3 px-4 py-3.5">
-                  <Avatar src={customer.avatarUrl} seed={customer.email} size={36} />
+                <div role="none" className="aurora flex items-center gap-3 px-4 py-4">
+                  <Avatar src={customer.avatarUrl} seed={customer.email} size={40} />
                   <span className="min-w-0">
-                    <span className="block truncate text-[13.5px] font-semibold text-ink-950">
-                      {customer.name}
-                    </span>
-                    <span className="block truncate text-[13px] text-ink-500">
-                      {customer.email}
-                    </span>
+                    <span className="block truncate text-[14px] font-semibold text-ink-950">{customer.name}</span>
+                    <span className="block truncate text-[12px] text-ink-600">{customer.email}</span>
                   </span>
                 </div>
-                <div role="none">
+                <div role="none" className="p-2">
                   {ACCOUNT_LINKS.map((link) => (
                     <MenuLink key={link.href} {...link} onSelect={close} />
                   ))}
                 </div>
-                {/* The last row closes the list, so it drops the rule it would
-                    otherwise draw a hair above the panel's own bottom edge. */}
-                <div role="none">
+                <div role="none" className="border-t border-line p-2">
                   <SignOutForm
                     role="menuitem"
                     onSignOut={close}
-                    className="flex h-10 w-full items-center gap-2.5 px-4 text-left text-[13px] text-ink-500 transition-colors duration-200 hover:text-sale-600 focus-visible:text-sale-600"
+                    className="group flex h-10 w-full items-center gap-3 rounded-lg px-2 text-left text-[13px] font-medium text-ink-600 outline-none transition-colors hover:bg-sale-50 hover:text-sale-700 focus-visible:bg-sale-50 focus-visible:text-sale-700"
                   >
-                    <LogOut size={15} className="shrink-0 text-ink-400" />
+                    <span className="icon-tile icon-tile-sm !bg-ink-50 !text-ink-500 group-hover:!bg-surface group-hover:!text-sale-600">
+                      <LogOut size={16} />
+                    </span>
                     Sign out
                   </SignOutForm>
                 </div>
               </>
             ) : (
               <>
-                <div role="none">
-                  {GUEST_LINKS.map((link) => (
-                    <MenuLink key={link.href} {...link} onSelect={close} />
-                  ))}
+                <div role="none" className="aurora px-4 py-4">
+                  <p className="text-[14px] font-semibold text-ink-950">Welcome to {BUSINESS.brandName}</p>
+                  <p className="mt-0.5 text-[12px] text-ink-600">Sign in for faster checkout and order tracking.</p>
+                  <div role="none" className="mt-3 grid grid-cols-2 gap-2">
+                    <Link
+                      href="/login"
+                      role="menuitem"
+                      onClick={close}
+                      className="flex h-9 items-center justify-center gap-1.5 rounded-md bg-brand-700 text-[12.5px] font-semibold text-white transition-colors hover:bg-brand-800"
+                    >
+                      <LogIn size={14} /> Sign in
+                    </Link>
+                    <Link
+                      href="/register"
+                      role="menuitem"
+                      onClick={close}
+                      className="flex h-9 items-center justify-center gap-1.5 rounded-md bg-surface text-[12.5px] font-semibold text-ink-900 ring-1 ring-inset ring-line-strong transition-colors hover:ring-brand-300"
+                    >
+                      <UserPlus size={14} /> Register
+                    </Link>
+                  </div>
                 </div>
-                {/* The rule under the row above already separates signing in
-                    from getting help; the last row of the panel draws none, so
-                    that it does not double up with the frame's own edge. */}
-                <div role="none" className="[&>">
-                  {GUEST_HELP_LINKS.map((link) => (
+                <div role="none" className="p-2">
+                  {GUEST_LINKS.map((link) => (
                     <MenuLink key={link.href} {...link} onSelect={close} />
                   ))}
                 </div>
@@ -593,44 +536,62 @@ function AccountMenu() {
 
 function AnnouncementBar() {
   const { config } = useStore();
-  // Every line here is a promise made on every page of the shop, so each one
-  // has to be true at the moment it is shown.
-  const items = [
-    `Free delivery on orders above ₹${config.rates.freeThreshold.toLocaleString("en-IN")}`,
-    // Both claims below have to be ones we can stand behind. Free pickup is
-    // only offered where the courier services the pincode, and "sourced direct
-    // from brands" was never true of a reseller — what is true is that we hold
-    // the stock and invoice it ourselves.
-    `${BUSINESS.ops.returnWindowDays}-day returns on most items`,
-    "Bought and invoiced by us, not a marketplace",
+  const reduce = usePrefersReducedMotion();
+  const [index, setIndex] = useState(0);
+  // Every line here is a promise made on every page, so each one must be true.
+  const items: { text: string; icon: LucideIcon }[] = [
+    { text: `Free delivery on orders above ₹${config.rates.freeThreshold.toLocaleString("en-IN")}`, icon: Truck },
+    { text: `${BUSINESS.ops.returnWindowDays}-day returns on most items`, icon: RotateCcw },
+    { text: "Bought and invoiced by us, not a marketplace", icon: ReceiptText },
   ];
 
+  useEffect(() => {
+    if (reduce) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % 3), 4200);
+    return () => clearInterval(id);
+  }, [reduce]);
+
+  const current = items[index % items.length];
+  const CurrentIcon = current.icon;
+
   return (
-    // A soft brand tint rather than a dark plane. The strip is on every page
-    // of the shop; on a light theme a black bar across the top of each one is
-    // the single heaviest thing on the site, and it was the first thing the
-    // owner asked to lose. A tint says the same thing at a whisper.
-    <div className="overflow-hidden bg-brand-50 py-1.5 text-brand-900 sm:py-2">
-      {/* The speed is the one declared in globals.css. Hand-rolled at 38s this
-          read as a news ticker, which is the opposite of what a shop wants:
-          a sign is something you can finish reading. */}
-      <div className="flex w-max animate-marquee motion-reduce:animate-none">
-        {[0, 1].map((dup) => (
-          <ul key={dup} className="flex shrink-0 items-center" aria-hidden={dup === 1}>
-            {items.map((item) => (
-              <li
-                key={item}
-                className="flex items-center gap-3 whitespace-nowrap px-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] tabular-nums text-brand-800 sm:px-6"
-              >
-                {/* Aqua is worth something only while it is rare, and a strip
-                    that repeats it six times a loop on every page of the shop
-                    spends it faster than anything else could. */}
-                <span aria-hidden className="h-px w-3 shrink-0 bg-brand-300" />
-                {item}
-              </li>
-            ))}
-          </ul>
-        ))}
+    <div className="midnight text-white">
+      <div className="container-page flex h-9 items-center justify-center gap-6 text-[11.5px] font-medium lg:justify-between">
+        {/* Phones: one line at a time. */}
+        <p className="flex items-center gap-2 text-white/90 lg:hidden" aria-live="off">
+          <CurrentIcon size={14} className="shrink-0 text-gold-300" />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={current.text}
+              initial={reduce ? false : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduce ? undefined : { opacity: 0, y: -6 }}
+              transition={{ duration: 0.25 }}
+              className="truncate"
+            >
+              {current.text}
+            </motion.span>
+          </AnimatePresence>
+        </p>
+        <ul className="hidden items-center gap-6 lg:flex">
+          {items.map(({ text, icon: Icon }) => (
+            <li key={text} className="flex items-center gap-2 text-white/85">
+              <Icon size={14} className="text-gold-300" />
+              {text}
+            </li>
+          ))}
+        </ul>
+        <div className="hidden items-center gap-5 lg:flex">
+          <Link href="/track" className="inline-flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+            <Package size={14} /> Track order
+          </Link>
+          <Link href="/contact" className="inline-flex items-center gap-1.5 text-white/80 transition-colors hover:text-white">
+            <LifeBuoy size={14} /> Help &amp; support
+          </Link>
+          <span className="inline-flex items-center gap-1.5 text-white/80">
+            <ShieldCheck size={14} /> Secure payments
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -647,189 +608,148 @@ function MobileMenu({
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const { wishlist, customer, hydrated } = useStore();
+  const links = customer ? ACCOUNT_LINKS : GUEST_LINKS;
 
-  const links = [
-    ...(customer
-      ? [
-          { href: "/account", label: "My account" },
-          { href: "/account/orders", label: "My orders" },
-          { href: "/track", label: "Track an order" },
-          { href: "/account/addresses", label: "Saved addresses" },
-          { href: "/account/settings#payment", label: "Payment preferences" },
-          { href: "/account/returns", label: "Returns and refunds" },
-        ]
-      : [{ href: "/track", label: "Track an order" }]),
-    {
-      href: "/wishlist",
-      label: `Wishlist${hydrated && wishlist.length ? ` (${wishlist.length})` : ""}`,
-    },
-    { href: "/contact", label: "Help and support" },
-    { href: "/faq", label: "FAQ" },
-  ];
-
-  // Only reachable below lg, and never wider than 330px, so one compact scale
-  // serves phones and tablets alike. The width leaves a strip of page showing
-  // on small phones, to tap away as in a native drawer.
   return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      side="left"
-      className="max-w-[min(330px,calc(100vw-3rem))]"
-    >
-      <div className="flex items-center justify-between px-4 py-2.5">
+    <Drawer open={open} onClose={onClose} side="left" className="max-w-[min(340px,calc(100vw-3rem))]">
+      <div className="flex items-center justify-between px-4 py-3">
         <Logo size="sm" />
         <button
           onClick={onClose}
           aria-label="Close menu"
-          className="tap -mr-2 flex h-10 w-10 items-center justify-center text-ink-500 hover:bg-ink-100"
+          className="tap -mr-2 flex h-10 w-10 items-center justify-center rounded-full text-ink-500 hover:bg-ink-100"
         >
-          <X size={18} />
+          <X size={20} />
         </button>
       </div>
 
-      {/* The drawer's one dark plane. The greeting is set in the text face:
-          Fraunces draws band titles and product titles, and at the 16px this
-          line used to be it was neither — just the display face borrowed for a
-          label, which is how a type system comes apart. */}
-      <div className="deep-plane px-4 py-4 text-white">
-        <p className="text-[15px] font-semibold tracking-[-0.01em]">
-          {customer ? `Hello, ${customer.name.split(" ")[0]}` : "Welcome back"}
-        </p>
-        <p className="mt-0.5 break-words text-[13px] leading-[1.5] text-white/70">
-          {customer
-            ? customer.email
-            : "Sign in for faster checkout and order tracking."}
-        </p>
-        {/* Sentence case, not the uppercase tracking the shop's calls to action
-            wear: the drawer is never wider than 330px, and "Create account" set
-            in small caps overruns its half of the row on a 320px phone. */}
-        <div className="mt-3 flex gap-2">
-          {customer ? (
-            <>
-              <Link
-                href="/account"
-                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap bg-white px-2.5 text-center text-[13px] font-semibold text-ink-950"
-              >
-                My account
-              </Link>
-              <Link
-                href="/account/settings"
-                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap px-2.5 text-center text-[13px] font-semibold text-white"
-              >
-                Settings
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap bg-white px-2.5 text-center text-[13px] font-semibold text-ink-950"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/register"
-                className="tap flex h-10 flex-1 items-center justify-center whitespace-nowrap px-2.5 text-center text-[13px] font-semibold text-white"
-              >
-                Create account
-              </Link>
-            </>
-          )}
+      <div className="px-3">
+        <div className="aurora rounded-2xl px-4 py-4">
+          <p className="text-[14px] font-semibold text-ink-950">
+            {customer ? `Hello, ${customer.name.split(" ")[0]}` : "Welcome"}
+          </p>
+          <p className="mt-0.5 break-words text-[12px] text-ink-600">
+            {customer ? customer.email : "Sign in for faster checkout and order tracking."}
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {customer ? (
+              <>
+                <MenuButton href="/account" onClick={onClose} primary>
+                  My account
+                </MenuButton>
+                <MenuButton href="/account/orders" onClick={onClose}>
+                  My orders
+                </MenuButton>
+              </>
+            ) : (
+              <>
+                <MenuButton href="/login" onClick={onClose} primary>
+                  Sign in
+                </MenuButton>
+                <MenuButton href="/register" onClick={onClose}>
+                  Create account
+                </MenuButton>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      <nav
-        className="px-2 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2"
-        aria-label="Mobile navigation"
-      >
-        {categories.length > 0 && (
-        <p className="px-2 pb-1 pt-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-          Shop by category
-        </p>
-        )}
-        <ul>
-          {categories.map((category) => (
-            <li key={category.slug}>
-              <button
-                onClick={() =>
-                  setExpanded((s) => (s === category.slug ? null : category.slug))
-                }
-                aria-expanded={expanded === category.slug}
-                className="tap flex min-h-10 w-full items-center gap-3 px-2 py-1.5 text-left transition-colors duration-200 hover:bg-ink-50"
+      <nav className="px-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4" aria-label="Mobile navigation">
+        <ul className="mb-4 grid grid-cols-3 gap-2">
+          {QUICK_LINKS.map(({ href, label, icon: Icon }) => (
+            <li key={href}>
+              <Link
+                href={href}
+                onClick={onClose}
+                className="tap flex flex-col items-center gap-1.5 rounded-xl border border-line bg-surface px-1 py-3 text-center text-[11.5px] font-semibold text-ink-800"
               >
-                {/* The 36px photograph each of these rows used to carry has gone
-                    everywhere else in the shop; left here it would read as a
-                    redesign somebody abandoned halfway down the drawer. The row
-                    keeps a 40px minimum so the target stays the size it was. */}
-                <DepartmentGlyph
-                  icon={category.icon}
-                  name={category.name}
-                  size={20}
-                  className="shrink-0 text-ink-400"
-                />
-                <span className="min-w-0 flex-1 text-[13.5px] font-medium text-ink-900">
-                  {category.name}
+                <span className="icon-tile icon-tile-sm">
+                  <Icon size={16} />
                 </span>
-                <ChevronRight
-                  size={16}
-                  className={cn(
-                    "text-ink-400 transition-transform duration-200",
-                    expanded === category.slug && "rotate-90",
-                  )}
-                />
-              </button>
-              <AnimatePresence initial={false}>
-                {expanded === category.slug && (
-                  <motion.ul
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                    // 32px, not 48: the indent exists to hang the collections
-                    // off the department's own name, and the name moved left
-                    // when the 36px thumbnail became a 20px mark.
-                    className="overflow-hidden pl-8"
-                  >
-                    <li>
-                      <Link
-                        href={`/c/${category.slug}`}
-                        onClick={onClose}
-                        className="tap flex min-h-10 items-center px-2 py-1.5 text-[13px] font-semibold text-brand-700 transition-colors duration-200 hover:bg-ink-50"
-                      >
-                        All {category.name}
-                      </Link>
-                    </li>
-                    {category.subcategories.map((sub) => (
-                      <li key={sub.slug}>
-                        <Link
-                          href={`/c/${category.slug}/${sub.slug}`}
-                          onClick={onClose}
-                          className="tap flex min-h-10 items-center px-2 py-1.5 text-[13px] text-ink-600 transition-colors duration-200 hover:bg-ink-50 hover:text-ink-900"
-                        >
-                          {sub.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </motion.ul>
-                )}
-              </AnimatePresence>
+                {label}
+              </Link>
             </li>
           ))}
         </ul>
 
-        <p className="px-2 pb-1 pt-4 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-          Your account
-        </p>
+        {categories.length > 0 && (
+          <>
+            <p className="t-label px-2 pb-2">Shop by category</p>
+            <ul className="mb-4">
+              {categories.map((category) => {
+                const isOpen = expanded === category.slug;
+                return (
+                  <li key={category.slug}>
+                    <button
+                      onClick={() => setExpanded((s) => (s === category.slug ? null : category.slug))}
+                      aria-expanded={isOpen}
+                      className="tap flex min-h-11 w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-ink-50"
+                    >
+                      <span className="icon-tile icon-tile-sm">
+                        <CategoryIcon icon={category.icon} name={category.name} size={16} />
+                      </span>
+                      <span className="min-w-0 flex-1 text-[13.5px] font-medium text-ink-900">{category.name}</span>
+                      <ChevronDown
+                        size={16}
+                        className={cn("text-ink-400 transition-transform duration-200", isOpen && "rotate-180")}
+                      />
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.ul
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                          className="ml-[26px] overflow-hidden border-l border-line pl-4"
+                        >
+                          <li>
+                            <Link
+                              href={`/c/${category.slug}`}
+                              onClick={onClose}
+                              className="tap flex min-h-10 items-center text-[13px] font-semibold text-brand-700"
+                            >
+                              All {category.name}
+                            </Link>
+                          </li>
+                          {category.subcategories.map((sub) => (
+                            <li key={sub.slug}>
+                              <Link
+                                href={`/c/${category.slug}/${sub.slug}`}
+                                onClick={onClose}
+                                className="tap flex min-h-10 items-center text-[13px] text-ink-600 hover:text-ink-950"
+                              >
+                                {sub.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </motion.ul>
+                      )}
+                    </AnimatePresence>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+
+        <p className="t-label px-2 pb-2">Your account</p>
         <ul>
-          {links.map((item) => (
-            <li key={item.href}>
+          {links.map(({ href, label, icon: Icon }) => (
+            <li key={href}>
               <Link
-                href={item.href}
+                href={href}
                 onClick={onClose}
-                className="tap flex min-h-10 items-center px-2 py-1.5 text-[13.5px] text-ink-700 transition-colors duration-200 hover:bg-ink-50 hover:text-ink-950"
+                className="tap flex min-h-11 items-center gap-3 rounded-lg px-2 text-[13.5px] text-ink-700 transition-colors hover:bg-ink-50 hover:text-ink-950"
               >
-                {item.label}
+                <Icon size={18} className="text-ink-500" />
+                <span className="flex-1">{label}</span>
+                {href === "/wishlist" && hydrated && wishlist.length > 0 && (
+                  <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold text-brand-700 tabular-nums">
+                    {wishlist.length}
+                  </span>
+                )}
               </Link>
             </li>
           ))}
@@ -837,8 +757,9 @@ function MobileMenu({
             <li>
               <SignOutForm
                 onSignOut={onClose}
-                className="tap flex min-h-10 w-full items-center px-2 py-1.5 text-left text-[13.5px] text-ink-500 transition-colors duration-200 hover:bg-ink-50 hover:text-sale-600"
+                className="tap flex min-h-11 w-full items-center gap-3 rounded-lg px-2 text-left text-[13.5px] text-ink-600 transition-colors hover:bg-sale-50 hover:text-sale-700"
               >
+                <LogOut size={18} className="text-ink-500" />
                 Sign out
               </SignOutForm>
             </li>
@@ -846,5 +767,30 @@ function MobileMenu({
         </ul>
       </nav>
     </Drawer>
+  );
+}
+
+function MenuButton({
+  href,
+  onClick,
+  primary = false,
+  children,
+}: {
+  href: string;
+  onClick: () => void;
+  primary?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={cn(
+        "tap flex h-10 items-center justify-center whitespace-nowrap rounded-md px-2 text-[13px] font-semibold",
+        primary ? "bg-brand-700 text-white" : "bg-surface text-ink-900 ring-1 ring-inset ring-line-strong",
+      )}
+    >
+      {children}
+    </Link>
   );
 }

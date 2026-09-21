@@ -151,14 +151,12 @@ export function SearchBar({
       <Form onSubmit={submit} role="search">
         <div
           className={cn(
-            "flex items-center gap-2.5 rounded-full border border-line-strong bg-ink-50 px-4 transition-all duration-200 focus-within:border-brand-400 focus-within:bg-surface",
+            "group/field flex items-center gap-2.5 rounded-full border border-line bg-ink-50 pl-4 pr-1.5 transition-all duration-200 hover:border-line-strong focus-within:border-brand-400 focus-within:bg-surface",
             variant === "header" ? "h-11" : "h-12",
-            open
-              ? "shadow-[0_0_0_3px_rgb(76_124_148/0.18)]"
-              : "",
+            open ? "shadow-(--shadow-glow)" : "",
           )}
         >
-          <Search size={17} className="shrink-0 text-ink-400" />
+          <Search size={18} className="shrink-0 text-ink-400 transition-colors group-focus-within/field:text-brand-600" />
           <input
             ref={input}
             value={term}
@@ -182,7 +180,7 @@ export function SearchBar({
                 : placeholders[placeholderIndex % placeholders.length]
             }
             // 16px on phones, or iOS zooms the page into the field on focus.
-            className="min-w-0 flex-1 bg-transparent text-[16px] text-ink-900 outline-none placeholder:text-ink-400 sm:text-sm [&::-webkit-search-cancel-button]:hidden"
+            className="min-w-0 flex-1 !bg-transparent !shadow-none text-[16px] text-ink-900 outline-none placeholder:text-ink-400 sm:text-sm [&::-webkit-search-cancel-button]:hidden"
           />
           {term && (
             <button
@@ -192,16 +190,16 @@ export function SearchBar({
                 input.current?.focus();
               }}
               aria-label="Clear search"
-              className="tap -mr-2 flex h-10 w-10 items-center justify-center text-ink-400 transition-colors duration-200 hover:text-ink-950 sm:mr-0 sm:h-auto sm:w-auto sm:p-1"
+              className="tap flex h-8 w-8 items-center justify-center rounded-full text-ink-500 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950"
             >
-              <X size={15} />
+              <X size={16} />
             </button>
           )}
           {variant === "header" && !term && (
             // The shortcut hint is a legend a reader is expected to act on, so
             // it comes up off the 10px it was set at and onto the small-caps
             // label the rest of the site labels things with.
-            <kbd className="hidden shrink-0 bg-canvas px-1.5 py-0.5 font-sans text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 lg:block">
+            <kbd className="mr-1 hidden shrink-0 rounded-md border border-line bg-surface px-1.5 py-0.5 font-sans text-[10.5px] font-semibold text-ink-500 lg:block">
               Ctrl K
             </kbd>
           )}
@@ -220,7 +218,7 @@ export function SearchBar({
             // is drawn: both are sheets laid over the same page, and a hairline
             // would lose its edge against the white tiles below the header.
             className={cn(
-              "z-50 overflow-hidden rounded-2xl border bg-surface shadow-pop",
+              "z-50 overflow-hidden rounded-2xl border border-line bg-surface shadow-pop",
               variant === "header"
                 ? "absolute inset-x-0 top-[calc(100%+8px)]"
                 : "mt-3 flex min-h-0 flex-col",
@@ -246,12 +244,12 @@ export function SearchBar({
                     <li>
                       <button
                         onClick={() => go(`/search?q=${encodeURIComponent(term.trim())}`, term.trim())}
-                        className="tap flex w-full items-center justify-between gap-3 px-3 py-3 text-left text-[13px] font-semibold text-ink-950 transition-colors duration-200 hover:text-brand-700"
+                        className="tap flex w-full items-center justify-between gap-3 border-t border-line bg-ink-50/60 px-4 py-3 text-left text-[13px] font-semibold text-brand-700 transition-colors duration-200 hover:bg-brand-50"
                       >
                         <span className="min-w-0 break-words">
                           See all results for &ldquo;{term.trim()}&rdquo;
                         </span>
-                        <ArrowUpRight size={15} className="shrink-0" />
+                        <ArrowUpRight size={16} className="shrink-0" />
                       </button>
                     </li>
                   </ul>
@@ -269,7 +267,7 @@ export function SearchBar({
                           <button
                             key={s}
                             onClick={() => setTerm(s)}
-                            className="tap inline-flex h-8 max-w-full items-center truncate px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
+                            className="tap inline-flex h-8 max-w-full items-center truncate rounded-full border border-line px-3 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-brand-300 hover:text-brand-700"
                           >
                             {s}
                           </button>
@@ -294,14 +292,14 @@ export function SearchBar({
                   {recentSearches.length > 0 && (
                     <section className="mb-4 sm:mb-5">
                       <header className="mb-2 flex items-center justify-between">
-                        <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                        <h3 className="t-label">
                           Recent searches
                         </h3>
                         {/* The negative margin gives a finger a real target
                             without moving the word. */}
                         <button
                           onClick={() => dispatch({ type: "search/clear" })}
-                          className="-m-2 p-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-500 transition-colors duration-200 hover:text-sale-600 lg:m-0 lg:p-0"
+                          className="-m-2 p-2 text-[12px] font-medium text-brand-700 transition-colors duration-200 hover:text-sale-600 lg:m-0 lg:p-0"
                         >
                           Clear
                         </button>
@@ -311,9 +309,9 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 rounded-full border border-line px-3 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
                             >
-                              <Clock size={12} className="shrink-0 text-ink-400" />
+                              <Clock size={14} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>
                             </button>
                           </li>
@@ -324,7 +322,7 @@ export function SearchBar({
 
                   {browse.length > 0 && (
                     <section className="mb-4 sm:mb-5">
-                      <h3 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                      <h3 className="mb-2 t-label">
                         Browse the store
                       </h3>
                       {/* A ruled index, as the department menu draws its
@@ -340,12 +338,11 @@ export function SearchBar({
                                 setOpen(variant === "sheet");
                                 onNavigate?.();
                               }}
-                              className="tap group flex h-10 items-center gap-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-brand-700"
+                              className="tap group flex h-11 items-center gap-2.5 rounded-lg px-2 text-[13px] font-medium text-ink-800 transition-colors duration-200 hover:bg-brand-50 hover:text-brand-700"
                             >
-                              <TrendingUp
-                                size={14}
-                                className="shrink-0 text-ink-400 transition-colors duration-200 group-hover:text-brand-700"
-                              />
+                              <span className="icon-tile icon-tile-sm">
+                                <TrendingUp size={16} />
+                              </span>
                               <span className="min-w-0 truncate">{t.label}</span>
                             </Link>
                           </li>
@@ -356,7 +353,7 @@ export function SearchBar({
 
                   {terms.length > 0 && (
                     <section>
-                      <h3 className="mb-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                      <h3 className="mb-2 t-label">
                         Popular searches
                       </h3>
                       <ul className="flex flex-wrap gap-1.5">
@@ -364,9 +361,9 @@ export function SearchBar({
                           <li key={s} className="min-w-0 max-w-full">
                             <button
                               onClick={() => go(`/search?q=${encodeURIComponent(s)}`, s)}
-                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 px-2.5 text-[13px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
+                              className="tap inline-flex h-8 max-w-full items-center gap-1.5 rounded-full border border-line px-3 text-[12.5px] text-ink-700 transition-colors duration-200 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
                             >
-                              <Tag size={12} className="shrink-0 text-ink-400" />
+                              <Tag size={14} className="shrink-0 text-ink-400" />
                               <span className="truncate">{s}</span>
                             </button>
                           </li>
@@ -401,17 +398,17 @@ function SuggestionRow({
           // The keyboard's position is marked by the paper changing plane
           // rather than by a tinted pill: canvas against surface is the same
           // contrast every white tile on the site is picked out with.
-          "tap flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors duration-200 sm:gap-3",
-          active ? "bg-canvas" : "hover:bg-canvas",
+          "tap flex w-full items-center gap-3 px-3 py-2 text-left transition-colors duration-200",
+          active ? "bg-brand-50" : "hover:bg-ink-50",
         )}
       >
         {hit.image ? (
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden bg-canvas sm:h-11 sm:w-11">
+          <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-ink-50 ring-1 ring-inset ring-line">
             <Image src={hit.image} alt="" fill sizes="44px" className="object-cover" />
           </span>
         ) : (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-canvas text-ink-400 sm:h-11 sm:w-11">
-            <Search size={15} />
+          <span className="icon-tile h-11 w-11">
+            <Search size={16} />
           </span>
         )}
         <span className="min-w-0 flex-1">
@@ -421,7 +418,7 @@ function SuggestionRow({
           <span className="block truncate text-[13px] text-ink-500">{hit.sublabel}</span>
         </span>
         {hit.price != null && (
-          <span className="shrink-0 text-[13px] font-semibold tabular-nums text-ink-900">
+          <span className="t-price shrink-0 text-[13px]">
             {formatINR(hit.price)}
           </span>
         )}

@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 const OVERLAP = 64;
 
 const ARROW = cn(
-  "flex h-9 w-9 cursor-pointer items-center justify-center",
-  "bg-surface text-ink-700 shadow-sm",
-  "transition-colors duration-200 hover:text-ink-950",
+  "flex h-9 w-9 cursor-pointer items-center justify-center rounded-full",
+  "border border-line bg-surface text-ink-700",
+  "transition-colors duration-200 hover:border-brand-300 hover:text-brand-700",
   "disabled:pointer-events-none disabled:opacity-40",
 );
 
@@ -106,7 +106,7 @@ export function RailScroller({
         )}
       </div>
 
-      <div ref={rail} onScroll={measure} className={cn("rail", railClassName)}>
+      <div ref={rail} onScroll={measure} className={cn("rail gap-3 sm:gap-4", railClassName)}>
         {children}
       </div>
     </>

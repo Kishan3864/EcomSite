@@ -27,13 +27,13 @@ export function ProductRail({
   if (products.length === 0) return null;
 
   return (
-    <section className={cn("container-page py-6 sm:py-14", className)}>
+    <section className={cn("container-page section-tight", className)}>
       {/* The rail bleeds to the screen edge by exactly the page gutter — 12px
           on phones — so it scrolls edge to edge without widening the page. */}
       <RailScroller
         label="products"
-        headerClassName="mb-4 sm:mb-6"
-        railClassName="-mx-3 px-3 pb-2 sm:-mx-6 sm:px-6 sm:pb-3 lg:-mx-8 lg:px-8"
+        headerClassName="mb-0"
+        railClassName="-mx-3 px-3 pb-3 pt-1 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
         header={
           <Reveal>
             <SectionHeader
@@ -60,7 +60,7 @@ export function ProductRail({
             /* Must track ProductCard's own `layout="rail"` widths. Remote
                images are served unoptimized by policy, so a stale `sizes`
                has no fallback — it simply renders soft. */
-            sizes="(min-width:640px) 236px, 152px"
+            sizes="(min-width:640px) 224px, 164px"
           />
         ))}
       </RailScroller>
@@ -92,7 +92,7 @@ export function ProductGrid({
         // Cards with air between them, not tiles fused into one sheet. A
         // shared 1px grid made twenty products read as one table of data;
         // separate objects are what a shopper scans.
-        "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5",
+        "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5",
         className,
       )}
     >

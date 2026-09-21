@@ -5,47 +5,19 @@ import Link from "next/link";
 import Image from "@/components/ui/image";
 import { AnimatePresence, motion } from "motion/react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronRight, LayoutGrid } from "lucide-react";
 import type { Category } from "@/lib/types";
+import { CategoryIcon } from "@/components/ui/category-icon";
 import { cn } from "@/lib/utils";
-import { balancedColumns } from "@/lib/grid";
 
 /**
- * The department menu.
- *
- * Photographs, because a menu is where somebody decides which shelf to walk to
- * and a picture of the shelf decides it faster than its name does. Every
- * department and every collection already carries its own image — the same ones
- * the category pages use — so this costs no new artwork and nothing to
- * maintain: a collection added in the admin panel arrives here with its picture
- * already attached.
- *
- * The sheet is still the size of what is on it. The column count comes from the
- * number of collections and is chosen to fill its rows evenly, so two
- * collections open a compact sheet and twelve open a wide one, and neither
- * leaves a half-empty row. That is the one thing kept from the drawn-mark
- * version, because it is what stopped the panel reading as a page that had
- * failed to load.
- *
- * The right rail is the department's own photograph, carrying the way through
- * to all of it. It is the only place the department is named twice over, and
- * deliberately: the heading says which department this is, the rail is the door
- * out of the menu into it.
+ * The department menu: a rail of department names in the header's second row
+ * and, on hover or focus, a full-width panel under the header — every
+ * department down the left, the pointed-at department's collections as photo
+ * tiles in the middle, and the department itself as a feature card on the
+ * right. The panel is positioned against the sticky <header>, the nearest
+ * positioned ancestor.
  */
-
-/** Past this the index reads as a wall of tiles rather than a list, and wraps. */
-const MAX_COLUMNS = 4;
-
-/** A tile wide enough for a photograph to be read as one, plus its gutter. */
-const TILE_WIDTH = 172;
-const TILE_GAP = 14;
-
-/** The department photograph down the right-hand edge. */
-const RAIL_WIDTH = 296;
-
-/** The sheet's own padding, both sides. */
-const PADDING = 48;
-
 export function MegaMenu({ categories }: { categories: Category[] }) {
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -61,19 +33,12 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
     setOpenSlug(null);
   }
 
-  /**
-   * A beat before closing, so crossing the 10px gap between the bar and the
-   * sheet — or sliding diagonally from one department to the next — does not
-   * shut the thing under the pointer.
-   */
+  /** A beat before closing, so crossing from the rail to the panel does not shut it. */
   function scheduleClose() {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOpenSlug(null), 140);
+    closeTimer.current = setTimeout(() => setOpenSlug(null), 160);
   }
 
-  // Escape closes it, the way every other overlay on the site behaves. Without
-  // this a keyboard user who opened the panel by tabbing on to a department had
-  // no way to dismiss it but to tab through everything inside.
   useEffect(() => {
     if (!openSlug) return;
     const onKey = (e: KeyboardEvent) => {
@@ -83,41 +48,34 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [openSlug]);
 
-  useEffect(() => () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    },
+    [],
+  );
 
   const active = categories.find((c) => c.slug === openSlug);
 
-  // The sheet is sized from its contents, never the other way round.
-  //
-  // Columns fill their rows evenly rather than running to the maximum: six
-  // collections in four columns is a full row above a half-empty one, which is
-  // the hole this menu was rebuilt to close. Taking the row count first and
-  // dividing back gives 3x2 for six, 3+2 for five, 4+3 for seven.
-  const count = active?.subcategories.length ?? 0;
-  const columns = balancedColumns(count, MAX_COLUMNS);
-  const indexWidth = columns * TILE_WIDTH + (columns - 1) * TILE_GAP + PADDING;
-  // A floor with two jobs. It stops a department whose collections are not set
-  // up yet from opening as a sliver beside a photograph, and it keeps a
-  // department with one or two of them from being out-weighed by its own rail —
-  // at the tile's natural width, two collections left the sentence in a column
-  // narrower than the picture next to it. The tiles are `1fr` each, so the
-  // extra width goes into the photographs rather than into white space.
-  const sheetWidth = Math.max(indexWidth, 520) + RAIL_WIDTH;
-
   return (
-    // `min-w-0 flex-1` belongs HERE, on the element that is actually the flex
-    // item in the masthead row — not on the <nav> inside it. It was on the nav,
-    // which did nothing: this div sized itself to its content, went 1494px wide
-    // inside a 1408px container, and pushed the whole document into a
-    // horizontal scroll at every width.
-    <div className="relative min-w-0 flex-1" onMouseLeave={scheduleClose}>
-      {/* One line, always. Eleven departments do not fit a 1408px container,
-          and a wrapping rail pushes the page down by a row and collides with
-          the links on the right. It scrolls sideways instead — the scrollbar
-          is hidden, and the panels still open from wherever a name lands. */}
-      <nav aria-label="Product categories" className="min-w-0">
+    <div className="flex min-w-0 flex-1 items-center gap-1" onMouseLeave={scheduleClose}>
+      <button
+        type="button"
+        onClick={() => (openSlug ? close() : open(categories[0].slug))}
+        onMouseEnter={() => open(openSlug ?? categories[0].slug)}
+        aria-expanded={Boolean(active)}
+        aria-controls="mega-menu"
+        className={cn(
+          "inline-flex h-8 shrink-0 items-center gap-2 rounded-full px-3.5 text-[12.5px] font-semibold transition-colors",
+          active ? "bg-ink-950 text-white" : "bg-ink-100 text-ink-900 hover:bg-ink-200",
+        )}
+      >
+        <LayoutGrid size={14} />
+        All categories
+        <ChevronDown size={14} className={cn("transition-transform duration-200", active && "rotate-180")} />
+      </button>
+
+      <nav aria-label="Product categories" className="min-w-0 flex-1">
         <ul className="dept-rail no-scrollbar flex items-center overflow-x-auto">
           {categories.map((category) => {
             const isOpen = openSlug === category.slug;
@@ -128,29 +86,12 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
                   onMouseEnter={() => open(category.slug)}
                   onFocus={() => open(category.slug)}
                   aria-expanded={isOpen}
-                  // Ink on the light rail, and a brand-coloured marker under
-                  // the open department: the one thing in the masthead that
-                  // says "you are pointing at this".
                   className={cn(
-                    "relative inline-flex shrink-0 whitespace-nowrap items-center px-3.5 py-2 text-[13.5px] transition-colors duration-200",
-                    isOpen ? "font-semibold text-ink-950" : "font-medium text-ink-700 hover:text-ink-950",
+                    "relative inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-full px-3 text-[12.5px] transition-colors duration-200",
+                    isOpen ? "bg-brand-50 font-semibold text-brand-800" : "font-medium text-ink-600 hover:text-ink-950",
                   )}
                 >
-                  {/* The short label, not the full department name. The field
-                      exists for exactly this: "Audio & Headphones" is the page
-                      heading, "Audio" is what fits in a rail of eleven. */}
                   {category.menuLabel || category.name}
-                  {/* The rule is drawn by an absolutely positioned span so that
-                      marking the open department costs the bar no height —
-                      every sticky offset under the header is measured from this
-                      bar, and a bar that grows on hover moves them all. */}
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute inset-x-3.5 bottom-0 h-[2px] origin-left bg-brand-600 transition-transform duration-200 ease-out",
-                      isOpen ? "scale-x-100" : "scale-x-0",
-                    )}
-                  />
                 </Link>
               </li>
             );
@@ -161,123 +102,129 @@ export function MegaMenu({ categories }: { categories: Category[] }) {
       <AnimatePresence>
         {active && (
           <motion.div
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            id="mega-menu"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -6 }}
-            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             onMouseEnter={() => open(active.slug)}
-            style={{ width: `min(${sheetWidth}px, calc(100vw - 4rem))` }}
-            // A hairline and a real shadow, not the old ink frame. The frame
-            // gave the sheet an edge against the white tiles it floats over,
-            // but the black outline made it look like a dialog; the elevation
-            // does the same job without the weight.
-            className="absolute left-0 top-[calc(100%+10px)] z-50 overflow-hidden rounded-2xl border bg-surface shadow-pop"
+            className="absolute inset-x-0 top-full z-50 border-t border-line bg-surface shadow-pop"
           >
-            <div
-              className="grid"
-              style={{ gridTemplateColumns: `minmax(0,1fr) ${RAIL_WIDTH}px` }}
-            >
-              {/* ── The index ──────────────────────────────────────────── */}
-              <div className="p-6">
-                <h3 className="font-display text-[21px] leading-none tracking-[-0.02em] text-ink-950">
-                  {active.name}
-                </h3>
-                {/* Held to about 58 characters a line. Across a four-column
-                    sheet an unconstrained sentence runs to a width nobody
-                    tracks back from comfortably. */}
-                {active.description && (
-                  <p className="mt-2.5 max-w-[58ch] text-[13px] leading-[1.55] text-ink-600">
-                    {active.description}
-                  </p>
-                )}
+            <div className="container-page grid max-h-[min(72dvh,560px)] grid-cols-[232px_minmax(0,1fr)_280px] gap-6 overflow-y-auto py-6">
+              {/* Departments */}
+              <ul className="space-y-0.5 border-r border-line pr-4">
+                {categories.map((category) => {
+                  const isActive = category.slug === active.slug;
+                  return (
+                    <li key={category.slug}>
+                      <Link
+                        href={`/c/${category.slug}`}
+                        onMouseEnter={() => open(category.slug)}
+                        onFocus={() => open(category.slug)}
+                        className={cn(
+                          "group flex h-10 items-center gap-3 rounded-lg px-2 text-[13px] transition-colors",
+                          isActive ? "bg-brand-50 font-semibold text-brand-800" : "font-medium text-ink-700 hover:bg-ink-50",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "icon-tile icon-tile-sm transition-colors",
+                            !isActive && "!bg-ink-50 !text-ink-500",
+                          )}
+                        >
+                          <CategoryIcon icon={category.icon} name={category.name} size={16} />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate">{category.name}</span>
+                        <ChevronRight size={14} className={cn("text-ink-300", isActive && "text-brand-600")} />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
 
-                {active.subcategories.length > 0 && (
-                  <ul
-                    className="mt-5 grid pt-5"
-                    style={{
-                      gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-                      gap: `${TILE_GAP}px`,
-                    }}
+              {/* Collections */}
+              <div className="min-w-0">
+                <div className="mb-4 flex items-end justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="t-h2 !text-[18px]">{active.name}</p>
+                    {active.description && <p className="t-small mt-1 line-clamp-2 max-w-[60ch]">{active.description}</p>}
+                  </div>
+                  <Link
+                    href={`/c/${active.slug}`}
+                    className="inline-flex shrink-0 items-center gap-1 text-[12.5px] font-semibold text-brand-700 hover:underline"
                   >
+                    View all <ArrowRight size={14} />
+                  </Link>
+                </div>
+
+                {active.subcategories.length > 0 ? (
+                  <ul className="grid grid-cols-3 gap-3 xl:grid-cols-4">
                     {active.subcategories.map((sub) => (
                       <li key={sub.slug}>
                         <Link
                           href={`/c/${active.slug}/${sub.slug}`}
-                          className="group block"
+                          className="group flex items-center gap-3 rounded-xl border border-line p-2 transition-all hover:border-brand-200 hover:shadow-md"
                         >
-                          {/* 4:3, the shape the catalogue's photographs are cut
-                              to everywhere else. `overflow-hidden` on the frame
-                              rather than the image so the zoom is cropped by
-                              the frame instead of pushing the tile about. */}
-                          <div className="relative aspect-[4/3] overflow-hidden bg-canvas">
+                          <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-ink-50">
                             <Image
                               src={sub.image.url}
-                              alt={sub.image.alt || sub.name}
+                              alt=""
                               fill
-                              sizes={`${TILE_WIDTH}px`}
-                              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+                              sizes="48px"
+                              className="object-cover transition-transform duration-500 group-hover:scale-110"
                             />
-                          </div>
-                          <span className="mt-2.5 flex items-center gap-1.5">
-                            <span className="min-w-0 truncate text-[13.5px] font-medium text-ink-900 transition-colors duration-200 group-hover:text-brand-700">
-                              {sub.name}
-                            </span>
-                            <ArrowRight
-                              size={13}
-                              aria-hidden
-                              className="shrink-0 -translate-x-1 text-brand-700 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100"
-                            />
+                          </span>
+                          <span className="min-w-0 truncate text-[13px] font-medium text-ink-900 group-hover:text-brand-700">
+                            {sub.name}
                           </span>
                         </Link>
                       </li>
                     ))}
                   </ul>
+                ) : (
+                  <p className="t-small">Browse everything in {active.name}.</p>
                 )}
 
                 {active.featuredBrands.length > 0 && (
-                  <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-2 pt-4">
-                    <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                      Top brands
-                    </span>
+                  <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+                    <span className="t-label mr-1">Top brands</span>
                     {active.featuredBrands.map((slug) => (
                       <Link
                         key={slug}
                         href={`/products?brands=${slug}&category=${active.slug}`}
-                        className="inline-flex h-7 items-center px-2.5 text-[12.5px] text-ink-700 transition-colors duration-200 hover:text-ink-950"
+                        className="chip h-7 px-3 text-[12px] text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700"
                       >
-                        {slug.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ")}
+                        {slug
+                          .split("-")
+                          .map((w) => w[0].toUpperCase() + w.slice(1))
+                          .join(" ")}
                       </Link>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* ── The department, and the door out of the menu ────────── */}
+              {/* The department, as the door out of the menu */}
               <Link
                 href={`/c/${active.slug}`}
-                className="group relative overflow-hidden bg-canvas"
+                className="group relative block min-h-[240px] overflow-hidden rounded-2xl bg-ink-100"
               >
                 <Image
                   src={active.image.url}
                   alt={active.image.alt || active.name}
                   fill
-                  sizes={`${RAIL_WIDTH}px`}
-                  className="object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.05]"
+                  sizes="280px"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
-                {/* A scrim rather than a flat tint: white type has to hold its
-                    contrast over whatever photograph a department is given, and
-                    a department photo is chosen for the shelf it shows, not for
-                    how dark its bottom third happens to be. */}
-                <span
-                  aria-hidden
-                  className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/25 to-transparent"
-                />
-                <span className="absolute inset-x-5 bottom-5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-white">
-                  Shop all {active.name.toLowerCase()}
-                  <ArrowRight
-                    size={14}
-                    className="transition-transform duration-200 group-hover:translate-x-1"
-                  />
+                <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/20 to-transparent" />
+                <span className="absolute inset-x-4 bottom-4 text-white">
+                  <span className="t-label block !text-gold-200">Explore</span>
+                  <span className="mt-1 flex items-center justify-between gap-2 text-[15px] font-semibold">
+                    Shop all {active.name}
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 backdrop-blur transition-transform group-hover:translate-x-0.5">
+                      <ArrowRight size={16} />
+                    </span>
+                  </span>
                 </span>
               </Link>
             </div>

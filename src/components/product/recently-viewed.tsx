@@ -55,15 +55,15 @@ export function RecentlyViewed({
   if (cards.length === 0) return null;
 
   return (
-    <section className="container-page py-10 sm:py-16">
+    <section className="container-page section-tight">
       <RailScroller
         label="recently viewed products"
-        headerClassName="mb-4 sm:mb-6"
-        railClassName="-mx-3 px-3 pb-2 sm:-mx-6 sm:px-6 sm:pb-3 lg:-mx-8 lg:px-8"
+        headerClassName="mb-0"
+        railClassName="-mx-3 px-3 pb-3 pt-1 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
         header={<SectionHeader eyebrow="Pick up where you left off" title={title} />}
       >
         {cards.map((product) => (
-          <ProductCard key={product.id} product={product} layout="rail" sizes="(min-width:640px) 236px, 152px" />
+          <ProductCard key={product.id} product={product} layout="rail" sizes="(min-width:640px) 224px, 164px" />
         ))}
       </RailScroller>
     </section>

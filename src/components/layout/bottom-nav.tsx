@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { Heart, Home, LayoutGrid, ShoppingBag, User } from "lucide-react";
+import { Heart, House, LayoutGrid, ShoppingBag, UserRound } from "lucide-react";
 import { useStore } from "@/store/store";
 import { cartCount } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { href: "/", label: "Home", icon: Home, match: (p: string) => p === "/" },
+  { href: "/", label: "Home", icon: House, match: (p: string) => p === "/" },
   {
     href: "/products",
     label: "Shop",
@@ -18,7 +18,7 @@ const ITEMS = [
   },
   { href: "/wishlist", label: "Wishlist", icon: Heart, match: (p: string) => p.startsWith("/wishlist") },
   { href: "/cart", label: "Bag", icon: ShoppingBag, match: (p: string) => p.startsWith("/cart") },
-  { href: "/account", label: "Account", icon: User, match: (p: string) => p.startsWith("/account") },
+  { href: "/account", label: "Account", icon: UserRound, match: (p: string) => p.startsWith("/account") },
 ];
 
 /** Hidden inside the checkout funnel so nothing competes with the pay button. */
@@ -51,9 +51,9 @@ export function BottomNav() {
       <div aria-hidden className="h-[calc(61px+env(safe-area-inset-bottom))] shrink-0 lg:hidden" />
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-40 bg-canvas/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+        className="glass fixed inset-x-0 bottom-0 z-40 border-t border-line pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
-        <ul className="grid grid-cols-5">
+        <ul className="grid h-[60px] grid-cols-5">
           {ITEMS.map((item) => {
             const active = item.match(pathname);
             const Icon = item.icon;
@@ -64,41 +64,31 @@ export function BottomNav() {
                 <Link
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className="tap relative flex h-[60px] flex-col items-center justify-center gap-1"
+                  className="tap relative flex h-full flex-col items-center justify-center gap-1"
                 >
-                  {/* The current tab is marked by a full-width ink rule sitting
-                      on the bar's own hairline, not by a coloured pill. It is
-                      the same device the rest of the site uses to say "this
-                      one", and it survives being read at arm's length. */}
-                  {active && (
-                    <motion.span
-                      layoutId="bottom-nav-active"
-                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                      className="absolute inset-x-0 top-0 h-0.5 bg-ink-950"
-                    />
-                  )}
-                  <span className="relative">
+                  <span className="relative flex h-7 w-12 items-center justify-center">
+                    {active && (
+                      <motion.span
+                        layoutId="bottom-nav-active"
+                        transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                        className="absolute inset-0 rounded-full bg-brand-50 ring-1 ring-inset ring-brand-100"
+                      />
+                    )}
                     <Icon
                       size={20}
-                      strokeWidth={active ? 2 : 1.5}
                       className={cn(
-                        "transition-colors duration-200",
-                        active ? "text-ink-950" : "text-ink-500",
+                        "relative transition-colors duration-200",
+                        active ? "text-brand-700" : "text-ink-500",
                       )}
                     />
                     {count > 0 && (
-                      /* Brand, to match the header's own count. A bag count is
-                         a fact, not a reduction, and the two badges are on
-                         screen together on a phone. */
-                      <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center bg-brand-700 px-1 text-[10px] font-bold leading-none text-white tabular-nums">
-                        {count > 9 ? "9+" : count}
-                      </span>
+                      <span className="count-dot !right-0.5 !top-[-4px]">{count > 9 ? "9+" : count}</span>
                     )}
                   </span>
                   <span
                     className={cn(
-                      "text-[11px] transition-colors duration-200",
-                      active ? "font-semibold text-ink-950" : "font-medium text-ink-500",
+                      "text-[10.5px] leading-none transition-colors duration-200",
+                      active ? "font-semibold text-brand-800" : "font-medium text-ink-500",
                     )}
                   >
                     {item.label}
