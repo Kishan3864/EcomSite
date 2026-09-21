@@ -49,7 +49,9 @@ import { buildContactAck } from "@/lib/emails/contact-ack";
 import { CONTACT_NOTIFY_TO, buildContactAdminEmail } from "@/lib/emails/contact-admin";
 import { upiConfigured } from "@/lib/payments/upi";
 import { expireStalePendingOrders, trimUnpaidOrders } from "./order-expiry";
-import { reviewEligibilityFor, type ReviewEligibility } from "./reviews";
+import { insertReviewOnce, reviewEligibilityFor, type ReviewEligibility } from "./reviews";
+import { reviewFromLink } from "./order-reviews";
+import { cleanReview, reviewProblem } from "@/lib/review-rules";
 import { after } from "next/server";
 import { mailConfigured, sendMail } from "@/lib/mail";
 import { sendOrderConfirmation } from "./order-email";
@@ -577,31 +579,57 @@ export async function submitReview(input: {
     };
   }
 
-  const rating = Math.round(Number(input.rating));
-  if (rating < 1 || rating > 5) return { ok: false, error: "Pick a star rating." };
-  if (input.title.trim().length < 3) return { ok: false, error: "Give your review a title." };
-  if (input.body.trim().length < 20) return { ok: false, error: "Tell us a little more — at least 20 characters." };
+  // Stars required, words optional — the same rule the form applies.
+  const problem = reviewProblem(input);
+  if (problem) return { ok: false, error: problem };
+  const { rating, title, body } = cleanReview(input);
 
   const customer = await db.customer.findUnique({
     where: { id: session.id },
     include: { addresses: { where: { isDefault: true }, take: 1 } },
   });
 
-  await db.review.create({
-    data: {
-      productId: input.productId,
-      customerId: session.id,
-      author: session.name,
-      location: customer?.addresses[0] ? `${customer.addresses[0].city}` : "India",
-      rating,
-      title: input.title.trim(),
-      body: input.body.trim(),
-      // True by construction now: nobody who has not received the product can
-      // reach this line.
-      verified: true,
-      status: "PENDING",
-    },
+  const written = await insertReviewOnce({
+    productId: input.productId,
+    customerId: session.id,
+    author: session.name,
+    location: customer?.addresses[0] ? `${customer.addresses[0].city}` : "India",
+    rating,
+    title,
+    body,
   });
+  if (!written) return { ok: false, error: "You have already reviewed this product." };
+
+  revalidatePath("/admin/reviews");
+  return { ok: true };
+}
+
+/**
+ * A review from the link in a review email, where there is usually no session.
+ *
+ * The token stands in for signing in, and only for this: it proves the sender
+ * holds the email for this order, and services/order-reviews.ts decides what
+ * that entitles them to (one review per product in this order, as its account,
+ * for a limited time after delivery). Every check is repeated there.
+ */
+export async function submitReviewFromLink(input: {
+  orderId: string;
+  productId: string;
+  token: string;
+  rating: number;
+  title: string;
+  body: string;
+}): Promise<ActionResult> {
+  const ip = await clientIp();
+  if (!rateLimit("review:link", `${input.orderId}:${ip}`, 12, 60 * 60_000)) return { ok: false, error: TOO_MANY };
+
+  const result = await reviewFromLink({
+    orderId: String(input.orderId ?? ""),
+    productId: String(input.productId ?? ""),
+    token: typeof input.token === "string" ? input.token : null,
+    draft: { rating: input.rating, title: input.title, body: input.body },
+  });
+  if (!result.ok) return { ok: false, error: result.error };
 
   revalidatePath("/admin/reviews");
   return { ok: true };

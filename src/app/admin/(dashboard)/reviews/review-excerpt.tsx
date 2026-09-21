@@ -14,9 +14,19 @@ export function ReviewExcerpt({ title, body, imageCount = 0 }: { title: string; 
   const long = body.length > LIMIT;
   const text = open || !long ? body : `${body.slice(0, LIMIT).trimEnd()}…`;
 
+  // Words are optional on a review; a stars-only one says so rather than
+  // leaving a blank cell that looks like a failed load.
+  if (!title && !body) {
+    return (
+      <div className="min-w-[240px] max-w-[440px]">
+        <p className="text-[12.5px] italic text-ink-400">Stars only — no written review</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-w-[240px] max-w-[440px]">
-      <p className="font-medium leading-snug text-ink-950">{title}</p>
+      {title && <p className="font-medium leading-snug text-ink-950">{title}</p>}
       <p
         className={
           open

@@ -275,11 +275,15 @@ export default async function CustomerPage({ params }: { params: Promise<{ id: s
                   <li key={r.id} className="px-5 py-3.5 text-[13px]">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                       <Stars rating={r.rating} />
-                      <p className="min-w-0 flex-1 truncate font-medium text-ink-950">{r.title}</p>
+                      <p className="min-w-0 flex-1 truncate font-medium text-ink-950">
+                        {r.title || <span className="font-normal italic text-ink-400">No headline</span>}
+                      </p>
                       <StatusPill status={r.status} />
                       <DateCell value={r.createdAt} />
                     </div>
-                    <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-ink-600">{r.body}</p>
+                    {r.body && (
+                      <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-ink-600">{r.body}</p>
+                    )}
                     <p className="mt-1 text-[12px] text-ink-500">
                       On{" "}
                       <Link href={`/admin/products/${r.product.id}`} className="font-medium text-ink-700 hover:text-brand-700">

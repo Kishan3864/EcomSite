@@ -39,22 +39,52 @@ function secret(): string {
   return raw;
 }
 
-export function orderToken(orderId: string): string {
-  return createHmac("sha256", secret()).update(PURPOSE + orderId).digest("base64url");
+/**
+ * The review link's purpose, kept apart from the viewing one.
+ *
+ * The review email asks somebody to write, and a link that can write is a
+ * different thing from one that can read — so it is signed for a different
+ * purpose. A view token cannot post a review, and a review token cannot open
+ * the order page, the address or the invoice. What it can do is decided in
+ * src/services/order-reviews.ts: rate the products in this one order,
+ * once each, as the account that placed it, for a limited time after delivery.
+ */
+const REVIEW_PURPOSE = "order-review:";
+
+function sign(purpose: string, orderId: string): string {
+  return createHmac("sha256", secret()).update(purpose + orderId).digest("base64url");
 }
 
 /**
- * Whether this token was issued for this order. Compared in constant time, and
- * length-checked first because timingSafeEqual throws on a length mismatch —
- * which would otherwise turn a malformed token into a 500.
+ * Compared in constant time, and length-checked first because timingSafeEqual
+ * throws on a length mismatch — which would otherwise turn a malformed token
+ * into a 500.
  */
-export function orderTokenValid(orderId: string, token: string | undefined | null): boolean {
+function signedFor(purpose: string, orderId: string, token: string | undefined | null): boolean {
   if (!token || token.length !== TOKEN_LENGTH || !BASE64URL.test(token)) return false;
 
   const given = Buffer.from(token, "utf8");
-  const want = Buffer.from(orderToken(orderId), "utf8");
+  const want = Buffer.from(sign(purpose, orderId), "utf8");
   if (given.length !== want.length) return false;
   return timingSafeEqual(given, want);
+}
+
+export function orderToken(orderId: string): string {
+  return sign(PURPOSE, orderId);
+}
+
+/** Whether this token was issued for viewing this order. */
+export function orderTokenValid(orderId: string, token: string | undefined | null): boolean {
+  return signedFor(PURPOSE, orderId, token);
+}
+
+export function reviewToken(orderId: string): string {
+  return sign(REVIEW_PURPOSE, orderId);
+}
+
+/** Whether this token was issued for reviewing this order. */
+export function reviewTokenValid(orderId: string, token: string | undefined | null): boolean {
+  return signedFor(REVIEW_PURPOSE, orderId, token);
 }
 
 /**

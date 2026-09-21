@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { PenLine, Star } from "lucide-react";
+import { PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/field";
 import { reviewEligibility, submitReview, type ReviewEligibility } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { cn, formatDate } from "@/lib/utils";
+import { reviewProblem } from "@/lib/review-rules";
 import { Form } from "@/components/ui/form";
+import { ReviewFields } from "./review-fields";
 
 /**
  * The same ruled note however it is filled, so the section never jumps about.
@@ -55,7 +56,6 @@ export function ReviewForm({ productId }: { productId: string }) {
   const [status, setStatus] = useState<ReviewEligibility | null>(null);
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -157,12 +157,11 @@ export function ReviewForm({ productId }: { productId: string }) {
   function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
-    const title = String(data.get("title") ?? "").trim();
-    const body = String(data.get("body") ?? "").trim();
+    const title = String(data.get("title") ?? "");
+    const body = String(data.get("body") ?? "");
 
-    if (rating < 1) return setError("Pick a rating from one to five stars.");
-    if (title.length < 3) return setError("Give your review a short headline.");
-    if (body.length < 15) return setError("A sentence or two helps other shoppers decide.");
+    const problem = reviewProblem({ rating, title, body });
+    if (problem) return setError(problem);
 
     setError(null);
     startTransition(async () => {
@@ -182,57 +181,11 @@ export function ReviewForm({ productId }: { productId: string }) {
     >
       <h3 className="text-[14px] font-semibold text-ink-950 sm:text-[15px]">Write a review</h3>
       <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.55] text-ink-500">
-        Posting as {customer?.name ?? "your account"}. Reviews are checked before they appear.
+        Posting as {customer?.name ?? "your account"}. Only the stars are needed — a few words
+        help the next person more. Reviews are checked before they appear.
       </p>
 
-      <fieldset className="mt-4">
-        <legend className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-          Your rating
-        </legend>
-        {/* Phones: each star a 40px target; the row is pulled back by the
-            padding so the first star still lines up under the legend.
-            The stars fill as the pointer crosses them, which is feedback
-            enough — a star that also grew was the one thing on the page
-            bouncing under the cursor. */}
-        <div className="-ml-2 mt-1 flex sm:ml-0 sm:gap-1" onMouseLeave={() => setHover(0)}>
-          {[1, 2, 3, 4, 5].map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-label={`${value} star${value > 1 ? "s" : ""}`}
-              aria-pressed={rating === value}
-              onMouseEnter={() => setHover(value)}
-              onClick={() => setRating(value)}
-              className="tap p-2 sm:p-1"
-            >
-              <Star
-                size={24}
-                strokeWidth={1.75}
-                className={cn(
-                  "transition-colors duration-200",
-                  value <= (hover || rating) ? "fill-gold-400 text-gold-500" : "text-ink-300",
-                )}
-              />
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
-      <Field label="Headline" htmlFor="review-title" className="mt-4">
-        <Input id="review-title" name="title" placeholder="Worth every rupee" maxLength={80} />
-      </Field>
-
-      <Field label="Your review" htmlFor="review-body" className="mt-4">
-        <textarea
-          id="review-body"
-          name="body"
-          rows={4}
-          maxLength={1200}
-          placeholder="How does it feel to use? Would you buy it again?"
-          // 16px on phones: iOS zooms the page into any smaller field.
-          className="w-full bg-canvas px-3.5 py-3 text-[16px] leading-[1.6] text-ink-900 outline-none transition-colors placeholder:text-ink-400 sm:text-[14px]"
-        />
-      </Field>
+      <ReviewFields rating={rating} onRating={setRating} />
 
       {error && (
         <p role="alert" className="mt-3 text-[13px] font-medium text-sale-600">

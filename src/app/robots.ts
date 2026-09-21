@@ -30,6 +30,7 @@ export default function robots(): MetadataRoute.Robots {
           "/account",
           "/account/",
           "/order/",
+          "/review/",
           "/wishlist",
           "/search",
           "/*?*page=",

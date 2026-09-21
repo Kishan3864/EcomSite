@@ -229,7 +229,7 @@ export function ReviewsSection({
                                 title="Verified purchase"
                                 className="inline-flex items-center gap-1 px-1.5 py-[3px] text-[10px] font-semibold uppercase leading-none tracking-[0.1em] text-brand-700"
                               >
-                                <VerifiedIcon size={10} /> Verified
+                                <VerifiedIcon size={10} /> Verified purchase
                               </span>
                             )}
                           </p>
@@ -241,14 +241,25 @@ export function ReviewsSection({
                       <Stars value={review.rating} size={13} className="shrink-0" />
                     </div>
 
-                    <h3 className="mt-3 text-[14px] font-semibold text-ink-950 sm:text-[14.5px]">
-                      {review.title}
-                    </h3>
-                    <p className="mt-1.5 max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]">
-                      {review.body}
-                    </p>
+                    {/* Words are optional: a stars-only review shows its
+                        stars and nothing else, rather than an empty heading. */}
+                    {review.title && (
+                      <h3 className="mt-3 text-[14px] font-semibold text-ink-950 sm:text-[14.5px]">
+                        {review.title}
+                      </h3>
+                    )}
+                    {review.body && (
+                      <p
+                        className={cn(
+                          "max-w-[46ch] text-[13px] leading-[1.6] text-ink-600 sm:text-[13.5px]",
+                          review.title ? "mt-1.5" : "mt-3",
+                        )}
+                      >
+                        {review.body}
+                      </p>
+                    )}
 
-                    {review.images && (
+                    {review.images && review.images.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2 lg:flex-nowrap">
                         {review.images.map((src) => (
                           <span
