@@ -23,10 +23,8 @@ import { cn } from "@/lib/utils";
  * it — and so there is one set of rules: stars required, words optional, one
  * review per product, verified purchase, checked before it appears.
  *
- * Drawn as its own brand-tinted card, each product on a white sheet inside
- * it, so it reads as an invitation rather than one more ledger row. Mobile
- * first: everything stacks, and the button is full width until there is room
- * to set it at the right.
+ * An aurora-tinted card with each product on a white card inside it, so it
+ * reads as an invitation. Mobile first: everything stacks.
  */
 
 /** What each star means, said as the customer picks it. */
@@ -75,18 +73,18 @@ function Row({
   }
 
   return (
-    <li className="rounded-xl border bg-surface p-4 sm:p-5">
+    <li className="card p-4 sm:p-5">
       <div className="flex items-center gap-3.5 sm:gap-4">
         <Link
           href={`/p/${item.slug}`}
-          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-24 sm:w-24"
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md bg-gradient-to-b from-ink-50 to-ink-100 sm:h-24 sm:w-24"
         >
           {item.image && <Image src={item.image} alt="" fill sizes="96px" className="object-cover" />}
         </Link>
         <div className="min-w-0">
           <Link
             href={`/p/${item.slug}`}
-            className="line-clamp-2 text-[14.5px] font-semibold leading-[1.35] text-ink-950 hover:text-brand-700 sm:text-[15px]"
+            className="t-h3 line-clamp-2 hover:text-brand-700"
           >
             {item.title}
           </Link>
@@ -128,7 +126,7 @@ function Row({
             maxLength={REVIEW_LIMITS.body}
             placeholder="What did you like? How are you using it?"
             // 16px on phones: iOS zooms the page into any smaller field.
-            className="mt-3 block w-full rounded-lg border border-line-strong bg-surface px-3.5 py-3 text-[16px] leading-[1.55] text-ink-900 outline-none placeholder:text-ink-400 focus:border-brand-400 sm:text-[14px]"
+            className="mt-3 block w-full rounded-md bg-surface px-3.5 py-3 text-[16px] leading-[1.55] text-ink-900 outline-none placeholder:text-ink-400 sm:text-[14px]"
           />
           <p className="mt-1.5 text-[12px] text-ink-500">
             Optional · {body.length}/{REVIEW_LIMITS.body} characters
@@ -167,7 +165,7 @@ export function OrderReviewPanel({ panel, className }: { panel: ReviewPanel; cla
   const allDone = items.every((i) => i.myRating !== null);
   const postedHere = Object.keys(given).length > 0;
 
-  const card = cn("scroll-mt-24 rounded-2xl border border-brand-100 bg-brand-50 p-4 sm:p-6", className);
+  const card = cn("aurora scroll-mt-(--sticky-top) rounded-2xl border border-brand-100 p-4 sm:p-6", className);
 
   // Everything rated: one line. Just posted the last one → the same thanks
   // the row would have shown; everything rated on an earlier visit → a plain
@@ -185,14 +183,15 @@ export function OrderReviewPanel({ panel, className }: { panel: ReviewPanel; cla
 
   return (
     <section id="rate" className={card} aria-labelledby="rate-heading">
-      <h2
-        id="rate-heading"
-        className="flex items-center gap-2 font-display text-[19px] leading-[1.2] tracking-[-0.02em] text-ink-950 sm:text-[22px]"
-      >
-        <MessageSquareHeart size={20} strokeWidth={1.75} className="shrink-0 text-brand-700" />
-        Loved it? Tell others
-      </h2>
-      <p className="mt-1.5 max-w-[56ch] text-[13.5px] leading-[1.55] text-ink-600">
+      <div className="flex items-center gap-3">
+        <span className="icon-tile bg-surface">
+          <MessageSquareHeart size={20} aria-hidden />
+        </span>
+        <h2 id="rate-heading" className="t-h2">
+          Loved it? Tell others
+        </h2>
+      </div>
+      <p className="t-body mt-2 max-w-[56ch] text-[13.5px]">
         Good or not so good, an honest word from someone who owns it helps the next person decide.
         Tap the stars — words are optional.
       </p>
@@ -209,7 +208,7 @@ export function OrderReviewPanel({ panel, className }: { panel: ReviewPanel; cla
         ))}
       </ul>
 
-      <p className="mt-3 text-[11.5px] leading-[1.55] text-ink-500">
+      <p className="t-small mt-3">
         Posting as {panel.author} · {panel.location}. Marked as a verified purchase and checked before
         it appears. We never edit or remove a review for being negative.
       </p>

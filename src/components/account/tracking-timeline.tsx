@@ -1,44 +1,39 @@
 "use client";
 
 import { motion } from "motion/react";
+import {
+  Ban,
+  Check,
+  ClipboardCheck,
+  House,
+  PackageCheck,
+  RotateCcw,
+  Truck,
+  Navigation,
+  type LucideIcon,
+} from "lucide-react";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import type { OrderTrackingEvent } from "@/lib/types";
+import type { OrderStatus, OrderTrackingEvent } from "@/lib/types";
 import { cn, formatDateTime } from "@/lib/utils";
 
 /**
- * What has happened to the parcel so far, set as the homepage's own route
- * turned on its side: one rule, square nodes sitting on it, a short break in
- * the rule either side of each node so it reads as passing behind them. The
- * geometry is lifted straight from `@/components/illustration/journey-line` —
- * the band that draws the same idea on the homepage — because two visual
- * languages for one journey is one too many.
- *
- * Three things went with the old drawing. The pulsing halo, because nothing on
- * this site scales by more than three per cent and a ring that trebles in size
- * is a notification, not a shipment. The tinted "Current" lozenge, because the
- * shop has no pills left anywhere else. And the round nodes, for the obvious
- * reason.
- *
- * The nodes sit on the white sheet: both callers — the order page and the
- * public tracking page — put this inside a `bg-surface` block, and the break in
- * the rule is drawn by the node's own fill.
+ * The parcel's journey as a vertical timeline: a round node per step with its
+ * lucide glyph, a rail inked as far as the parcel has got. Completed steps are
+ * filled cobalt, the current one glows, the rest wait in outline.
  */
 
-/* The site's one entrance curve, spelled out because Motion needs the four
-   numbers in JS and cannot be handed the `--ease-out-quint` token. */
+const ICONS: Record<OrderStatus, LucideIcon> = {
+  confirmed: ClipboardCheck,
+  packed: PackageCheck,
+  shipped: Truck,
+  out_for_delivery: Navigation,
+  delivered: House,
+  cancelled: Ban,
+  returned: RotateCcw,
+};
+
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
-/* The same margin `Reveal` uses, so the timeline and the prose around it start
-   moving at one scroll position rather than a beat apart. */
 const VIEWPORT = { once: true, margin: "0px 0px -60px 0px" } as const;
-
-/* The node is 13px and the rule is centred on it at 6px, which is the only
-   pair of whole numbers that centres a 1px line under a square at this size.
-   The segment below a node starts 3px clear of it and runs to the foot of the
-   row; the next node's own 3px of headroom closes the other end, so every
-   break is the same 6px however tall a row's text happens to be. */
-const NODE = "absolute left-0 top-[3px] h-[13px] w-[13px]";
-const SEGMENT = "absolute left-[6px] top-[19px] bottom-0 w-px";
 
 export function TrackingTimeline({ events }: { events: OrderTrackingEvent[] }) {
   const reduce = usePrefersReducedMotion();
@@ -48,57 +43,61 @@ export function TrackingTimeline({ events }: { events: OrderTrackingEvent[] }) {
       {events.map((event, i) => {
         const next = events[i + 1];
         const isCurrent = event.done && !next?.done;
+        const Icon = event.done && !isCurrent ? Check : ICONS[event.status] ?? Check;
 
         return (
-          <li key={event.status} className="relative pb-6 pl-8 last:pb-0 sm:pb-7">
-            {/* Drawn before the node so the node's fill always wins the pixel
-                they share. A segment is inked only where the parcel has
-                actually been. */}
+          <motion.li
+            key={event.status}
+            initial={reduce ? false : { opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={VIEWPORT}
+            transition={{ duration: 0.4, delay: 0.08 * i, ease: EASE }}
+            className="relative flex gap-4 pb-6 last:pb-0"
+            aria-current={isCurrent ? "step" : undefined}
+          >
+            {/* Rail to the next node, inked only where the parcel has been. */}
             {next && (
               <span
                 aria-hidden
-                className={cn(SEGMENT, next.done ? "bg-brand-700" : "bg-rule")}
+                className={cn(
+                  "absolute left-[17px] top-10 bottom-1 w-0.5 rounded-full",
+                  next.done ? "bg-brand-600" : "bg-line",
+                )}
               />
             )}
 
-            <motion.span
+            <span
               aria-hidden
-              initial={reduce ? false : { opacity: 0, y: 8 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={VIEWPORT}
-              transition={{ duration: 0.5, delay: 0.12 * i, ease: EASE }}
               className={cn(
-                NODE,
-                event.done ? "bg-brand-700" : "bg-surface",
+                "relative z-[1] flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+                isCurrent
+                  ? "bg-brand-700 text-white shadow-(--shadow-glow) ring-4 ring-brand-100"
+                  : event.done
+                    ? "bg-brand-600 text-white"
+                    : "bg-surface text-ink-400 ring-1 ring-inset ring-line-strong",
               )}
-            />
+            >
+              <Icon size={16} />
+            </span>
 
-            <p
-              className={cn(
-                "text-[13.5px] leading-[1.35] sm:text-[14px]",
-                event.done ? "font-semibold text-ink-950" : "font-medium text-ink-500",
+            <div className="min-w-0 flex-1 pt-1.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <p className={cn("t-h3", !event.done && "font-medium text-ink-500")}>{event.title}</p>
+                {isCurrent && (
+                  <span className="inline-flex h-5 items-center rounded-full bg-brand-50 px-2 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-brand-700 ring-1 ring-inset ring-brand-200">
+                    Now
+                  </span>
+                )}
+              </div>
+              <p className={cn("t-body mt-0.5 text-[13px]", !event.done && "text-ink-500")}>{event.description}</p>
+              {(event.location || (event.done && event.at)) && (
+                <p className="t-small mt-1 tabular-nums">
+                  {event.location}
+                  {event.done && event.at && `${event.location ? " · " : ""}${formatDateTime(event.at)}`}
+                </p>
               )}
-            >
-              {event.title}
-              {isCurrent && (
-                <span className="ml-2 align-[1px] text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-700">
-                  Now
-                </span>
-              )}
-            </p>
-            <p
-              className={cn(
-                "mt-1 text-[13px] leading-[1.5]",
-                event.done ? "text-ink-600" : "text-ink-500",
-              )}
-            >
-              {event.description}
-            </p>
-            <p className="mt-1 text-[13px] leading-[1.5] tabular-nums text-ink-500">
-              {event.location}
-              {event.done && event.at && ` · ${formatDateTime(event.at)}`}
-            </p>
-          </li>
+            </div>
+          </motion.li>
         );
       })}
     </ol>

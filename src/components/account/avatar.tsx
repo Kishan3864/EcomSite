@@ -1,31 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * A customer's avatar.
- *
- * Shows their photo when there is one — their own upload, or the one their
- * Google account supplied — and a drawn avatar otherwise. If the photo fails to
- * load (the provider revoked it, the network dropped) it falls back to the
- * drawn one instead of leaving a broken-image icon in the header.
+ * A customer's avatar: their photo when there is one (their upload or their
+ * Google photo), otherwise a monogram on a soft gradient. A photo that fails
+ * to load falls back to the monogram rather than a broken image.
  */
 
-/**
- * Colour sets drawn from the brand palette. Which one a person gets is derived
- * from their email, so it looks random across customers but never changes for
- * any one of them between visits.
- */
-const PALETTES: [bg: string, figure: string, accent: string][] = [
-  ["#1c333f", "#94b7c8", "#7ccfca"],
-  ["#2f383f", "#bcc5cc", "#4fbdb7"],
-  ["#264352", "#bcd3de", "#a6e0dc"],
-  ["#17544f", "#cfeeeb", "#3b6579"],
-  ["#dbe7ed", "#3b6579", "#26988f"],
-  ["#414c54", "#e9edf0", "#1d7d7a"],
-  ["#2f5265", "#eef4f7", "#7ccfca"],
-  ["#8a2149", "#fad9e3", "#4fbdb7"],
+/** Gradient pairs from the storefront palette, picked by a hash of the email. */
+const PALETTES: [from: string, to: string, ink: string][] = [
+  ["#1b4f74", "#5d4bcb", "#ffffff"],
+  ["#22618d", "#12324a", "#f8efd6"],
+  ["#dbeaf5", "#d4d0fe", "#1b4f74"],
+  ["#f8efd6", "#e6cc80", "#5f4a0f"],
+  ["#2f76a6", "#7262e6", "#ffffff"],
+  ["#12324a", "#1b4f74", "#e6cc80"],
 ];
 
 function hash(seed: string): number {
@@ -38,21 +29,38 @@ function hash(seed: string): number {
 }
 
 export function DefaultAvatar({ seed, className }: { seed: string; className?: string }) {
-  const h = hash(seed || "weekendcart");
-  const [bg, figure, accent] = PALETTES[h % PALETTES.length];
-  const variant = (h >>> 8) % 4;
+  const id = useId();
+  const [from, to, ink] = PALETTES[hash(seed || "weekendcart") % PALETTES.length];
+  const letter = (seed.trim()[0] ?? "").toUpperCase();
 
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden="true" focusable="false">
-      <rect width="64" height="64" fill={bg} />
-      {variant === 0 && <circle cx="54" cy="8" r="18" fill={accent} opacity="0.35" />}
-      {variant === 1 && <path d="M0 50 L64 18 L64 64 L0 64 Z" fill={accent} opacity="0.2" />}
-      {variant === 2 && <circle cx="8" cy="58" r="20" fill={accent} opacity="0.3" />}
-      {variant === 3 && (
-        <path d="M-4 30 L68 12 L68 22 L-4 40 Z" fill={accent} opacity="0.28" />
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor={from} />
+          <stop offset="1" stopColor={to} />
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" fill={`url(#${id})`} />
+      {/[A-Z0-9]/.test(letter) ? (
+        <text
+          x="32"
+          y="33"
+          textAnchor="middle"
+          dominantBaseline="central"
+          fill={ink}
+          fontSize="27"
+          fontWeight="600"
+          fontFamily="inherit"
+        >
+          {letter}
+        </text>
+      ) : (
+        <g fill={ink} opacity="0.9">
+          <circle cx="32" cy="25" r="10" />
+          <path d="M14 56c0-10 8-17 18-17s18 7 18 17z" />
+        </g>
       )}
-      <circle cx="32" cy="25" r="11" fill={figure} />
-      <path d="M11 64c0-12.2 9.4-21 21-21s21 8.8 21 21z" fill={figure} />
     </svg>
   );
 }
@@ -70,27 +78,25 @@ export function Avatar({
   size?: number;
   className?: string;
 }) {
-  // Remember which URL failed rather than a plain flag, so a new photo gets a
-  // fresh chance to load instead of inheriting the old one's failure.
+  // Remember which URL failed, so a new photo gets a fresh chance to load.
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const showPhoto = Boolean(src) && failedSrc !== src;
 
   return (
     <span
-      className={cn("is-circle relative inline-flex shrink-0 overflow-hidden", className)}
+      className={cn("is-circle relative inline-flex shrink-0 overflow-hidden rounded-full", className)}
       style={{ width: size, height: size }}
     >
       {showPhoto ? (
-        // Plain <img>: provider photos come from hosts the image optimiser is
-        // not configured for, and an uploaded photo is already small.
+        // Plain <img>: provider photos come from hosts the optimiser is not
+        // configured for, and an uploaded photo is already small.
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={src!}
           alt=""
           width={size}
           height={size}
-          // Google's photo host can refuse requests that carry a referrer, and
-          // there is no reason to tell it which page the customer is on.
+          // Google's photo host can refuse requests that carry a referrer.
           referrerPolicy="no-referrer"
           loading="lazy"
           decoding="async"

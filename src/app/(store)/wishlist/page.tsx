@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Breadcrumbs } from "@/components/ui/primitives";
+import { PageHeader } from "@/components/ui/primitives";
 import { WishlistClient } from "./wishlist-client";
 import { ProductRail } from "@/components/product/product-rail";
 import { toCardModels } from "@/lib/card";
@@ -17,23 +17,15 @@ export default async function WishlistPage() {
 
   return (
     <>
-      <div className="container-page py-3 sm:py-7">
-        <Breadcrumbs
-          items={[
+      <div className="container-page pb-10 sm:pb-14">
+        <PageHeader
+          crumbs={[
             { name: "Home", href: "/" },
             { name: "Wishlist", href: "/wishlist" },
           ]}
-          className="mb-3 sm:mb-5"
+          title="Your wishlist"
+          description="Saved on this device. We will tell you if anything here drops in price."
         />
-
-        <header className="mb-4 sm:mb-7">
-          <h1 className="font-display text-[24px] leading-[1.08] tracking-[-0.025em] text-ink-950 sm:text-[36px]">
-            Your wishlist
-          </h1>
-          <p className="mt-1 text-[13.5px] text-ink-600 sm:mt-2 sm:text-[14px]">
-            Saved on this device. We will tell you if anything here drops in price.
-          </p>
-        </header>
 
         <WishlistClient />
       </div>

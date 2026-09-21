@@ -30,21 +30,22 @@ export default async function NewsletterUnsubscribePage({ searchParams }: { sear
   const email = e && t ? verifyUnsubscribe(e, t) : null;
 
   return (
-    <div className="container-page py-10 sm:py-16">
-      <div className="mx-auto w-full max-w-xl">
-        <section className="card px-5 py-8 sm:px-10 sm:py-12">
+    <div className="container-page relative py-10 sm:py-16">
+      <div aria-hidden className="grid-lines pointer-events-none absolute inset-x-0 top-0 h-72" />
+      <div className="relative mx-auto w-full max-w-xl">
+        <section className="card px-5 py-8 shadow-lg sm:px-10 sm:py-12">
           {email && e && t ? (
             <UnsubscribeForm email={email} e={e} t={t} />
           ) : (
             <div>
-              {/* The glyph stands on the page rather than inside a tinted
-                  square: nothing else on this sheet is a coloured panel. */}
-              <Link2Off size={24} strokeWidth={1.5} className="text-ink-900" aria-hidden />
+              <span className="icon-tile">
+                <Link2Off size={20} aria-hidden />
+              </span>
               <p className="eyebrow mt-6">Email preferences</p>
-              <h1 className="mt-3 font-display text-[26px] leading-[1.12] tracking-[-0.02em] text-ink-950 sm:text-[32px]">
+              <h1 className="t-h1 mt-3">
                 This link is not working
               </h1>
-              <p className="mt-4 text-[14.5px] leading-relaxed text-ink-600">
+              <p className="t-body mt-4">
                 The unsubscribe link looks incomplete, or it was changed on the way here. Please
                 use the Unsubscribe link at the bottom of any WeekendCart email, or contact us and
                 we will remove your address ourselves.

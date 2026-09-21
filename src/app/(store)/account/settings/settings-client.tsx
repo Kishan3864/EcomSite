@@ -11,16 +11,19 @@ import {
   Camera,
   Check,
   CreditCard,
+  KeyRound,
   Landmark,
   LifeBuoy,
   MapPin,
   Package,
   ShieldCheck,
   Smartphone,
+  UserRound,
   Wallet,
+  type LucideIcon,
 } from "lucide-react";
 import type { Address, PaymentMethodId } from "@/lib/types";
-import { Skeleton } from "@/components/ui/primitives";
+import { PageHeader, Skeleton } from "@/components/ui/primitives";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Field, Input, OptionCard } from "@/components/ui/field";
 import {
@@ -65,21 +68,23 @@ export function SettingsClient({
 }) {
   return (
     <div className="space-y-4 sm:space-y-5">
-      <header className="pb-1 sm:pb-0">
-        <span className="eyebrow">Your account</span>
-        <h1 className="mt-2 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
-          Settings
-        </h1>
-        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:text-[15px]">
-          Your details, where we deliver by default, and how you prefer to pay.
-        </p>
-      </header>
+      <PageHeader
+        className="pb-0 pt-1 sm:pb-0 sm:pt-0"
+        crumbs={[
+          { name: "Home", href: "/" },
+          { name: "My account", href: "/account" },
+          { name: "Settings", href: "/account/settings" },
+        ]}
+        title="Settings"
+        description="Your details, where we deliver by default, and how you prefer to pay."
+      />
 
       <PhotoSection />
       <DetailsSection profile={profile} />
       {!profile.hasPassword && (
         <Section
           id="password"
+          icon={KeyRound}
           title="Add a password"
           description="A second way in, alongside Google. Neither replaces the other."
         >
@@ -89,6 +94,7 @@ export function SettingsClient({
       {signInPhone !== undefined && (
         <Section
           id="mobile"
+          icon={Smartphone}
           title="Mobile number for sign-in"
           description="Verify your number once, then sign in any time with a one-time code sent by SMS."
         >
@@ -104,44 +110,46 @@ export function SettingsClient({
 
 function Section({
   id,
+  icon: Icon,
   title,
   description,
   children,
 }: {
   id?: string;
+  icon: LucideIcon;
   title: string;
   description: string;
   children: React.ReactNode;
 }) {
-  // The one block shape the whole account area is built from: a hairline
-  // rectangle on the white sheet, small caps on a rule across the top.
+  // One sectioned card: icon tile, title and line on top, content below.
+  const headingId = `${id ?? title.toLowerCase().replace(/\W+/g, "-")}-heading`;
   return (
-    <section id={id} className="scroll-mt-32 card">
-      <header className="px-4 py-3 sm:px-5 sm:py-3.5">
-        <h2 className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-          {title}
-        </h2>
-        <p className="mt-1.5 text-[13px] leading-[1.5] text-ink-500">{description}</p>
+    <section id={id} aria-labelledby={headingId} className="card scroll-mt-(--sticky-top) overflow-hidden">
+      <header className="flex items-start gap-3 border-b border-line px-4 py-4 sm:px-5">
+        <span className="icon-tile">
+          <Icon size={18} aria-hidden />
+        </span>
+        <div className="min-w-0">
+          <h2 id={headingId} className="t-h3">
+            {title}
+          </h2>
+          <p className="t-small mt-0.5">{description}</p>
+        </div>
       </header>
       <div className="p-4 sm:p-5">{children}</div>
     </section>
   );
 }
 
-/**
- * Both answers a form can give, drawn as the shop draws every other aside: a
- * rule down the left and the sentence beside it. The rose one matches the
- * block the shared `Form` puts up when a field fails its own constraint, so a
- * server saying no and a browser saying no look like one thing.
- */
+/** Both answers a form can give: a tinted note with an icon. */
 function Feedback({ state }: { state: AccountFormState }) {
   if (state.error && !state.field)
     return (
       <p
         role="alert"
-        className="flex items-start gap-2 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
+        className="flex items-start gap-2 rounded-md bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-700 ring-1 ring-inset ring-sale-200"
       >
-        <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+        <AlertTriangle size={16} className="mt-px shrink-0" />
         {state.error}
       </p>
     );
@@ -150,9 +158,9 @@ function Feedback({ state }: { state: AccountFormState }) {
     return (
       <p
         role="status"
-        className="flex items-start gap-2 rule-l [--rule-color:var(--color-brand-700)] bg-brand-50 px-3.5 py-3 text-[13px] leading-[1.5] text-brand-800"
+        className="flex items-start gap-2 rounded-md bg-brand-50 px-3.5 py-3 text-[13px] leading-[1.5] text-brand-800 ring-1 ring-inset ring-brand-200"
       >
-        <Check size={14} className="mt-0.5 shrink-0" />
+        <Check size={16} className="mt-px shrink-0" />
         {state.message}
       </p>
     );
@@ -253,13 +261,14 @@ function PhotoSection() {
   return (
     <Section
       id="photo"
+      icon={Camera}
       title="Profile photo"
       description="Shown in your account menu. Without one, we use your Google photo, or a drawn avatar."
     >
       {/* Phones keep the controls beside the photo rather than wrapping them
           underneath it. */}
       <div className="flex items-center gap-4 sm:flex-wrap sm:gap-5">
-        <Avatar src={shown} seed={customer?.email ?? ""} size={72} />
+        <Avatar src={shown} seed={customer?.email ?? ""} size={72} className="ring-4 ring-brand-50" />
         <div className="min-w-0 flex-1 space-y-2.5 sm:flex-initial">
           <div className="flex flex-wrap gap-2">
             <Button
@@ -302,14 +311,14 @@ function PhotoSection() {
       </div>
 
       {state.error && (
-        <p role="alert" className="mt-4 flex items-start gap-1.5 text-[13px] text-sale-600">
-          <AlertCircle size={13} className="mt-0.5 shrink-0" />
+        <p role="alert" className="mt-4 flex items-start gap-1.5 text-[13px] text-sale-700">
+          <AlertCircle size={14} className="mt-0.5 shrink-0" />
           {state.error}
         </p>
       )}
       {state.ok && state.message && (
         <p role="status" className="mt-4 flex items-center gap-1.5 text-[13px] text-brand-700">
-          <Check size={13} className="shrink-0" />
+          <Check size={14} className="shrink-0" />
           {state.message}
         </p>
       )}
@@ -356,6 +365,7 @@ function DetailsSection({ profile }: { profile: SettingsProfile }) {
 
   return (
     <Section
+      icon={UserRound}
       title="Your details"
       description="The name and number we put on deliveries, and use when we need to reach you about an order."
     >
@@ -423,6 +433,7 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
   if (addresses.length === 0)
     return (
       <Section
+        icon={MapPin}
         title="Default delivery address"
         description="Save one address as the default and checkout will start there every time."
       >
@@ -437,6 +448,7 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
 
   return (
     <Section
+      icon={MapPin}
       title="Default delivery address"
       description="Checkout starts here. You can still pick a different address at the time."
     >
@@ -450,11 +462,9 @@ function DefaultAddressSection({ addresses }: { addresses: Address[] }) {
                 title={
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     {address.fullName}
-                    <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-600">
-                      {address.label}
-                    </span>
+                    <span className="t-label">{address.label}</span>
                     {address.isDefault && (
-                      <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-700">
+                      <span className="inline-flex h-5 items-center rounded-full bg-brand-700 px-2 text-[10.5px] font-semibold text-white">
                         Default
                       </span>
                     )}
@@ -507,6 +517,7 @@ function PaymentSection() {
   return (
     <Section
       id="payment"
+      icon={CreditCard}
       title="Payment preferences"
       description="We remember how you like to pay and pre-select it at checkout. Card numbers are never stored."
     >
@@ -523,19 +534,16 @@ function PaymentSection() {
                     selected={method === option.id}
                     onSelect={() => setMethod(option.id)}
                     title={
-                      <span className="flex items-center gap-2">
-                        {/* ink-600, not ink-400. The chosen card's fill is
-                            brand-100 now, where ink-400 is 2.02:1 — this glyph
-                            got fainter the moment the selected state got
-                            louder, and it is 2.55:1 on the white cards either
-                            side of it too. */}
-                        <Icon size={16} className="text-ink-600" />
+                      <span className="flex items-center gap-2.5">
+                        <span className="icon-tile icon-tile-sm">
+                          <Icon size={16} aria-hidden />
+                        </span>
                         {option.name}
                       </span>
                     }
                     badge={
                       option.badge ? (
-                        <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-700">
+                        <span className="inline-flex h-5 items-center rounded-full bg-gold-100 px-2 text-[10.5px] font-semibold text-gold-800 ring-1 ring-inset ring-gold-300/70">
                           {option.badge}
                         </span>
                       ) : null
@@ -566,7 +574,7 @@ function PaymentSection() {
 
         {state.field === "method" && (
           <p role="alert" className="flex items-start gap-1.5 text-[13px] text-sale-600">
-            <AlertCircle size={13} className="mt-0.5 shrink-0" />
+            <AlertCircle size={14} className="mt-0.5 shrink-0" />
             {state.error}
           </p>
         )}
@@ -595,17 +603,17 @@ function MoreSection() {
   ];
 
   return (
-    <Section title="More" description="The rest of what you might be looking for.">
-      {/* The shop's hairline grid, so two links share one rule rather than
-          drawing a box each. */}
-      <ul className="tile-grid grid-cols-1 sm:grid-cols-2">
+    <Section icon={LifeBuoy} title="More" description="The rest of what you might be looking for.">
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
-              className="tap flex h-full items-start gap-3 p-3.5 transition-colors duration-200 [@media(hover:hover)]:hover:bg-ink-50 sm:p-4"
+              className="card card-interactive flex h-full items-start gap-3 p-3.5 sm:p-4"
             >
-              <link.icon size={17} className="mt-0.5 shrink-0 text-ink-400" />
+              <span className="icon-tile icon-tile-sm">
+                <link.icon size={16} aria-hidden />
+              </span>
               <span className="min-w-0">
                 <span className="block text-[13.5px] font-medium text-ink-950">{link.label}</span>
                 <span className="mt-1 block text-[13px] leading-[1.5] text-ink-500">

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, CircleCheck, MessageSquareHeart, TriangleAlert } from "lucide-react";
 import Image from "@/components/ui/image";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
@@ -22,7 +22,7 @@ import { formatDate } from "@/lib/utils";
  * more is asked.
  */
 
-const HEAD = "text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500";
+const HEAD = "t-h3";
 
 const REFUSALS: Record<Exclude<ReviewLinkState, { ok: true }>["reason"], { title: string; body: string }> = {
   invalid: {
@@ -46,7 +46,7 @@ const REFUSALS: Record<Exclude<ReviewLinkState, { ok: true }>["reason"], { title
 function Thumb({ item, size }: { item: ReviewItem; size: "lg" | "sm" }) {
   const box = size === "lg" ? "h-24 w-24 sm:h-28 sm:w-28" : "h-14 w-14";
   return (
-    <span className={`relative ${box} shrink-0 overflow-hidden bg-ink-100`}>
+    <span className={`relative ${box} shrink-0 overflow-hidden rounded-md bg-gradient-to-b from-ink-50 to-ink-100`}>
       {item.image && (
         <Image
           src={item.image}
@@ -66,28 +66,28 @@ function Others({ items, orderId, token }: { items: ReviewItem[]; orderId: strin
   const left = items.filter((i) => !i.reviewed).length;
 
   return (
-    <section className="mt-8 pt-5 sm:mt-10">
+    <section className="mt-8 border-t border-line pt-6 sm:mt-10">
       <h2 className={HEAD}>Also in this order</h2>
-      <p className="mt-2 max-w-[52ch] text-[13px] leading-[1.6] text-ink-600">
+      <p className="t-small mt-1 max-w-[52ch]">
         {left > 0
           ? "If you have a moment for these too — each opens its own short form."
           : "You have reviewed everything in this order. Thank you."}
       </p>
-      <ul className="mt-3">
+      <ul className="mt-3 space-y-2">
         {items.map((item) => (
-          <li key={item.productId} className="flex items-center gap-3 py-2.5">
+          <li key={item.productId} className="card-muted flex items-center gap-3 p-2.5">
             <Thumb item={item} size="sm" />
             <span className="min-w-0 flex-1 line-clamp-2 text-[13.5px] font-medium leading-[1.4] text-ink-900">
               {item.title}
             </span>
             {item.reviewed ? (
-              <span className="inline-flex shrink-0 items-center gap-1 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-brand-700">
-                <Check size={13} /> Reviewed
+              <span className="inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-brand-50 px-2.5 text-[11.5px] font-semibold text-brand-800 ring-1 ring-inset ring-brand-200">
+                <Check size={14} /> Reviewed
               </span>
             ) : (
               <Link
                 href={`/review/${orderId}/${item.productId}?t=${encodeURIComponent(token)}`}
-                className={buttonClasses("outline", "sm", "tap h-10 shrink-0 sm:h-9")}
+                className={buttonClasses("outline", "sm", "h-10 shrink-0 sm:h-9")}
               >
                 Rate this
               </Link>
@@ -108,12 +108,13 @@ export function ReviewLinkClient({ state, token }: { state: ReviewLinkState; tok
   if (!state.ok) {
     const copy = REFUSALS[state.reason];
     return (
-      <div className="mx-auto max-w-xl bg-surface p-5 shadow-sm sm:p-8">
-        <span className="eyebrow">Your review</span>
-        <h1 className="mt-3 font-display text-[24px] leading-[1.1] tracking-[-0.025em] text-ink-950 sm:text-[30px]">
-          {copy.title}
-        </h1>
-        <p className="mt-3 max-w-[52ch] text-[14px] leading-[1.6] text-ink-600">{copy.body}</p>
+      <div className="card mx-auto max-w-xl p-5 sm:p-8">
+        <span className="icon-tile">
+          <TriangleAlert size={20} aria-hidden />
+        </span>
+        <span className="eyebrow mt-5">Your review</span>
+        <h1 className="t-h1 mt-2">{copy.title}</h1>
+        <p className="t-body mt-3 max-w-[52ch]">{copy.body}</p>
         <div className="mt-6 flex flex-wrap gap-2">
           <Link href="/account/orders" className={buttonClasses("primary", "md")}>
             My orders
@@ -159,7 +160,7 @@ export function ReviewLinkClient({ state, token }: { state: ReviewLinkState; tok
   const done = sent || state.existing !== null;
 
   return (
-    <div className="mx-auto max-w-xl bg-surface p-5 shadow-sm sm:p-8">
+    <div className="card mx-auto max-w-xl p-5 sm:p-8">
       <span className="eyebrow tabular-nums">
         Order {state.orderNumber} · delivered {formatDate(state.deliveredAt, "short")}
       </span>
@@ -167,36 +168,44 @@ export function ReviewLinkClient({ state, token }: { state: ReviewLinkState; tok
       <div className="mt-4 flex items-start gap-4">
         <Thumb item={item} size="lg" />
         <div className="min-w-0">
-          <h1 className="font-display text-[20px] leading-[1.2] tracking-[-0.02em] text-ink-950 sm:text-[24px]">
+          <h1 className="t-h2">
             {item.title}
           </h1>
           {item.variantLabel && (
-            <p className="mt-1 text-[13px] text-ink-500">{item.variantLabel}</p>
+            <p className="t-small mt-1">{item.variantLabel}</p>
           )}
           <Link
             href={`/p/${item.slug}`}
             className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-brand-700 underline-offset-2 hover:underline"
           >
-            See the product <ArrowRight size={13} />
+            See the product <ArrowRight size={14} />
           </Link>
         </div>
       </div>
 
       {done ? (
-        <div className="mt-7" role="status">
-          <h2 className={HEAD}>{sent ? "Review received" : "Your review"}</h2>
-          <p className="mt-2 max-w-[52ch] text-[14px] leading-[1.6] text-ink-700">
-            {sent || state.existing === "pending"
-              ? "Thank you — your review is with our team. Once it has been checked it will appear on the product page, marked as a verified purchase."
-              : state.existing === "published"
-                ? "You have already reviewed this product, and your review is on its page. Thank you."
-                : "You have already reviewed this product. Thank you."}
-          </p>
+        <div className="mt-7 flex items-start gap-3 rounded-xl bg-brand-50 p-4 ring-1 ring-inset ring-brand-200" role="status">
+          <CircleCheck size={20} aria-hidden className="mt-px shrink-0 text-brand-700" />
+          <div className="min-w-0">
+            <h2 className={HEAD}>{sent ? "Review received" : "Your review"}</h2>
+            <p className="t-body mt-1 max-w-[52ch]">
+              {sent || state.existing === "pending"
+                ? "Thank you — your review is with our team. Once it has been checked it will appear on the product page, marked as a verified purchase."
+                : state.existing === "published"
+                  ? "You have already reviewed this product, and your review is on its page. Thank you."
+                  : "You have already reviewed this product. Thank you."}
+            </p>
+          </div>
         </div>
       ) : (
         <Form onSubmit={submit} className="mt-6">
-          <h2 className="text-[16px] font-semibold text-ink-950">How is it working out?</h2>
-          <p className="mt-1.5 max-w-[52ch] text-[13.5px] leading-[1.6] text-ink-600">
+          <div className="flex items-center gap-3">
+            <span className="icon-tile icon-tile-sm">
+              <MessageSquareHeart size={16} aria-hidden />
+            </span>
+            <h2 className="t-h3">How is it working out?</h2>
+          </div>
+          <p className="t-body mt-2 max-w-[52ch] text-[13.5px]">
             Your honest opinion — good, bad or in between — is what helps the next person decide.
             Only the stars are needed; a few words help even more.
           </p>
@@ -209,11 +218,11 @@ export function ReviewLinkClient({ state, token }: { state: ReviewLinkState; tok
             </p>
           )}
 
-          <Button type="submit" size="md" loading={pending} className="tap mt-5 w-full sm:w-auto">
+          <Button type="submit" size="md" loading={pending} className="mt-5 w-full sm:w-auto">
             Post review
           </Button>
 
-          <p className="mt-4 max-w-[52ch] text-[12.5px] leading-[1.6] text-ink-500">
+          <p className="t-small mt-4 max-w-[52ch]">
             Posting as {state.author} · {state.location}. It will be marked as a verified purchase
             and checked before it appears. We never edit or remove a review for being negative.
           </p>
@@ -225,7 +234,7 @@ export function ReviewLinkClient({ state, token }: { state: ReviewLinkState; tok
       {done && (
         <div className="mt-8">
           <Link href="/" className={buttonClasses("ghost", "md", "px-0")}>
-            Back to the shop <ArrowRight size={15} />
+            Back to the shop <ArrowRight size={16} />
           </Link>
         </div>
       )}

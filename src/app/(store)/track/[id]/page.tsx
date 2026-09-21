@@ -24,14 +24,14 @@ export default async function TrackDetailPage({
   const review = order ? await reviewPanelFor(order.id) : null;
 
   return (
-    <div className="container-page py-4 sm:py-7">
+    <div className="container-page pb-12 pt-5 sm:pb-16 sm:pt-7">
       <Breadcrumbs
         items={[
           { name: "Home", href: "/" },
           { name: "Track order", href: "/track" },
           { name: "Shipment", href: `/track/${id}` },
         ]}
-        className="mb-3 sm:mb-5"
+        className="mb-4 sm:mb-6"
       />
       <TrackDetail order={order} review={review} />
     </div>

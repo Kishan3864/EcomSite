@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { ArrowRight, RotateCcw, Star } from "lucide-react";
+import { ArrowRight, CalendarDays, Package, RotateCcw, Star, Truck } from "lucide-react";
 import type { Order, OrderStatus } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/primitives";
+import { EmptyState, PageHeader } from "@/components/ui/primitives";
 import { Reveal } from "@/components/ui/motion";
+import { StatusPill, orderTone } from "@/components/account/status-pill";
 
 import { LiveRefresh } from "@/components/ui/live-refresh";
 import { cn, formatDate, formatINR, statusLabel } from "@/lib/utils";
@@ -19,14 +20,6 @@ const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
   { id: "delivered", label: "Delivered" },
   { id: "cancelled", label: "Cancelled" },
 ];
-
-/**
- * An order that is over — cancelled, or sent back — steps out of the ink and
- * is set in grey. Everything still in play is stated at full strength. The
- * tinted lozenges this replaces spent three colours saying what one word says,
- * and one of them was the rose the shop keeps for a price coming down.
- */
-const SPENT: OrderStatus[] = ["cancelled", "returned"];
 
 export function OrdersClient({
   orders,
@@ -46,8 +39,7 @@ export function OrdersClient({
     return orders.filter((o) => o.status === filter);
   }, [orders, filter]);
 
-  // An order still waiting on money changes without anyone here doing
-  // anything, so the list keeps itself current while one is outstanding.
+  // An order still waiting on money changes on its own, so keep the list current.
   const settling = orders.some(
     (o) =>
       o.status !== "cancelled" &&
@@ -57,30 +49,32 @@ export function OrdersClient({
   );
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-5">
       {settling && <LiveRefresh seconds={10} />}
-      <header>
-        <span className="eyebrow">Your account</span>
-        <h1 className="mt-2 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
-          My orders
-        </h1>
-        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:text-[15px]">
-          Every order on your account, newest first.
-        </p>
-      </header>
+      <PageHeader
+        className="pb-0 pt-1 sm:pb-0 sm:pt-0"
+        crumbs={[
+          { name: "Home", href: "/" },
+          { name: "My account", href: "/account" },
+          { name: "My orders", href: "/account/orders" },
+        ]}
+        title="My orders"
+        description="Every order on your account, newest first."
+      />
 
-      {/* Edge to edge on phones, so a chip scrolls off the screen rather than
-          being clipped at the gutter. */}
-      <div className="rail -mx-3 gap-2 px-3 sm:mx-0 sm:px-0">
+      {/* Edge to edge on phones, so a chip scrolls off screen rather than clipping. */}
+      <div role="group" aria-label="Filter orders" className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 sm:mx-0 sm:px-0">
         {FILTERS.map((f) => (
           <button
             key={f.id}
+            type="button"
             onClick={() => setFilter(f.id)}
+            aria-pressed={filter === f.id}
             className={cn(
-              "tap h-10 whitespace-nowrap px-4 text-[11.5px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 sm:h-9 sm:text-[12px]",
+              "h-9 shrink-0 whitespace-nowrap rounded-full px-4 text-[12.5px] font-medium ring-1 ring-inset transition-colors duration-200",
               filter === f.id
-                ? "bg-brand-700 text-white"
-                : "bg-surface text-ink-600 hover:text-ink-950",
+                ? "bg-ink-950 text-white ring-ink-950"
+                : "bg-surface text-ink-700 ring-line-strong hover:bg-ink-50 hover:text-ink-950",
             )}
           >
             {f.label}
@@ -90,9 +84,9 @@ export function OrdersClient({
 
       {filtered.length === 0 ? (
         <EmptyState
+          icon={<Package size={24} />}
           title="No orders here yet"
           body="When you place an order it will appear here with live tracking and your invoice."
-          className="px-4 py-8 sm:px-6 sm:py-16"
           action={
             <Link href="/products" className={buttonClasses("primary", "md")}>
               Start shopping
@@ -100,106 +94,83 @@ export function OrdersClient({
           }
         />
       ) : (
-        <ul className="card overflow-hidden">
+        <ul className="space-y-3 sm:space-y-4">
           {filtered.map((order, i) => (
             <Reveal
               as="li"
               key={order.id}
-              // Capped at the sixth row: a delay that keeps climbing turns a
-              // long history into a wave rolling down the page.
+              // Capped so a long history does not roll down the page as a wave.
               delay={Math.min(i, 5) * 0.06}
-              className="px-4 py-4 sm:px-5 sm:py-5"
+              className="card overflow-hidden"
             >
-              {/* min-w-min keeps the order number whole: at 320px a long status
-                  cannot share its line, so it drops below instead. */}
-              <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-                <div className="flex min-w-min flex-1 flex-wrap gap-x-5 gap-y-2 sm:gap-x-7">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                      Order
-                    </p>
-                    <p className="mt-1 font-mono text-[13px] font-semibold text-ink-950">
-                      {order.number}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                      Placed
-                    </p>
-                    <p className="mt-1 text-[13px] tabular-nums text-ink-900">
-                      {formatDate(order.placedAt, "short")}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                      Total
-                    </p>
-                    <p className="mt-1 text-[13px] font-semibold tabular-nums text-ink-950">
-                      {formatINR(order.totals.total)}
-                    </p>
-                  </div>
+              {/* Head: number, status, date and total */}
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line bg-ink-50/60 px-4 py-3 sm:px-5">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <p className="font-mono text-[13px] font-semibold text-ink-950">{order.number}</p>
+                  <StatusPill tone={orderTone(order.status)}>{statusLabel(order.status)}</StatusPill>
                 </div>
-                <p
-                  className={cn(
-                    "shrink-0 whitespace-nowrap pt-0.5 text-[11.5px] font-semibold uppercase tracking-[0.12em]",
-                    SPENT.includes(order.status) ? "text-ink-500" : "text-ink-950",
-                  )}
-                >
-                  {statusLabel(order.status)}
-                </p>
+                <dl className="flex items-center gap-4 text-[12.5px]">
+                  <div className="flex items-center gap-1.5 text-ink-500">
+                    <dt className="sr-only">Placed</dt>
+                    <CalendarDays size={14} aria-hidden />
+                    <dd className="tabular-nums">{formatDate(order.placedAt, "short")}</dd>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <dt className="text-ink-500">Total</dt>
+                    <dd className="t-price text-[14px]">{formatINR(order.totals.total)}</dd>
+                  </div>
+                </dl>
               </div>
 
-              <ul className="mt-4 space-y-3.5">
+              {/* Lines */}
+              <ul className="divide-y divide-line px-4 sm:px-5">
                 {order.lines.map((line) => (
-                  <li key={line.id} className="flex items-center gap-3 sm:gap-4">
+                  <li key={line.id} className="flex items-center gap-3 py-3 sm:gap-4">
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-[60px] w-[52px] shrink-0 overflow-hidden bg-ink-100 sm:h-[68px] sm:w-[58px]"
+                      className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-gradient-to-b from-ink-50 to-ink-100 sm:h-16 sm:w-16"
                     >
-                      <Image
-                        src={line.image}
-                        alt=""
-                        fill
-                        sizes="(min-width: 640px) 58px, 52px"
-                        className="object-cover"
-                      />
+                      <Image src={line.image} alt="" fill sizes="64px" className="object-cover" />
                     </Link>
                     <div className="min-w-0 flex-1">
-                      {line.brand && <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-400">{line.brand}</p>}
+                      {line.brand && (
+                        <p className="truncate text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
+                          {line.brand}
+                        </p>
+                      )}
                       <Link
                         href={`/p/${line.slug}`}
-                        className="mt-0.5 line-clamp-1 text-[13.5px] font-medium text-ink-900 transition-colors duration-200 hover:text-brand-700"
+                        className="line-clamp-1 text-[13.5px] font-medium text-ink-900 transition-colors duration-200 hover:text-brand-700"
                       >
                         {line.title}
                       </Link>
-                      <p className="mt-0.5 text-[13px] tabular-nums text-ink-500">
+                      <p className="t-small mt-0.5 tabular-nums">
                         {line.variantLabel ? `${line.variantLabel} · ` : ""}Qty {line.quantity} ·{" "}
                         {formatINR(line.price * line.quantity)}
                       </p>
                     </div>
                     {order.status === "delivered" && (
-                      <div className="hidden shrink-0 gap-2 sm:flex">
-                        <Link href="/account/returns" className={buttonClasses("ghost", "xs")}>
-                          <RotateCcw size={12} /> Return
-                        </Link>
-                      </div>
+                      <Link href="/account/returns" className={buttonClasses("ghost", "xs", "hidden shrink-0 sm:inline-flex")}>
+                        <RotateCcw size={14} /> Return
+                      </Link>
                     )}
                   </li>
                 ))}
               </ul>
 
-              {/* Phones give the two actions a full-width row of their own. */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3.5">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                  <p className="text-[13px] text-ink-600">{deliverySentence(order)}</p>
-                  {/* Only while something in it is still unrated; it opens the
-                      "How was it?" panel on the order page. */}
+              {/* Foot: delivery line, rating nudge and actions */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-3.5 sm:px-5">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5">
+                  <p className="inline-flex items-center gap-1.5 text-[13px] text-ink-600">
+                    <Truck size={14} aria-hidden className="shrink-0 text-ink-500" />
+                    {deliverySentence(order)}
+                  </p>
                   {toRate[order.id] > 0 && (
                     <Link
                       href={`/account/orders/${order.id}#rate`}
-                      className="tap -my-2 inline-flex items-center gap-1.5 py-2 text-[13px] font-semibold text-brand-700 underline-offset-2 hover:underline"
+                      className="inline-flex items-center gap-1.5 py-1 text-[13px] font-semibold text-brand-700 underline-offset-2 hover:underline"
                     >
-                      <Star size={13} strokeWidth={1.75} className="fill-gold-400 text-gold-500" />
+                      <Star size={14} className="fill-gold-400 text-gold-500" />
                       Rate your purchase
                       {toRate[order.id] > 1 && (
                         <span className="font-medium text-ink-500">· {toRate[order.id]} items</span>
@@ -207,16 +178,14 @@ export function OrdersClient({
                     </Link>
                   )}
                 </div>
-                <div className="flex w-full gap-2 sm:w-auto sm:flex-wrap">
+                <div className="flex w-full gap-2 sm:w-auto">
                   <Link
                     href={`/account/orders/${order.id}`}
                     className={buttonClasses("outline", "sm", "h-10 flex-1 sm:h-9 sm:flex-initial")}
                   >
                     View details
                   </Link>
-                  {/* An unpaid UPI order has one thing left to do, and this is
-                      where a customer comes back to do it. Tracking an order
-                      that has not been paid for would only show them nothing. */}
+                  {/* An unpaid UPI order's one remaining step is paying. */}
                   {order.paymentMethod.id === "upi" && order.paymentStatus === "pending" ? (
                     <Link
                       href={`/checkout/upi/${order.id}`}

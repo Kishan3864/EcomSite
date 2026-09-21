@@ -3,23 +3,30 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Pencil, Plus, Star, Trash2 } from "lucide-react";
+import { AlertTriangle, Briefcase, Home, MapPin, Pencil, Phone, Plus, Star, Trash2 } from "lucide-react";
 import type { Address } from "@/lib/types";
 import { AddressForm } from "@/components/checkout/address-form";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/primitives";
 import { removeAddress, saveAddress } from "@/services/commerce";
 import { useStore } from "@/store/store";
 import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
+
+/** A glyph for the address label; anything unfamiliar gets a pin. */
+function labelIcon(label: string) {
+  const l = label.toLowerCase();
+  if (l.includes("home")) return Home;
+  if (l.includes("work") || l.includes("office")) return Briefcase;
+  return MapPin;
+}
+
+const ADD_TILE =
+  "flex w-full flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-line-strong bg-surface p-5 text-[13px] font-semibold text-ink-700 transition-colors duration-200 hover:border-brand-300 hover:bg-brand-50/50 hover:text-brand-800";
 
 /**
  * Addresses belong to the account, so every change is written to the database
- * first. The client store is updated alongside it purely so checkout, which is
- * already open in the same session, sees the change without a round trip.
- *
- * The saved addresses sit on the shop's hairline grid — the same `.tile-grid`
- * the homepage lays departments and products out on — rather than each drawing
- * its own rounded box. Two of them side by side share one rule between them,
- * which is the whole point of the grid.
+ * first; the client store is updated alongside so an open checkout sees it.
  */
 export function AddressesClient({ addresses }: { addresses: Address[] }) {
   const { dispatch } = useStore();
@@ -64,57 +71,102 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
-      <header>
-        <span className="eyebrow">Your account</span>
-        <h1 className="mt-2 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-3 sm:text-[32px]">
-          Saved addresses
-        </h1>
-        <p className="mt-2 max-w-[46ch] text-[14px] leading-[1.55] text-ink-600 sm:text-[15px]">
-          Add the places you order to most. You can pick any of them at checkout.
-        </p>
-        {error && (
-          <p
-            role="alert"
-            className="mt-3 rule-l [--rule-color:var(--color-sale-600)] bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-600"
-          >
-            {error}
-          </p>
-        )}
-      </header>
+    <div className="space-y-4 sm:space-y-5">
+      <PageHeader
+        className="pb-0 pt-1 sm:pb-0 sm:pt-0"
+        crumbs={[
+          { name: "Home", href: "/" },
+          { name: "My account", href: "/account" },
+          { name: "Saved addresses", href: "/account/addresses" },
+        ]}
+        title="Saved addresses"
+        description="Add the places you order to most. You can pick any of them at checkout."
+      />
 
-      {addresses.length > 0 && (
-        <ul className="tile-grid grid-cols-1 sm:grid-cols-2">
-          {addresses.map((address) => (
-            <li key={address.id} className="min-w-0">
-              {editing?.id === address.id ? (
-                <div className="p-4 sm:p-5">
-                  <h2 className="mb-3.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                    Edit address
-                  </h2>
+      {error && (
+        <p
+          role="alert"
+          className="flex items-start gap-2 rounded-md bg-sale-50 px-3.5 py-3 text-[13px] leading-[1.5] text-sale-700 ring-1 ring-inset ring-sale-200"
+        >
+          <AlertTriangle size={16} className="mt-px shrink-0" />
+          {error}
+        </p>
+      )}
+
+      <AnimatePresence initial={false}>
+        {adding && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <section className="card p-4 sm:p-5" aria-labelledby="new-address">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="icon-tile icon-tile-sm">
+                  <Plus size={16} aria-hidden />
+                </span>
+                <h2 id="new-address" className="t-h3">
+                  New address
+                </h2>
+              </div>
+              <AddressForm
+                onCancel={() => setAdding(false)}
+                onSave={(address) => persist(address, "Address saved", () => setAdding(false))}
+              />
+            </section>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <ul className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+        {addresses.map((address) => {
+          const Icon = labelIcon(address.label);
+          const isEditing = editing?.id === address.id;
+          return (
+            <li
+              key={address.id}
+              className={cn(
+                "card min-w-0 p-4 sm:p-5",
+                isEditing && "md:col-span-2",
+                address.isDefault && !isEditing && "border-brand-200 ring-1 ring-brand-100",
+              )}
+            >
+              {isEditing ? (
+                <>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="icon-tile icon-tile-sm">
+                      <Pencil size={16} aria-hidden />
+                    </span>
+                    <h2 className="t-h3">Edit address</h2>
+                  </div>
                   <AddressForm
                     initial={address}
                     submitLabel="Save changes"
                     onCancel={() => setEditing(null)}
                     onSave={(updated) => persist(updated, "Address updated", () => setEditing(null))}
                   />
-                </div>
+                </>
               ) : (
-                <div className="flex h-full flex-col p-4 sm:p-5">
-                  <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                      {address.label}
-                    </span>
+                <div className="flex h-full flex-col">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="icon-tile">
+                        <Icon size={18} aria-hidden />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="t-label">{address.label}</p>
+                        <p className="t-h3 mt-1 break-words">{address.fullName}</p>
+                      </div>
+                    </div>
                     {address.isDefault && (
-                      <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-brand-700">
-                        Default
+                      <span className="inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-brand-700 px-2.5 text-[11px] font-semibold text-white">
+                        <Star size={14} className="fill-current" /> Default
                       </span>
                     )}
                   </div>
-                  <p className="break-words text-[13.5px] font-semibold text-ink-950">
-                    {address.fullName}
-                  </p>
-                  <p className="mt-1 break-words text-[13px] leading-[1.6] text-ink-600">
+                  <p className="t-body mt-3 break-words text-[13px]">
                     {address.line1}
                     {address.line2 ? `, ${address.line2}` : ""}
                     {address.landmark ? `, ${address.landmark}` : ""}
@@ -122,18 +174,14 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
                     <span className="tabular-nums">
                       {address.city}, {address.state} {address.pincode}
                     </span>
-                    <br />
-                    <span className="tabular-nums">{address.phone}</span>
                   </p>
-                  {/* Taller on a phone so each action is a comfortable tap. */}
-                  <div className="mt-auto flex flex-wrap gap-2 pt-3.5">
-                    <Button
-                      size="xs"
-                      variant="outline"
-                      onClick={() => setEditing(address)}
-                      className="h-10 sm:h-8"
-                    >
-                      <Pencil size={12} /> Edit
+                  <p className="t-small mt-1.5 inline-flex items-center gap-1.5 tabular-nums">
+                    <Phone size={14} aria-hidden /> {address.phone}
+                  </p>
+                  <div className="flex-1" />
+                  <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3.5">
+                    <Button size="xs" variant="outline" onClick={() => setEditing(address)} className="h-10 sm:h-8">
+                      <Pencil size={14} /> Edit
                     </Button>
                     {!address.isDefault && (
                       <Button
@@ -142,55 +190,37 @@ export function AddressesClient({ addresses }: { addresses: Address[] }) {
                         onClick={() => persist({ ...address, isDefault: true }, "Default address updated")}
                         className="h-10 sm:h-8"
                       >
-                        <Star size={12} /> Make default
+                        <Star size={14} /> Make default
                       </Button>
                     )}
                     {addresses.length > 1 && (
                       <Button
                         size="xs"
                         variant="ghost"
-                        className="h-10 text-sale-600 sm:h-8"
+                        className="h-10 text-sale-600 hover:bg-sale-50 hover:text-sale-700 sm:h-8"
                         onClick={() => drop(address)}
                       >
-                        <Trash2 size={12} /> Remove
+                        <Trash2 size={14} /> Remove
                       </Button>
                     )}
                   </div>
                 </div>
               )}
             </li>
-          ))}
-        </ul>
-      )}
+          );
+        })}
 
-      <AnimatePresence initial={false}>
-        {adding ? (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <div className="card p-4 sm:p-5">
-              <h2 className="mb-3.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                New address
-              </h2>
-              <AddressForm
-                onCancel={() => setAdding(false)}
-                onSave={(address) => persist(address, "Address saved", () => setAdding(false))}
-              />
-            </div>
-          </motion.div>
-        ) : (
-          <button
-            onClick={() => setAdding(true)}
-            className="tap flex h-12 w-full items-center justify-center gap-2 card text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:bg-ink-950 hover:text-white sm:text-[12px]"
-          >
-            <Plus size={15} /> Add a new address
-          </button>
+        {!adding && (
+          <li className={cn(addresses.length === 0 && "md:col-span-2")}>
+            <button type="button" onClick={() => setAdding(true)} className={cn(ADD_TILE, "h-full min-h-[152px]")}>
+              <span className="icon-tile">
+                <Plus size={18} aria-hidden />
+              </span>
+              Add a new address
+            </button>
+          </li>
         )}
-      </AnimatePresence>
+      </ul>
     </div>
   );
 }

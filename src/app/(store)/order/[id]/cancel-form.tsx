@@ -19,7 +19,7 @@ function ConfirmButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" size="md" variant="outline" loading={pending}>
-      <XCircle size={15} /> {pending ? "Cancelling…" : "Yes, cancel this order"}
+      <XCircle size={16} /> {pending ? "Cancelling…" : "Yes, cancel this order"}
     </Button>
   );
 }
@@ -45,9 +45,9 @@ export function CancelForm({ orderId, paid }: { orderId: string; paid: boolean }
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="tap text-[13px] font-medium text-ink-600 underline-offset-2 transition-colors hover:text-sale-700 hover:underline"
+          className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-ink-600 transition-colors hover:bg-sale-50 hover:text-sale-700"
         >
-          Cancel this order
+          <XCircle size={16} aria-hidden /> Cancel this order
         </button>
         {state.error ? (
           <p className="mt-2 text-[13px] leading-[1.5] text-sale-700">{state.error}</p>
@@ -57,7 +57,7 @@ export function CancelForm({ orderId, paid }: { orderId: string; paid: boolean }
   }
 
   return (
-    <Form action={action} className="bg-canvas p-4">
+    <Form action={action} className="card-muted p-4 text-left sm:p-5">
       <input type="hidden" name="orderId" value={orderId} />
       <p className="text-[13.5px] leading-[1.55] text-ink-800">
         Cancel this order?{" "}
@@ -78,7 +78,7 @@ export function CancelForm({ orderId, paid }: { orderId: string; paid: boolean }
       </div>
 
       {state.error ? (
-        <p className="mt-3 bg-sale-50 px-3.5 py-2.5 text-[13px] leading-[1.5] text-sale-700">
+        <p role="alert" className="mt-3 rounded-md bg-sale-50 px-3.5 py-2.5 text-[13px] leading-[1.5] text-sale-700 ring-1 ring-inset ring-sale-200">
           {state.error}
         </p>
       ) : null}
