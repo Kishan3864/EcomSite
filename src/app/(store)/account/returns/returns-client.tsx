@@ -13,6 +13,7 @@ import { Field, Select } from "@/components/ui/field";
 import { requestReturn } from "@/services/commerce";
 import { useToast } from "@/components/ui/toast";
 import { cn, formatDate, formatINR } from "@/lib/utils";
+import { deliveryFact } from "@/lib/order-display";
 
 const STATUS_STEPS: ReturnRequest["status"][] = [
   "requested",
@@ -257,7 +258,7 @@ export function ReturnsClient({
                     {/* At 320px the order number is wider than this column. */}
                     <p className="mt-0.5 break-words text-[13px] leading-[1.5] tabular-nums text-ink-500">
                       Order {order.number} · delivered{" "}
-                      {formatDate(order.estimatedDelivery, "short")}
+                      {deliveryFact(order, "short").value}
                     </p>
                   </div>
                   <Button

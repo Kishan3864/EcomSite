@@ -11,6 +11,7 @@ import { Reveal } from "@/components/ui/motion";
 
 import { LiveRefresh } from "@/components/ui/live-refresh";
 import { cn, formatDate, formatINR, statusLabel } from "@/lib/utils";
+import { deliveryFact } from "@/lib/order-display";
 
 const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
   { id: "all", label: "All orders" },
@@ -190,7 +191,7 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3.5">
                 <p className="text-[13px] text-ink-600">
                   {order.status === "delivered"
-                    ? `Delivered on ${formatDate(order.estimatedDelivery, "short")}`
+                    ? `Delivered on ${deliveryFact(order, "short").value}`
                     : `Arriving by ${formatDate(order.estimatedDelivery, "day")}`}
                 </p>
                 <div className="flex w-full gap-2 sm:w-auto sm:flex-wrap">

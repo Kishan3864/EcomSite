@@ -96,7 +96,7 @@ export function TrackingTimeline({ events }: { events: OrderTrackingEvent[] }) {
             </p>
             <p className="mt-1 text-[13px] leading-[1.5] tabular-nums text-ink-500">
               {event.location}
-              {event.done && ` · ${formatDateTime(event.at)}`}
+              {event.done && event.at && ` · ${formatDateTime(event.at)}`}
             </p>
           </li>
         );

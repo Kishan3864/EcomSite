@@ -87,16 +87,42 @@ function buildTimeline(row: OrderRow): OrderTrackingEvent[] {
         done: true,
       };
     }
+    /**
+     * No event of its own, so no time of its own.
+     *
+     * This used to borrow estimatedDelivery. For a step still to come that was
+     * never printed, but for one marked done — an order moved on without the
+     * step being recorded — it printed the delivery PROMISE as the time the
+     * step happened: a date days in the future, at the minute the order was
+     * placed, against a step that is supposedly over.
+     */
     const copy = FUTURE_COPY[step];
     return {
       status: step,
       title: copy.title,
       description: copy.description,
       location: i <= reachedIndex ? row.shipCity : `${row.shipCity}, ${row.shipState}`,
-      at: row.estimatedDelivery.toISOString(),
+      at: null,
       done: i <= reachedIndex,
     };
   });
+}
+
+/**
+ * When the parcel was actually handed over.
+ *
+ * deliveredAt is written by every path that marks an order delivered, the
+ * admin button and the courier sync alike. The DELIVERED event is the fallback
+ * for an order older than that column being filled in. A returned order was
+ * delivered first, so it keeps its date. Nothing else counts — in particular
+ * not estimatedDelivery, which is a promise made at checkout and is exactly
+ * what the tracking page was printing under "Delivered on".
+ */
+function deliveredAtOf(row: OrderRow): string | null {
+  if (row.status !== "DELIVERED" && row.status !== "RETURNED") return null;
+  if (row.deliveredAt) return row.deliveredAt.toISOString();
+  const event = row.events.findLast((e) => e.status === "DELIVERED");
+  return event ? event.at.toISOString() : null;
 }
 
 export function toOrder(row: OrderRow): Order {
@@ -186,6 +212,7 @@ export function toOrder(row: OrderRow): Order {
       savings: row.productDiscount,
     },
     estimatedDelivery: row.estimatedDelivery.toISOString(),
+    deliveredAt: deliveredAtOf(row),
     tracking: buildTimeline(row),
     courier: row.courier ?? "",
     awb: row.awb ?? "",

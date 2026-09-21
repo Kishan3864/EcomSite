@@ -7,7 +7,8 @@ import type { Order } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
-import { cn, formatDate, formatDateTime, formatINR } from "@/lib/utils";
+import { cn, formatDateTime, formatINR } from "@/lib/utils";
+import { courierLine, deliveryFact } from "@/lib/order-display";
 
 /** The heading every block on the account screens wears. */
 const PANEL_HEAD =
@@ -29,6 +30,8 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
       />
     );
   }
+
+  const when = deliveryFact(order, "short");
 
   /* The three standing facts about the parcel. They are rows in one block
      rather than three small cards, which is what stops the right-hand column
@@ -71,11 +74,16 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
               <br />
               <span className="tabular-nums">AWB {order.awb}</span>
             </>
-          ) : (
+          ) : ["confirmed", "packed", "pending"].includes(order.status) ? (
             "Tracking number appears here once the parcel is booked."
+          ) : (
+            // Past the point of booking without an AWB: say what did happen
+            // rather than promising a tracking number that is not coming.
+            courierLine(order)
           )}
           <br />
-          {order.delivery.name} · by {formatDate(order.estimatedDelivery, "short")}
+          {order.delivery.name} · {when.label === "Expected by" ? "by" : when.label.toLowerCase()}{" "}
+          {when.value}
         </>
       ),
     },

@@ -13,6 +13,7 @@ import { DrawIn, Reveal } from "@/components/ui/motion";
 
 import { LiveRefresh } from "@/components/ui/live-refresh";
 import { cn, formatDate, formatINR } from "@/lib/utils";
+import { deliveryFact } from "@/lib/order-display";
 import { customerMayCancel } from "@/lib/order-rules";
 import { CancelForm } from "./cancel-form";
 
@@ -101,6 +102,8 @@ export function OrderClient({ order }: { order: Order | null }) {
     order.paymentStatus === "pending" ||
     order.paymentStatus === "verifying" ||
     order.paymentStatus === "failed";
+
+  const delivery = deliveryFact(order);
 
   return (
     <div className="container-page py-6 sm:py-12">
@@ -241,11 +244,14 @@ export function OrderClient({ order }: { order: Order | null }) {
           {/* Delivery promise */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-surface shadow-sm p-4 sm:gap-4 sm:p-5">
             <div className="min-w-0">
+              {/* A promise until the parcel arrives, a record after — this page
+                  is also where the confirmation email's link lands, often long
+                  after delivery. */}
               <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                Estimated delivery
+                {delivery.label === "Expected by" ? "Estimated delivery" : delivery.label}
               </p>
               <p className="mt-1 text-[18px] font-semibold tabular-nums text-ink-950 sm:text-[20px]">
-                {formatDate(order.estimatedDelivery, "day")}
+                {delivery.value}
               </p>
             </div>
             {/* Wraps under the date on phones, so it takes the full width there. */}

@@ -53,6 +53,8 @@ function order(
   const total = itemsTotal + shipping;
   const eta = new Date(placedAt);
   eta.setDate(eta.getDate() + 4);
+  const tracking = buildTracking(status, placedAt);
+  const handedOver = status === "delivered" || status === "returned" ? tracking[tracking.length - 1].at : null;
 
   return {
     id,
@@ -87,7 +89,8 @@ function order(
       savings: mrpTotal - itemsTotal,
     },
     estimatedDelivery: eta.toISOString(),
-    tracking: buildTracking(status, placedAt),
+    deliveredAt: handedOver,
+    tracking,
     courier: "WeekendCart Express",
     awb: `WKCX${number.replace(/\D/g, "").slice(-10)}`,
     ...overrides,

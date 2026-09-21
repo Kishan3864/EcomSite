@@ -260,7 +260,13 @@ export interface OrderTrackingEvent {
   title: string;
   description: string;
   location: string;
-  at: string;
+  /**
+   * When it happened, from the step's own event. Null when there is no event
+   * to take a time from — a step still to come, or one passed over without
+   * being recorded — because any time printed there would be borrowed from
+   * something else and look like a fact.
+   */
+  at: string | null;
   done: boolean;
 }
 
@@ -299,7 +305,13 @@ export interface Order {
     window: string;
   } | null;
   totals: OrderTotals;
+  /** A promise made at checkout. Never a record of anything. */
   estimatedDelivery: string;
+  /**
+   * When it was actually delivered, or null if it has not been. The only date
+   * a screen may print after the word "Delivered".
+   */
+  deliveredAt: string | null;
   tracking: OrderTrackingEvent[];
   courier: string;
   awb: string;

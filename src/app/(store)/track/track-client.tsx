@@ -12,7 +12,8 @@ import { Field, Input } from "@/components/ui/field";
 import { Reveal } from "@/components/ui/motion";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
 import { trackOrderAction } from "@/services/commerce";
-import { cn, formatDate, formatINR, statusLabel } from "@/lib/utils";
+import { courierLine, deliveryFact } from "@/lib/order-display";
+import { cn, formatINR, statusLabel } from "@/lib/utils";
 import { Form } from "@/components/ui/form";
 
 /* ------------------------------ Lookup ----------------------------- */
@@ -132,9 +133,25 @@ const STATUS_COPY: Record<string, { title: string; body: string }> = {
     body: "Arriving today. The delivery partner will call before they reach you.",
   },
   delivered: { title: "Delivered", body: "This order was handed over successfully." },
-  cancelled: { title: "Cancelled", body: "This order was cancelled and refunded." },
-  returned: { title: "Returned", body: "The return was completed and refunded." },
+  // No refund is promised here: whether money went back is a fact about the
+  // refund ledger, not about the order being cancelled. See moneyLine().
+  cancelled: { title: "Cancelled", body: "This order was cancelled." },
+  returned: { title: "Returned", body: "The return has been completed." },
 };
+
+/**
+ * What may be said about the money on a cancelled or returned order.
+ *
+ * These two lines used to end "…and refunded" on every cancelled or returned
+ * order — including an unpaid one, and one whose refund had not been sent.
+ * Rule One: "refunded" only when the ledger shows the money moved.
+ */
+function moneyLine(order: Order): string {
+  if (order.status !== "cancelled" && order.status !== "returned") return "";
+  if (!order.refund) return "";
+  if (order.refund.stage === "complete") return " Your refund has been sent.";
+  return ` ${order.refund.label}.`;
+}
 
 export function TrackDetail({ order }: { order: Order | null }) {
   if (!order) {
@@ -163,14 +180,8 @@ export function TrackDetail({ order }: { order: Order | null }) {
   // translucent white boxes was the only thing on the site still drawn as
   // frosted glass.
   const ledger = [
-    {
-      label: order.status === "delivered" ? "Delivered on" : "Expected by",
-      value: formatDate(order.estimatedDelivery, "day"),
-    },
-    {
-      label: "Courier",
-      value: order.awb ? `${order.courier} · ${order.awb}` : "Being packed — booking soon",
-    },
+    deliveryFact(order),
+    { label: "Courier", value: courierLine(order) },
     {
       label: "Delivering to",
       value: `${order.address.city} ${order.address.pincode}`,
@@ -187,6 +198,7 @@ export function TrackDetail({ order }: { order: Order | null }) {
           </h1>
           <p className="mt-2.5 max-w-[46ch] text-[14px] leading-[1.6] text-white/70 sm:text-[15px]">
             {copy.body}
+            {moneyLine(order)}
           </p>
 
           <dl className="mt-6 grid sm:mt-8 sm:grid-cols-3">

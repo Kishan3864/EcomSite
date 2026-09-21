@@ -518,7 +518,7 @@ async function seedOrders(customerId: string) {
         courier: o.courier,
         awb: o.awb,
         estimatedDelivery: new Date(o.estimatedDelivery),
-        deliveredAt: status === "DELIVERED" ? new Date(o.estimatedDelivery) : null,
+        deliveredAt: o.deliveredAt ? new Date(o.deliveredAt) : null,
         placedAt,
         lines: {
           create: o.lines.map((l) => {
@@ -552,7 +552,7 @@ async function seedOrders(customerId: string) {
               title: e.title,
               description: e.description,
               location: e.location,
-              at: new Date(e.at),
+              at: e.at ? new Date(e.at) : placedAt,
               actorName: "System",
             })),
         },
