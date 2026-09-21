@@ -16,7 +16,7 @@ import { BUSINESS } from "@/config/business";
  * step with the shipping and refund pages.
  */
 
-const CARD = "card card-interactive group flex h-full flex-col p-5 sm:p-6";
+const CARD = "card card-interactive group flex h-full flex-col p-4 sm:p-5";
 
 export function SupportBand() {
   const routes = [
@@ -44,36 +44,26 @@ export function SupportBand() {
   ];
 
   return (
-    <section className="bg-canvas">
-      <div className="container-page py-10 sm:py-14">
-        <div className="mb-5 sm:mb-7">
-          <h2 className="font-display text-[20px] leading-[1.15] text-ink-950 sm:text-[24px]">
-            If anything goes wrong
-          </h2>
-          <p className="mt-1.5 text-[13px] text-ink-500 sm:text-[14px]">
-            Three ways to sort it out, and none of them is a form that disappears.
-          </p>
+    <section className="container-page section-tight">
+      <div className="card-muted grid gap-6 !rounded-3xl p-5 sm:p-8 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:items-center lg:gap-10">
+        <div>
+          <span className="eyebrow">Help &amp; support</span>
+          <h2 className="t-h2 mt-3">If anything goes wrong</h2>
+          <p className="t-body mt-2">Three ways to sort it out, and none of them is a form that disappears.</p>
         </div>
 
-        <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
+        <ul className="grid gap-3 sm:grid-cols-3">
           {routes.map((route) => (
             <li key={route.href}>
               <Link href={route.href} className={CARD}>
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-                  <route.icon size={19} aria-hidden />
+                <span className="icon-tile">
+                  <route.icon size={20} aria-hidden />
                 </span>
-                <h3 className="mt-3 text-[14px] font-semibold tracking-[-0.01em] text-ink-950">
-                  {route.title}
-                </h3>
-                <p className="mt-1.5 flex-1 text-[12.5px] leading-[1.55] text-ink-600">
-                  {route.body}
-                </p>
+                <h3 className="t-h3 mt-3">{route.title}</h3>
+                <p className="t-small mt-1 flex-1">{route.body}</p>
                 <span className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-brand-700">
                   {route.cta}
-                  <ArrowRight
-                    size={14}
-                    className="transition-transform duration-200 group-hover:translate-x-1"
-                  />
+                  <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </span>
               </Link>
             </li>

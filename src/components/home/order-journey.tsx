@@ -1,5 +1,5 @@
 import { BUSINESS } from "@/config/business";
-import { JourneyLine } from "@/components/illustration/journey-line";
+import { CreditCard, PackageCheck, RotateCcw, Truck } from "lucide-react";
 import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
 
 /**
@@ -44,22 +44,40 @@ export function OrderJourney({ payments }: { payments: PublicPayments }) {
     },
   ];
 
+  const icons = [CreditCard, PackageCheck, Truck, RotateCcw];
+
   return (
-    <section className="container-page py-12 sm:py-24">
-      <div className="max-w-[46ch]">
+    <section className="container-page section">
+      <div className="max-w-[52ch]">
         <span className="eyebrow">Before you order</span>
-        <h2 className="mt-3 font-display text-[22px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[32px]">
-          What happens after you pay
-        </h2>
-        <p className="mt-2.5 text-[13px] leading-[1.55] text-ink-500 sm:text-[14px]">
+        <h2 className="t-h2 mt-3">What happens after you pay</h2>
+        <p className="t-body mt-2">
           The whole route, including the slow parts. These are the same numbers our shipping and
           refund policies are held to.
         </p>
       </div>
 
-      <div className="card mt-8 px-4 py-6 sm:mt-12 sm:px-8 sm:py-10">
-        <JourneyLine steps={steps} />
-      </div>
+      <ol className="relative mt-7 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+        <span
+          aria-hidden
+          className="absolute left-[12%] right-[12%] top-[38px] hidden h-px bg-gradient-to-r from-brand-200 via-iris-300 to-gold-300 lg:block"
+        />
+        {steps.map((step, i) => {
+          const Icon = icons[i];
+          return (
+            <li key={step.label} className="card relative p-5">
+              <div className="flex items-center justify-between">
+                <span className="icon-tile relative bg-surface ring-1 ring-inset ring-brand-100">
+                  <Icon size={20} aria-hidden />
+                </span>
+                <span className="t-label !text-ink-400">Step {i + 1}</span>
+              </div>
+              <h3 className="t-h3 mt-4">{step.label}</h3>
+              <p className="t-small mt-1">{step.value}</p>
+            </li>
+          );
+        })}
+      </ol>
     </section>
   );
 }

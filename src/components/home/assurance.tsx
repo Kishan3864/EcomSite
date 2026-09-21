@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Building2, PhoneCall, RotateCcw, ShieldCheck, type LucideIcon } from "lucide-react";
 import { BUSINESS } from "@/config/business";
 import type { PublicPayments } from "@/lib/payment-copy";
 
@@ -26,9 +27,10 @@ import type { PublicPayments } from "@/lib/payment-copy";
 export function Assurance({ payments }: { payments: PublicPayments }) {
   const { ops } = BUSINESS;
 
-  const points: { title: string; body: React.ReactNode }[] = [
+  const points: { title: string; icon: LucideIcon; body: React.ReactNode }[] = [
     {
       title: "Your card never touches our servers",
+      icon: ShieldCheck,
       body: payments.gateway ? (
         <>
           Card numbers, CVV and UPI PINs are entered on {ops.paymentAggregator}&apos;s own
@@ -44,6 +46,7 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
     },
     {
       title: "A first-party store, not a marketplace",
+      icon: Building2,
       body: (
         <>
           We buy the stock, we hold it in {BUSINESS.address.city}, and we invoice it. There is no
@@ -54,6 +57,7 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
     },
     {
       title: `${ops.returnWindowDays} days to change your mind`,
+      icon: RotateCcw,
       body: (
         <>
           Refunds go back to the way you paid — not to a wallet or store credit. We start it{" "}
@@ -68,6 +72,7 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
     },
     {
       title: "Someone here picks up the phone",
+      icon: PhoneCall,
       body: (
         <>
           <a
@@ -84,33 +89,24 @@ export function Assurance({ payments }: { payments: PublicPayments }) {
   ];
 
   return (
-    <section className="bg-canvas">
-      <div className="container-page py-12 sm:py-20">
-        <div className="max-w-[52ch]">
+    <section className="container-page section">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-12">
+        <div className="lg:sticky-under-header lg:self-start">
           <span className="eyebrow">Before you hand over money</span>
-          <h2 className="mt-3 font-display text-[24px] leading-[1.05] tracking-[-0.03em] text-ink-950 sm:mt-4 sm:text-[34px]">
-            Why this shop is safe to buy from
-          </h2>
-          <p className="mt-3 text-[13.5px] leading-[1.6] text-ink-600 sm:text-[14.5px]">
+          <h2 className="t-h2 mt-3">Why this shop is safe to buy from</h2>
+          <p className="t-body mt-2">
             No badges and no seals — anyone can print those. Four things you can check instead.
           </p>
         </div>
 
-        {/* Two across on a phone would put four words on a line. One column
-            until 768px, then two, then four. */}
-        <ul className="mt-8 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
-          {points.map((point, i) => (
+        <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+          {points.map((point) => (
             <li key={point.title} className="card p-5 sm:p-6">
-              <span
-                aria-hidden
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 font-display text-[13px] leading-none text-brand-700"
-              >
-                {String(i + 1).padStart(2, "0")}
+              <span className="icon-tile">
+                <point.icon size={20} aria-hidden />
               </span>
-              <h3 className="mt-3.5 text-[14.5px] font-semibold leading-[1.3] tracking-[-0.01em] text-ink-950">
-                {point.title}
-              </h3>
-              <p className="mt-2.5 text-[13px] leading-[1.6] text-ink-600">{point.body}</p>
+              <h3 className="t-h3 mt-4">{point.title}</h3>
+              <p className="t-body mt-1.5 !text-[13px]">{point.body}</p>
             </li>
           ))}
         </ul>

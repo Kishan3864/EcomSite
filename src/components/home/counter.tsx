@@ -1,5 +1,6 @@
+import { cn } from "@/lib/utils";
 import { BUSINESS } from "@/config/business";
-import { CounterGlyph, type CounterGlyphName } from "@/components/illustration/counter-glyphs";
+import { CreditCard, Headset, MapPin, RotateCcw, Truck, type LucideIcon } from "lucide-react";
 import { paymentSentence, type PublicPayments } from "@/lib/payment-copy";
 
 /**
@@ -30,14 +31,14 @@ export function Counter({ payments }: { payments: PublicPayments }) {
 
   const pay = paymentSentence(payments);
 
-  const cells: { glyph: CounterGlyphName; label: string; value: React.ReactNode }[] = [
+  const cells: { icon: LucideIcon; label: string; value: React.ReactNode }[] = [
     {
-      glyph: "pin",
+      icon: MapPin,
       label: "Ships from",
       value: `${address.city}, ${address.state} ${address.postalCode}`,
     },
     {
-      glyph: "phone",
+      icon: Headset,
       label: "We answer this",
       value: (
         <>
@@ -54,7 +55,7 @@ export function Counter({ payments }: { payments: PublicPayments }) {
       ),
     },
     {
-      glyph: "van",
+      icon: Truck,
       label: "Courier",
       value: `${ops.courierPartners[0]}, tracked end to end`,
     },
@@ -62,37 +63,36 @@ export function Counter({ payments }: { payments: PublicPayments }) {
     // true whatever the switches say rather than an empty label. It must never
     // name a method the checkout will not actually offer.
     pay
-      ? { glyph: "note", label: "Pay by", value: pay }
+      ? { icon: CreditCard, label: "Pay by", value: pay }
       : {
-          glyph: "note",
+          icon: RotateCcw,
           label: "Returns",
           value: `${ops.returnWindowDays} days from delivery`,
         },
   ];
 
   return (
-    <section>
-      <div className="container-page">
-        {/* Two across on a phone and four on a desktop — never a swipe rail.
-            A fact hidden behind a horizontal scroll is a fact nobody reads. */}
-        <div className="tile-grid grid-cols-2 lg:grid-cols-4">
-          {cells.map((cell, i) => (
-            <div key={cell.label} className="flex min-h-[84px] flex-col justify-center px-3.5 py-4 sm:min-h-[104px] sm:px-5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50">
-                  <CounterGlyph name={cell.glyph} delay={i * 80} className="shrink-0 text-brand-700" />
-                </span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
-                  {cell.label}
-                </span>
-              </div>
-              <p className="mt-1.5 text-[13px] font-medium leading-[1.4] text-ink-900 sm:text-[13.5px]">
-                {cell.value}
-              </p>
+    <section className="container-page">
+      <ul className="card grid grid-cols-2 divide-line lg:grid-cols-4 lg:divide-x">
+        {cells.map((cell, i) => (
+          <li
+            key={cell.label}
+            className={cn(
+              "flex items-start gap-3 p-4 sm:p-5",
+              i < 2 && "max-lg:border-b max-lg:border-line",
+              i % 2 === 0 && "max-lg:border-r max-lg:border-line",
+            )}
+          >
+            <span className="icon-tile icon-tile-sm mt-0.5 max-sm:hidden">
+              <cell.icon size={16} aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <p className="t-label">{cell.label}</p>
+              <p className="mt-1 text-[13px] font-medium leading-[1.4] text-ink-900">{cell.value}</p>
             </div>
-          ))}
-        </div>
-      </div>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

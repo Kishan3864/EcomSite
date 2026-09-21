@@ -1,27 +1,27 @@
 import type { Metadata } from "next";
-import { HeroBanner } from "@/components/home/hero-banner";
+import { HeroSlider } from "@/components/home/hero-slider";
+import {
+  BudgetBands,
+  CategoryShowcase,
+  DealsBand,
+  EmptyHero,
+  PromoBand,
+  ReviewHighlights,
+  ShelfGrid,
+  ShelfRail,
+  TrustStrip,
+  type ShelfCopy,
+} from "@/components/home/sections";
 import { Assurance } from "@/components/home/assurance";
-import { ShopByCategory } from "@/components/home/shop-by-category";
-import { ShopByPrice } from "@/components/home/shop-by-price";
-import { SupportBand } from "@/components/home/support-band";
-import { RecentlyViewed } from "@/components/product/recently-viewed";
 import { Counter } from "@/components/home/counter";
 import { OrderJourney } from "@/components/home/order-journey";
-import {
-  EditorialBand,
-  ProductGrid,
-  Spotlight,
-} from "@/components/home/showcase";
-import { toCardModels } from "@/lib/card";
-import {
-  getBanners,
-  getCatalogueSize,
-  getPriceLadder,
-  getCategories,
-  getNewArrivals,
-} from "@/services/catalog";
+import { SupportBand } from "@/components/home/support-band";
+import { RecentlyViewed } from "@/components/product/recently-viewed";
+import { toCardModels, type ProductCardModel } from "@/lib/card";
+import { getBanners, getCatalogueSize, getCategories, getNewArrivals, getPriceLadder } from "@/services/catalog";
 import { getHomeBlocks, type HomeBlockKey } from "@/services/home-ranking";
-import { getPublicPaymentMethods } from "@/services/storefront-config";
+import { getReviewHighlights } from "@/services/home-reviews";
+import { getPublicPaymentMethods, getStorefrontConfig } from "@/services/storefront-config";
 import { BRAND } from "@/components/brand/logo";
 
 export const revalidate = 120;
@@ -40,78 +40,33 @@ export const metadata: Metadata = {
 /**
  * Homepage.
  *
- * Rebuilt around a shopper who has never heard of this shop, in the order they
- * ask their questions: what is this (masthead), is it real (the facts band),
- * what do you sell (departments), show me (the shelves), why is it safe to pay
- * you (assurance), and what happens after I do (the journey).
+ * Every product band is driven by the ranking engine (`home-ranking.ts`),
+ * which fills each block only with products no earlier block took and drops a
+ * block it cannot fill honestly — so a small catalogue gets a short page, not
+ * the same five products repeated. Every band here renders nothing when it
+ * has nothing to show.
  *
- * Three of those bands are made of business facts rather than catalogue rows,
- * which is the point: the page has to be worth reading on the day the shop
- * holds five products, and it has to say things a fraudulent shop could not.
+ *   hero          the top of the first block (trending, or the shelf when
+ *                 there are no sales or views yet), as a slider
+ *   trust strip   the shop's standing promises
+ *   categories    departments only; collections live inside a department
+ *   trending      the rest of the first block
+ *   budget        price bands counted from the whole catalogue
+ *   the rest      new arrivals, best sellers, deals, top rated, few left
+ *   reviews       recent four- and five-star reviews
+ *   trust         why it is safe to buy here, what happens after you pay
+ *   recently viewed, help
  *
- * The composition still asks how much stock there is and drops the bands it
- * cannot fill honestly:
- *
- *   no products      masthead, facts, departments, assurance, journey — nothing
- *                    pretends to be a shelf
- *   under ten        one shelf and one product given a spread. Three separate
- *                    rails of "bestsellers", "deals" and "new in" drawn from
- *                    five products is the same five products three times, and
- *                    it reads as a shop pretending to be bigger than it is
- *   ten or more      the full composition, three shelves deep
- *
- * A band with nothing to show is left out and returns by itself as the
- * catalogue grows. No editing required.
- *
- * `getPublicPaymentMethods()` is the one query here that is not about stock.
- * It reads only the cached settings — never `getAdminSession()`, which would
- * touch cookies and silently turn this statically revalidated page dynamic.
+ * `getPublicPaymentMethods()` and `getStorefrontConfig()` read only cached
+ * settings — never cookies — so this page stays statically revalidated.
  */
 
-export default async function HomePage() {
-  const { products: productCount } = await getCatalogueSize();
-  if (productCount === 0) return <EmptyHome />;
-  return <RankedHome />;
-}
+const HERO_SLIDES = 5;
 
-/* ------------------------------------------------------------------ *
- *  No products yet
- * ------------------------------------------------------------------ */
-
-async function EmptyHome() {
-  const [banners, categories, payments] = await Promise.all([
-    getBanners(),
-    getCategories(),
-    getPublicPaymentMethods(),
-  ]);
-
-  return (
-    <>
-      <HeroBanner hasProducts={false} categories={categories} banner={banners.hero[0]} />
-      <ShopByCategory categories={categories} />
-      <Counter payments={payments} />
-      <Assurance payments={payments} />
-      <OrderJourney payments={payments} />
-      <RecentlyViewed />
-      <SupportBand />
-      <EditorialBand banner={banners.mid[0]} />
-    </>
-  );
-}
-
-/* ------------------------------------------------------------------ *
- *  A shop with products: the shelves are decided by demand
- * ------------------------------------------------------------------ */
-
-/**
- * What each block is called. The words are chosen to be true of the rule that
- * filled it — see `home-ranking.ts` — and `shelf` is what the first block is
- * called on the day there are no sales and no views to rank by yet.
- */
-const BLOCK_COPY: Record<HomeBlockKey, { eyebrow: string; title: string; description: string; href: string; linkLabel: string }> = {
+const BLOCK_COPY: Record<HomeBlockKey, ShelfCopy> = {
   trending: {
     eyebrow: "Popular right now",
-    title: "What shoppers are choosing",
+    title: "Trending now",
     description: "Ranked by recent orders first, then by reviews and how often each product is looked at.",
     href: "/products?sort=popularity",
     linkLabel: "The full catalogue",
@@ -125,14 +80,14 @@ const BLOCK_COPY: Record<HomeBlockKey, { eyebrow: string; title: string; descrip
   },
   new: {
     eyebrow: "Just landed",
-    title: "New this month",
+    title: "New arrivals",
     description: "The most recent additions to the catalogue.",
     href: "/products?sort=newest",
     linkLabel: "See what's new",
   },
   bestsellers: {
     eyebrow: "Proven",
-    title: "What people keep buying",
+    title: "Best sellers",
     description: "Ranked by units ordered in the last thirty days.",
     href: "/products?sort=popularity",
     linkLabel: "All bestsellers",
@@ -146,7 +101,7 @@ const BLOCK_COPY: Record<HomeBlockKey, { eyebrow: string; title: string; descrip
   },
   "top-rated": {
     eyebrow: "Well reviewed",
-    title: "Rated highest by buyers",
+    title: "Top rated",
     description: "Ranked by customer reviews, weighted so one glowing review cannot outrank many good ones.",
     href: "/products?sort=rating",
     linkLabel: "Browse by rating",
@@ -160,54 +115,105 @@ const BLOCK_COPY: Record<HomeBlockKey, { eyebrow: string; title: string; descrip
   },
 };
 
+export default async function HomePage() {
+  const { products: productCount } = await getCatalogueSize();
+  if (productCount === 0) return <EmptyHome />;
+  return <RankedHome />;
+}
+
+async function EmptyHome() {
+  const [banners, categories, payments, config] = await Promise.all([
+    getBanners(),
+    getCategories(),
+    getPublicPaymentMethods(),
+    getStorefrontConfig(),
+  ]);
+
+  return (
+    <>
+      <EmptyHero banner={banners.hero[0]} />
+      <TrustStrip freeThreshold={config.rates.freeThreshold} payments={payments} />
+      <CategoryShowcase categories={categories} />
+      <div className="section-tight">
+        <Counter payments={payments} />
+      </div>
+      <Assurance payments={payments} />
+      <OrderJourney payments={payments} />
+      <RecentlyViewed />
+      <SupportBand />
+      <PromoBand banner={banners.mid[0]} />
+    </>
+  );
+}
+
+function Shelf({ block, cards }: { block: HomeBlockKey; cards: ProductCardModel[] }) {
+  const copy = BLOCK_COPY[block];
+  switch (block) {
+    case "deals":
+      return <DealsBand copy={copy} products={cards} />;
+    case "top-rated":
+    case "few-left":
+    case "trending":
+    case "shelf":
+      return <ShelfRail copy={copy} products={cards} />;
+    default:
+      return <ShelfGrid copy={copy} products={cards} />;
+  }
+}
+
 async function RankedHome() {
-  const [banners, categories, blocks, priceLadder, payments] = await Promise.all([
+  const [banners, categories, blocks, priceLadder, payments, config, reviews] = await Promise.all([
     getBanners(),
     getCategories(),
     getHomeBlocks(),
     getPriceLadder(),
     getPublicPaymentMethods(),
+    getStorefrontConfig(),
+    getReviewHighlights(6),
   ]);
 
-  // Under four products no block can be filled honestly, and if the ranking
-  // could not be read at all the page must still sell: one plain shelf.
+  // If the ranking could not be read at all the page must still sell.
   const shelves =
     blocks.length > 0
       ? blocks.map((b) => ({ key: b.key, cards: toCardModels(b.products) }))
       : [{ key: "shelf" as const, cards: toCardModels(await getNewArrivals(10)) }];
 
-  const lead = shelves[0]?.cards[0];
-  // The spread is given to a product only when the page is long enough that
-  // it is not simply the masthead's photograph again one screen later.
-  const spread = shelves.length >= 2 ? shelves[0]?.cards[1] : undefined;
   const [first, ...rest] = shelves;
-
-  const grid = (shelf: (typeof shelves)[number], priority = false) => (
-    <ProductGrid
-      key={shelf.key}
-      {...BLOCK_COPY[shelf.key]}
-      products={shelf.cards}
-      columns={shelf.cards.length % 5 === 0 ? 5 : 4}
-      priority={priority}
-      tone={shelf.key === "deals" ? "sale" : "default"}
-    />
-  );
+  const slides = first?.cards.slice(0, HERO_SLIDES) ?? [];
+  const firstRest = first?.cards.slice(HERO_SLIDES) ?? [];
+  const trending = first?.key === "trending";
 
   return (
     <>
-      <HeroBanner hasProducts categories={categories} lead={lead} banner={banners.hero[0]} />
-      <ShopByCategory categories={categories} />
-      {first && grid(first)}
-      <ShopByPrice prices={priceLadder} />
-      <Spotlight product={spread} eyebrow="In the shop" payments={payments} />
-      {rest[0] && grid(rest[0])}
-      <Counter payments={payments} />
-      <Assurance payments={payments} />
-      {rest.slice(1).map((shelf) => grid(shelf))}
-      <OrderJourney payments={payments} />
+      {slides.length > 0 ? (
+        <HeroSlider
+          slides={slides}
+          tag={trending ? "Trending" : "Featured"}
+          label={trending ? "Top trending products" : "Featured products"}
+        />
+      ) : (
+        <EmptyHero banner={banners.hero[0]} />
+      )}
+      <TrustStrip freeThreshold={config.rates.freeThreshold} payments={payments} />
+      <CategoryShowcase categories={categories} />
+      {first && firstRest.length >= 4 && <Shelf block={first.key} cards={firstRest} />}
+      {rest[0] && <Shelf block={rest[0].key} cards={rest[0].cards} />}
+      <BudgetBands prices={priceLadder} />
+      {rest.slice(1, 3).map((s) => (
+        <Shelf key={s.key} block={s.key} cards={s.cards} />
+      ))}
+      <PromoBand banner={banners.mid[0]} />
+      {rest.slice(3).map((s) => (
+        <Shelf key={s.key} block={s.key} cards={s.cards} />
+      ))}
+      <ReviewHighlights reviews={reviews} />
       <RecentlyViewed />
+      <div className="section-tight">
+        <Counter payments={payments} />
+      </div>
+      <Assurance payments={payments} />
+      <OrderJourney payments={payments} />
       <SupportBand />
-      <EditorialBand banner={banners.mid[0]} />
     </>
   );
 }
