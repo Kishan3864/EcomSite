@@ -86,7 +86,7 @@ export default async function SearchPage({
                   <li key={s} className="shrink-0">
                     <Link
                       href={`/search?q=${encodeURIComponent(s)}`}
-                      className="tap inline-block whitespace-nowrap bg-surface px-3 py-2 text-[12px] text-ink-700 transition-colors hover:text-brand-700 sm:px-3.5 sm:text-[12.5px]"
+                      className="chip tap whitespace-nowrap px-3.5 py-2 text-[12px] text-ink-700 transition-colors hover:border-brand-300 hover:text-brand-700 sm:text-[12.5px]"
                     >
                       {s}
                     </Link>

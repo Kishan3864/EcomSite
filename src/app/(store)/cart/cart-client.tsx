@@ -104,7 +104,7 @@ export function CartClient() {
               </header>
 
               {blocked && (
-                <div role="alert" className="mb-3 border-l-2 border-sale-600 bg-sale-50 px-3.5 py-3 sm:px-4">
+                <div role="alert" className="mb-3 rounded-xl border border-sale-200 bg-sale-50 px-3.5 py-3 sm:px-4">
                   <p className="text-[13.5px] font-semibold text-ink-950">
                     {goneLines.length === 1 ? "One item is" : `${goneLines.length} items are`} no longer available
                   </p>
@@ -126,7 +126,7 @@ export function CartClient() {
                   </ul>
                 </div>
               )}
-              <ul>
+              <ul className="space-y-3">
                 <AnimatePresence initial={false}>
                   {cart.map((line) => {
                     const saveForLater = () => dispatch({ type: "cart/save", id: line.id });
@@ -156,12 +156,12 @@ export function CartClient() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                        className="overflow-hidden"
+                        className="card overflow-hidden"
                       >
-                        <div className="table-row-line flex gap-3 py-3 sm:gap-5 sm:py-4">
+                        <div className="flex gap-3 p-3 sm:gap-5 sm:p-4">
                           <Link
                             href={`/p/${line.slug}`}
-                            className="relative h-24 w-20 shrink-0 overflow-hidden bg-ink-100 sm:h-32 sm:w-28"
+                            className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg bg-ink-100 sm:h-32 sm:w-28"
                           >
                             <Image
                               src={line.image}
@@ -200,7 +200,7 @@ export function CartClient() {
                             </p>
 
                             <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-2 pt-3">
-                              <div className="inline-flex items-center overflow-hidden">
+                              <div className="inline-flex items-center overflow-hidden rounded-lg border border-line-strong">
                                 <button
                                   onClick={() =>
                                     dispatch({
@@ -264,7 +264,7 @@ export function CartClient() {
                         </div>
 
                         {/* Phones: three 40px targets across the line, like a native cart. */}
-                        <div className="flex sm:hidden">
+                        <div className="flex border-t sm:hidden">
                           <button
                             onClick={saveForLater}
                             className={`tap flex h-10 flex-auto items-center justify-center whitespace-nowrap px-2 text-ink-500 hover:text-ink-950 ${LINE_ACTION}`}
@@ -322,7 +322,7 @@ export function CartClient() {
                   >
                     <Link
                       href={`/p/${line.slug}`}
-                      className="relative h-24 w-20 shrink-0 overflow-hidden bg-ink-100"
+                      className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg bg-ink-100"
                     >
                       <Image src={line.image} alt="" fill sizes="80px" className="object-cover" />
                     </Link>
@@ -384,7 +384,7 @@ export function CartClient() {
           than fixed: it parks at the end of the bag instead of covering the
           footer. */}
       {cart.length > 0 && !blocked && (
-        <div className="sticky bottom-[calc(61px_+_env(safe-area-inset-bottom))] z-30 -mx-3 mt-4 flex items-center justify-between gap-3 bg-surface px-3 py-2.5 sm:-mx-6 sm:px-6 lg:hidden">
+        <div className="sticky bottom-[calc(61px_+_env(safe-area-inset-bottom))] z-30 -mx-3 mt-4 flex items-center justify-between gap-3 border-t bg-surface/95 px-3 py-2.5 shadow-[0_-10px_24px_-14px_rgb(18_23_27/0.2)] backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
           <p className="min-w-0">
             <span className="block text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-500">
               Total payable

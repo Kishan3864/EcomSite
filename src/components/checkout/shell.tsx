@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { buttonClasses } from "@/components/ui/button";
@@ -31,8 +32,9 @@ export const CHECKOUT_STEPS = [
 export type StepId = (typeof CHECKOUT_STEPS)[number]["id"];
 
 /** Every step draws its own 2px segment of one continuous rule. */
+/** One step of the progress bar: a numbered circle and its label. */
 const STEP_BASE =
-  "flex h-11 w-full items-center justify-center rule-b px-1 text-[11px] font-semibold uppercase leading-none tracking-[0.1em] transition-colors duration-200 sm:h-12 sm:text-[11.5px] sm:tracking-[0.12em]";
+  "flex min-w-0 items-center gap-2 text-[12.5px] font-semibold leading-none transition-colors duration-200";
 
 export function CheckoutShell({
   step,
@@ -110,36 +112,54 @@ export function CheckoutShell({
           with the distinction it was missing and the owner's own decision to
           overrule half of it — see trust-row.tsx. */}
 
-      {/* The progress indicator is one rule across the page with the current
-          step marked in ink, the steps behind it in grey and the ones ahead in
-          hairline. It used to be a row of coloured pills and a sliding bar,
-          which is two indicators for one piece of information and needed a
-          horizontal scroll to fit a 320px screen. */}
-      <nav aria-label="Checkout progress" className="bg-surface">
+      {/* Progress: numbered circles joined by a line. The current step is
+          filled with a soft ring, finished ones carry a tick and link back,
+          the ones ahead are outlined. Labels show from 640px; on a phone only
+          the current step is named, so four steps fit a 320px screen. */}
+      <nav aria-label="Checkout progress" className="border-b bg-surface">
         <div className="container-page">
-          <ol className="flex">
+          <ol className="flex items-center gap-2 py-3 sm:gap-3 sm:py-4">
             {CHECKOUT_STEPS.map((s, i) => {
               const done = i < index;
               const current = i === index;
               const classes = cn(
                 STEP_BASE,
-                current
-                  ? "[--rule-color:var(--color-ink-950)] text-ink-950"
-                  : done
-                    ? "[--rule-color:var(--color-ink-400)] text-ink-500 hover:text-ink-950"
-                    : "text-ink-400",
+                current ? "text-ink-950" : done ? "text-ink-600 hover:text-ink-950" : "text-ink-400",
+              );
+              const mark = (
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] tabular-nums",
+                    current
+                      ? "bg-brand-700 text-white shadow-[0_0_0_4px_var(--color-brand-100)]"
+                      : done
+                        ? "bg-brand-50 text-brand-700"
+                        : "border border-line-strong bg-surface text-ink-400",
+                  )}
+                >
+                  {done ? <Check size={14} strokeWidth={2.5} /> : i + 1}
+                </span>
+              );
+              const label = (
+                <span className={cn("min-w-0 truncate", !current && "hidden sm:inline")}>{s.label}</span>
               );
 
               return (
-                <li key={s.id} className="min-w-0 flex-1">
+                <li key={s.id} className={cn("flex min-w-0 items-center gap-2 sm:gap-3", i < CHECKOUT_STEPS.length - 1 && "flex-1")}>
                   {done ? (
                     <Link href={s.href} aria-label={`Back to ${s.label}`} className={cn("tap", classes)}>
-                      <span className="min-w-0 truncate">{s.label}</span>
+                      {mark}
+                      {label}
                     </Link>
                   ) : (
                     <span aria-current={current ? "step" : undefined} className={classes}>
-                      <span className="min-w-0 truncate">{s.label}</span>
+                      {mark}
+                      {label}
                     </span>
+                  )}
+                  {i < CHECKOUT_STEPS.length - 1 && (
+                    <span aria-hidden className={cn("h-px min-w-3 flex-1", done ? "bg-brand-300" : "bg-line")} />
                   )}
                 </li>
               );
@@ -188,7 +208,7 @@ export function CheckoutShell({
             Sticky rather than fixed: it rides along through the form and the
             summary, then parks above the footer. */}
         {action && (
-          <div className="sticky bottom-0 z-30 -mx-3 mt-4 bg-surface px-3 pb-safe sm:-mx-6 sm:px-6 lg:hidden">
+          <div className="sticky bottom-0 z-30 -mx-3 mt-4 border-t bg-surface/95 px-3 pb-safe shadow-[0_-10px_24px_-14px_rgb(18_23_27/0.2)] backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
             <div className="flex items-center justify-between gap-4 py-2.5">
               {total !== undefined && (
                 <p className="hidden min-w-0 sm:block">
@@ -214,7 +234,7 @@ export function CheckoutAside() {
   const { cart } = useStore();
 
   return (
-    <div className="bg-surface">
+    <div className="card overflow-hidden">
       <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-5">
         <h2 className="min-w-0 truncate text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           {cart.length} item{cart.length > 1 ? "s" : ""} in your bag
@@ -223,18 +243,18 @@ export function CheckoutAside() {
             Off from lg, so the desktop focus ring still hugs the word. */}
         <Link
           href="/cart"
-          className="-m-2.5 shrink-0 p-2.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-950 transition-colors duration-200 hover:text-brand-700 lg:m-0 lg:p-0"
+          className="-m-2.5 shrink-0 p-2.5 text-[12.5px] font-semibold text-brand-700 transition-colors duration-200 hover:text-brand-800 lg:m-0 lg:p-0"
         >
           Edit
         </Link>
       </div>
-      <ul>
+      <ul className="card-divided border-t">
         {cart.map((line) => (
           <li key={line.id} className="flex items-center gap-3 px-4 py-2.5 sm:px-5 sm:py-3">
             {/* Routed through the shared image component like every other
                 picture on the site, so the remote-image policy applies here
                 too; it used to be a raw <img> with the lint rule switched off. */}
-            <span className="relative h-14 w-12 shrink-0 overflow-hidden bg-ink-100">
+            <span className="relative h-14 w-12 shrink-0 overflow-hidden rounded-lg bg-ink-100">
               <Image src={line.image} alt="" fill sizes="48px" className="object-cover" />
             </span>
             <span className="min-w-0 flex-1">

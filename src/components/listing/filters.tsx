@@ -56,7 +56,7 @@ function Group({
   // Below lg this panel lives in the filter sheet, so rows grow to finger
   // height there; the desktop sidebar keeps its tighter rhythm.
   return (
-    <section className="py-1.5 lg:py-4">
+    <section className="border-b py-1.5 last:border-b-0 lg:py-4">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
@@ -111,10 +111,8 @@ function CheckRow({
     <label className="tap group flex cursor-pointer items-center gap-2.5 py-2.5 lg:py-1.5">
       <span
         className={cn(
-          "flex h-[17px] w-[17px] shrink-0 items-center justify-center transition-colors duration-150",
-          // Unticked is a filled grey square, not a white one: with no border
-          // to draw it, white on a white panel is nothing at all.
-          checked ? "bg-ink-950" : "bg-ink-200",
+          "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors duration-150",
+          checked ? "border-brand-700 bg-brand-700" : "border-line-strong bg-surface group-hover:border-brand-400",
         )}
       >
         {checked && (
@@ -189,7 +187,7 @@ export function FilterPanel({
         <h2 className="flex items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 sm:text-[12px]">
           Filters
           {active.length > 0 && (
-            <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center bg-ink-950 px-1 text-[10.5px] font-semibold leading-none tabular-nums text-white">
+            <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-700 px-1.5 text-[10.5px] font-semibold leading-none tabular-nums text-white">
               {active.length}
             </span>
           )}
@@ -306,16 +304,14 @@ export function FilterPanel({
                   onChange={() => setParams({ rating: r.value })}
                   className="sr-only"
                 />
-                {/* A small dark square inside a filled one. It was an
-                    outlined box until borders went; the box is now a grey
-                    fill and the chosen state is the ink square inside it. */}
+                {/* A round radio: an outlined ring, and a brand dot when chosen. */}
                 <span
                   className={cn(
-                    "flex h-[17px] w-[17px] shrink-0 items-center justify-center transition-colors duration-150",
-                    chosen ? "bg-ink-300" : "bg-ink-200 group-hover:bg-ink-300",
+                    "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border transition-colors duration-150",
+                    chosen ? "border-brand-700" : "border-line-strong group-hover:border-brand-400",
                   )}
                 >
-                  {chosen && <span className="h-[9px] w-[9px] bg-ink-950" />}
+                  {chosen && <span className="h-[9px] w-[9px] rounded-full bg-brand-700" />}
                 </span>
                 <span className="flex flex-1 items-center gap-1 text-[13px] text-ink-700">
                   <span className="tabular-nums">{r.value}</span>
@@ -413,7 +409,7 @@ function PriceRange({
             min={min}
             max={hi}
             onChange={(e) => setLo(Number(e.target.value))}
-            className="h-10 w-full bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors sm:text-[13px] lg:h-9"
+            className="h-10 w-full rounded-lg border border-line-strong bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors focus:border-brand-400 sm:text-[13px] lg:h-9"
           />
         </label>
         <span aria-hidden className="mt-6 text-ink-400">
@@ -429,7 +425,7 @@ function PriceRange({
             min={lo}
             max={max}
             onChange={(e) => setHi(Number(e.target.value))}
-            className="h-10 w-full bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors sm:text-[13px] lg:h-9"
+            className="h-10 w-full rounded-lg border border-line-strong bg-surface px-2.5 text-[16px] tabular-nums text-ink-900 outline-none transition-colors focus:border-brand-400 sm:text-[13px] lg:h-9"
           />
         </label>
       </div>
@@ -469,7 +465,7 @@ export function ActiveChips({
           onClick={() => setParams(chip.clear)}
           // Rose is for reductions, so dismissing a filter is not painted in
           // it. A hairline that darkens to ink says "this comes off" quietly.
-          className="tap group inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap bg-surface pl-3 pr-2 text-[11.5px] font-semibold uppercase tracking-[0.1em] text-ink-700 transition-colors duration-200 hover:text-ink-950 lg:h-8"
+          className="chip tap group h-9 shrink-0 whitespace-nowrap pl-3.5 pr-2.5 text-[12.5px] font-medium text-ink-700 transition-colors duration-200 hover:border-ink-300 hover:text-ink-950 lg:h-8"
         >
           {chip.label}
           <X size={12} className="text-ink-400 transition-colors group-hover:text-ink-950" />
@@ -488,7 +484,7 @@ export function ActiveChips({
             fast: null,
           })
         }
-        className="tap ml-1.5 shrink-0 whitespace-nowrap py-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 transition-colors hover:text-ink-950 lg:py-0"
+        className="tap ml-1.5 shrink-0 whitespace-nowrap py-2 text-[12.5px] font-semibold text-brand-700 transition-colors hover:text-brand-800 lg:py-0"
       >
         Clear all
       </button>

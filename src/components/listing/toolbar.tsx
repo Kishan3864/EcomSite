@@ -88,7 +88,7 @@ export function ListingToolbar({
           {/* A stamp, not a coloured badge — the same mark the filter rail's
               own header carries, so the two agree at a glance. */}
           {activeCount > 0 && (
-            <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center bg-ink-950 px-1 text-[10.5px] font-semibold leading-none tabular-nums text-white">
+            <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-700 px-1.5 text-[10.5px] font-semibold leading-none tabular-nums text-white">
               {activeCount}
             </span>
           )}
@@ -107,7 +107,7 @@ export function ListingToolbar({
             onClick={() => setSortOpen((o) => !o)}
             aria-expanded={sortOpen}
             aria-haspopup="listbox"
-            className="inline-flex h-10 items-center gap-2 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-950 transition-colors duration-200 hover:text-brand-700"
+            className="chip h-10 px-4 text-[13px] font-medium text-ink-900 transition-colors duration-200 hover:border-ink-300"
           >
             <ArrowUpDown size={14} className="text-ink-400" />
             <span className="text-ink-500">Sort</span>
@@ -138,7 +138,7 @@ export function ListingToolbar({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.16 }}
-                  className="absolute right-0 top-[calc(100%+6px)] z-20 w-60 bg-surface shadow-lg"
+                  className="absolute right-0 top-[calc(100%+6px)] z-20 w-60 overflow-hidden rounded-xl border bg-surface py-1 shadow-pop"
                 >
                   {SORT_OPTIONS.map((option) => {
                     const selected = currentSort === option.value;

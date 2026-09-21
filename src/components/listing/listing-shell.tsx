@@ -88,7 +88,7 @@ export function ListingShell({
 
       <div className="grid gap-8 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10">
         <aside className="hidden lg:block">
-          <div className="sticky top-[132px] max-h-[calc(100vh-160px)] overflow-y-auto pr-2">
+          <div className="card sticky top-[132px] max-h-[calc(100vh-160px)] overflow-y-auto px-4 py-1">
             <FilterPanel query={query} facets={facets} hideCategory={hideCategoryFilter} />
           </div>
         </aside>

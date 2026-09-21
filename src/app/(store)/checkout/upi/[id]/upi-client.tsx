@@ -21,7 +21,7 @@ interface AppLink {
 const STEP_HEAD =
   "flex items-center gap-2.5 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500";
 const STEP_NUMBER =
-  "flex h-[18px] w-[18px] shrink-0 items-center justify-center bg-ink-950 text-[11px] font-semibold tabular-nums text-white";
+  "flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full bg-brand-700 text-[11px] font-semibold tabular-nums text-white";
 
 /**
  * Pay by UPI: scan, or tap through to an app, then tell us the reference.

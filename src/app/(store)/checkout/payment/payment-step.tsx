@@ -171,7 +171,7 @@ function MarkRow({
   items: readonly { id: PaymentMarkName; label: string }[];
 }) {
   return (
-    <div className="bg-surface px-2.5 py-2.5 shadow-xs">
+    <div className="rounded-lg border bg-surface px-2.5 py-2.5">
       <span className="block text-[10.5px] font-semibold uppercase leading-none tracking-[0.12em] text-ink-500">
         {label}
       </span>

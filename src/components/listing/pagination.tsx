@@ -28,11 +28,10 @@ export function Pagination({
   // hole the list has no ellipsis for, one stands in on phones only.
   const crowded = pages.filter((p) => p !== "gap").length >= 5;
 
-  // Square cells on a hairline, one of them inked: the same language as the
-  // tile grid above it, so the foot of the page belongs to the page.
+  // Rounded bordered cells, the current page filled in brand.
   const linkClass =
-    "inline-flex h-10 min-w-10 items-center justify-center px-3 text-[13px] font-medium tabular-nums transition-colors duration-200";
-  const restClass = "bg-surface text-ink-700 hover:text-ink-950";
+    "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-[13px] font-medium tabular-nums transition-colors duration-200";
+  const restClass = "bg-surface text-ink-700 hover:border-brand-300 hover:text-ink-950";
   const spentClass = "bg-canvas text-ink-400";
   const gapClass = "px-1 text-[13px] text-ink-400";
 
@@ -82,7 +81,7 @@ export function Pagination({
                 linkClass,
                 "tap",
                 neighbour && "hidden sm:inline-flex",
-                p === page ? "bg-ink-950 font-semibold text-white" : restClass,
+                p === page ? "border-brand-700 bg-brand-700 font-semibold text-white" : restClass,
               )}
             >
               {p}
