@@ -1,5 +1,6 @@
 import "server-only";
 
+import { after } from "next/server";
 import { db } from "@/lib/db";
 import { delhiveryConfig, mapDelhiveryStatus, trackWaybill, type Tracking } from "@/lib/shipping/delhivery";
 
@@ -56,6 +57,7 @@ export async function syncTracking(orderId: string, options: { force?: boolean }
 
   const seen = new Set(order.events.map((e) => `${e.at.toISOString()}|${e.title}`));
   const mapped = tracking ? mapDelhiveryStatus(tracking) : null;
+  let deliveredNow = false;
 
   await db.$transaction(async (tx) => {
     for (const scan of tracking?.scans ?? []) {
@@ -85,6 +87,7 @@ export async function syncTracking(orderId: string, options: { force?: boolean }
     const from = ORDER_FLOW.indexOf(order.status as (typeof ORDER_FLOW)[number]);
     const to = mapped ? ORDER_FLOW.indexOf(mapped) : -1;
     const advance = mapped !== null && to > from;
+    deliveredNow = advance && mapped === "DELIVERED";
     const eta = tracking?.expectedDelivery ? new Date(tracking.expectedDelivery) : null;
 
     await tx.order.update({
@@ -98,6 +101,24 @@ export async function syncTracking(orderId: string, options: { force?: boolean }
       },
     });
   });
+
+  /**
+   * A courier scan just marked it delivered: ask for the review now rather
+   * than at the next sweep, as the admin button's path does. In after(), so a
+   * slow mail server never holds up the order page that triggered the sync;
+   * outside a request (a script) there is no after(), and the timer picks it
+   * up within a quarter of an hour instead.
+   */
+  if (deliveredNow) {
+    try {
+      after(async () => {
+        const { sendReviewRequestIfDue } = await import("@/services/order-reviews");
+        await sendReviewRequestIfDue(order.id);
+      });
+    } catch {
+      // No request scope; the review-request timer covers it.
+    }
+  }
 
   return tracking;
 }

@@ -7,13 +7,80 @@ import { REVIEW_LIMITS } from "@/lib/review-rules";
 import { cn } from "@/lib/utils";
 
 /**
+ * Five stars to pick a rating with.
+ *
+ * `about` names what is being rated in each button's accessible name ("4 stars
+ * for the kettle") — needed wherever several products are rated on one page,
+ * or a screen reader hears a list of identical "4 stars" buttons.
+ */
+export function StarPicker({
+  value,
+  onChange,
+  about,
+  size = 24,
+}: {
+  value: number;
+  onChange: (value: number) => void;
+  about?: string;
+  size?: number;
+}) {
+  const [hover, setHover] = useState(0);
+
+  return (
+    // Phones: each star a 40px target; the row is pulled back by the padding
+    // so the first star still lines up with the text above it. The stars fill
+    // as the pointer crosses them, which is feedback enough — a star that also
+    // grew was the one thing on the page bouncing under the cursor.
+    <div className="-ml-2 flex sm:-ml-1 sm:gap-1" onMouseLeave={() => setHover(0)}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          aria-label={`${n} star${n > 1 ? "s" : ""}${about ? ` for ${about}` : ""}`}
+          aria-pressed={value === n}
+          onMouseEnter={() => setHover(n)}
+          onClick={() => onChange(n)}
+          className="tap p-2 sm:p-1"
+        >
+          <Star
+            size={size}
+            strokeWidth={1.75}
+            className={cn(
+              "transition-colors duration-200",
+              n <= (hover || value) ? "fill-gold-400 text-gold-500" : "text-ink-300",
+            )}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** A rating already given, drawn with the same stars, read-only. */
+export function StarsGiven({ value, size = 14 }: { value: number; size?: number }) {
+  return (
+    <span className="inline-flex align-[-2px]" role="img" aria-label={`${value} out of 5 stars`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          size={size}
+          strokeWidth={1.75}
+          aria-hidden
+          className={n <= value ? "fill-gold-400 text-gold-500" : "text-ink-300"}
+        />
+      ))}
+    </span>
+  );
+}
+
+/**
  * The inside of a review form: the stars, the headline and the review.
  *
- * One component for both places a review is written — under a product, and on
- * the page a review email opens — so the two cannot drift into different
- * rules, different limits or different looks. The caller owns the <form>, the
- * submit button and what happens on submit; the text fields are uncontrolled
- * and read from FormData as `title` and `body`.
+ * One component for both places a full review is written — under a product,
+ * and on the page a review email opens — so the two cannot drift into
+ * different rules, different limits or different looks. The caller owns the
+ * <form>, the submit button and what happens on submit; the text fields are
+ * uncontrolled and read from FormData as `title` and `body`.
  */
 export function ReviewFields({
   rating,
@@ -24,40 +91,14 @@ export function ReviewFields({
   onRating: (value: number) => void;
   idPrefix?: string;
 }) {
-  const [hover, setHover] = useState(0);
-
   return (
     <>
       <fieldset className="mt-4">
         <legend className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Your rating
         </legend>
-        {/* Phones: each star a 40px target; the row is pulled back by the
-            padding so the first star still lines up under the legend.
-            The stars fill as the pointer crosses them, which is feedback
-            enough — a star that also grew was the one thing on the page
-            bouncing under the cursor. */}
-        <div className="-ml-2 mt-1 flex sm:ml-0 sm:gap-1" onMouseLeave={() => setHover(0)}>
-          {[1, 2, 3, 4, 5].map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-label={`${value} star${value > 1 ? "s" : ""}`}
-              aria-pressed={rating === value}
-              onMouseEnter={() => setHover(value)}
-              onClick={() => onRating(value)}
-              className="tap p-2 sm:p-1"
-            >
-              <Star
-                size={24}
-                strokeWidth={1.75}
-                className={cn(
-                  "transition-colors duration-200",
-                  value <= (hover || rating) ? "fill-gold-400 text-gold-500" : "text-ink-300",
-                )}
-              />
-            </button>
-          ))}
+        <div className="mt-1">
+          <StarPicker value={rating} onChange={onRating} />
         </div>
       </fieldset>
 

@@ -11,7 +11,7 @@ import { Reveal } from "@/components/ui/motion";
 
 import { LiveRefresh } from "@/components/ui/live-refresh";
 import { cn, formatDate, formatINR, statusLabel } from "@/lib/utils";
-import { deliveryFact } from "@/lib/order-display";
+import { deliverySentence } from "@/lib/order-display";
 
 const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
   { id: "all", label: "All orders" },
@@ -28,7 +28,14 @@ const FILTERS: { id: "all" | OrderStatus; label: string }[] = [
  */
 const SPENT: OrderStatus[] = ["cancelled", "returned"];
 
-export function OrdersClient({ orders }: { orders: Order[] }) {
+export function OrdersClient({
+  orders,
+  toRate = {},
+}: {
+  orders: Order[];
+  /** order id → products still to rate, only for orders that have any. */
+  toRate?: Record<string, number>;
+}) {
 
   const [filter, setFilter] = useState<(typeof FILTERS)[number]["id"]>("all");
 
@@ -172,12 +179,6 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
                     </div>
                     {order.status === "delivered" && (
                       <div className="hidden shrink-0 gap-2 sm:flex">
-                        <Link
-                          href={`/p/${line.slug}#reviews`}
-                          className={buttonClasses("ghost", "xs")}
-                        >
-                          <Star size={12} /> Rate
-                        </Link>
                         <Link href="/account/returns" className={buttonClasses("ghost", "xs")}>
                           <RotateCcw size={12} /> Return
                         </Link>
@@ -189,11 +190,23 @@ export function OrdersClient({ orders }: { orders: Order[] }) {
 
               {/* Phones give the two actions a full-width row of their own. */}
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 pt-3.5">
-                <p className="text-[13px] text-ink-600">
-                  {order.status === "delivered"
-                    ? `Delivered on ${deliveryFact(order, "short").value}`
-                    : `Arriving by ${formatDate(order.estimatedDelivery, "day")}`}
-                </p>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                  <p className="text-[13px] text-ink-600">{deliverySentence(order)}</p>
+                  {/* Only while something in it is still unrated; it opens the
+                      "How was it?" panel on the order page. */}
+                  {toRate[order.id] > 0 && (
+                    <Link
+                      href={`/account/orders/${order.id}#rate`}
+                      className="tap -my-2 inline-flex items-center gap-1.5 py-2 text-[13px] font-semibold text-brand-700 underline-offset-2 hover:underline"
+                    >
+                      <Star size={13} strokeWidth={1.75} className="fill-gold-400 text-gold-500" />
+                      Rate your purchase
+                      {toRate[order.id] > 1 && (
+                        <span className="font-medium text-ink-500">· {toRate[order.id]} items</span>
+                      )}
+                    </Link>
+                  )}
+                </div>
                 <div className="flex w-full gap-2 sm:w-auto sm:flex-wrap">
                   <Link
                     href={`/account/orders/${order.id}`}

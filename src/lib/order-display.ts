@@ -36,6 +36,17 @@ export function deliveryFact(
 }
 
 /**
+ * The same fact as one short sentence, for a list row: "Delivered on 21 Sept",
+ * "Arriving by Wed, 23 Sept", "Cancelled — not delivered". A returned or
+ * cancelled order used to read "Arriving by…" on the orders list.
+ */
+export function deliverySentence(order: DeliveryFacts): string {
+  if (order.status === "cancelled") return "Cancelled — not delivered";
+  const { label, value } = deliveryFact(order, order.status === "delivered" || order.status === "returned" ? "short" : "day");
+  return label === "Expected by" ? `Arriving by ${value}` : `${label} ${value}`;
+}
+
+/**
  * Who is carrying it, said as truthfully as the order allows.
  *
  * An AWB is the only proof a courier has the parcel, so it wins whenever there

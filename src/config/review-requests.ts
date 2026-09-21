@@ -7,13 +7,15 @@
  */
 export const REVIEW_REQUESTS = {
   /**
-   * Days after delivery before the request goes out.
+   * Days after delivery before the request email goes out.
    *
-   * Not the same day as the "delivered" email: nobody can review a thing they
-   * have not opened yet, and asking before they have used it gets either no
-   * answer or an answer about the packaging.
+   * 0 means on delivery: it follows straight after the "delivered" email (and
+   * the courier sync), and its wording changes to "once you have had a chance
+   * to use it" rather than claiming days of use. The "How was it?" panel on the
+   * track and order pages appears on delivery whatever this says. Set it back
+   * to 2 or 3 to give people time to open the box before the email asks.
    */
-  delayDays: 3,
+  delayDays: 0 as number,
 
   /**
    * Days after the request before the one reminder, for products still not

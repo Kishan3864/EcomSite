@@ -51,6 +51,12 @@ export interface ReviewEmailInput {
   items: ReviewEmailItem[];
   /** How many of the order's products this customer has already reviewed. */
   alreadyReviewed: number;
+  /**
+   * Days since delivery. Under one, the request is going out with the parcel
+   * barely through the door, and must not claim they have "had a few days with
+   * it" — it asks them to come back once they have used it instead.
+   */
+  daysSinceDelivery?: number;
   /** Request only: whether a reminder may follow, so the footer can say so truthfully. */
   reminderFollows: boolean;
   /** Reminder only: days since the request went out, so "last week" is never a guess. */
@@ -96,21 +102,30 @@ export function buildReviewEmail(o: ReviewEmailInput): OrderEmail {
   const whenAsked =
     o.askedDaysAgo != null && o.askedDaysAgo >= 6 && o.askedDaysAgo <= 13 ? "last week" : "recently";
 
+  // Sent on the day it arrived (delayDays 0), not days later.
+  const justArrived = !reminder && (o.daysSinceDelivery ?? 0) < 1;
+
   const subject = reminder
     ? single
       ? `Would you review the ${shortTitle(o.items[0].title)}?`
       : `Would you review your order ${o.number}?`
-    : single
-      ? `How is the ${shortTitle(o.items[0].title)} working out?`
-      : `How is your order ${o.number} working out?`;
+    : justArrived
+      ? single
+        ? `Your ${shortTitle(o.items[0].title)} has arrived — how is it?`
+        : `Your order ${o.number} has arrived — how is it?`
+      : single
+        ? `How is the ${shortTitle(o.items[0].title)} working out?`
+        : `How is your order ${o.number} working out?`;
 
-  const headline = reminder ? "A last word about your order" : "How is it working out?";
+  const headline = reminder ? "A last word about your order" : justArrived ? "How was it?" : "How is it working out?";
 
   const opening = reminder
     ? o.alreadyReviewed > 0
       ? `${first}, thank you for the review you have already written for order ${o.number}. If you have a minute for the rest, your honest opinion would help the next person deciding — and this is the last time we will ask.`
       : `${first}, ${whenAsked} we asked what you thought of your order ${o.number}. If you have a minute, your honest opinion would help the next person deciding — and this is the last time we will ask.`
-    : `${first}, your order ${o.number} was delivered on ${formatDate(o.deliveredAt)}. Now that you have had a few days with ${it}, would you tell other shoppers what you honestly think? Good, bad or somewhere in between — a few words, or just the stars, is plenty.`;
+    : justArrived
+      ? `${first}, your order ${o.number} has been delivered. Once you have had a chance to use ${it}, would you tell other shoppers what you honestly think? Good, bad or somewhere in between — a few words, or just the stars, is plenty. There is no rush: the buttons below keep working for months.`
+      : `${first}, your order ${o.number} was delivered on ${formatDate(o.deliveredAt)}. Now that you have had a few days with ${it}, would you tell other shoppers what you honestly think? Good, bad or somewhere in between — a few words, or just the stars, is plenty.`;
 
   const how =
     "Each button opens the review for that product with your order already checked, so there is no need to sign in. Your review is marked as a verified purchase and checked before it appears. We never edit or remove a review for being negative.";
@@ -125,7 +140,9 @@ export function buildReviewEmail(o: ReviewEmailInput): OrderEmail {
 
   const preheader = reminder
     ? `The last time we will ask about order ${o.number}`
-    : single
+    : justArrived
+      ? `Whenever you are ready — a minute to say what you honestly think`
+      : single
       ? `A minute to say what you honestly think`
       : `${o.items.length} products · a minute each to say what you honestly think`;
 

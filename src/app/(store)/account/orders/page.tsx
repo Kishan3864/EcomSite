@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { OrdersClient } from "./orders-client";
 import { getCustomerOrders } from "@/services/orders";
+import { unreviewedCounts } from "@/services/order-reviews";
 
 export const metadata: Metadata = {
   title: "My orders",
@@ -10,5 +11,7 @@ export const metadata: Metadata = {
 
 export default async function OrdersPage() {
   const orders = await getCustomerOrders();
-  return <OrdersClient orders={orders} />;
+  // Delivered orders with something still to rate, for the "Rate your purchase" nudge.
+  const toRate = await unreviewedCounts(orders.filter((o) => o.status === "delivered").map((o) => o.id));
+  return <OrdersClient orders={orders} toRate={toRate} />;
 }

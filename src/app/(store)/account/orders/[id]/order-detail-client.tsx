@@ -7,6 +7,8 @@ import type { Order } from "@/lib/types";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState, Price } from "@/components/ui/primitives";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
+import { OrderReviewPanel } from "@/components/account/order-review-panel";
+import type { ReviewPanel } from "@/services/order-reviews";
 import { cn, formatDateTime, formatINR } from "@/lib/utils";
 import { courierLine, deliveryFact } from "@/lib/order-display";
 
@@ -14,7 +16,7 @@ import { courierLine, deliveryFact } from "@/lib/order-display";
 const PANEL_HEAD =
   "px-4 py-3 text-[11.5px] font-semibold uppercase tracking-[0.12em] text-ink-500 sm:px-5 sm:py-3.5";
 
-export function OrderDetailClient({ order }: { order: Order | null }) {
+export function OrderDetailClient({ order, review }: { order: Order | null; review?: ReviewPanel | null }) {
 
   if (!order) {
     return (
@@ -129,6 +131,10 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
         </div>
       </header>
 
+      {review && (
+        <OrderReviewPanel panel={review} className="bg-surface px-4 py-4 shadow-sm sm:px-5 sm:py-5" />
+      )}
+
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="min-w-0 space-y-4 sm:space-y-5">
           <section className="bg-surface shadow-sm">
@@ -166,14 +172,14 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
                     </p>
                     <Price price={line.price} mrp={line.mrp} size="sm" className="mt-1.5" />
                     {order.status === "delivered" && (
-                      <LineActions slug={line.slug} className="mt-3 hidden sm:flex" />
+                      <LineActions className="mt-3 hidden sm:flex" />
                     )}
                   </div>
                   <p className="shrink-0 text-[13.5px] font-semibold tabular-nums text-ink-950 sm:text-[14px]">
                     {formatINR(line.price * line.quantity)}
                   </p>
                   {order.status === "delivered" && (
-                    <LineActions slug={line.slug} className="w-full pl-[70px] sm:hidden" />
+                    <LineActions className="w-full pl-[70px] sm:hidden" />
                   )}
                 </li>
               ))}
@@ -241,15 +247,15 @@ export function OrderDetailClient({ order }: { order: Order | null }) {
   );
 }
 
-/** Return and review, for an item that has been delivered. */
-function LineActions({ slug, className }: { slug: string; className?: string }) {
+/**
+ * Return, for an item that has been delivered. Reviewing is the "How was it?"
+ * panel at the top of the page, which knows what has already been rated.
+ */
+function LineActions({ className }: { className?: string }) {
   return (
     <div className={cn("flex flex-wrap gap-2", className)}>
       <Link href="/account/returns" className={buttonClasses("outline", "xs", "h-10 sm:h-8")}>
         <RotateCcw size={12} /> Return or exchange
-      </Link>
-      <Link href={`/p/${slug}#reviews`} className={buttonClasses("ghost", "xs", "h-10 sm:h-8")}>
-        Write a review
       </Link>
     </div>
   );

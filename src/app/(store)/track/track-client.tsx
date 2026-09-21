@@ -11,6 +11,8 @@ import { EmptyState } from "@/components/ui/primitives";
 import { Field, Input } from "@/components/ui/field";
 import { Reveal } from "@/components/ui/motion";
 import { TrackingTimeline } from "@/components/account/tracking-timeline";
+import { OrderReviewPanel } from "@/components/account/order-review-panel";
+import type { ReviewPanel } from "@/services/order-reviews";
 import { trackOrderAction } from "@/services/commerce";
 import { courierLine, deliveryFact } from "@/lib/order-display";
 import { cn, formatINR, statusLabel } from "@/lib/utils";
@@ -153,7 +155,7 @@ function moneyLine(order: Order): string {
   return ` ${order.refund.label}.`;
 }
 
-export function TrackDetail({ order }: { order: Order | null }) {
+export function TrackDetail({ order, review }: { order: Order | null; review?: ReviewPanel | null }) {
   if (!order) {
     return (
       <EmptyState
@@ -222,6 +224,9 @@ export function TrackDetail({ order }: { order: Order | null }) {
             ))}
           </dl>
         </div>
+
+        {/* Right under "Delivered": the one thing left to do with the order. */}
+        {review && <OrderReviewPanel panel={review} className="px-4 pt-6 sm:px-8 sm:pt-8" />}
 
         <div className="grid gap-8 p-4 sm:p-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
           <section className="min-w-0">

@@ -256,8 +256,11 @@ const SAMPLES = [
   })),
   {
     key: "review-request",
-    title: `Review request — ${REVIEW_REQUESTS.delayDays} days after delivery`,
-    note: `Sent once, ${REVIEW_REQUESTS.delayDays} days after delivery, never with the delivered email. One card per product still unreviewed, each button opening that product's form with the order already checked. Not sent for a cancelled, returned or fully refunded order; hidden products are left out. Asks for an honest review and offers nothing for one.`,
+    title:
+      REVIEW_REQUESTS.delayDays === 0
+        ? "Review request — on delivery"
+        : `Review request — ${REVIEW_REQUESTS.delayDays} days after delivery`,
+    note: `Sent once, ${REVIEW_REQUESTS.delayDays === 0 ? "straight after the delivered email — so it asks them to come back once they have used it, never claiming days of use" : `${REVIEW_REQUESTS.delayDays} days after delivery`}. One card per product still unreviewed, each button opening that product's form with the order already checked. Not sent for a cancelled, returned or fully refunded order; hidden products are left out. Asks for an honest review and offers nothing for one. The same products are offered in the "How was it?" panel on the track and order pages from the moment of delivery.`,
     mail: buildReviewEmail({
       kind: "review-request",
       number: BASE.number,

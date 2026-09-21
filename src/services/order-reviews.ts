@@ -79,6 +79,8 @@ export interface ReviewItem {
   variantLabel: string | null;
   /** This customer has already reviewed it, whatever became of the review. */
   reviewed: boolean;
+  /** The stars they gave it, when they have. */
+  myRating: number | null;
 }
 
 /**
@@ -95,18 +97,23 @@ export async function reviewItems(
   order: ReviewOrder,
   options: { leaveOutReturned?: boolean } = {},
 ): Promise<ReviewItem[]> {
-  const returnedLines = new Set(
-    order.returns.filter((r) => r.status !== "REJECTED").map((r) => r.orderLineId),
-  );
+  const lookups = await loadLookups([order]);
+  return itemsFrom(order, lookups, options);
+}
 
-  const lines = order.lines.filter(
-    (line): line is typeof line & { productId: string } =>
-      !!line.productId && !(options.leaveOutReturned && returnedLines.has(line.id)),
-  );
-  const ids = [...new Set(lines.map((l) => l.productId))];
-  if (ids.length === 0) return [];
+/** What the items of one or many orders need from the database, in two queries. */
+interface Lookups {
+  visible: Map<string, { id: string; slug: string; title: string; images: { url: string }[] }>;
+  /** customerId → productId → the stars they gave it. */
+  ratings: Map<string, Map<string, number>>;
+}
 
-  const [visible, reviewed] = await Promise.all([
+async function loadLookups(orders: ReviewOrder[]): Promise<Lookups> {
+  const ids = [...new Set(orders.flatMap((o) => o.lines.map((l) => l.productId)).filter((id): id is string => !!id))];
+  const customers = [...new Set(orders.map((o) => o.customerId).filter((id): id is string => !!id))];
+  if (ids.length === 0) return { visible: new Map(), ratings: new Map() };
+
+  const [visible, reviews] = await Promise.all([
     db.product.findMany({
       where: visibleProducts({ id: { in: ids } }),
       select: {
@@ -116,33 +123,74 @@ export async function reviewItems(
         images: { select: { url: true }, orderBy: { sortOrder: "asc" }, take: 1 },
       },
     }),
-    order.customerId
+    customers.length > 0
       ? db.review.findMany({
-          where: { customerId: order.customerId, productId: { in: ids } },
-          select: { productId: true },
+          where: { customerId: { in: customers }, productId: { in: ids } },
+          select: { customerId: true, productId: true, rating: true },
         })
       : Promise.resolve([]),
   ]);
 
-  const byId = new Map(visible.map((p) => [p.id, p]));
-  const done = new Set(reviewed.map((r) => r.productId));
+  const ratings = new Map<string, Map<string, number>>();
+  for (const r of reviews) {
+    if (!r.customerId) continue;
+    if (!ratings.has(r.customerId)) ratings.set(r.customerId, new Map());
+    ratings.get(r.customerId)!.set(r.productId, r.rating);
+  }
+  return { visible: new Map(visible.map((p) => [p.id, p])), ratings };
+}
+
+function itemsFrom(
+  order: ReviewOrder,
+  lookups: Lookups,
+  options: { leaveOutReturned?: boolean } = {},
+): ReviewItem[] {
+  const returnedLines = new Set(
+    order.returns.filter((r) => r.status !== "REJECTED").map((r) => r.orderLineId),
+  );
+  const mine = (order.customerId && lookups.ratings.get(order.customerId)) || new Map<string, number>();
   const seen = new Set<string>();
   const items: ReviewItem[] = [];
 
-  for (const line of lines) {
-    const product = byId.get(line.productId);
+  for (const line of order.lines) {
+    if (!line.productId) continue;
+    if (options.leaveOutReturned && returnedLines.has(line.id)) continue;
+    const product = lookups.visible.get(line.productId);
     if (!product || seen.has(product.id)) continue;
     seen.add(product.id);
+    const rating = mine.get(product.id) ?? null;
     items.push({
       productId: product.id,
       slug: product.slug,
       title: product.title,
       image: line.image || product.images[0]?.url || null,
       variantLabel: line.variantLabel,
-      reviewed: done.has(product.id),
+      reviewed: rating !== null,
+      myRating: rating,
     });
   }
   return items;
+}
+
+/**
+ * Why this order may not be asked for reviews at all, or null if it may.
+ *
+ * Shared by the email and the on-page panel, so they can never disagree about
+ * who is asked: only a delivered order, with an account to publish under, that
+ * has not been fully refunded. Cancelled and returned orders stop at the
+ * status check.
+ */
+function whyNotAsk(order: ReviewOrder): string | null {
+  if (!order.customerId) return "no account on the order to publish a review under";
+  if (order.status !== "DELIVERED") return `the order is ${order.status.toLowerCase()}, not delivered`;
+  if (!order.deliveredAt) return "no delivery date on the order";
+  // Fully refunded, by the ledger or by a decision to refund it all. Asking
+  // somebody who got all their money back to rate the thing is tone-deaf.
+  if (order.paymentStatus === "REFUND_DUE" || order.paymentStatus === "REFUNDED") {
+    return "a full refund is due or recorded on this order";
+  }
+  if (order.total > 0 && refundState(order).returned >= order.total) return "the order has been fully refunded";
+  return null;
 }
 
 /* ------------------------------------------------------------- the link */
@@ -298,21 +346,8 @@ export async function reviewMailPlan(
   }
   if (order.emailsSent.includes(kind)) return { ok: false, why: "already sent — it is sent once, never repeated" };
   if (!order.contactEmail) return { ok: false, why: "the order has no email address" };
-  if (!order.customerId) return { ok: false, why: "no account on the order to publish a review under" };
-  // Cancelled and returned orders stop here: only DELIVERED is asked.
-  if (order.status !== "DELIVERED") {
-    return { ok: false, why: `the order is ${order.status.toLowerCase()}, not delivered` };
-  }
-  if (!order.deliveredAt) return { ok: false, why: "no delivery date on the order" };
-
-  // Fully refunded, by the ledger or by a decision to refund it all. Asking
-  // somebody who got all their money back to rate the thing is tone-deaf.
-  if (order.paymentStatus === "REFUND_DUE" || order.paymentStatus === "REFUNDED") {
-    return { ok: false, why: "a full refund is due or recorded on this order" };
-  }
-  if (order.total > 0 && refundState(order).returned >= order.total) {
-    return { ok: false, why: "the order has been fully refunded" };
-  }
+  const why = whyNotAsk(order);
+  if (why || !order.deliveredAt) return { ok: false, why: why ?? "no delivery date on the order" };
 
   if (!options.ignoreTiming) {
     const since = now.getTime() - order.deliveredAt.getTime();
@@ -366,6 +401,7 @@ function build(
       url: reviewUrl(order.id, i.productId),
     })),
     alreadyReviewed,
+    daysSinceDelivery: order.deliveredAt ? (now.getTime() - order.deliveredAt.getTime()) / DAY : 0,
     reminderFollows: REVIEW_REQUESTS.reminderAfterDays !== null,
     askedDaysAgo: order.reviewRequestedAt
       ? Math.round((now.getTime() - order.reviewRequestedAt.getTime()) / DAY)
@@ -403,6 +439,7 @@ export async function renderReviewMail(
         image: l.image,
         variantLabel: l.variantLabel,
         reviewed: false,
+        myRating: null,
       }));
     }
     return { ok: true, mail: build(order, kind, items, 0, now) };
@@ -523,17 +560,46 @@ export async function sweepReviewRequests(
   for (const [order, kind] of queue) {
     if (report.sent.length + report.failed.length >= SENDS_PER_SWEEP) break;
 
-    const plan = await reviewMailPlan(order, kind, now);
-    if (!plan.ok) {
-      report.skipped.push({ number: order.number, kind, why: plan.why });
-      continue;
-    }
-    const mail = build(order, kind, plan.items, plan.alreadyReviewed, now);
-    const ok = await deliver(order.id, kind, mail, now, send);
-    (ok ? report.sent : report.failed).push({ number: order.number, kind });
+    const outcome = await sendIfDue(order, kind, now, send);
+    if (outcome === "sent" || outcome === "failed") report[outcome].push({ number: order.number, kind });
+    else report.skipped.push({ number: order.number, kind, why: outcome.why });
   }
 
   return report;
+}
+
+/** The plan, then the claimed send. The one path every review email takes. */
+async function sendIfDue(
+  order: ReviewOrder,
+  kind: ReviewEmailKind,
+  now: Date,
+  send: (mail: BuiltMail) => Promise<boolean>,
+): Promise<"sent" | "failed" | { why: string }> {
+  const plan = await reviewMailPlan(order, kind, now);
+  if (!plan.ok) return { why: plan.why };
+  const mail = build(order, kind, plan.items, plan.alreadyReviewed, now);
+  return (await deliver(order.id, kind, mail, now, send)) ? "sent" : "failed";
+}
+
+/**
+ * The review request for one order, now, if the rules say it is due.
+ *
+ * Called at the moment of delivery — straight after the "delivered" email, and
+ * when a courier scan marks the order delivered — so with delayDays at 0 the
+ * ask does not wait for the next sweep. The sweep still runs behind it and
+ * picks up anything this missed; the claim in deliver() keeps the two from
+ * ever both sending. Never throws.
+ */
+export async function sendReviewRequestIfDue(orderId: string): Promise<void> {
+  try {
+    if (!mailConfigured()) return;
+    const order = await loadReviewOrder(orderId);
+    if (!order) return;
+    const outcome = await sendIfDue(order, "review-request", new Date(), sendMail);
+    if (outcome === "failed") console.error(`[review-requests] mail server refused ${order.number} review-request, will retry`);
+  } catch (error) {
+    console.error("[review-requests] on delivery", orderId, error instanceof Error ? error.message : error);
+  }
 }
 
 /**
@@ -623,4 +689,76 @@ export async function reviewRequestSummary(orderId: string, now: Date = new Date
   if (plan.ok) return `Due now — goes out within ${REVIEW_REQUESTS.sweepEveryMinutes} minutes`;
   if (plan.dueAt) return `Due ${when(plan.dueAt)}`;
   return `Not sent — ${plan.why}`;
+}
+
+/* ------------------------------------------------------- on the page */
+
+export interface ReviewPanel {
+  orderId: string;
+  /** The review-scoped token the panel submits with — see the note below. */
+  token: string;
+  deliveredAt: string;
+  author: string;
+  location: string;
+  items: ReviewItem[];
+}
+
+/** Past this, the link — and so the panel, which submits through it — has expired. */
+function linkExpired(order: ReviewOrder, now: Date): boolean {
+  return !!order.deliveredAt && now.getTime() - order.deliveredAt.getTime() > REVIEW_REQUESTS.linkValidDays * DAY;
+}
+
+/**
+ * The "How was it?" panel for the track page and the order page, or null when
+ * it should not be shown.
+ *
+ * Shown the moment the order is delivered — no delay — under the same rules as
+ * the email (whyNotAsk): not for a cancelled, returned or fully refunded order,
+ * and without any product that is hidden now or has a return against it.
+ * Products already reviewed come back with the customer's stars so the panel
+ * can say so.
+ *
+ * ONLY call this from a page that has already decided the viewer may see this
+ * order (getOrderForViewer). It hands out the order's review token, so that a
+ * customer who arrived from an email link — signed in or not — can post
+ * through exactly the same action and the same checks as /review/...; the
+ * token is what a signed-out reader needs, and nobody is given it who could
+ * not already open the order.
+ */
+export async function reviewPanelFor(orderId: string, now: Date = new Date()): Promise<ReviewPanel | null> {
+  const order = await loadReviewOrder(orderId);
+  if (!order || whyNotAsk(order) || !order.deliveredAt || linkExpired(order, now)) return null;
+
+  const items = await reviewItems(order, { leaveOutReturned: true });
+  if (items.length === 0) return null;
+
+  return {
+    orderId: order.id,
+    token: reviewToken(order.id),
+    deliveredAt: order.deliveredAt.toISOString(),
+    ...authorOf(order),
+    items,
+  };
+}
+
+/**
+ * For the account's order list: how many products in each delivered order are
+ * still waiting for a review, under the same rules as the panel. Orders with
+ * nothing to rate are absent. Two queries however many orders there are.
+ */
+export async function unreviewedCounts(orderIds: string[], now: Date = new Date()): Promise<Record<string, number>> {
+  if (orderIds.length === 0) return {};
+  const orders = await db.order.findMany({
+    where: { id: { in: orderIds }, status: "DELIVERED" },
+    select: ORDER_SELECT,
+  });
+  const eligible = orders.filter((o) => !whyNotAsk(o) && !linkExpired(o, now));
+  const lookups = await loadLookups(eligible);
+
+  const counts: Record<string, number> = {};
+  for (const order of eligible) {
+    const open = itemsFrom(order, lookups, { leaveOutReturned: true }).filter((i) => !i.reviewed).length;
+    if (open > 0) counts[order.id] = open;
+  }
+  return counts;
 }

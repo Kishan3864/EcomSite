@@ -274,36 +274,55 @@ export async function renderOrderMail(
  */
 export function sendOrderMail(orderId: string, kind: OrderEmailKind): void {
   after(async () => {
-    try {
-      if (!mailConfigured()) return;
+    await deliverLifecycleMail(orderId, kind);
 
-      // Re-read inside after(): the transaction that triggered this has
-      // committed by now, so this sees the state the email will describe.
-      const order = await loadOrder(orderId);
-      if (!order) return;
-      if (order.emailsSent.includes(kind)) return;
-
-      const built = await renderOrderMail(orderId, kind);
-      if (!built.ok) {
-        // Worth a line in the log: it means a trigger fired for a state the
-        // order is not in, which is a bug in the caller rather than in the mail.
-        console.warn(`[order-mail] ${kind} not sent for ${orderId}: ${built.why}`);
-        return;
+    /**
+     * The review request follows the "delivered" email — after it, in the
+     * same background task, so the two can never arrive the wrong way round.
+     * It goes only if its own rules say it is due (with delayDays 0 it is);
+     * otherwise the timer sends it later. Never throws.
+     */
+    if (kind === "delivered") {
+      try {
+        const { sendReviewRequestIfDue } = await import("./order-reviews");
+        await sendReviewRequestIfDue(orderId);
+      } catch (error) {
+        console.error("[order-mail] review request", orderId, error instanceof Error ? error.message : error);
       }
-
-      const sent = await sendMail(built.mail);
-      if (!sent) return;
-
-      // Recorded only after the server accepted it, so a failed send is retried
-      // the next time the trigger fires rather than silently swallowed.
-      await db.order.update({
-        where: { id: orderId },
-        data: { emailsSent: { push: kind } },
-      });
-    } catch (error) {
-      console.error("[order-mail]", kind, orderId, error instanceof Error ? error.message : error);
     }
   });
+}
+
+async function deliverLifecycleMail(orderId: string, kind: OrderEmailKind): Promise<void> {
+  try {
+    if (!mailConfigured()) return;
+
+    // Re-read inside after(): the transaction that triggered this has
+    // committed by now, so this sees the state the email will describe.
+    const order = await loadOrder(orderId);
+    if (!order) return;
+    if (order.emailsSent.includes(kind)) return;
+
+    const built = await renderOrderMail(orderId, kind);
+    if (!built.ok) {
+      // Worth a line in the log: it means a trigger fired for a state the
+      // order is not in, which is a bug in the caller rather than in the mail.
+      console.warn(`[order-mail] ${kind} not sent for ${orderId}: ${built.why}`);
+      return;
+    }
+
+    const sent = await sendMail(built.mail);
+    if (!sent) return;
+
+    // Recorded only after the server accepted it, so a failed send is retried
+    // the next time the trigger fires rather than silently swallowed.
+    await db.order.update({
+      where: { id: orderId },
+      data: { emailsSent: { push: kind } },
+    });
+  } catch (error) {
+    console.error("[order-mail]", kind, orderId, error instanceof Error ? error.message : error);
+  }
 }
 
 /**
