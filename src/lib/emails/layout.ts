@@ -252,28 +252,37 @@ export function shell({ kicker, preheader, body, unsubscribeUrl, footerNote }: S
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;border-collapse:collapse;">
 
         <tr>
-          <td style="padding:0 0 16px;">
+          <td bgcolor="${C.surface}" style="background-color:${C.surface};border:1px solid ${C.hairline};border-bottom:0;border-radius:16px 16px 0 0;padding:18px 28px 16px;">
+            <!-- Inside the white card: the logo PNG has a white ground of its own. -->
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td>
+                <td valign="middle">
                   <a href="${esc(SITE)}" style="text-decoration:none;">
-                    <img src="${esc(absolute("/brand/png/weekendcart-logo-email.png"))}" width="150" alt="${esc(BUSINESS.brandName)}" style="display:block;width:150px;max-width:150px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
+                    <img src="${esc(absolute("/brand/png/weekendcart-logo-email.png"))}" width="140" alt="${esc(BUSINESS.brandName)}" style="display:block;width:140px;max-width:140px;height:auto;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
                   </a>
                 </td>
-                <td align="right" style="font-family:${SANS};font-size:12px;color:${C.muted};">${esc(kicker)}</td>
+                <td valign="middle" align="right" style="font-family:${SANS};font-size:12px;line-height:18px;color:${C.muted};white-space:nowrap;">
+                  <span style="display:inline-block;padding:5px 12px;border-radius:999px;background-color:${C.canvas};border:1px solid ${C.hairline};color:${C.ink};font-weight:600;">${esc(kicker)}</span>
+                </td>
               </tr>
             </table>
           </td>
         </tr>
 
         <tr>
-          <td bgcolor="${C.surface}" style="background-color:${C.surface};padding:28px 28px 24px;">
+          <td bgcolor="${C.surface}" style="background-color:${C.surface};border-left:1px solid ${C.hairline};border-right:1px solid ${C.hairline};padding:0 28px;">
+            <div style="height:1px;line-height:1px;font-size:0;background-color:${C.hairline};">&nbsp;</div>
+          </td>
+        </tr>
+
+        <tr>
+          <td bgcolor="${C.surface}" style="background-color:${C.surface};border-left:1px solid ${C.hairline};border-right:1px solid ${C.hairline};padding:24px 28px 24px;">
             ${body}
           </td>
         </tr>
 
         <tr>
-          <td bgcolor="${C.surface}" style="background-color:${C.surface};padding:0 28px 28px;">
+          <td bgcolor="${C.surface}" style="background-color:${C.surface};border:1px solid ${C.hairline};border-top:0;border-radius:0 0 16px 16px;padding:0 28px 28px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr><td style="border-top:1px solid ${C.hairline};padding-top:20px;">${signature()}</td></tr>
             </table>
