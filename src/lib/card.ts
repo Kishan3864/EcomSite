@@ -20,6 +20,8 @@ export interface ProductCardModel {
   image: string;
   imageAlt: string;
   hoverImage: string;
+  /** Every photo, for the quick view gallery. */
+  images?: { url: string; alt: string }[];
   price: number;
   mrp: number;
   rating: number;
@@ -47,6 +49,7 @@ export function toCardModel(product: Product): ProductCardModel {
     image: product.images[0]?.url ?? "",
     imageAlt: product.images[0]?.alt ?? product.title,
     hoverImage: product.images[1]?.url ?? product.images[0]?.url ?? "",
+    images: product.images.slice(0, 10).map((i) => ({ url: i.url, alt: i.alt || product.title })),
     price: product.price,
     mrp: product.mrp,
     rating: product.rating,

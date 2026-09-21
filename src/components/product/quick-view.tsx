@@ -4,7 +4,7 @@ import { ProductBadges } from "./badges";
 import { useState } from "react";
 import Image from "@/components/ui/image";
 import Link from "next/link";
-import { ArrowRight, Heart, Minus, Plus, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Heart, Minus, Plus, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 import type { ProductCardModel } from "@/lib/card";
 import { Modal } from "@/components/ui/overlay";
 import { Button } from "@/components/ui/button";
@@ -44,15 +44,9 @@ export function QuickView({
     <Modal open={open} onClose={onClose} title={product.title}>
       <div className="grid gap-0 bg-surface sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)]">
         <div className="p-3 sm:p-4 sm:pr-0">
-          <div className="relative aspect-square overflow-hidden rounded-xl bg-gradient-to-b from-ink-50 to-ink-100/70 sm:aspect-auto sm:h-full sm:min-h-[420px]">
-            <Image
-              src={product.image}
-              alt={product.imageAlt}
-              fill
-              sizes="(min-width:640px) 45vw, 100vw"
-              className="object-cover"
-            />
-          </div>
+          <QuickGallery
+            images={product.images?.length ? product.images : [{ url: product.image, alt: product.imageAlt }]}
+          />
         </div>
 
         <div className="flex flex-col gap-4 p-4 sm:p-6">
@@ -201,5 +195,84 @@ export function QuickView({
         </div>
       </div>
     </Modal>
+  );
+}
+
+/** Every photo, shown whole (contained, never cropped), with arrows, swipe and thumbnails. */
+function QuickGallery({ images }: { images: { url: string; alt: string }[] }) {
+  const [index, setIndex] = useState(0);
+  const [touchX, setTouchX] = useState<number | null>(null);
+  const count = images.length;
+  const go = (i: number) => setIndex(((i % count) + count) % count);
+  const current = images[index] ?? images[0];
+
+  return (
+    <div className="flex h-full flex-col gap-2.5">
+      <div
+        className="relative aspect-square overflow-hidden rounded-xl bg-gradient-to-b from-ink-50 to-ink-100/70 sm:aspect-auto sm:min-h-[420px] sm:flex-1"
+        onTouchStart={(e) => setTouchX(e.touches[0].clientX)}
+        onTouchEnd={(e) => {
+          if (touchX == null) return;
+          const dx = e.changedTouches[0].clientX - touchX;
+          setTouchX(null);
+          if (Math.abs(dx) > 40) go(index + (dx < 0 ? 1 : -1));
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight") go(index + 1);
+          else if (e.key === "ArrowLeft") go(index - 1);
+        }}
+      >
+        <Image
+          key={current.url}
+          src={current.url}
+          alt={current.alt}
+          fill
+          sizes="(min-width:640px) 45vw, 100vw"
+          className="object-contain p-4"
+        />
+        {count > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => go(index - 1)}
+              aria-label="Previous image"
+              className="glass absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-ink-800 ring-1 ring-inset ring-ink-950/10 transition-colors hover:text-brand-700"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() => go(index + 1)}
+              aria-label="Next image"
+              className="glass absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full text-ink-800 ring-1 ring-inset ring-ink-950/10 transition-colors hover:text-brand-700"
+            >
+              <ChevronRight size={18} />
+            </button>
+            <span className="glass absolute bottom-2 right-2 rounded-full px-2.5 py-1 text-[11px] font-semibold tabular-nums text-ink-800">
+              {index + 1} / {count}
+            </span>
+          </>
+        )}
+      </div>
+      {count > 1 && (
+        <div className="no-scrollbar flex gap-2 overflow-x-auto">
+          {images.map((img, i) => (
+            <button
+              key={img.url + i}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-label={`Show image ${i + 1}`}
+              aria-current={i === index}
+              className={cn(
+                "relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-ink-50 transition-shadow",
+                i === index ? "ring-2 ring-brand-600" : "ring-1 ring-line hover:ring-ink-300",
+              )}
+            >
+              <Image src={img.url} alt="" fill sizes="56px" className="object-contain p-1" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
