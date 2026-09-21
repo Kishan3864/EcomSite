@@ -226,7 +226,7 @@ export function TrackDetail({ order, review }: { order: Order | null; review?: R
         </div>
 
         {/* Right under "Delivered": the one thing left to do with the order. */}
-        {review && <OrderReviewPanel panel={review} className="px-4 pt-6 sm:px-8 sm:pt-8" />}
+        {review && <OrderReviewPanel panel={review} className="mx-4 mt-5 sm:mx-8 sm:mt-8" />}
 
         <div className="grid gap-8 p-4 sm:p-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12">
           <section className="min-w-0">

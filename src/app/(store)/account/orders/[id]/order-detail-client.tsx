@@ -132,7 +132,7 @@ export function OrderDetailClient({ order, review }: { order: Order | null; revi
       </header>
 
       {review && (
-        <OrderReviewPanel panel={review} className="bg-surface px-4 py-4 shadow-sm sm:px-5 sm:py-5" />
+        <OrderReviewPanel panel={review} />
       )}
 
       <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">

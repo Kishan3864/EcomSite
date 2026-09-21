@@ -18,11 +18,14 @@ export function StarPicker({
   onChange,
   about,
   size = 24,
+  labels,
 }: {
   value: number;
   onChange: (value: number) => void;
   about?: string;
   size?: number;
+  /** A word per star ("Poor" … "Loved it"), shown beside them for the star hovered or picked. */
+  labels?: readonly string[];
 }) {
   const [hover, setHover] = useState(0);
 
@@ -31,27 +34,34 @@ export function StarPicker({
     // so the first star still lines up with the text above it. The stars fill
     // as the pointer crosses them, which is feedback enough — a star that also
     // grew was the one thing on the page bouncing under the cursor.
-    <div className="-ml-2 flex sm:-ml-1 sm:gap-1" onMouseLeave={() => setHover(0)}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button
-          key={n}
-          type="button"
-          aria-label={`${n} star${n > 1 ? "s" : ""}${about ? ` for ${about}` : ""}`}
-          aria-pressed={value === n}
-          onMouseEnter={() => setHover(n)}
-          onClick={() => onChange(n)}
-          className="tap p-2 sm:p-1"
-        >
-          <Star
-            size={size}
-            strokeWidth={1.75}
-            className={cn(
-              "transition-colors duration-200",
-              n <= (hover || value) ? "fill-gold-400 text-gold-500" : "text-ink-300",
-            )}
-          />
-        </button>
-      ))}
+    <div className="flex flex-wrap items-center gap-x-3">
+      <div className="-ml-2 flex sm:-ml-1 sm:gap-1" onMouseLeave={() => setHover(0)}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            aria-label={`${n} star${n > 1 ? "s" : ""}${about ? ` for ${about}` : ""}`}
+            aria-pressed={value === n}
+            onMouseEnter={() => setHover(n)}
+            onClick={() => onChange(n)}
+            className="tap p-2 sm:p-1"
+          >
+            <Star
+              size={size}
+              strokeWidth={1.75}
+              className={cn(
+                "transition-colors duration-200",
+                n <= (hover || value) ? "fill-gold-400 text-gold-500" : "text-ink-300",
+              )}
+            />
+          </button>
+        ))}
+      </div>
+      {labels && (
+        <span aria-live="polite" className="min-w-[5.5rem] text-[13.5px] font-semibold text-ink-800">
+          {labels[(hover || value) - 1] ?? ""}
+        </span>
+      )}
     </div>
   );
 }
