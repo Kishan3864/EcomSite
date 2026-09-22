@@ -23,6 +23,7 @@ import { StatusPill, orderTone } from "@/components/account/status-pill";
 import type { ReviewPanel } from "@/services/order-reviews";
 import { cn, formatDateTime, formatINR, statusLabel } from "@/lib/utils";
 import { courierLine, deliveryFact } from "@/lib/order-display";
+import { useStore } from "@/store/store";
 
 /** Card heading: an icon tile and a title. */
 function CardHead({ icon: Icon, children }: { icon: LucideIcon; children: React.ReactNode }) {
@@ -37,6 +38,7 @@ function CardHead({ icon: Icon, children }: { icon: LucideIcon; children: React.
 }
 
 export function OrderDetailClient({ order, review }: { order: Order | null; review?: ReviewPanel | null }) {
+  const { gstRegistered } = useStore().config;
 
   if (!order) {
     return (
@@ -211,7 +213,9 @@ export function OrderDetailClient({ order, review }: { order: Order | null; revi
                 <Row label="Discount" value={`− ${formatINR(order.totals.productDiscount)}`} save />
               )}
               <Row label="Delivery" value={order.totals.shipping === 0 ? "Free" : formatINR(order.totals.shipping)} />
-              <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
+              {gstRegistered && order.totals.tax > 0 && (
+                <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
+              )}
             </dl>
             <div className="flex items-baseline justify-between gap-3 border-t border-line bg-ink-50/60 px-4 py-3.5 sm:px-5">
               <span className="text-[13px] font-semibold text-ink-900">Total</span>

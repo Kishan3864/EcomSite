@@ -19,6 +19,8 @@ export interface StorefrontConfig {
   paymentMethods: PaymentMethod[];
   rates: Rates;
   codLimit: number;
+  /** A GSTIN is saved in Settings. Until then no GST is shown anywhere. */
+  gstRegistered: boolean;
   store: { name: string; supportEmail: string; supportPhone: string };
 }
 
@@ -257,9 +259,11 @@ export async function getStorefrontConfig(): Promise<StorefrontConfig> {
     rates: {
       freeThreshold: s.shipping.freeThreshold,
       standardFee: s.shipping.standardFee,
-      gstRate: s.tax.gstRate,
+      // No GSTIN, no GST: the cart backs out no tax and shows no tax line.
+      gstRate: s.store.gstin.trim() ? s.tax.gstRate : 0,
     },
     codLimit: s.payments.codLimit,
+    gstRegistered: Boolean(s.store.gstin.trim()),
     store: {
       name: s.store.name,
       supportEmail: s.store.supportEmail,

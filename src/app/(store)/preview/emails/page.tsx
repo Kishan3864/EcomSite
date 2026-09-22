@@ -70,7 +70,7 @@ const BASE = {
   itemsTotal: 4094,
   productDiscount: 300,
   shipping: 0,
-  tax: 624,
+  tax: 0,
   shipName: "Ananya Iyer",
   shipLine1: "402, Sunview Apartments, Linking Road",
   shipLine2: "Bandra West",

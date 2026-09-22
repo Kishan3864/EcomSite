@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { buildOrderConfirmation } from "@/lib/emails/order";
 import { sendMail } from "@/lib/mail";
 import { orderToken } from "@/lib/order-token";
+import { getSettings } from "./settings";
 
 /**
  * Tells the customer their order is confirmed.
@@ -64,8 +65,12 @@ export async function renderOrderConfirmation(orderId: string) {
     });
     if (!order?.contactEmail) return null;
 
+    // No GSTIN in Settings, no GST line in the mail.
+    const { store } = await getSettings();
+
     const mail = buildOrderConfirmation({
       ...order,
+      tax: store.gstin.trim() ? order.tax : 0,
       orderId: order.id,
       // What the money has actually done. COD is never "paid" here: the
       // courier has not collected it yet, and the email says so.

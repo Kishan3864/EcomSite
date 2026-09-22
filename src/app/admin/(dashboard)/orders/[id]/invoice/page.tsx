@@ -21,7 +21,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   if (!invoice) notFound();
 
   const { seller, billTo, shipTo, totals } = invoice;
-  const heading = invoice.isBillOfSupply ? "Bill of supply" : "Tax invoice";
+  // No GSTIN on the order: a plain invoice with no tax columns, summary or
+  // rows. Orders raised after a GSTIN is saved print as tax invoices again.
+  const gst = !invoice.isBillOfSupply;
+  const heading = gst ? "Tax invoice" : "Invoice";
+  const withCode = (state: string, code: string) => (gst ? `${state} (${code})` : state);
   const showDiscount = totals.discount > 0;
 
   return (
@@ -53,13 +57,6 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         <PrintButton />
       </div>
 
-      {invoice.isBillOfSupply && (
-        <p className="mb-6 bg-sale-50 px-3.5 py-2.5 text-[13px] text-sale-700 print:hidden">
-          There is no seller GSTIN on file, so this prints as a bill of supply rather than a tax
-          invoice. Add the GSTIN under Settings → Tax before issuing it.
-        </p>
-      )}
-
       <header className="flex flex-wrap items-start justify-between gap-6 pb-5">
         <div className="max-w-sm">
           <p className="font-display text-[22px] font-semibold tracking-[-0.02em]">
@@ -67,9 +64,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           </p>
           <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-600">{seller.address}</p>
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11.5px] text-ink-600">
-            {!invoice.isBillOfSupply && <Meta label="GSTIN" value={seller.gstin} mono />}
+            {gst && <Meta label="GSTIN" value={seller.gstin} mono />}
             {seller.pan && <Meta label="PAN" value={seller.pan} mono />}
-            <Meta label="State" value={`${seller.stateName} (${seller.stateCode})`} />
+            <Meta label="State" value={withCode(seller.stateName, seller.stateCode)} />
             <Meta label="Contact" value={`${seller.email} · ${seller.phone}`} />
           </dl>
         </div>
@@ -88,11 +85,15 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <Meta label="Invoice date" value={formatDate(invoice.invoiceDate, "short")} />
             <Meta label="Order" value={invoice.orderNumber} mono />
             <Meta label="Order date" value={formatDate(invoice.orderDate, "short")} />
-            <Meta
-              label="Place of supply"
-              value={`${invoice.placeOfSupply} (${invoice.placeOfSupplyCode})`}
-            />
-            <Meta label="Reverse charge" value="No" />
+            {gst && (
+              <>
+                <Meta
+                  label="Place of supply"
+                  value={`${invoice.placeOfSupply} (${invoice.placeOfSupplyCode})`}
+                />
+                <Meta label="Reverse charge" value="No" />
+              </>
+            )}
             {invoice.buyerGstin && <Meta label="Buyer GSTIN" value={invoice.buyerGstin} mono />}
           </dl>
         </div>
@@ -102,12 +103,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         <Party title="Billed to" name={billTo.name} lines={billTo.lines}>
           {billTo.phone} · {billTo.email}
           <br />
-          State: {billTo.state} ({billTo.stateCode})
+          State: {withCode(billTo.state, billTo.stateCode)}
         </Party>
         <Party title="Shipped to" name={shipTo.name} lines={shipTo.lines}>
           {shipTo.phone}
           <br />
-          State: {shipTo.state} ({shipTo.stateCode})
+          State: {withCode(shipTo.state, shipTo.stateCode)}
         </Party>
       </section>
 
@@ -121,16 +122,20 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <Th className="w-10 text-right">Qty</Th>
               <Th className="text-right">Rate (₹)</Th>
               {showDiscount && <Th className="text-right">Discount (₹)</Th>}
-              <Th className="text-right">Taxable value (₹)</Th>
-              {invoice.interState ? (
-                <Th className="text-right">IGST (₹)</Th>
-              ) : (
+              {gst && (
                 <>
-                  <Th className="text-right">CGST (₹)</Th>
-                  <Th className="text-right">SGST (₹)</Th>
+                  <Th className="text-right">Taxable value (₹)</Th>
+                  {invoice.interState ? (
+                    <Th className="text-right">IGST (₹)</Th>
+                  ) : (
+                    <>
+                      <Th className="text-right">CGST (₹)</Th>
+                      <Th className="text-right">SGST (₹)</Th>
+                    </>
+                  )}
                 </>
               )}
-              <Th className="text-right">Total (₹)</Th>
+              <Th className="text-right">{gst ? "Total (₹)" : "Amount (₹)"}</Th>
             </tr>
           </thead>
           <tbody>
@@ -153,13 +158,17 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     {line.discountPaise > 0 ? `− ${formatPaise(line.discountPaise)}` : "—"}
                   </Td>
                 )}
-                <Td className="text-right tabular-nums">{formatPaise(line.tax.taxable)}</Td>
-                {invoice.interState ? (
-                  <TaxCell amount={line.tax.igst} rate={line.taxRate} />
-                ) : (
+                {gst && (
                   <>
-                    <TaxCell amount={line.tax.cgst} rate={line.taxRate / 2} />
-                    <TaxCell amount={line.tax.sgst} rate={line.taxRate / 2} />
+                    <Td className="text-right tabular-nums">{formatPaise(line.tax.taxable)}</Td>
+                    {invoice.interState ? (
+                      <TaxCell amount={line.tax.igst} rate={line.taxRate} />
+                    ) : (
+                      <>
+                        <TaxCell amount={line.tax.cgst} rate={line.taxRate / 2} />
+                        <TaxCell amount={line.tax.sgst} rate={line.taxRate / 2} />
+                      </>
+                    )}
                   </>
                 )}
                 <Td className="text-right font-semibold tabular-nums">
@@ -176,13 +185,17 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               {showDiscount && (
                 <Td className="text-right tabular-nums">− {formatPaise(totals.discount)}</Td>
               )}
-              <Td className="text-right tabular-nums">{formatPaise(totals.taxable)}</Td>
-              {invoice.interState ? (
-                <Td className="text-right tabular-nums">{formatPaise(totals.igst)}</Td>
-              ) : (
+              {gst && (
                 <>
-                  <Td className="text-right tabular-nums">{formatPaise(totals.cgst)}</Td>
-                  <Td className="text-right tabular-nums">{formatPaise(totals.sgst)}</Td>
+                  <Td className="text-right tabular-nums">{formatPaise(totals.taxable)}</Td>
+                  {invoice.interState ? (
+                    <Td className="text-right tabular-nums">{formatPaise(totals.igst)}</Td>
+                  ) : (
+                    <>
+                      <Td className="text-right tabular-nums">{formatPaise(totals.cgst)}</Td>
+                      <Td className="text-right tabular-nums">{formatPaise(totals.sgst)}</Td>
+                    </>
+                  )}
                 </>
               )}
               <Td className="text-right tabular-nums">
@@ -214,19 +227,23 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           {/* Gross and discount are context, not addends — the sum starts below the rule. */}
           <div className="space-y-1.5 pb-2">
             <Row
-              label="Item total (incl. tax)"
+              label={gst ? "Item total (incl. tax)" : "Item total"}
               value={formatPaise(totals.itemsInclusiveBeforeDiscount)}
             />
             {showDiscount && <Row label="Discount" value={`− ${formatPaise(totals.discount)}`} />}
           </div>
           <div className="space-y-1.5 py-2">
-            <Row label="Taxable value" value={formatPaise(totals.taxable)} />
-            {invoice.interState ? (
-              <Row label="IGST" value={formatPaise(totals.igst)} />
-            ) : (
+            {gst && (
               <>
-                <Row label="CGST" value={formatPaise(totals.cgst)} />
-                <Row label="SGST" value={formatPaise(totals.sgst)} />
+                <Row label="Taxable value" value={formatPaise(totals.taxable)} />
+                {invoice.interState ? (
+                  <Row label="IGST" value={formatPaise(totals.igst)} />
+                ) : (
+                  <>
+                    <Row label="CGST" value={formatPaise(totals.cgst)} />
+                    <Row label="SGST" value={formatPaise(totals.sgst)} />
+                  </>
+                )}
               </>
             )}
             {totals.roundOff !== 0 && (
@@ -243,6 +260,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         </dl>
       </div>
 
+      {gst && (
       <section className="mt-6 break-inside-avoid">
         <p className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-500">
           Tax summary by HSN / SAC
@@ -305,10 +323,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           </table>
         </div>
       </section>
+      )}
 
       <footer className="mt-8 flex flex-wrap items-end justify-between gap-6 break-inside-avoid pt-4">
         <p className="max-w-md text-[10.5px] leading-relaxed text-ink-500">
-          Whether tax is payable on reverse charge: No. We declare that this invoice shows the
+          {gst && "Whether tax is payable on reverse charge: No. "}We declare that this invoice shows the
           actual price of the goods described and that all particulars are true and correct. This is
           a computer-generated invoice and does not require a signature.
         </p>

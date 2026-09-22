@@ -61,7 +61,7 @@ export function CartDrawer() {
                 <ArrowRight size={16} />
               </Link>
             </div>
-            <p className="t-small text-center">Taxes included. Shipping calculated at checkout.</p>
+            <p className="t-small text-center">{config.gstRegistered ? "Taxes included. " : ""}Shipping calculated at checkout.</p>
           </div>
         ) : undefined
       }

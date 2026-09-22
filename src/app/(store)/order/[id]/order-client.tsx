@@ -31,6 +31,7 @@ import { cn, formatDate, formatINR } from "@/lib/utils";
 import { deliveryFact } from "@/lib/order-display";
 import { customerMayCancel } from "@/lib/order-rules";
 import { CancelForm } from "./cancel-form";
+import { useStore } from "@/store/store";
 
 /** The confirmation mark: a glowing cobalt tile with a check. */
 function SuccessMark() {
@@ -74,6 +75,7 @@ export function OrderClient({ order }: { order: Order | null }) {
   // The processing screen appends ?placed=1, so the celebratory copy is driven
   // by an explicit flag rather than by guessing from a timestamp.
   const search = useSearchParams();
+  const { gstRegistered } = useStore().config;
   const justPlaced = search.get("placed") === "1";
   const paymentFailed = search.get("payment") === "failed";
   const [copied, setCopied] = useState(false);
@@ -404,7 +406,9 @@ export function OrderClient({ order }: { order: Order | null }) {
                 value={order.totals.shipping === 0 ? "Free" : formatINR(order.totals.shipping)}
                 save={order.totals.shipping === 0}
               />
-              <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
+              {gstRegistered && order.totals.tax > 0 && (
+                <Row label="GST (included)" value={formatINR(order.totals.tax)} muted />
+              )}
             </dl>
             <div className="flex items-baseline justify-between gap-4 border-t border-line bg-ink-50/60 px-4 py-3.5 sm:px-5 sm:py-4">
               <span className="text-[13px] font-semibold text-ink-900">Total paid</span>

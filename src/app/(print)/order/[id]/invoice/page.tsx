@@ -27,7 +27,7 @@ export async function generateMetadata({
   const invoice = await invoiceForViewer(id, tokenFromParams(await searchParams));
   return {
     title: invoice
-      ? `${invoice.isBillOfSupply ? "Bill of supply" : "Tax invoice"} ${invoice.invoiceNumber}`
+      ? `${invoice.isBillOfSupply ? "Invoice" : "Tax invoice"} ${invoice.invoiceNumber}`
       : "Invoice",
     robots: { index: false, follow: false },
   };
@@ -70,8 +70,13 @@ export default async function InvoicePage({
   if (!invoice) notFound();
 
   const { seller, billTo, shipTo, totals, lines } = invoice;
-  const heading = invoice.isBillOfSupply ? "Bill of supply" : "Tax invoice";
+  // With no GSTIN on the order there is no GST to show: a plain invoice with
+  // no tax columns, no tax summary and no tax rows. The GST layout comes back
+  // by itself for orders raised after a GSTIN is saved in Settings.
+  const gst = !invoice.isBillOfSupply;
+  const heading = gst ? "Tax invoice" : "Invoice";
   const taxHeads = invoice.interState ? 1 : 2;
+  const withCode = (state: string, code: string) => (gst ? `${state} (${code})` : state);
 
   return (
     <div
@@ -91,7 +96,7 @@ export default async function InvoicePage({
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[11.5px] print:text-[9.5px]">
             {seller.gstin && <Field label="GSTIN" value={seller.gstin} mono />}
             {seller.pan && <Field label="PAN" value={seller.pan} mono />}
-            <Field label="State" value={`${seller.stateName} (${seller.stateCode})`} />
+            <Field label="State" value={withCode(seller.stateName, seller.stateCode)} />
             <Field label="Contact" value={`${seller.email} · ${seller.phone}`} />
           </dl>
         </div>
@@ -115,30 +120,39 @@ export default async function InvoicePage({
         <MetaField label="Invoice date" value={formatDate(invoice.invoiceDate, "short")} />
         <MetaField label="Order number" value={invoice.orderNumber} mono />
         <MetaField label="Order date" value={formatDate(invoice.orderDate, "short")} />
-        <MetaField
-          label="Place of supply"
-          value={`${invoice.placeOfSupply} (${invoice.placeOfSupplyCode})`}
-        />
-        <MetaField label="Supply" value={invoice.interState ? "Inter-state" : "Intra-state"} />
-        <MetaField label="Reverse charge" value="No" />
+        {gst && (
+          <>
+            <MetaField
+              label="Place of supply"
+              value={`${invoice.placeOfSupply} (${invoice.placeOfSupplyCode})`}
+            />
+            <MetaField label="Supply" value={invoice.interState ? "Inter-state" : "Intra-state"} />
+            <MetaField label="Reverse charge" value="No" />
+          </>
+        )}
         {invoice.buyerGstin && <MetaField label="Buyer GSTIN" value={invoice.buyerGstin} mono />}
       </dl>
 
       <section className="mt-4 grid gap-3 sm:grid-cols-2 print:mt-3 print:grid-cols-2 print:gap-2.5">
         <Party title="Billed to" name={billTo.name} lines={billTo.lines}>
-          {billTo.state} ({billTo.stateCode})
+          {withCode(billTo.state, billTo.stateCode)}
           <br />
           {billTo.phone} · {billTo.email}
         </Party>
         <Party title="Shipped to" name={shipTo.name} lines={shipTo.lines}>
-          {shipTo.state} ({shipTo.stateCode})
+          {withCode(shipTo.state, shipTo.stateCode)}
           <br />
           {shipTo.phone}
         </Party>
       </section>
 
       <div className="mt-5 overflow-x-auto print:mt-3 print:overflow-visible">
-        <table className="w-full min-w-[720px] border-collapse text-[11px] print:min-w-0 print:text-[9px]">
+        <table
+          className={cn(
+            "w-full border-collapse text-[11px] print:min-w-0 print:text-[9px]",
+            gst ? "min-w-[720px]" : "min-w-[520px]",
+          )}
+        >
           <thead>
             <tr>
               <Th rowSpan={2} className="w-8">
@@ -154,19 +168,25 @@ export default async function InvoicePage({
               <Th rowSpan={2} className="text-right">
                 Rate (₹)
               </Th>
+              {gst && (
+                <>
+                  <Th rowSpan={2} className="text-right">
+                    Taxable value (₹)
+                  </Th>
+                  <TaxHeads interState={invoice.interState} />
+                </>
+              )}
               <Th rowSpan={2} className="text-right">
-                Taxable value (₹)
-              </Th>
-              <TaxHeads interState={invoice.interState} />
-              <Th rowSpan={2} className="text-right">
-                Total (₹)
+                {gst ? "Total (₹)" : "Amount (₹)"}
               </Th>
             </tr>
-            <tr>
-              {Array.from({ length: taxHeads }, (_, i) => (
-                <TaxSubHeads key={i} />
-              ))}
-            </tr>
+            {gst && (
+              <tr>
+                {Array.from({ length: taxHeads }, (_, i) => (
+                  <TaxSubHeads key={i} />
+                ))}
+              </tr>
+            )}
           </thead>
           <tbody>
             {lines.map((line) => (
@@ -185,13 +205,17 @@ export default async function InvoicePage({
                   {line.quantity} {line.uqc}
                 </Td>
                 <Td className="text-right tabular-nums">{formatPaise(line.unitPaise)}</Td>
-                <Td className="text-right tabular-nums">{formatPaise(line.tax.taxable)}</Td>
-                {invoice.interState ? (
-                  <TaxCells rate={line.taxRate} amount={line.tax.igst} />
-                ) : (
+                {gst && (
                   <>
-                    <TaxCells rate={line.taxRate / 2} amount={line.tax.cgst} />
-                    <TaxCells rate={line.taxRate / 2} amount={line.tax.sgst} />
+                    <Td className="text-right tabular-nums">{formatPaise(line.tax.taxable)}</Td>
+                    {invoice.interState ? (
+                      <TaxCells rate={line.taxRate} amount={line.tax.igst} />
+                    ) : (
+                      <>
+                        <TaxCells rate={line.taxRate / 2} amount={line.tax.cgst} />
+                        <TaxCells rate={line.taxRate / 2} amount={line.tax.sgst} />
+                      </>
+                    )}
                   </>
                 )}
                 <Td className="text-right font-semibold tabular-nums">
@@ -205,13 +229,17 @@ export default async function InvoicePage({
               <Td colSpan={5} className="text-right">
                 Total
               </Td>
-              <Td className="text-right tabular-nums">{formatPaise(totals.taxable)}</Td>
-              {invoice.interState ? (
-                <TaxCells amount={totals.igst} />
-              ) : (
+              {gst && (
                 <>
-                  <TaxCells amount={totals.cgst} />
-                  <TaxCells amount={totals.sgst} />
+                  <Td className="text-right tabular-nums">{formatPaise(totals.taxable)}</Td>
+                  {invoice.interState ? (
+                    <TaxCells amount={totals.igst} />
+                  ) : (
+                    <>
+                      <TaxCells amount={totals.cgst} />
+                      <TaxCells amount={totals.sgst} />
+                    </>
+                  )}
                 </>
               )}
               <Td className="text-right tabular-nums">
@@ -233,19 +261,23 @@ export default async function InvoicePage({
           {totals.discount > 0 && (
             <>
               <Total
-                label="Item total (incl. tax)"
+                label={gst ? "Item total (incl. tax)" : "Item total"}
                 value={formatPaise(totals.itemsInclusiveBeforeDiscount)}
               />
               <Total label="Discount" value={`− ${formatPaise(totals.discount)}`} />
             </>
           )}
-          <Total label="Taxable value" value={formatPaise(totals.taxable)} />
-          {invoice.interState ? (
-            <Total label="IGST" value={formatPaise(totals.igst)} />
-          ) : (
+          {gst && (
             <>
-              <Total label="CGST" value={formatPaise(totals.cgst)} />
-              <Total label="SGST" value={formatPaise(totals.sgst)} />
+              <Total label="Taxable value" value={formatPaise(totals.taxable)} />
+              {invoice.interState ? (
+                <Total label="IGST" value={formatPaise(totals.igst)} />
+              ) : (
+                <>
+                  <Total label="CGST" value={formatPaise(totals.cgst)} />
+                  <Total label="SGST" value={formatPaise(totals.sgst)} />
+                </>
+              )}
             </>
           )}
           {totals.roundOff !== 0 && (
@@ -261,6 +293,7 @@ export default async function InvoicePage({
         </dl>
       </div>
 
+      {gst && (
       <section className="mt-6 break-inside-avoid print:mt-3.5">
         <h2 className={LABEL}>Tax summary by HSN / SAC</h2>
         <div className="mt-2 overflow-x-auto print:overflow-visible">
@@ -319,6 +352,7 @@ export default async function InvoicePage({
           </table>
         </div>
       </section>
+      )}
 
       <section className="mt-6 grid gap-3 break-inside-avoid text-[11.5px] sm:grid-cols-2 print:mt-3.5 print:grid-cols-2 print:gap-2.5 print:text-[9.5px]">
         <div className="border border-ink-200 p-3">

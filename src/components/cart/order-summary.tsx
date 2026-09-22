@@ -63,7 +63,7 @@ export function OrderSummary({
       value: totals.shipping === 0 ? "Free" : formatINR(totals.shipping),
       tone: totals.shipping === 0 ? "save" : undefined,
     },
-    ...(totals.tax > 0
+    ...(config.gstRegistered && totals.tax > 0
       ? [{ label: "GST (included)", value: formatINR(totals.tax), tone: "muted" as const }]
       : []),
   ];

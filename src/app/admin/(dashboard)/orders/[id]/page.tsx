@@ -11,6 +11,7 @@ import {
   User,
 } from "lucide-react";
 import { db } from "@/lib/db";
+import { getSettings } from "@/services/settings";
 import { refundState } from "@/services/refunds";
 import { reviewRequestSummary } from "@/services/order-reviews";
 import { hasRole, requireAdmin } from "@/lib/auth/admin";
@@ -55,6 +56,7 @@ export const metadata = { title: "Order" };
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireAdmin();
+  const gstRegistered = Boolean((await getSettings()).store.gstin.trim());
   const { id } = await params;
 
   const order = await db.order.findUnique({
@@ -200,7 +202,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 label={order.deliveryName}
                 value={order.shipping === 0 ? "Free" : formatINR(order.shipping)}
               />
-              <Row label="GST (included)" value={formatINR(order.tax)} muted />
+              {gstRegistered && order.tax > 0 && (
+                <Row label="GST (included)" value={formatINR(order.tax)} muted />
+              )}
               <div className="flex items-baseline justify-between pt-2.5">
                 <dt className="text-[14px] font-semibold text-ink-950">Total</dt>
                 <dd className="text-[16px] font-semibold tabular-nums text-ink-950">
