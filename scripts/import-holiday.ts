@@ -5,6 +5,7 @@
  *   npx tsx scripts/import-holiday.ts --dry-run   # the whole plan; writes and downloads nothing
  *   npx tsx scripts/import-holiday.ts             # create or update
  *   npx tsx scripts/import-holiday.ts --file=path/to/other.xlsx
+ *   npx tsx scripts/import-holiday.ts --set-stock=10 [--dry-run]   # stock of the SKUs in PLACEMENT, nothing else
  *
  * From each row: SKU; "SEO Title (Meesho)" → title; "Description (Meesho)" →
  * description; HSN; "Meesho Price (₹)" → price; "MRP (₹)" → MRP; packed weight
@@ -768,8 +769,83 @@ async function run() {
   if (failedImages.length && !dryRun) console.log("  Run again to retry the failed photographs; only missing ones are fetched.\n");
 }
 
+/* ------------------------------ Set stock ------------------------------ */
+
+/**
+ * Sets the stock of this import's SKUs (PLACEMENT) and of nothing else, the
+ * way the admin inventory page does: a guarded update plus a StockMovement row
+ * for the difference. Status is left as it is. A SKU whose product is not from
+ * Holiday Wholesale is reported and left alone.
+ */
+async function setStock(target: number) {
+  const skus = Object.keys(PLACEMENT);
+  const [supplier, products] = await Promise.all([
+    db.supplier.findUnique({ where: { slug: SUPPLIER.slug }, select: { id: true } }),
+    db.product.findMany({
+      where: { OR: skus.map((sku) => ({ sku: { equals: sku, mode: "insensitive" as const } })) },
+      select: { id: true, sku: true, title: true, status: true, stock: true, supplierId: true },
+    }),
+  ]);
+
+  const counts = { set: 0, unchanged: 0, notFound: 0, skipped: 0 };
+  console.log("");
+  for (const sku of skus) {
+    const p = products.find((x) => x.sku.toUpperCase() === sku);
+    if (!p) {
+      counts.notFound++;
+      log(`${sku}: not in the shop — run the import first`);
+      continue;
+    }
+    if (p.supplierId !== supplier?.id) {
+      counts.skipped++;
+      log(`${sku}: “${short(p.title)}” is not from Holiday Wholesale — left alone`);
+      continue;
+    }
+    if (p.stock === target) {
+      counts.unchanged++;
+      log(`${sku}: already ${target} (${p.status})`);
+      continue;
+    }
+    const delta = target - p.stock;
+    log(`${sku}: stock ${p.stock} → ${target} (${p.status}, status unchanged)`);
+    if (dryRun) {
+      counts.set++;
+      continue;
+    }
+    const done = await db.$transaction(async (tx) => {
+      // Same guard as the admin: if an order moved the stock since it was read, refuse.
+      const updated = await tx.product.updateMany({ where: { id: p.id, stock: p.stock }, data: { stock: target } });
+      if (updated.count !== 1) return false;
+      await tx.stockMovement.create({
+        data: {
+          productId: p.id,
+          delta,
+          reason: delta > 0 ? "Received stock" : "Correction",
+          reference: "import-holiday --set-stock",
+          actorName: "import-holiday script",
+        },
+      });
+      return true;
+    });
+    if (done) counts.set++;
+    else console.log("      stock changed while this ran — not touched, run again");
+  }
+  console.log(
+    `\n  ${dryRun ? "DRY RUN — nothing was written. " : ""}Stock ${target}: set ${counts.set}, already ${counts.unchanged}, ` +
+      `not found ${counts.notFound}, skipped ${counts.skipped}\n`,
+  );
+}
+
 async function main() {
   const url = process.env.DATABASE_URL ?? "";
+  const stockArg = process.argv.find((a) => a.startsWith("--set-stock="));
+  if (stockArg) {
+    const target = Number(stockArg.slice(12));
+    if (!Number.isInteger(target) || target < 0 || target > 100_000) throw new Error(`--set-stock needs a whole number, got "${stockArg.slice(12)}"`);
+    console.log(`\n  Setting stock to ${target} for ${Object.keys(PLACEMENT).length} SKUs${dryRun ? " — DRY RUN" : ""} against ${url.replace(/\/\/[^@]*@/, "//***@")}`);
+    await setStock(target);
+    return;
+  }
   console.log(`\n  Importing "${SHEET}" from ${FILE}${dryRun ? " — DRY RUN" : ""} against ${url.replace(/\/\/[^@]*@/, "//***@")}`);
   await run();
 }
