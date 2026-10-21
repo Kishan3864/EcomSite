@@ -136,6 +136,7 @@ const GROUPS = (c: SidebarCounts): NavGroup[] => [
           { href: "/admin/settings/inventory", label: "Inventory" },
           { href: "/admin/settings/team", label: "Team" },
           { href: "/admin/settings/maintenance", label: "Maintenance" },
+          { href: "/admin/settings/domain-sale", label: "Domain sale" },
           { href: "/admin/settings/profile", label: "Your account" },
         ],
       },

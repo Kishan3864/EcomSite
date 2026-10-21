@@ -9,6 +9,7 @@ import {
 } from "@/lib/auth/session";
 import { BUSINESS } from "@/config/business";
 import { getMaintenance, maintenanceHtml, retryAfterSeconds, staysOpen } from "@/lib/maintenance";
+import { domainSaleHtml, getDomainSale } from "@/lib/domain-sale";
 
 /**
  * Edge route guard.
@@ -66,6 +67,29 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
     return NextResponse.next();
+  }
+
+  /**
+   * Domain-sale mode: every non-admin page is the one sale page, for everybody,
+   * signed-in admin included — see src/lib/domain-sale.ts. Checked before
+   * maintenance, so it wins when both are on.
+   *
+   * The home page answers 200, so a buyer's link preview and a search for the
+   * domain show the offer. Every other address answers 503 with Retry-After,
+   * so search engines keep the shop's pages instead of indexing the sale page
+   * in place of each one.
+   */
+  const sale = await getDomainSale();
+  if (sale.on) {
+    const home = pathname === "/";
+    return new NextResponse(domainSaleHtml(sale), {
+      status: home ? 200 : 503,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        ...(home ? {} : { "Retry-After": "86400", "X-Robots-Tag": "noindex" }),
+      },
+    });
   }
 
   /**
